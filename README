@@ -1,0 +1,96 @@
+Spectro - Show moving log-frequency axis spectrograms of music while it plays
+
+Following on from the work at wikidelia.net/wiki/Spectrograms
+here is [or will be!] a program to show a window onto the spectrogram
+with a vertical green one-pixel-wide line in the half way across the window
+indicating the current playing position.
+
+User interface
+--------------
+For the touch-screen version, we want pinch to zoom and drag to pan with
+buttons for fft size.
+For the mouse version, mouse wheel could zoom in the time direction,
+click and drag could pan in time or on the frequency axis, with buttons
+for zoom on frequency axis, fft size, scales.
+
+A time grid would be nice, with a button to turn it on/off and when on
+with a setting for the number of beats per bar giving more a luminous line
+every N "beats". Users can drag a bar line to align it to a feature and the
+scale adjusts keeping the beat one bar before (after?) in position.
+Better: with time scale on, if you drag one bar line (or, rather, drag any
+point in the time direction), the position (phase) of the time scale shifts.
+When you let go, it remembers which was the nearest beat to where you were
+dragging.
+When you stop and drag (near) a different bar line, the one you just dropped
+stays where it is and the time scale stretches.
+Click another bar line and, again, the last one you clicked stays firm.
+
+Panning left and right skips the song to the new position.
+Panning up and down moves the view on the frequency axis.
+
+Tap screen or space to start/pause/resume/restart playback.
+
+FFT sizes are powers of 2 by default; that way we can use some super-fast
+alternative FFT routines. If you have a keyboard, you should be able to
+set the FFT size (or FFT frequency) in a box. Alternatively, a slider that
+clicks to the next power of 2 if you click to right/left of slider or on the
+<| |> scrollbar endcaps. Alternatively, you can move the slider smoothly to
+choose an intermediate size (risking slower execution time, of course).
+
+How to allocate finite computing resources
+------------------------------------------
+If we're playing the song, the first priority in screen update should be the
+leading edge of the display: what will play in a few seconds' time. That way,
+whatever happens, if they keep playing we will eventually get the display right.
+We launch an FFT for the audio that is entering the display at the right edge.
+When the result of the calculaction returns, we paint a column wide as many
+pixels as the time that the calculation took and launch a new FFT for the
+current audio at the leading edge of the scrolling display.
+
+If they stop, and the screen is not fully repainted, it repaints the missing
+parts of the display from right to left at the same speed as when playing
+in realtime. This way, when they stop and it continues updating the screen,
+the size of the pixel columns will be even across the display.
+This suggests keeping a list of the time periods that are not updated on the
+display and working oldest-to-newest in that.
+When they stop, we don't continue calculating to fill in detail, alla JPEG,
+for love of the battery.
+
+When we startup, mark the whole of the displayed region as "to be updated"
+so it starts updating from right to left at playing speed, stopping when it
+gets to the centre of the screen. They hit play and it calculates the right
+edge of the window, scrolling the display and writing a column of several
+pixels.
+
+If they pan, again it updates from right to left at playing speed.
+
+An alternative strategy could be, while playing, to scroll the display
+one pixel at a time, following the music, and replicating the rightmost
+edge column of pixels then, when calculation results arrive, repaint the
+rightmost column with the new results (or the rightmost columns if we want
+to allow for the time taken to compute the FFT. If we know how long each
+FFT will take, we could calculate the FFT of a fraction of a second in advance,
+to mitigate the visiblity of the right-edge-repainting.
+
+
+Program structure
+-----------------
+- A calc thread doing one FFT each receiving requests for an FFT around a
+  particular moment and returning the result of same.
+  Allow multiple threads to exploit multiple processors?
+- A GUI thread doing UI handling, scrolling of the display, starting/stopping
+  music etc.
+
+GUI->calc: "Send me the FFT for this time region"
+calc->GUI: "Here's the result for audio around time T"
+
+When calc delivers a result, it then starts calculating at a new point in the
+outstanding region, if any, according to the real time elapsed since T.
+This means the results won't necessarily be evenly-spaced in time.
+How do you map from a pixmap with unevenly-spaced columns to a fixed-pitch
+display? Cosine mapping between pairs of points?
+
+Add to that the reverse mapping to apply the logarithmic frequency axis and
+the color mapping and hey presto.
+
+    Martin Guy <martinwguy@gmail.com>, December 2016.
