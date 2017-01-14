@@ -192,10 +192,6 @@ main(int argc, char **argv)
     evas_object_smart_callback_add(em, "position_update", position_update_cb, NULL);
     evas_object_smart_callback_add(em, "decode_stop", decode_stop_cb, NULL);
 
-    // emotion_object_play_set(em, EINA_TRUE);
-
-// fprintf(stderr, "Time is %8.8f\n", ecore_time_get()); /* In seconds */
-
     ecore_main_loop_begin();
 
     ecore_evas_free(ee);
@@ -221,20 +217,19 @@ quitGUI(Ecore_Evas *ee EINA_UNUSED)
 static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
-    printf("position_update\n");
     playing = STOPPED;
 }
 
 static void
 position_update_cb(void *data, Evas_Object *obj, void *ev)
 {
-    printf("position_update\n");
+    //printf("position_update\n");
 }
 
 static void
 decode_stop_cb(void *data, Evas_Object *obj, void *ev)
 {
-    printf("decode_stop\n");
+    //printf("decode_stop\n");
 }
 
 /*
