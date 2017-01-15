@@ -49,22 +49,30 @@
  * If they hit Control-Q or poke the [X] icon in the window's titlebar,
  * the application should quit.
  *
+ * We will need two threads:
+ * - The calc thread(s) which perform FFTs and report when they're done.
+ * - The GUI thread which handles GUI events, starts/stops the audio player,
+ *   tells the calc thread what to calculate, receives results and
+ *   displays them.
+ * See https://docs.enlightenment.org/auto/emotion_main.html
+ * See https://www.enlightenment.org/program_guide/threading_pg
+ * Threads: ecore_thread_feedback_run()
+ *
  * The Emotion API notifies events by Evas Object Smart Callbacks in e17:
+ * "open_done" when the audio file has been opened successfully, then
+ * "playback_started" (!), "decode_stop" and "playback_finished" are
+ * all delivered at once when playback finishes.
  *
- * When the audio file has been opened successfully, event "open_done"
- * then, when playback finishes, "playback_started" (!), "decode_stop"
- * and "playback_finished" are all delivered at once.
- *
- * Of these, we need to be able to
- * - set the playback position (with emotion_object_position_set()?)
- * - start/stop/pause/resume playback
+ * We need to be able to
+ * - set the playback position (with emotion_object_position_set())
+ * - start/stop/pause/resume playback (with emotion_object_play_set())
  * - start scrolling the display when we start the audio playing
  * - react to playback_finished to stop scrolling
- * - react to position_update and emit it when they drag to pan in time
- *   (if that works... test it.)
+ * - scroll the display in real time, hoping it remains in sync with the music
+ * - reposition the player and the display when they pan (drag or arrow keys)
  * and for the spectrogram display we need
- * - to be able to get a buffer of sample values
- * - to know the sample rate and the length of the piece
+ * - to know the sample rate and length of the piece
+ * - to be able to get a buffer of its decoded sample values
  *
  * Interesting Emotion calls are:
  * void   emotion_object_play_set(obj, Bool); // Play/Pause/Continue
@@ -76,19 +84,19 @@
  * double emotion_object_play_length_get(obj);	  // in seconds
  *	// Returns 0 if called before "length_change" signal has been emitted.
  *
- * We need two threads:
- * - The calc thread(s) which perform FFTs and report when they're done.
- * - The GUI thread which handles GUI events, starts/stops the audio player,
- *   tells the calc thread what to calculate, receives results and
- *   displays them.
- * See https://docs.enlightenment.org/auto/emotion_main.html
- * See https://www.enlightenment.org/program_guide/threading_pg
- * Threads: ecore_thread_feedback_run()
+ * Enlightenment's "Convenience audio interface"
+ * https://docs.enlightenment.org/stable/efl/group__Ecore__Audio__Group.html
+ * has stuff to get piece length and sample rate but it doesn't compile
+ * on Debian e17 ("Can't find <Ecore_audio_in_pulse.h>" and, bypassed that,
+ * it fails to find libecore-audio.)
  *
  * What I really want is an audio system that I can pass two buffers'
  * worth of audio to and have it notify me when it has played the first
  * and is playing the second so that I can prepare the following buffer
  * of audio for it.
+ *
+ * Tizen has OpenAL as a lower-level audio system, which uses pulseaudio.
+ * It's interface is what I want.
  *
  * Status:
  *    Audio playback works with ALSA if the JACK server isn't running.
