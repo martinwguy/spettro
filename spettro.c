@@ -58,6 +58,16 @@
  * - react to position_update and emit it when they drag to pan in time
  *   (if that works... test it.)
  *
+ * Interesting Emotion calls are:
+ * void   emotion_object_play_set(obj, Bool); // Play/Pause/Continue
+ * Bool   emotion_object_play_get(obj);
+ * void   emotion_object_position_set(obj, double); // in seconds
+ * double emotion_object_position_get(obj);       // in seconds
+ * double emotion_object_buffer_size_get(obj);    // as a percentage
+ * Bool   emotion_object_seekable_get(obj);	  // Can you set position?
+ * double emotion_object_play_length_get(obj);	  // in seconds
+ *	// Returns 0 if called before "length_change" signal has been emitted.
+ *
  * We need two threads:
  * - The calc thread(s) which perform FFTs and report when they're done.
  * - The GUI thread which handles GUI events, starts/stops the audio player,
@@ -66,7 +76,7 @@
  * See https://docs.enlightenment.org/auto/emotion_main.html
  * See https://www.enlightenment.org/program_guide/threading_pg
  * Threads: ecore_thread_feedback_run()
-
+ *
  *	What I really want is an audio system that I can pass two buffers'
  *	worth of audio to and have it notify me when it has played the first
  * 	and is playing the second so that I can prepare the following buffer
@@ -77,24 +87,18 @@
  *    Audio playback works with ALSA if the JACK server isn't running.
  *    A black rectangular window is displayed and remains until you quit.
  *
- * TODO:
- *    - See if we can pause/resume the audio with [space] and see what events
- *	are emitted (decode_stop?).
- *
  * Bugs:
  *    -	It doesn't display anything yet.
  *    - Playback is sometimes interrupted by clicks of silence.
- *    - If the JACK server is running with or without pulseaudio too,
+ *    - If the JACK server is running with or without pulseaudio
  *	it doesn't play the audio and says:
 ERR<1826>:emotion-gstreamer[T:1110379328]
 modules/emotion/gstreamer/emotion_gstreamer.c:1679
 _eos_sync_fct() ERROR from element wavparse0: Internal data flow error.
-
 ERR<1826>:emotion-gstreamer[T:1110379328]
 modules/emotion/gstreamer/emotion_gstreamer.c:1680
 _eos_sync_fct() Debugging info: gstwavparse.c(2110): gst_wavparse_loop ():
 /GstPlayBin2:playbin/GstURIDecodeBin:uridecodebin0/GstDecodeBin2:decodebin20/GstWavParse:wavparse0: streaming task paused, reason not-linked (-1)
-
 ERR<1826>:emotion-gstreamer modules/emotion/gstreamer/emotion_gstreamer.c:1760
 _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
  *
@@ -179,6 +183,9 @@ main(int argc, char **argv)
 	fputs("Couldn't initialize audio subsystem.\n", stderr);
 	exit(1);
     }
+
+    /* Load the audio file */
+
     emotion_object_init(em, NULL);
     emotion_object_video_mute_set(em, EINA_TRUE);
     if (emotion_object_file_set(em, filename) != EINA_TRUE) {
@@ -187,12 +194,18 @@ main(int argc, char **argv)
     }
     evas_object_show(em);
 
+    /* Set GUI callback functions */
+
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
     evas_object_smart_callback_add(em, "playback_finished", playback_finished_cb, NULL);
     evas_object_smart_callback_add(em, "position_update", position_update_cb, NULL);
     evas_object_smart_callback_add(em, "decode_stop", decode_stop_cb, NULL);
 
+    /* Start main event loop */
+
     ecore_main_loop_begin();
+
+    /* Tidy up and quit */
 
     ecore_evas_free(ee);
     ecore_evas_shutdown();
@@ -200,11 +213,67 @@ main(int argc, char **argv)
     return 0;
 }
 
-/* Quit on Control-Q */
+/*
+ * Callback handler functions
+ */
+
+/* Quit on window close or Control-Q */
 static void
 quitGUI(Ecore_Evas *ee EINA_UNUSED)
 {
     ecore_main_loop_quit();
+}
+
+/*
+ * Keypress events (GUI control)
+ *
+ * Control-Q	Quit application
+ * Space	Play/Pause/Continue (also Media button "|> ||")
+ *
+ * Other interesting key names are:
+ *	"Left"		Arrow <
+ *	"Right"		Arrow >
+ *	"Up"		Arrow ^
+ *	"Down"		Arrow v
+ *	"Prior"		PgUp
+ *	"Next"		PgDn
+ *	"XF86AudioPrev"	Media button <<
+ *	"XF86AudioNext"	Media button >>
+ */
+
+static void
+keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
+{
+    Evas_Event_Key_Down *ev = einfo;
+    Evas_Object *em = data;	/* The Emotion object */
+    const Evas_Modifier *mods = evas_key_modifier_get(evas);
+
+    /* Control-Q: Quit */
+    if (strcmp(ev->key, "q") == 0
+	&& evas_key_modifier_is_set(mods, "Control")) {
+	ecore_main_loop_quit();
+    } else
+
+    /* Space: Play/Pause */
+    if (strcmp(ev->key, "space") == 0 ||
+	strcmp(ev->key, "XF86AudioPlay") == 0) {
+	switch (playing) {
+	case PLAYING:
+	    emotion_object_play_set(em, EINA_FALSE);
+	printf("Paused at %.2f seconds.\n", emotion_object_position_get(em));
+	    playing = PAUSED;
+	    break;
+	case STOPPED:
+	    emotion_object_position_set(em, 0.0);
+	case PAUSED:
+	printf("Resume at %.2f seconds.\n", emotion_object_position_get(em));
+	    emotion_object_play_set(em, EINA_TRUE);
+	    playing = PLAYING;
+	printf("Play\n");
+	    break;
+	}
+    } else
+	printf("[%s]\n", ev->key);
 }
 
 /*
@@ -217,13 +286,9 @@ quitGUI(Ecore_Evas *ee EINA_UNUSED)
 static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
+    Evas_Object *em = data;	/* The Emotion object */
+printf("Ended  at %.2f seconds.\n", emotion_object_position_get(em));
     playing = STOPPED;
-}
-
-static void
-position_update_cb(void *data, Evas_Object *obj, void *ev)
-{
-    //printf("position_update\n");
 }
 
 static void
@@ -232,47 +297,8 @@ decode_stop_cb(void *data, Evas_Object *obj, void *ev)
     //printf("decode_stop\n");
 }
 
-/*
- * Keypress events (GUI control)
- */
-
 static void
-keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
+position_update_cb(void *data, Evas_Object *obj, void *ev)
 {
-    Evas_Event_Key_Down *ev = einfo;
-    Evas_Object *em = data;	/* The Emotion object */
-    const Evas_Modifier *mods = evas_key_modifier_get(evas);
-
-    /* Control-Q: Quit */
-    if (strcmp(ev->key, "q") == 0)
-	&& evas_key_modifier_is_set(mods, "Control") {
-	ecore_main_loop_quit();
-    } else
-
-    /* Space: Play/Pause */
-    if (strcmp(ev->key, "space") == 0 ||
-	strcmp(ev->key, "XF86AudioPlay") == 0) {
-	switch (playing) {
-	case PLAYING:
-	    emotion_object_play_set(em, EINA_FALSE);
-	    playing = PAUSED;
-	    break;
-	case STOPPED:
-	    emotion_object_position_set(em, 0.0);
-	case PAUSED:
-	    emotion_object_play_set(em, EINA_TRUE);
-	    playing = PLAYING;
-	    break;
-	}
-    } else
-// XF86AudioPrev XF86AudioNext
-/*
-"Left"	Arrow
-"Right"	Arrow
-"Up"	Arrow
-"Down"	Arrow
-"Prior"	PgUp
-"Next"	PgDn
-*/
-        printf("[%s]\n", ev->key);
+    printf("position_update\n");
 }
