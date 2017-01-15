@@ -16,4 +16,4 @@ spettro: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(EMOTION_LIBS)
 
 clean:
-	rm -f $(ALL) *.o
+	rm -f $(ALL) *.o core
