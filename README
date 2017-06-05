@@ -29,9 +29,8 @@ the last one you clicked stays still and the time scale stretches.
 FFT sizes are powers of 2 by default; that way we can use some super-fast
 alternative FFT routines. If you have a keyboard, you should be able to
 set the FFT size (or FFT frequency) in a box. Alternatively, a slider that
-clicks to the next power of 2 if you click to right/left of slider or on the
-<| |> scrollbar endcaps. Alternatively, you can move the slider smoothly to
-choose an intermediate size (risking slower execution time, of course).
+clicks to the next power of 2 if you click its <| |> endcaps or you can
+move the slider smoothly to choose an intermediate size.
 
 How to allocate finite computing resources
 ------------------------------------------
@@ -87,6 +86,6 @@ How do you map from a pixmap with unevenly-spaced columns to a fixed-pitch
 display? Cosine mapping between pairs of points?
 
 Add to that the reverse mapping to apply the logarithmic frequency axis and
-the color mapping and hey presto.
+the color map and hey presto.
 
     Martin Guy <martinwguy@gmail.com>, December 2016 - January 2017.

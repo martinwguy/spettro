@@ -4,6 +4,7 @@ OBJS=emotion.o
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
+OTHER_LIBS=	-laudiofile
 
 CFLAGS=-g -Os $(EMOTION_CFLAGS)
 
@@ -13,7 +14,7 @@ install: all
 	install $(ALL) ~/bin/
 
 spettro: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(EMOTION_LIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(EMOTION_LIBS) $(OTHER_LIBS)
 
 clean:
 	rm -f $(ALL) *.o core

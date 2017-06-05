@@ -7,21 +7,18 @@
  *
  * The audio file(s) is given as a command-line argument (default: audio.wav).
  * A window should open showing a graphical representation of the audio file:
- * each frame of audio samples is shown as a vertical bar whose color is
- * taken from the "heat map" color map of sndfile-spectrogram or sox.
+ * each frame of audio samples is shown as a vertical bar whose colors are
+ * taken from the "heat maps" of sndfile-spectrogram or sox.
  *
  * The color at each point represents the energy in the sound at some
  * frequency (band) at a certain moment in time (or for a certain period).
  * The vertical axis, representing frequency, is logarithmic.
  *
- * First hack:
- *
- * Display a spectrogram of whole piece, resized to the size of the window.
- * Hit space to make it play/pause/continue or start again from the beginning.
- * When it is playing, a vertical green line moves across the spectrogram
- * to show the playback position.
- *
- * Second hack:
+ * Compute the whole spectrogram from the start and
+ * - display a column when computed if it falls within the displayed region
+ * - when scrolling the display, paint new columns if their spectrogram
+ *   has already been computed, otherwise leave them black.
+ * Does the event loop ave an idle task for the computation?
  *
  * At startup, the start of the piece is in the centre of the window with
  * the first frames of the audio file shown right of center.
@@ -79,7 +76,6 @@
  * Bool   emotion_object_play_get(obj);
  * void   emotion_object_position_set(obj, double); // in seconds
  * double emotion_object_position_get(obj);       // in seconds
- * double emotion_object_buffer_size_get(obj);    // as a percentage
  * Bool   emotion_object_seekable_get(obj);	  // Can you set position?
  * double emotion_object_play_length_get(obj);	  // in seconds
  *	// Returns 0 if called before "length_change" signal has been emitted.
@@ -120,7 +116,7 @@ _eos_sync_fct() Debugging info: gstwavparse.c(2110): gst_wavparse_loop ():
 ERR<1826>:emotion-gstreamer modules/emotion/gstreamer/emotion_gstreamer.c:1760
 _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
  *
- *	Martin Guy <martinwguy@gmail.com>, Dec 2016-Jany 2017.
+ *	Martin Guy <martinwguy@gmail.com>, Dec 2016-Jan 2017.
  */
 
 #define EFL_EO_API_SUPPORT
@@ -131,32 +127,42 @@ _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
 #include <Evas.h>
 #include <Emotion.h>
 
+#include <audiofile.h>	/* Needed only to find out sample rate! */
+
 #define Eo_Event void
 
-/* Prototypes for callback functions */
+/*
+ * Prototypes for callback functions
+ */
 
 static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
+static void open_done_cb(void *data, Evas_Object *obj, void *ev);
 static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
+static Eina_Bool timer_cb(void *data);
 
-/* State variables */
+/*
+ * State variables
+ */
 
 /* What the audio subsystem is doing. STOPPED means it has never played,
  * PLAYING means it should be playing audio, PAUSED means we've paused it
- * and it remembers the current playback position.
+ * and it remembers when.
  */
 static enum { STOPPED, PLAYING, PAUSED } playing = STOPPED;
 
-static double	audio_length;	/* Length of the audio in seconds */
-static int	sample_rate;	/* SR of the audio in Hertz */
+static double	audio_length = -1.0;	/* Length of the audio in seconds */
+static double	sample_rate;		/* SR of the audio in Hertz */
+static AFfilehandle af;			/* audio file opened by libaudiofile */
 
-/* start_time is ecore_time_get()'s value when the piece started playing.
+/*
+ * start_time is ecore_time_get()'s value when the piece started playing.
  * If we are paused, pause_time is the time at which the pause happened.
  * If they then restart the piece, we recalculate start_time to when it
- * would have had to start playing uninterruptedly to be at the current point.
+ * would have had to start to be playing now at the pause position.
  */
-static start_time;
-static pause_time;
+static double start_time;
+static double pause_time;
 
 int
 main(int argc, char **argv)
@@ -165,6 +171,7 @@ main(int argc, char **argv)
     Evas *canvas;
     Evas_Object *em;
     Evas_Object *image;
+    Ecore_Timer *timer;
     char *filename = (argc > 1) ? argv[1] : "audio.wav";
     int w, h;
 
@@ -209,17 +216,34 @@ main(int argc, char **argv)
     }
     evas_object_show(em);
 
+    /* Find out the sample rate of the file. emotion seems incapable of this
+     * and doesn't know the file length until open_done_cb() is called. */
+    {
+	AFframecount frame_count;	/* Number of sample frames */
+
+	af = afOpenFile(filename, "r", NULL);
+	if (af == NULL) {
+	    fprintf(stderr, "libaudiofile failed to open the file.\n");
+	    goto quit;
+	}
+	sample_rate = afGetRate(af, AF_DEFAULT_TRACK);
+	frame_count = afGetFrameCount(af, AF_DEFAULT_TRACK);
+	audio_length = (double) frame_count / sample_rate;
+    }
+
     /* Set GUI callback functions */
 
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
     evas_object_smart_callback_add(em, "playback_finished", playback_finished_cb, NULL);
+    evas_object_smart_callback_add(em, "open_done", open_done_cb, em);
+    ecore_timer_add(0.1, timer_cb, em);
 
     /* Start main event loop */
 
     ecore_main_loop_begin();
 
     /* Tidy up and quit */
-
+quit:
     ecore_evas_free(ee);
     ecore_evas_shutdown();
 
@@ -250,6 +274,8 @@ quitGUI(Ecore_Evas *ee EINA_UNUSED)
  *	"Down"		Arrow v
  *	"Prior"		PgUp
  *	"Next"		PgDn
+ *	"XF86AudioPlay"	Media button >
+ *	"XF86AudioStop"	Media button []
  *	"XF86AudioPrev"	Media button <<
  *	"XF86AudioNext"	Media button >>
  */
@@ -271,15 +297,27 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     if (strcmp(ev->key, "space") == 0 ||
 	strcmp(ev->key, "XF86AudioPlay") == 0) {
 	switch (playing) {
+	    double now;
+
 	case PLAYING:
 	    emotion_object_play_set(em, EINA_FALSE);
+	    pause_time = ecore_time_get();
 	    playing = PAUSED;
 	    break;
 
 	case STOPPED:
 	    emotion_object_position_set(em, 0.0);
+	    start_time = ecore_time_get();
+	    emotion_object_play_set(em, EINA_TRUE);
+	    playing = PLAYING;
+	    break;
+
 	case PAUSED:
 	    emotion_object_play_set(em, EINA_TRUE);
+	    now = ecore_time_get();
+	    /* When it would have had to start to be synchronised with the
+	     * restarted audio. */
+	    start_time += now - pause_time;
 	    playing = PLAYING;
 	    break;
 	}
@@ -298,9 +336,29 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
  */
 
 static void
+open_done_cb(void *data, Evas_Object *obj, void *ev)
+{
+    Evas_Object *em = data;	/* The Emotion object */
+    double new;
+
+    /* We could set audio_length here. Its report differs
+     * from the calculation above by 1e-16 */
+    new = emotion_object_play_length_get(em);
+}
+
+static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
     Evas_Object *em = data;	/* The Emotion object */
-printf("Ended  at %.2f seconds.\n", emotion_object_position_get(em));
     playing = STOPPED;
+}
+
+static Eina_Bool
+timer_cb(void *data)
+{
+    Evas_Object *em = data;	/* The Emotion object */
+    double new;
+
+    new = emotion_object_play_length_get(em);
+    return(ECORE_CALLBACK_RENEW);
 }
