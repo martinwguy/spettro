@@ -128,8 +128,7 @@ _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
 #include <math.h>	/* for lrint() */
 
 #include "calc.h"
-
-#define Eo_Event void
+#include "interpolate.h"
 
 /*
  * Prototypes for callback functions
@@ -158,10 +157,16 @@ static void calc_end(void *data, Ecore_Thread *thread);
  */
 
 /* GUI */
-int disp_width = 320;	/* Size of displayed drawing area in pixels */
-int disp_height = 200;
-double disp_time = 0.0; /* When in the audio file is at the crosshair? */
-int disp_offset = 160; /* Crosshair in which dispay column? */
+static int disp_width	= 320;	/* Size of displayed drawing area in pixels */
+static int disp_height	= 240;
+static double disp_time	= 0.0; /* When in the audio file is at the crosshair? */
+static int disp_offset	= 160;	/* Crosshair is in which display column? */
+/* Range of frequencies to display: 9 octaves from A to A */
+static double min_freq	= 27.5;
+static double max_freq	= 14080;
+static double min_db	= -100.0;	/* Values below this are black */
+static bool log_freq	= 1;	/* Use a logarithmic frequency axis? */
+static bool gray	= 0; /* Display is shades of gray? /*
 
 /* What the audio subsystem is doing. STOPPED means it has never played,
  * PLAYING means it should be playing audio, PAUSED means we've paused it
@@ -212,11 +217,11 @@ main(int argc, char **argv)
 
     image = evas_object_image_add(canvas);
     evas_object_image_filled_set(image, EINA_TRUE);
-
     /* Propagate resize events from the container to the image */
     ecore_evas_object_associate(ee, image, 0);
     evas_object_resize(image, disp_width, disp_height);
     evas_object_focus_set(image, EINA_TRUE); /* Without this no keydown events*/
+
     evas_object_show(image);
 
     /* Initialize the audio subsystem */
@@ -490,13 +495,37 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     calc_t   *calc   = (calc_t *)data;
     result_t *result = (result_t *)msg_data;
     int pos_x;	/* Where would this column appear in the displayed region? */
+    float linear_floor = pow(10.0, min_db / 20.0);
+
+    /* The Evas image that we need to write to */
 
     /* If the time in question is within the displayed region, paint it */
     /* For now, one pixel column per result */
     pos_x = lrint(disp_offset + (result->t - disp_time) * calc->ppsec);
 
     if (pos_x > 0 && pos_x < disp_width) {
-	fprintf(stderr, "display at column %d\n", pos_x);
+	int maglen = disp_height;
+	float *mag = calloc(maglen, sizeof(*mag));
+	float max;	/* maximum magnitude value in this column */
+	int i;
+
+	if (mag == NULL) {
+	    fprintf(stderr, "Out of memory in calc_notify.\n");
+	    exit(1);
+	}
+	max = interpolate(mag, maglen, result->spec, result->speclen,
+		    min_freq, max_freq, calc->sr, log_freq);
+
+	/* For now, we just normalize each column to its own maximum.
+	 * In reality we need to normalise to the overall maximum
+	 */
+        for (i=0; i<maglen; i++) {
+	    unsigned char color[3];
+
+	    colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
+
+	    /* TODO: Display on screen */
+	}
     }
 
     /* Cache the FFT result */

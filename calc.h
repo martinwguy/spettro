@@ -11,9 +11,7 @@
 
 #include "window.h"
 
-/* The parameters to calc(), saying what it should FFT.
- * Audio length and sample rate can be fished out of the audiofile.
- */
+/* The parameters to calc(), saying what it should FFT. */
 typedef struct calc {
     AFfilehandle	af;	/* The audio file opened with libaudiofile */
     double		length;	/* Length of piece in seconds */
