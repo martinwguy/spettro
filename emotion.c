@@ -123,9 +123,10 @@ _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
 #include <Evas.h>
 #include <Emotion.h>
 
+#include <stdlib.h>
 #include <audiofile.h>	/* Needed only to find out sample rate! */
-
 #include <math.h>	/* for lrint() */
+
 
 #include "calc.h"
 #include "interpolate.h"
@@ -166,7 +167,12 @@ static double min_freq	= 27.5;
 static double max_freq	= 14080;
 static double min_db	= -100.0;	/* Values below this are black */
 static bool log_freq	= 1;	/* Use a logarithmic frequency axis? */
-static bool gray	= 0; /* Display is shades of gray? /*
+static bool gray	= 0; /* Display is shades of gray? */
+
+/* Internal data used in notify callback to write on the image buffer */
+static Evas_Object *image;
+static unsigned char *imagedata = NULL;
+static int imagestride;
 
 /* What the audio subsystem is doing. STOPPED means it has never played,
  * PLAYING means it should be playing audio, PAUSED means we've paused it
@@ -193,7 +199,6 @@ main(int argc, char **argv)
     Ecore_Evas *ee;
     Evas *canvas;
     Evas_Object *em;
-    Evas_Object *image;
     Ecore_Thread *thread;
 
     double ppsec = 10.0;
@@ -215,8 +220,26 @@ main(int argc, char **argv)
 
     canvas = ecore_evas_get(ee);
 
+    /* Create the image and its memory buffer */
     image = evas_object_image_add(canvas);
+    evas_object_image_colorspace_set(image, EVAS_COLORSPACE_ARGB8888);
+    evas_object_image_size_set(image, disp_width, disp_height);
+    imagestride = evas_object_image_stride_get(image);
+    imagedata = malloc(imagestride * disp_height);
+    if (imagedata == NULL) {
+	fprintf(stderr, "Out of memory allocating image data\n");
+	exit(1);
+    }
+    { int i; unsigned long *p;
+	for (i=0, p=(unsigned long *)imagedata;
+	     i<imagestride * disp_height;
+	     i+=4, p++) {
+	    *p = 0xFF808080;	/* Alpha 255, RGB gray */
+	}
+    }
+    evas_object_image_data_set(image, imagedata);
     evas_object_image_filled_set(image, EINA_TRUE);
+    //evas_object_image_fill_set(image, 0, 0, disp_width, disp_height);
     /* Propagate resize events from the container to the image */
     ecore_evas_object_associate(ee, image, 0);
     evas_object_resize(image, disp_width, disp_height);
@@ -518,14 +541,30 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 
 	/* For now, we just normalize each column to its own maximum.
 	 * In reality we need to normalise to the overall maximum
+	 *
+	 * colormap() writes values in B,G,R order to match
+	 * the pixel format used in Evas's little-endian ARGB.
 	 */
-        for (i=0; i<maglen; i++) {
+        for (i=maglen-1; i>=0; i--) {
 	    unsigned char color[3];
+	    unsigned long *pixelrow;
 
+	    pixelrow = (unsigned long *)
+		&imagedata[imagestride * ((disp_height - 1) - i)];
+
+/* LITTLE_ENDIAN is provided by stdlib.h on Linux Glibc */
+#if LITTLE_ENDIAN
+	    colormap(20.0 * log10(mag[i] / max), min_db,
+		     (unsigned char *) (pixelrow + pos_x),
+		     gray);
+#else
 	    colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
 
-	    /* TODO: Display on screen */
+	    pixelrow[pos_x] = (color[0]) | (color[1] << 8) |
+			      (color[2] << 16) | 0xFF000000;
+#endif
 	}
+	evas_object_image_data_update_add(image, pos_x, 0, 1, disp_height);
     }
 
     /* Cache the FFT result */

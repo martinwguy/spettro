@@ -1,5 +1,6 @@
 ------------------------------------------------------------------------
-It doesn't display anything yet.
-------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
+------------------------------------------------------------------------
+Each column is normalized to its own max value but should normalize to the
+overall maximum amplitude.
 ------------------------------------------------------------------------
