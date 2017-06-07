@@ -117,6 +117,8 @@ calc_heavy(void *data, Ecore_Thread *thread)
 static void
 read_audio(AFfilehandle af, double *data, int start, int datalen)
 {
+    int frames;	/* Number of frames returned by afReadFrames() */
+
     memset(data, 0, datalen * sizeof (data [0]));
 
     if (start >= 0) {
@@ -127,4 +129,13 @@ read_audio(AFfilehandle af, double *data, int start, int datalen)
 	data += start;
 	datalen -= start;
     }
+    do {
+	frames = afReadFrames(af, AF_DEFAULT_TRACK, (void *)data, datalen);
+	if (frames > 0) {
+	    data += frames;
+	    datalen -= frames;
+	} else {
+	    /* We ask it to read past EOF so failure is normal */
+	}
+    } while (datalen > 0 && frames > 0);
 }
