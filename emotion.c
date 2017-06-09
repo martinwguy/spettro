@@ -200,14 +200,6 @@ static double	audio_length = 0.0;	/* Length of the audio in seconds */
 static double	sample_rate;		/* SR of the audio in Hertz */
 static AFfilehandle af;			/* audio file opened by libaudiofile */
 
-/* start_time is ecore_time_get()'s value when the piece started playing.
- * If we are paused, pause_time is the time at which the pause happened.
- * If they then restart the piece, we recalculate start_time to when it
- * would have had to start to be playing now at the pause position.
- */
-static double start_time;
-static double pause_time;
-
 int
 main(int argc, char **argv)
 {
@@ -457,14 +449,12 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 
 	case PLAYING:
 	    emotion_object_play_set(em, EINA_FALSE);
-	    pause_time = ecore_time_get();
 	    playing = PAUSED;
 	    ecore_timer_freeze(timer);
 	    break;
 
 	case STOPPED:
 	    emotion_object_position_set(em, 0.0);
-	    start_time = ecore_time_get();
 	    emotion_object_play_set(em, EINA_TRUE);
 	    timer = ecore_timer_add(step, timer_cb, NULL);
 	    disp_time = 0;
@@ -477,7 +467,6 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    now = ecore_time_get();
 	    /* When it would have had to start to be synchronised with the
 	     * restarted audio. */
-	    start_time += now - pause_time;
 	    playing = PLAYING;
 	    ecore_timer_thaw(timer);
 	    break;
