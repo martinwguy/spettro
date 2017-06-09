@@ -46,71 +46,11 @@
  * If they hit Control-Q or poke the [X] icon in the window's titlebar,
  * the application should quit.
  *
- * We will need two threads:
+ * We use need two threads:
  * - The calc thread(s) which perform FFTs and report when they're done.
- * - The GUI thread which handles GUI events, starts/stops the audio player,
+ * - The main thread which handles GUI events, starts/stops the audio player,
  *   tells the calc thread what to calculate, receives results and
  *   displays them.
- * See https://docs.enlightenment.org/auto/emotion_main.html
- * See https://www.enlightenment.org/program_guide/threading_pg
- *
- * The Emotion API notifies events by Evas Object Smart Callbacks in e17:
- * "open_done" when the audio file has been opened successfully, then
- * "playback_started" (!), "decode_stop" and "playback_finished" are
- * all delivered at once when playback finishes.
- *
- * We need to be able to
- * - set the playback position (with emotion_object_position_set())
- * - start/stop/pause/resume playback (with emotion_object_play_set())
- * - start scrolling the display when we start the audio playing
- * - react to playback_finished to stop scrolling
- * - scroll the display in real time, hoping it remains in sync with the music
- * - reposition the player and the display when they pan (drag or arrow keys)
- * and for the spectrogram display we need
- * - to know the sample rate and length of the piece
- * - to be able to get a buffer of its decoded sample values
- *
- * Interesting Emotion calls are:
- * void   emotion_object_play_set(obj, Bool); // Play/Pause/Continue
- * Bool   emotion_object_play_get(obj);
- * void   emotion_object_position_set(obj, double); // in seconds
- * double emotion_object_position_get(obj);       // in seconds
- * Bool   emotion_object_seekable_get(obj);	  // Can you set position?
- * double emotion_object_play_length_get(obj);	  // in seconds
- *	// Returns 0 if called before "length_change" signal has been emitted.
- *
- * Enlightenment's "Convenience audio interface"
- * https://docs.enlightenment.org/stable/efl/group__Ecore__Audio__Group.html
- * has stuff to get piece length and sample rate but it doesn't compile
- * on Debian e17 ("Can't find <Ecore_audio_in_pulse.h>" and, bypassed that,
- * it fails to find libecore-audio.)
- *
- * What I really want is an audio system that I can pass two buffers'
- * worth of audio to and have it notify me when it has played the first
- * and is playing the second so that I can prepare the following buffer
- * of audio for it.
- *
- * Tizen has OpenAL as a lower-level audio system, which uses pulseaudio.
- * It's interface is what I want.
- *
- * Status:
- *    Audio playback works with ALSA if the JACK server isn't running.
- *    A black rectangular window is displayed and remains until you quit.
- *
- * Bugs:
- *    -	It doesn't display anything yet.
- *    - Playback is sometimes interrupted by clicks of silence.
- *    - If the JACK server is running with or without pulseaudio
- *	it doesn't play the audio and says:
-ERR<1826>:emotion-gstreamer[T:1110379328]
-modules/emotion/gstreamer/emotion_gstreamer.c:1679
-_eos_sync_fct() ERROR from element wavparse0: Internal data flow error.
-ERR<1826>:emotion-gstreamer[T:1110379328]
-modules/emotion/gstreamer/emotion_gstreamer.c:1680
-_eos_sync_fct() Debugging info: gstwavparse.c(2110): gst_wavparse_loop ():
-/GstPlayBin2:playbin/GstURIDecodeBin:uridecodebin0/GstDecodeBin2:decodebin20/GstWavParse:wavparse0: streaming task paused, reason not-linked (-1)
-ERR<1826>:emotion-gstreamer modules/emotion/gstreamer/emotion_gstreamer.c:1760
-_emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
  *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016-Jan 2017.
  */
@@ -290,7 +230,13 @@ main(int argc, char **argv)
     /* Set GUI callbacks */
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
 
-    /* Set audio player callbacks */
+    /* Set audio player callbacks
+     *
+     * The Emotion API notifies events by Evas Object Smart Callbacks in e17:
+     * "open_done" when the audio file has been opened successfully, then
+     * "playback_started" (!), "decode_stop" and "playback_finished" are
+     * all delivered at once when playback finishes.
+     */
     evas_object_smart_callback_add(em, "open_done", open_done_cb, em);
     evas_object_smart_callback_add(em, "playback_finished",
 				   playback_finished_cb, NULL);
