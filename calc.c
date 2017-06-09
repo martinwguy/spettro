@@ -98,6 +98,9 @@ calc_heavy(void *data, Ecore_Thread *thread)
 	    return;
 	}
 
+	/* Mark the converted data as not having been calculated yet */
+	result->mag = NULL;
+
 	/* Send result to main loop */
 	ecore_thread_feedback(thread, result);
     }

@@ -576,23 +576,29 @@ repaint_column(int column)
 static void
 paint_column(int pos_x, result_t *result)
 {
-    int maglen = disp_height;
-    float *mag = calloc(maglen, sizeof(*mag));
+    float *mag;
+    int maglen;
     static float max = 0.0;	/* maximum magnitude value seen so far */
     int i;
 
-    if (mag == NULL) {
-	fprintf(stderr, "Out of memory in calc_notify.\n");
-	exit(1);
+    if (result->mag != NULL) {
+	mag = result->mag;
+	maglen = result->maglen;
+    } else {
+	maglen = disp_height;
+	mag = calloc(maglen, sizeof(*mag));
+	if (mag == NULL) {
+	   fprintf(stderr, "Out of memory in calc_notify.\n");
+	   exit(1);
+	}
+	max = interpolate(mag, maglen, result->spec, result->speclen,
+			 min_freq, max_freq, sample_rate, log_freq);
+	result->mag = mag;
+	result->maglen = maglen;
     }
-    max = interpolate(mag, maglen, result->spec, result->speclen,
-		      min_freq, max_freq, sample_rate, log_freq);
 
-    /* For now, we just normalize each column to its own maximum.
+    /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
-     *
-     * colormap() writes values in B,G,R order to match
-     * the pixel format used in Evas's little-endian ARGB.
      */
     for (i=maglen-1; i>=0; i--) {
 	unsigned long *pixelrow;
@@ -613,8 +619,6 @@ paint_column(int pos_x, result_t *result)
 			  (color[2] << 16) | 0xFF000000;
 #endif
     }
-
-    free(mag);
 }
 
 /* Paint the green line */

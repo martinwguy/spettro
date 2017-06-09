@@ -25,8 +25,10 @@ typedef struct calc {
 
 typedef struct result {
     double t;		/* An FFT centred on what time through the piece? */
-    int speclen;	/* The length of the magnitude data */
-    float *spec;	/* The spectrum from [0..speclen] */
+    int speclen;	/* The length of the linear spectrum */
+    float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
+    int maglen;		/* Length of magnitude data on log axis */
+    float *mag;		/* Magnitude data from [0..maglen-1] */
     /* Linked list of results, not in any particular order */
     struct result *next;
 } result_t;
