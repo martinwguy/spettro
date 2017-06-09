@@ -88,7 +88,6 @@ static void	green_line(void);
 /* GUI */
 static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
-static void open_done_cb(void *data, Evas_Object *obj, void *ev);
 
 /* Audio player */
 static Ecore_Timer *timer;
@@ -212,7 +211,7 @@ main(int argc, char **argv)
     evas_object_show(em);
 
     /* Find out the sample rate of the file. emotion seems incapable of this
-     * and doesn't know the file length until open_done_cb() is called.
+     * and doesn't know the file length until the "open_done" event arrives.
      */
     {
 	AFframecount frame_count;	/* Number of sample frames */
@@ -230,14 +229,7 @@ main(int argc, char **argv)
     /* Set GUI callbacks */
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
 
-    /* Set audio player callbacks
-     *
-     * The Emotion API notifies events by Evas Object Smart Callbacks in e17:
-     * "open_done" when the audio file has been opened successfully, then
-     * "playback_started" (!), "decode_stop" and "playback_finished" are
-     * all delivered at once when playback finishes.
-     */
-    evas_object_smart_callback_add(em, "open_done", open_done_cb, em);
+    /* Set audio player callbacks */
     evas_object_smart_callback_add(em, "playback_finished",
 				   playback_finished_cb, NULL);
 
@@ -430,16 +422,6 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
  * An alternative would be the "decode_stop" callback but "playback_finished"
  * is delivered first.
  */
-
-static void
-open_done_cb(void *data, Evas_Object *obj, void *ev)
-{
-    // Evas_Object *em = data;	/* The Emotion object */
-
-    /* We could set audio_length here. Its report differs
-     * from libaudiofile's calculation by 1e-16 */
-    // new = emotion_object_play_length_get(em);
-}
 
 static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
