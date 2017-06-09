@@ -466,7 +466,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    emotion_object_position_set(em, 0.0);
 	    start_time = ecore_time_get();
 	    emotion_object_play_set(em, EINA_TRUE);
-	    timer = ecore_timer_add(0.1, timer_cb, NULL);
+	    timer = ecore_timer_add(step, timer_cb, NULL);
 	    disp_time = 0;
 	    repaint_display();
 	    playing = PLAYING;
