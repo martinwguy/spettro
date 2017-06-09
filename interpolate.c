@@ -5,6 +5,8 @@
 
 #include <math.h>
 
+#include "spettro.h"
+
 /* Helper function:
  * Map the index for an output pixel in a column to an index into the
  * FFT result representing the same frequency.
@@ -67,10 +69,10 @@ interpolate(float* mag, int maglen, const float *spec, const int speclen,
 	double next = magindex_to_specindex(speclen, maglen, k+1,
 			min_freq, max_freq, sample_rate, log_freq);
 
-	/* Range check: can happen if --max-freq > sample_rate / 2 */
+	/* Range check: can happen if max_freq > sample_rate / 2 */
 	if (this > speclen) {
 	    mag [k] = 0.0;
-	    return;
+	    return max;
 	}
 
 	if (next > this + 1) {

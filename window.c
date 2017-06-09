@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "spettro.h"
 #include "window.h"
 
 #define ARRAY_LEN(x)		((int) (sizeof (x) / sizeof (x [0])))

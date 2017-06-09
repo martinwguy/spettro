@@ -16,13 +16,11 @@
 #include <math.h>
 #include <fftw3.h>
 
+#include "spettro.h"
 #include "calc.h"
 #include "spectrum.h"
 
 static void read_audio(AFfilehandle af, double *data, int start, int datalen);
-
-/* Slop factor for comparisons involving calculated floating point values. */
-#define DELTA (1.0e-6)
 
 /*
  * The compute-FFTs function

@@ -127,9 +127,10 @@ _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
 #include <audiofile.h>	/* Needed only to find out sample rate! */
 #include <math.h>	/* for lrint() */
 
-
+#include "spettro.h"
 #include "calc.h"
 #include "interpolate.h"
+#include "colormap.h"
 
 /*
  * Prototypes for callback functions
@@ -137,6 +138,12 @@ _emotion_gstreamer_video_pipeline_parse() Unable to get GST_CLOCK_TIME_NONE.
 
 /* Helper functions */
 static int fftfreq_to_speclen(double fftfreq, double sr);
+static void	 remember_result(result_t *result);
+static result_t *recall_result(double t);
+static void	repaint_display(void);
+static void	repaint_column(int column);
+static void	paint_column(int column, result_t *result);
+static void	green_line(void);
 
 /* GUI */
 static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
@@ -150,8 +157,6 @@ static Eina_Bool timer_cb(void *data);
 
 /* FFT calculating thread */
 static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
-static void calc_cancel(void *data, Ecore_Thread *thread);
-static void calc_end(void *data, Ecore_Thread *thread);
 
 /*
  * State variables
@@ -162,17 +167,27 @@ static int disp_width	= 320;	/* Size of displayed drawing area in pixels */
 static int disp_height	= 240;
 static double disp_time	= 0.0; /* When in the audio file is at the crosshair? */
 static int disp_offset	= 160;	/* Crosshair is in which display column? */
-/* Range of frequencies to display: 9 octaves from A to A */
-static double min_freq	= 27.5;
-static double max_freq	= 14080;
+
+static double min_freq	= 27.5;		/* Range of frequencies to display: */
+static double max_freq	= 14080;	/* 9 octaves from A to A */
 static double min_db	= -100.0;	/* Values below this are black */
-static bool log_freq	= 1;	/* Use a logarithmic frequency axis? */
-static bool gray	= 0; /* Display is shades of gray? */
+static double ppsec	= 10.0;		/* pixel columns per second */
+static double fftfreq	= 10.0;		/* 1/fft size in seconds */
+static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
+static bool gray	= FALSE;	/* Display in shades of gray? */
+
+/* The colour for uncalculated areas: Alpha 255, RGB gray */
+#define background 0xFF808080
 
 /* Internal data used in notify callback to write on the image buffer */
 static Evas_Object *image;
 static unsigned char *imagedata = NULL;
 static int imagestride;
+
+/* Internal data used to remember the FFT result for each pixel value.
+ * For now, it's just an array indexing them. When we can zoom this will
+ * need redoing. */
+static result_t *results = NULL; /* Linked list of result structures */
 
 /* What the audio subsystem is doing. STOPPED means it has never played,
  * PLAYING means it should be playing audio, PAUSED means we've paused it
@@ -180,12 +195,11 @@ static int imagestride;
  */
 static enum { STOPPED, PLAYING, PAUSED } playing = STOPPED;
 
-static double	audio_length = -1.0;	/* Length of the audio in seconds */
+static double	audio_length = 0.0;	/* Length of the audio in seconds */
 static double	sample_rate;		/* SR of the audio in Hertz */
 static AFfilehandle af;			/* audio file opened by libaudiofile */
 
-/*
- * start_time is ecore_time_get()'s value when the piece started playing.
+/* start_time is ecore_time_get()'s value when the piece started playing.
  * If we are paused, pause_time is the time at which the pause happened.
  * If they then restart the piece, we recalculate start_time to when it
  * would have had to start to be playing now at the pause position.
@@ -200,9 +214,6 @@ main(int argc, char **argv)
     Evas *canvas;
     Evas_Object *em;
     Ecore_Thread *thread;
-
-    double ppsec = 10.0;
-    double fftfreq = 10.0;
 
     calc_t calc;	/* What to calculate FFTs for */
     char *filename = (argc > 1) ? argv[1] : "audio.wav";
@@ -230,11 +241,13 @@ main(int argc, char **argv)
 	fprintf(stderr, "Out of memory allocating image data\n");
 	exit(1);
     }
-    { int i; unsigned long *p;
-	for (i=0, p=(unsigned long *)imagedata;
-	     i<imagestride * disp_height;
-	     i+=4, p++) {
-	    *p = 0xFF808080;	/* Alpha 255, RGB gray */
+    {	int i;
+	unsigned long *p = (unsigned long *)imagedata;
+
+	for (i=(imagestride * disp_height) / sizeof(unsigned long);
+	     i > 0;
+	     i--) {
+	    *p++ = background;
 	}
     }
     evas_object_image_data_set(image, imagedata);
@@ -300,7 +313,7 @@ main(int argc, char **argv)
     calc.window = KAISER;
 
     thread = ecore_thread_feedback_run(
-	calc_heavy, calc_notify, calc_end, calc_cancel, &calc, EINA_FALSE);
+	calc_heavy, calc_notify, NULL, NULL, &calc, EINA_FALSE);
     if (thread == NULL) {
 	fprintf(stderr, "Can't start FFT-calculating thread.\n");
 	goto quit;
@@ -452,7 +465,9 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    emotion_object_position_set(em, 0.0);
 	    start_time = ecore_time_get();
 	    emotion_object_play_set(em, EINA_TRUE);
-	    timer = ecore_timer_add(0.1, timer_cb, em);
+	    timer = ecore_timer_add(0.1, timer_cb, NULL);
+	    disp_time = 0;
+	    repaint_display();
 	    playing = PLAYING;
 	    break;
 
@@ -501,15 +516,122 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 static Eina_Bool
 timer_cb(void *data)
 {
-    // Evas_Object *em = data;	/* The Emotion object */
+    /* Replace the green line */
+    repaint_column(disp_offset);
+    /* Scroll the display left by one pixel */
+    memmove(imagedata, imagedata+4, imagestride * disp_height - 4);
+    /* Repaint the green line */
+    green_line();
+    /* Repaint the right edge */
+    repaint_column(disp_width - 1);
 
-    /* TODO: Scroll the display by one pixel */
+    evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
+
+    disp_time += 1 / ppsec;
 
     return(ECORE_CALLBACK_RENEW);
 }
 
+/* Repaint the whole display */
+static void
+repaint_display()
+{
+    int pos_x;
+
+    for (pos_x=disp_width - 1; pos_x >= 0; pos_x--) {
+	repaint_column(pos_x);
+    }
+    green_line();
+    evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
+}
+
+/* Repaint a column of the display from the result cache or paint it
+ * with the background colour if it hasn't been calculated yet.
+ */
+static void
+repaint_column(int column)
+{
+    /* What time does this column represent? */
+    double t = disp_time + (column - disp_offset) / ppsec;
+
+    /* The already-calculated result */
+    result_t *r;
+
+    /* If it's a valid time and the column has already been calculated,
+     * repaint it from the cache */
+    if (t >= 0.0 - DELTA && t < audio_length + DELTA &&
+        (r = recall_result(t)) != NULL) {
+	paint_column(column, r);
+    } else {
+	/* ...otherwise paint it with the background colour */
+	int y;
+	unsigned long *p = (unsigned long *)imagedata + column;
+	for (y=disp_height - 1; y >=0; y--) {
+            *p = background;
+	    p += imagestride / sizeof(unsigned long);
+	}
+    }
+}
+
+static void
+paint_column(int pos_x, result_t *result)
+{
+    int maglen = disp_height;
+    float *mag = calloc(maglen, sizeof(*mag));
+    float max;	/* maximum magnitude value in this column */
+    int i;
+
+    if (mag == NULL) {
+	fprintf(stderr, "Out of memory in calc_notify.\n");
+	exit(1);
+    }
+    max = interpolate(mag, maglen, result->spec, result->speclen,
+		      min_freq, max_freq, sample_rate, log_freq);
+
+    /* For now, we just normalize each column to its own maximum.
+     * Really we need to add max_db and have brightness/contast control.
+     *
+     * colormap() writes values in B,G,R order to match
+     * the pixel format used in Evas's little-endian ARGB.
+     */
+    for (i=maglen-1; i>=0; i--) {
+	unsigned long *pixelrow;
+	unsigned char color[3];
+
+	pixelrow = (unsigned long *)
+	    &imagedata[imagestride * ((disp_height - 1) - i)];
+
+#if LITTLE_ENDIAN	/* Provided by stdlib.h on Linux-glibc */
+	/* Let colormap write directly to the pixel buffer */
+	colormap(20.0 * log10(mag[i] / max), min_db,
+		 (unsigned char *) (pixelrow + pos_x),
+		 gray);
+#else
+	/* colormap writes to color[] and we write to the pixel buffer */
+	colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
+	pixelrow[pos_pos_x] = (color[0]) | (color[1] << 8) |
+			  (color[2] << 16) | 0xFF000000;
+#endif
+    }
+
+    free(mag);
+}
+
+/* Paint the green line */
+static void
+green_line()
+{
+    int y;
+    unsigned long *p = (unsigned long *)imagedata + disp_offset;
+
+    for (y=disp_height - 1; y >=0; y--) {
+	*p = 0xFF00FF00;
+	p += imagestride / sizeof(unsigned long);
+    }
+}
+
 /*
- *	FFT calculator callbacks
+ *	FFT calculator callback
  */
 
 static void
@@ -518,7 +640,6 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     calc_t   *calc   = (calc_t *)data;
     result_t *result = (result_t *)msg_data;
     int pos_x;	/* Where would this column appear in the displayed region? */
-    float linear_floor = pow(10.0, min_db / 20.0);
 
     /* The Evas image that we need to write to */
 
@@ -526,58 +647,34 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     /* For now, one pixel column per result */
     pos_x = lrint(disp_offset + (result->t - disp_time) * calc->ppsec);
 
-    if (pos_x > 0 && pos_x < disp_width) {
-	int maglen = disp_height;
-	float *mag = calloc(maglen, sizeof(*mag));
-	float max;	/* maximum magnitude value in this column */
-	int i;
-
-	if (mag == NULL) {
-	    fprintf(stderr, "Out of memory in calc_notify.\n");
-	    exit(1);
-	}
-	max = interpolate(mag, maglen, result->spec, result->speclen,
-		    min_freq, max_freq, calc->sr, log_freq);
-
-	/* For now, we just normalize each column to its own maximum.
-	 * In reality we need to normalise to the overall maximum
-	 *
-	 * colormap() writes values in B,G,R order to match
-	 * the pixel format used in Evas's little-endian ARGB.
-	 */
-        for (i=maglen-1; i>=0; i--) {
-	    unsigned char color[3];
-	    unsigned long *pixelrow;
-
-	    pixelrow = (unsigned long *)
-		&imagedata[imagestride * ((disp_height - 1) - i)];
-
-/* LITTLE_ENDIAN is provided by stdlib.h on Linux Glibc */
-#if LITTLE_ENDIAN
-	    colormap(20.0 * log10(mag[i] / max), min_db,
-		     (unsigned char *) (pixelrow + pos_x),
-		     gray);
-#else
-	    colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
-
-	    pixelrow[pos_x] = (color[0]) | (color[1] << 8) |
-			      (color[2] << 16) | 0xFF000000;
-#endif
-	}
+    if (pos_x >= 0 && pos_x < disp_width) {
+	paint_column(pos_x, result);
 	evas_object_image_data_update_add(image, pos_x, 0, 1, disp_height);
     }
 
-    /* Cache the FFT result */
+    remember_result(result);
 }
 
 static void
-calc_cancel(void *data, Ecore_Thread *thread)
+remember_result(result_t *result)
 {
-    fprintf(stderr, "calc_cancel()\n");
+    /* Add at head of list and sod the order and the prev pointers */
+    result->next = results;
+    results = result;
 }
 
-static void
-calc_end(void *data, Ecore_Thread *thread)
+/* Return the result for time t at the current speclen
+ * or NULL if it hasn't been calculated yet */
+static result_t *
+recall_result(double t)
 {
-    fprintf(stderr, "calc_end()\n");
+    result_t *p;
+
+    for (p=results; p != NULL; p=p->next) {
+	/* If the time is the same this is the result we want */
+	if (p->t > t - DELTA && p->t < t + DELTA) {
+	    return(p);
+	}
+    }
+    return(NULL);
 }

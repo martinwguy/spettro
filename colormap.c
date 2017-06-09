@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <math.h>
 
+#include "spettro.h"
+
 /*
  * Map a magnitude value to a color.
  *

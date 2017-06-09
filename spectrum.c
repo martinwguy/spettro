@@ -2,14 +2,12 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <math.h>
 #include <limits.h>
-
 #include <fftw3.h>
-
 #include <sndfile.h>
 
+#include "spettro.h"
 #include "window.h"
 #include "spectrum.h"
 
@@ -29,7 +27,6 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
      * time_domain has an extra element to be able to interpolate between
      * samples for better time precision, hoping to eliminate artifacts.
      */
-fprintf(stderr, "create_spectrum(): speclen = %d\n", speclen);
     spec->time_domain	= calloc(2 * speclen + 1, sizeof(*spec->time_domain));
     spec->window	= calloc(2 * speclen,	  sizeof(*spec->window));
     spec->freq_domain	= calloc(2 * speclen,	  sizeof(*spec->freq_domain));

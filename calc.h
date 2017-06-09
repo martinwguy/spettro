@@ -28,6 +28,8 @@ typedef struct result {
     int speclen;	/* The length of the magnitude data */
     float *spec;	/* The spectrum from [0..speclen] */
     float max;		/* Maximum value in spec[] */
+    /* Linked list of results, not in any particular order */
+    struct result *next;
 } result_t;
 
 extern void calc_heavy(void *data, Ecore_Thread *thread);

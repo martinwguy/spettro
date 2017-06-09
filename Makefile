@@ -6,7 +6,7 @@ EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
 OTHER_LIBS=	-laudiofile -lfftw3 -lm
 
-CFLAGS=-g $(EMOTION_CFLAGS) $(OPTFLAG) -Dbool=int
+CFLAGS=-g $(EMOTION_CFLAGS) $(OPTFLAG)
 
 all: $(ALL)
 
