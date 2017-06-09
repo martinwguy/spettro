@@ -81,10 +81,9 @@ destroy_spectrum(spectrum *spec)
     free(spec);
 }
 
-double
+void
 calc_magnitude_spectrum(spectrum *spec)
 {
-    double max;
     int k, freqlen;
     int speclen = spec->speclen;
 
@@ -103,22 +102,18 @@ calc_magnitude_spectrum(spectrum *spec)
      */
 
     /* Add the DC offset at 0Hz */
-    spec->mag_spec[0] = max = fabs(spec->freq_domain[0]);
+    spec->mag_spec[0] = fabs(spec->freq_domain[0]);
 
     for (k = 1; k < speclen; k++) {
 	double re = spec->freq_domain[k];
 	double im = spec->freq_domain[freqlen - k];
 	double mag = sqrt(re * re + im * im);
 	spec->mag_spec[k] = mag;
-	if (mag > max) max = mag;
     }
 
     /* Lastly add the point for the Nyquist frequency */
     {
 	double mag = fabs(spec->freq_domain[speclen]);
 	spec->mag_spec[speclen] = mag;
-	if (mag > max) max = mag;
     }
-
-    return max;
 }

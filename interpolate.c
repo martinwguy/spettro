@@ -39,14 +39,14 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
  * Writes mag[0..maglen-1], representing min_freq to max_freq.
  * If log_freq, te output frequency axis if logarithmic instead of linear.
  *
- * Returns the maximum value in the result.
+ * Returns the maximum value seen so far.
  */
 float
 interpolate(float* mag, int maglen, const float *spec, const int speclen,
 	    const double min_freq, const double max_freq,
 	    const double sample_rate, const bool log_freq)
 {
-    float max = 0.0;
+    static float max = 0.0;	/* Highest value seen so far */
     int k;
 
     /* Map each output coordinate to where it depends on in the input array.

@@ -85,7 +85,7 @@ calc_heavy(void *data, Ecore_Thread *thread)
 	/* The data is centred on the requested time. */
 	read_audio(af, spec->time_domain, lrint(t * sr) - fftsize/2, fftsize);
 
-	result->max = calc_magnitude_spectrum(spec);
+	calc_magnitude_spectrum(spec);
 
 	/* We need to pass back a buffer obtained from malloc() that will
 	 * subsequently be freed or kept. Rather than memcpy() it, we hijack

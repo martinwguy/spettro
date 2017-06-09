@@ -578,7 +578,7 @@ paint_column(int pos_x, result_t *result)
 {
     int maglen = disp_height;
     float *mag = calloc(maglen, sizeof(*mag));
-    float max;	/* maximum magnitude value in this column */
+    static float max = 0.0;	/* maximum magnitude value seen so far */
     int i;
 
     if (mag == NULL) {
