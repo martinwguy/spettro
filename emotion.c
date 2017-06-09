@@ -397,7 +397,7 @@ is_good_speclen (int n)
 static bool
 is_2357(int n)
 {
-    /* Eliminate all factors os 2, 3, 5 and 7 and see if 1 remains */
+    /* Eliminate all factors of 2, 3, 5 and 7 and see if 1 remains */
     while (n % 2 == 0) n /= 2;
     while (n % 3 == 0) n /= 3;
     while (n % 5 == 0) n /= 5;

@@ -93,6 +93,7 @@ colormap(double value, double min_db, unsigned char *color, bool gray_scale)
 
     rem = fmod(value, 1.0);
 
+    /* The map is R,G,B while color[] is [B,G,R] (to match ARGB on a little-endian machine) */
     color[2] = lrintf((1.0 - rem) * map[indx][0] + rem * map[indx + 1][0]);
     color[1] = lrintf((1.0 - rem) * map[indx][1] + rem * map[indx + 1][1]);
     color[0] = lrintf((1.0 - rem) * map[indx][2] + rem * map[indx + 1][2]);
