@@ -13,8 +13,6 @@ typedef struct
 	/* double data []; */
 } spectrum;
 
-spectrum *create_spectrum(int speclen, enum WINDOW_FUNCTION window_function);
-
-void destroy_spectrum(spectrum *spec);
-
-void calc_magnitude_spectrum(spectrum *spec);
+extern spectrum *create_spectrum(int speclen, enum WINDOW_FUNCTION window_function);
+extern void destroy_spectrum(spectrum *spec);
+extern void calc_magnitude_spectrum(spectrum *spec);
