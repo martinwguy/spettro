@@ -445,12 +445,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     if (strcmp(ev->key, "space") == 0 ||
 	strcmp(ev->key, "XF86AudioPlay") == 0) {
 	switch (playing) {
-	    double now;
-
 	case PLAYING:
 	    emotion_object_play_set(em, EINA_FALSE);
-	    playing = PAUSED;
 	    ecore_timer_freeze(timer);
+	    playing = PAUSED;
 	    break;
 
 	case STOPPED:
@@ -463,12 +461,14 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    break;
 
 	case PAUSED:
+	    /* Resynchronise the playing position to the display, as emotion
+	     * seems to stop playing immediatelyi, but throwing away the
+	     * unplayed part of the currently-playing audio buffer.
+	     */
+	    emotion_object_position_set(em, disp_time);
 	    emotion_object_play_set(em, EINA_TRUE);
-	    now = ecore_time_get();
-	    /* When it would have had to start to be synchronised with the
-	     * restarted audio. */
-	    playing = PLAYING;
 	    ecore_timer_thaw(timer);
+	    playing = PLAYING;
 	    break;
 	}
     }
