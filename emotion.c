@@ -171,7 +171,8 @@ static int disp_offset	= 160;	/* Crosshair is in which display column? */
 static double min_freq	= 27.5;		/* Range of frequencies to display: */
 static double max_freq	= 14080;	/* 9 octaves from A to A */
 static double min_db	= -100.0;	/* Values below this are black */
-static double ppsec	= 10.0;		/* pixel columns per second */
+static double ppsec	= 25.0;		/* pixel columns per second */
+static double step	= 1/25.0;	/* time step per pixel column */
 static double fftfreq	= 10.0;		/* 1/fft size in seconds */
 static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */
@@ -527,7 +528,7 @@ timer_cb(void *data)
 
     evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
 
-    disp_time += 1 / ppsec;
+    disp_time += step;
 
     return(ECORE_CALLBACK_RENEW);
 }
@@ -552,7 +553,7 @@ static void
 repaint_column(int column)
 {
     /* What time does this column represent? */
-    double t = disp_time + (column - disp_offset) / ppsec;
+    double t = disp_time + (column - disp_offset) * step;
 
     /* The already-calculated result */
     result_t *r;
