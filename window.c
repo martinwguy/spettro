@@ -141,5 +141,7 @@ factorial(int val)
     for (k = have_entry + 1; k <= val ; k++)
 	    memory[k] = k * memory[k - 1];
 
+    have_entry = val;
+
     return memory[val];
 }
