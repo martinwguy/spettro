@@ -42,7 +42,7 @@
  * time onward, moving a different bar line stretches the beats between the
  * pointer and the last beat line that they dropped.
  *
- * The user can resize the window, in which case the displayed image is zoomed..
+ * The user can resize the window, in which case the displayed image is zoomed.
  * If they hit Control-Q or poke the [X] icon in the window's titlebar,
  * the application should quit.
  *
@@ -173,8 +173,9 @@ main(int argc, char **argv)
 	fprintf(stderr, "Out of memory allocating image data\n");
 	exit(1);
     }
-    {	int i;
-	unsigned long *p = (unsigned long *)imagedata;
+    /* Clear the image buffer to the background colour */
+    {	register int i;
+	register unsigned long *p = (unsigned long *)imagedata;
 
 	for (i=(imagestride * disp_height) / sizeof(unsigned long);
 	     i > 0;
@@ -183,10 +184,21 @@ main(int argc, char **argv)
 	}
     }
     evas_object_image_data_set(image, imagedata);
-    evas_object_image_filled_set(image, EINA_TRUE);
-    //evas_object_image_fill_set(image, 0, 0, disp_width, disp_height);
-    /* Propagate resize events from the container to the image */
+#if 0
+    /* This version gives an image of fixed size in a window of the same size.
+     * Resizing the window leaves the image the same size aligned top left.
+     */
+    evas_object_image_fill_set(image, 0, 0, disp_width, disp_height);
+    ecore_evas_resize(ee, disp_width, disp_height);
+//ecore_evas_callback_resize_set(ee, _canvas_resize_cb);
+#else
+    /* This version gives an image that is automatically scaled with the window.
+     * If you resize the window, the underlying image remains of the same size
+     * and it is zoomed by the window system, giving a thick green line etc.
+     */
+    evas_object_image_filled_set(image, TRUE);
     ecore_evas_object_associate(ee, image, 0);
+#endif
     evas_object_resize(image, disp_width, disp_height);
     evas_object_focus_set(image, EINA_TRUE); /* Without this no keydown events*/
 
@@ -200,7 +212,7 @@ main(int argc, char **argv)
 	exit(1);
     }
 
-    /* Load the audio file */
+    /* Load the audio file for playing */
 
     emotion_object_init(em, NULL);
     emotion_object_video_mute_set(em, EINA_TRUE);
@@ -210,17 +222,16 @@ main(int argc, char **argv)
     }
     evas_object_show(em);
 
-    /* Find out the sample rate of the file. emotion seems incapable of this
-     * and doesn't know the file length until the "open_done" event arrives.
+    /* Open the audio file to find out sampling rate, length and to be able
+     * to fetch pixel data to be converted into spectra.
+     * Emotion seems not to let us get the raw sample data or sampling rate
+     * and doesn't know the file length until the "open_done" event arrives
+     * so we use libaudiofile for that.
      */
-    {
-	int frame_count;	/* Number of sample frames */
-
-	if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
-	sample_rate = audio_file_sampling_rate(audio_file);
-	frame_count = audio_file_length_in_frames(audio_file);
-	audio_length = (double) frame_count / sample_rate;
-    }
+    if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
+    sample_rate = audio_file_sampling_rate(audio_file);
+    audio_length =
+	(double) audio_file_length_in_frames(audio_file) / sample_rate;
 
     /* Set GUI callbacks */
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
@@ -576,7 +587,7 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 static void
 remember_result(result_t *result)
 {
-    /* Add at head of list and sod the order and the prev pointers */
+    /* Add at head of list for speed and simplicity */
     result->next = results;
     results = result;
 }
@@ -589,7 +600,7 @@ recall_result(double t)
     result_t *p;
 
     for (p=results; p != NULL; p=p->next) {
-	/* If the time is the same this is the result we want */
+	/* If the time is the same, this is the result we want */
 	if (p->t > t - DELTA && p->t < t + DELTA) {
 	    return(p);
 	}
