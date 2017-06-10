@@ -46,7 +46,7 @@ interpolate(float* mag, int maglen, const float *spec, const int speclen,
 	    const double min_freq, const double max_freq,
 	    const double sample_rate, const bool log_freq)
 {
-    static float max = 0.0;	/* Highest value seen so far */
+    static float max = 1.0;	/* Highest value seen so far */
     int k;
 
     /* Map each output coordinate to where it depends on in the input array.
