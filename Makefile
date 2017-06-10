@@ -1,6 +1,6 @@
 ALL=spettro
 
-OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o
+OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o audiofile.o
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
@@ -19,8 +19,9 @@ spettro: $(OBJS)
 clean:
 	rm -f $(ALL) *.o core
 
-emotion.o:	calc.h window.h interpolate.h colormap.h
-calc.o:		calc.h window.h spectrum.h
+emotion.o:	calc.h window.h interpolate.h colormap.h audiofile.h
+calc.o:		calc.h window.h spectrum.h audiofile.h
+audiofile.o:	audiofile.h
 spectrum.o:	spectrum.h
 interpolate.o:	interpolate.h
 colormap.o:	colormap.h

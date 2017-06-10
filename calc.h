@@ -6,14 +6,13 @@
  * The result data is the linear FFT magnitudes from 0Hz to Nyquist frequency.
  */
 
-#include <audiofile.h>
 #include <Ecore.h>
 
 #include "window.h"
 
 /* The parameters to calc(), saying what it should FFT. */
 typedef struct calc {
-    AFfilehandle	af;	/* The audio file opened with libaudiofile */
+    audio_file_t *	audio_file; /* Our audio file handle */
     double		length;	/* Length of piece in seconds */
     double		sr;	/* Sample rate of the piece */
     double		from;	/* From how far into the piece... */

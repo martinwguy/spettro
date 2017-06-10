@@ -17,10 +17,9 @@
 #include <fftw3.h>
 
 #include "spettro.h"
+#include "audiofile.h"
 #include "calc.h"
 #include "spectrum.h"
-
-static void read_audio(AFfilehandle af, double *data, int start, int datalen);
 
 /*
  * The compute-FFTs function
@@ -34,7 +33,6 @@ calc_heavy(void *data, Ecore_Thread *thread)
     calc_t *calc  = (calc_t *)data;
 
     /* The real function parameters */
-    AFfilehandle af = calc->af;		/* the audiofile */
     double sr	  = calc->sr;		/* audio sample rate */
     double length = calc->length;	/* length of whole piece in seconds */
     double from   = calc->from;		/* centre of first FFT bucket */
@@ -49,17 +47,6 @@ calc_heavy(void *data, Ecore_Thread *thread)
     double  t;				/* Time from start of piece */
 
     if (to == 0.0) to = length;
-
-    /* We want the data as mono floats. I don't know if libaudiofile averages
-     * stereo to make mono or drops all but the first channel, so we may have
-     * to read all the channels and average them.
-     */
-    if (afSetVirtualSampleFormat(af, AF_DEFAULT_TRACK, AF_SAMPFMT_DOUBLE,
-						       sizeof(double)) ||
-        afSetVirtualChannels(af, AF_DEFAULT_TRACK, 1)) {
-	    fprintf(stderr, "Can't set virtual sample format.\n");
-	    return;
-    }
 
     fftsize = speclen * 2;	/* Not sure that an odd fftsize would work */
 
@@ -83,7 +70,8 @@ calc_heavy(void *data, Ecore_Thread *thread)
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	read_audio(af, spec->time_domain, lrint(t * sr) - fftsize/2, fftsize);
+	read_mono_audio_double(calc->audio_file, spec->time_domain,
+			       lrint(t * sr) - fftsize/2, fftsize);
 
 	calc_magnitude_spectrum(spec);
 
@@ -105,38 +93,4 @@ calc_heavy(void *data, Ecore_Thread *thread)
 	ecore_thread_feedback(thread, result);
     }
     destroy_spectrum(spec);
-}
-
-/*
- * Helper function from sndfile-tools/src/spectrogram.c reads mono audio data
- * from the sound file.
- *
- * "start" is the index of the first sample frame to read and may be negative.
- * "datalen" is the number of sample frames to read.
- * "data" is were to put them.
- */
-static void
-read_audio(AFfilehandle af, double *data, int start, int datalen)
-{
-    int frames;	/* Number of frames returned by afReadFrames() */
-
-    memset(data, 0, datalen * sizeof (data [0]));
-
-    if (start >= 0) {
-	afSeekFrame(af, AF_DEFAULT_TRACK, start);
-    } else {
-	start = -start;
-	afSeekFrame(af, AF_DEFAULT_TRACK, 0);
-	data += start;
-	datalen -= start;
-    }
-    do {
-	frames = afReadFrames(af, AF_DEFAULT_TRACK, (void *)data, datalen);
-	if (frames > 0) {
-	    data += frames;
-	    datalen -= frames;
-	} else {
-	    /* We ask it to read past EOF so failure is normal */
-	}
-    } while (datalen > 0 && frames > 0);
 }

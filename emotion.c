@@ -64,10 +64,10 @@
 #include <Emotion.h>
 
 #include <stdlib.h>
-#include <audiofile.h>	/* Needed only to find out sample rate! */
 #include <math.h>	/* for lrint() */
 
 #include "spettro.h"
+#include "audiofile.h"
 #include "calc.h"
 #include "interpolate.h"
 #include "colormap.h"
@@ -135,9 +135,9 @@ static result_t *results = NULL; /* Linked list of result structures */
  */
 static enum { STOPPED, PLAYING, PAUSED } playing = STOPPED;
 
+static audio_file_t *audio_file;
 static double	audio_length = 0.0;	/* Length of the audio in seconds */
 static double	sample_rate;		/* SR of the audio in Hertz */
-static AFfilehandle af;			/* audio file opened by libaudiofile */
 
 int
 main(int argc, char **argv)
@@ -214,15 +214,11 @@ main(int argc, char **argv)
      * and doesn't know the file length until the "open_done" event arrives.
      */
     {
-	AFframecount frame_count;	/* Number of sample frames */
+	int frame_count;	/* Number of sample frames */
 
-	af = afOpenFile(filename, "r", NULL);
-	if (af == NULL) {
-	    fprintf(stderr, "libaudiofile failed to open the file.\n");
-	    goto quit;
-	}
-	sample_rate = afGetRate(af, AF_DEFAULT_TRACK);
-	frame_count = afGetFrameCount(af, AF_DEFAULT_TRACK);
+	if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
+	sample_rate = audio_file_sampling_rate(audio_file);
+	frame_count = audio_file_length_in_frames(audio_file);
 	audio_length = (double) frame_count / sample_rate;
     }
 
@@ -234,7 +230,7 @@ main(int argc, char **argv)
 				   playback_finished_cb, NULL);
 
     /* Start FFT calculator */
-    calc.af	= af;
+    calc.audio_file = audio_file;
     calc.length = audio_length;
     calc.sr	= sample_rate;
     calc.from	= 0.0;
