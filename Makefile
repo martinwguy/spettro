@@ -25,3 +25,8 @@ audiofile.o:	audiofile.h
 spectrum.o:	spectrum.h
 interpolate.o:	interpolate.h
 colormap.o:	colormap.h
+
+# Just checks for compiler warnings at present
+check:
+	@make OPTFLAG="-Os -Wall" clean all | grep -v ^cc
+	@make OPTFLAG="-Os -Wall" CC=clang clean all | grep -v ^clang
