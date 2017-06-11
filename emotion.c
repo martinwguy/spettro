@@ -55,9 +55,6 @@
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016-Jan 2017.
  */
 
-#define EFL_EO_API_SUPPORT
-#define EFL_BETA_API_SUPPORT
-
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <Evas.h>
