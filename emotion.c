@@ -99,17 +99,17 @@ static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
  */
 
 /* GUI */
-static int disp_width	= 320;	/* Size of displayed drawing area in pixels */
-static int disp_height	= 240;
+static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
+static int disp_height	= 480;
 static double disp_time	= 0.0; /* When in the audio file is at the crosshair? */
-static int disp_offset	= 160;	/* Crosshair is in which display column? */
+static int disp_offset	= 320;	/* Crosshair is in which display column? */
 
 static double min_freq	= 27.5;		/* Range of frequencies to display: */
 static double max_freq	= 14080;	/* 9 octaves from A to A */
 static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
 static double step	= 1/25.0;	/* time step per pixel column */
-static double fftfreq	= 10.0;		/* 1/fft size in seconds */
+static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */
 
