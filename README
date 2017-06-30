@@ -1,9 +1,11 @@
 spettro - Show a moving log-frequency axis spectrograms of music while it plays
 
 Following on from the work at http://wikidelia.net/wiki/Spectrograms
-here is [or will be!] a program to show a window onto the spectrogram
-with a vertical green one-pixel-wide line in the half way across the window
-indicating the current playing position.
+here is a program to show a window onto the spectrogram with a
+vertical green one-pixel-wide line half way across the window to
+show the current playing position.
+
+There is an screencast of it at https://youtu.be/fGRsLX0Ec1E
 
 User interface
 --------------
