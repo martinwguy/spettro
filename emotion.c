@@ -180,6 +180,7 @@ main(int argc, char **argv)
 	    *p++ = background;
 	}
     }
+    green_line();
     evas_object_image_data_set(image, imagedata);
 #if 0
     /* This version gives an image of fixed size in a window of the same size.
@@ -573,7 +574,9 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     /* For now, one pixel column per result */
     pos_x = lrint(disp_offset + (result->t - disp_time) * calc->ppsec);
 
-    if (pos_x >= 0 && pos_x < disp_width) {
+    /* Update the display if the column if is in the displayed region
+     * and isn't at the green line's position. */
+    if (pos_x >= 0 && pos_x < disp_width && pos_x != disp_offset) {
 	paint_column(pos_x, result);
 	evas_object_image_data_update_add(image, pos_x, 0, 1, disp_height);
     }
