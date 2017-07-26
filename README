@@ -34,42 +34,6 @@ set the FFT size (or FFT frequency) in a box. Alternatively, a slider that
 clicks to the next power of 2 if you click its <| |> endcaps or you can
 move the slider smoothly to choose an intermediate size.
 
-How to allocate finite computing resources
-------------------------------------------
-If we're playing the song, the first priority in screen update should be the
-leading edge of the display: what will play in a few seconds' time. That way,
-whatever happens, if they keep playing we will eventually get the display right.
-We launch an FFT for the audio that is entering the display at the right edge.
-When the result of the calculaction returns, we paint a column wide as many
-pixels as the time that the calculation took and launch a new FFT for the
-current audio at the leading edge of the scrolling display.
-
-If they stop, and the screen is not fully repainted, it repaints the missing
-parts of the display from right to left at the same speed as when playing
-in realtime. This way, when they stop and it continues updating the screen,
-the size of the pixel columns will be even across the display.
-This suggests keeping a list of the time periods that are not updated on the
-display and working oldest-to-newest in that.
-When they stop, we don't continue calculating to fill in detail, alla JPEG,
-for love of the battery.
-
-When we start up, mark the whole of the displayed region as "to be updated"
-so it starts updating from right to left at playing speed, stopping when it
-gets to the centre of the screen. They hit play and it calculates the right
-edge of the window, scrolling the display and writing a column of several
-pixels.
-
-If they pan, again it updates from right to left at playing speed.
-
-An alternative strategy could be, while playing, to scroll the display
-one pixel at a time, following the music, and replicating the rightmost
-edge column of pixels then, when calculation results arrive, repaint the
-rightmost column with the new results (or the rightmost columns if we want
-to allow for the time taken to compute the FFT. If we know how long each
-FFT will take, we could calculate the FFT of a fraction of a second in advance,
-to mitigate the visiblity of the right-edge-repainting.
-
-
 Program structure
 -----------------
 - A calc thread doing one FFT each receiving requests for an FFT around a
@@ -83,11 +47,11 @@ calc->GUI: "Here's the result for audio around time T"
 
 When calc delivers a result, it then starts calculating at a new point in the
 outstanding region, if any, according to the real time elapsed since T.
-This means the results won't necessarily be evenly-spaced in time.
+If their CPU is slow, the results won't necessarily be evenly-spaced in time.
 How do you map from a pixmap with unevenly-spaced columns to a fixed-pitch
 display? Cosine mapping between pairs of points?
 
 Add to that the reverse mapping to apply the logarithmic frequency axis and
 the color map and hey presto.
 
-    Martin Guy <martinwguy@gmail.com>, December 2016 - January 2017.
+    Martin Guy <martinwguy@gmail.com>, December 2016 - June 2017.
