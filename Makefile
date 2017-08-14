@@ -1,6 +1,7 @@
 ALL=spettro
 
-OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o audiofile.o
+OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o audiofile.o \
+     speclen.o
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
