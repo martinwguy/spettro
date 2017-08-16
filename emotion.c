@@ -52,7 +52,7 @@
  *   tells the calc thread what to calculate, receives results and
  *   displays them.
  *
- *	Martin Guy <martinwguy@gmail.com>, Dec 2016-Jan 2017.
+ *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
  */
 
 #include <Ecore.h>
@@ -71,7 +71,7 @@
 #include "speclen.h"
 
 /*
- * Prototypes for callback functions
+ * Function prototypes
  */
 
 /* Helper functions */
@@ -82,7 +82,7 @@ static void	repaint_column(int column);
 static void	paint_column(int column, result_t *result);
 static void	green_line(void);
 
-/* GUI */
+/* GUI callbacks */
 static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
 
@@ -92,6 +92,7 @@ static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
 static Eina_Bool timer_cb(void *data);
 
 /* FFT calculating thread */
+static void calc_heavy(void *data, Ecore_Thread *thread);
 static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
 
 /*
@@ -486,8 +487,24 @@ green_line()
 }
 
 /*
- *	FFT calculator callback
+ *	Emotion interface to FFT calculator
  */
+
+static Ecore_Thread *calc_thread;
+
+static void
+calc_result(result_t *result)
+{
+    /* Send result to main loop */
+    ecore_thread_feedback(calc_thread, result);
+}
+
+static void
+calc_heavy(void *data, Ecore_Thread *thread)
+{
+    calc_thread = thread;
+    calc((calc_t *)data, calc_result);
+}
 
 static void
 calc_notify(void *data, Ecore_Thread *thread, void *msg_data)

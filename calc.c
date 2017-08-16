@@ -28,10 +28,8 @@
  + malloc, as is the "spec" field of it.
  */
 void
-calc_heavy(void *data, Ecore_Thread *thread)
+calc(calc_t *calc, void (*result_cb)(result_t *))
 {
-    calc_t *calc  = (calc_t *)data;
-
     /* The real function parameters */
     double sr	  = calc->sr;		/* audio sample rate */
     double length = calc->length;	/* length of whole piece in seconds */
@@ -90,7 +88,7 @@ calc_heavy(void *data, Ecore_Thread *thread)
 	result->mag = NULL;
 
 	/* Send result to main loop */
-	ecore_thread_feedback(thread, result);
+	(*result_cb)(result);
     }
     destroy_spectrum(spec);
 }

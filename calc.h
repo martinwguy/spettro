@@ -6,8 +6,6 @@
  * The result data is the linear FFT magnitudes from 0Hz to Nyquist frequency.
  */
 
-#include <Ecore.h>
-
 #include "window.h"
 
 /* The parameters to calc(), saying what it should FFT. */
@@ -32,4 +30,4 @@ typedef struct result {
     struct result *next;
 } result_t;
 
-extern void calc_heavy(void *data, Ecore_Thread *thread);
+extern void calc(calc_t *data, void (*result_cb)(result_t *));
