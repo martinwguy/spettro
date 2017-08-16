@@ -18,7 +18,7 @@
  * - display a column when computed if it falls within the displayed region
  * - when scrolling the display, paint new columns if their spectrogram
  *   has already been computed, otherwise leave them black.
- * Does the event loop ave an idle task for the computation?
+ * Does the event loop have an idle task for the computation?
  *
  * At startup, the start of the piece is in the centre of the window with
  * the first frames of the audio file shown right of center.
@@ -102,14 +102,14 @@ static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
 /* GUI */
 static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
 static int disp_height	= 480;
-static double disp_time	= 0.0; /* When in the audio file is at the crosshair? */
+static double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
 static int disp_offset	= 320;	/* Crosshair is in which display column? */
 
 static double min_freq	= 27.5;		/* Range of frequencies to display: */
-static double max_freq	= 14080;	/* 9 octaves from A to A */
+static double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
-static double step	= 1/25.0;	/* time step per pixel column */
+static double step	= 1/25.0;	/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */

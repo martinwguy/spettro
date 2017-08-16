@@ -1,4 +1,8 @@
-/* From sndfile-tools/src/spectrum.c */
+/*
+ * spectrum.c: Calculate FFT spectra of audio data.
+ *
+ * Adapted from sndfile-tools/src/spectrum.c
+ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -50,18 +54,18 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
     }
 
     switch (spec->wfunc) {
-    case RECTANGULAR :
+    case RECTANGULAR:
 	break;
-    case KAISER :
+    case KAISER:
 	calc_kaiser_window(spec->window, 2 * speclen, 20.0);
 	break;
     case NUTTALL:
 	calc_nuttall_window(spec->window, 2 * speclen);
 	break;
-    case HANN :
+    case HANN:
 	calc_hann_window(spec->window, 2 * speclen);
 	break;
-    default :
+    default:
 	fprintf(stderr, "Internal error: Unknown window_function.\n");
 	destroy_spectrum(spec);
 	spec = NULL;
