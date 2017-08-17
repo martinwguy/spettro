@@ -86,7 +86,12 @@ static void	green_line(void);
 static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
 
-/* Audio player */
+/* Audio playing functions */
+static void pause_playing(Evas_Object *em);
+static void play_from_start(Evas_Object *em);
+static void continue_playing(Evas_Object *em);
+
+/* Audio callback functions */
 static Ecore_Timer *timer;
 static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
 static Eina_Bool timer_cb(void *data);
@@ -137,6 +142,9 @@ static audio_file_t *audio_file;
 static double	audio_length = 0.0;	/* Length of the audio in seconds */
 static double	sample_rate;		/* SR of the audio in Hertz */
 
+/* option flags */
+static bool autoplay = FALSE;	/* -p  Start playing the file right away */
+
 int
 main(int argc, char **argv)
 {
@@ -146,7 +154,21 @@ main(int argc, char **argv)
     Ecore_Thread *thread;
 
     calc_t calc;	/* What to calculate FFTs for */
-    char *filename = (argc > 1) ? argv[1] : "audio.wav";
+    char *filename;
+
+    while (argc > 1 && argv[1][0] == '-') {
+	switch (argv[1][1]) {
+	case 'p':
+	    autoplay = TRUE;
+	    break;
+	default:
+	    fputs("Usage: spettro [-p] [file.wav]\n-p:\tPlay the file right away\n.", stderr);
+	    exit(1);
+	}
+	argc--, argv++;
+    }
+
+    filename = (argc > 1) ? argv[1] : "audio.wav";
 
     /* Initialize the graphics subsystem */
 
@@ -256,6 +278,8 @@ main(int argc, char **argv)
 	goto quit;
     }
 
+    if (autoplay) play_from_start(em);
+
     /* Start main event loop */
     ecore_main_loop_begin();
 
@@ -318,32 +342,52 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	strcmp(ev->key, "XF86AudioPlay") == 0) {
 	switch (playing) {
 	case PLAYING:
-	    emotion_object_play_set(em, EINA_FALSE);
-	    ecore_timer_freeze(timer);
-	    playing = PAUSED;
+	    pause_playing(em);
 	    break;
 
 	case STOPPED:
-	    emotion_object_position_set(em, 0.0);
-	    emotion_object_play_set(em, EINA_TRUE);
-	    timer = ecore_timer_add(step, timer_cb, NULL);
-	    disp_time = 0;
-	    repaint_display();
-	    playing = PLAYING;
+	    play_from_start(em);
 	    break;
 
 	case PAUSED:
-	    /* Resynchronise the playing position to the display, as emotion
-	     * seems to stop playing immediatelyi, but throwing away the
-	     * unplayed part of the currently-playing audio buffer.
-	     */
-	    emotion_object_position_set(em, disp_time);
-	    emotion_object_play_set(em, EINA_TRUE);
-	    ecore_timer_thaw(timer);
-	    playing = PLAYING;
+	    continue_playing(em);
 	    break;
 	}
     }
+}
+
+/* Audio-playing functions */
+
+static void
+pause_playing(Evas_Object *em)
+{
+    emotion_object_play_set(em, EINA_FALSE);
+    ecore_timer_freeze(timer);
+    playing = PAUSED;
+}
+
+static void
+play_from_start(Evas_Object *em)
+{
+    emotion_object_position_set(em, 0.0);
+    emotion_object_play_set(em, EINA_TRUE);
+    timer = ecore_timer_add(step, timer_cb, NULL);
+    disp_time = 0;
+    repaint_display();
+    playing = PLAYING;
+}
+
+static void
+continue_playing(Evas_Object *em)
+{
+    /* Resynchronise the playing position to the display, as emotion
+     * seems to stop playing immediatelyi, but throwing away the
+     * unplayed part of the currently-playing audio buffer.
+     */
+    emotion_object_position_set(em, disp_time);
+    emotion_object_play_set(em, EINA_TRUE);
+    ecore_timer_thaw(timer);
+    playing = PLAYING;
 }
 
 /*
