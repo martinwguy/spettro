@@ -144,6 +144,7 @@ static double	sample_rate;		/* SR of the audio in Hertz */
 
 /* option flags */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
+static bool exit_when_played = FALSE;	/* -e  Exit when the fils has played */
 
 int
 main(int argc, char **argv)
@@ -161,8 +162,14 @@ main(int argc, char **argv)
 	case 'p':
 	    autoplay = TRUE;
 	    break;
+	case 'e':
+	    exit_when_played = TRUE;
+	    break;
 	default:
-	    fputs("Usage: spettro [-p] [file.wav]\n-p:\tPlay the file right away\n.", stderr);
+	    fputs("Usage: spettro [-p] [-e] [file.wav]\n\
+-p:\tPlay the file right away\n\
+-e:\tExit when the audio file has played\n\
+Default file is audio.wav\n", stderr);
 	    exit(1);
 	}
 	argc--, argv++;
@@ -407,6 +414,8 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
     // Evas_Object *em = data;	/* The Emotion object */
     playing = STOPPED;
     ecore_timer_del(timer);
+    if (exit_when_played)
+	ecore_main_loop_quit();
 }
 
 static Eina_Bool
