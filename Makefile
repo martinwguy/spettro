@@ -1,11 +1,19 @@
+#
+# Makefile for spettro, a scrolling log-frequency axis spectrogram visualizer
+#
+
 ALL=spettro
 
-OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o audiofile.o \
-     speclen.o
+OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o speclen.o \
+     sndfile.o
+# or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
+# See also AUDIOFILELIB= below
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
-OTHER_LIBS=	-laudiofile -lfftw3 -lm
+AUDIOFILELIB=	-lsndfile
+#AUDIOFILELIB=	-laudiofile
+OTHER_LIBS=	$(AUDIOFILELIB) -lfftw3 -lm
 
 OPTFLAG=-O
 CFLAGS=-g $(EMOTION_CFLAGS) $(OPTFLAG)
