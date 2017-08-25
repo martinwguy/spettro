@@ -56,11 +56,11 @@ audio_file_sampling_rate(audio_file_t *audio_file)
 }
 
 /*
- * Read sample frames, retruning them as mono doubles.
+ * Read sample frames, returning them as mono doubles.
  *
  * "start" is the index of the first sample frame to read and may be negative.
  * "nframes" is the number of sample frames to read.
- * "data" is were to put the monoised data.
+ * "data" is where to put the monoised data.
  */
 int
 read_mono_audio_double(audio_file_t *audio_file, double *data,
