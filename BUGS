@@ -24,3 +24,9 @@ Add OCTAVES & PPOCT determining graphic height like -w -h?
 ------------------------------------------------------------------------
 Add pentagram staves and piano lines (preferably with subpixel postioning)
 ------------------------------------------------------------------------
+Add GUI keystrokes to:
+- zoom in and out, which affects both the frequency and time scales equally
+- pan up and down the frequency axis
+- pan left & right, which also skips forward or back in the audio if playing
+... or is it better to zoom the frequency and time axes separately?
+------------------------------------------------------------------------
