@@ -439,8 +439,13 @@ play_from_start(Evas_Object *em)
 {
     emotion_object_position_set(em, 0.0);
     emotion_object_play_set(em, EINA_TRUE);
-    timer = ecore_timer_add(step, timer_cb, NULL);
-    disp_time = 0;
+    /* Ask to update the display so as to scroll one column at a time.
+     * If the CPU is too slow, and the display update takes longer than
+     * one timer period, the timer will be called less frequently and we
+     * start scrolling by more than one pixel per callback to stay in sync.
+     */
+    timer = ecore_timer_add(step, timer_cb, (void *)em);
+    disp_time = 0.0;
     repaint_display();
     playing = PLAYING;
 }
@@ -449,7 +454,7 @@ static void
 continue_playing(Evas_Object *em)
 {
     /* Resynchronise the playing position to the display, as emotion
-     * seems to stop playing immediatelyi, but throwing away the
+     * seems to stop playing immediately but seems to throw away the
      * unplayed part of the currently-playing audio buffer.
      */
     emotion_object_position_set(em, disp_time);
@@ -482,18 +487,39 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 static Eina_Bool
 timer_cb(void *data)
 {
-    /* Replace the green line */
+    Evas_Object *em = (Evas_Object *)data;
+    double playing_time = emotion_object_position_get(em);
+    int scroll_by = ((playing_time - disp_time) * ppsec) + 0.5;
+
+    if (scroll_by == 0)
+	return(ECORE_CALLBACK_RENEW);
+
+    /* Replace the green line with spectrogram data */
     repaint_column(disp_offset);
-    /* Scroll the display left by one pixel */
-    memmove(imagedata, imagedata+4, imagestride * disp_height - 4);
+
+    /* Scroll the display left by the correct number of pixels.
+     *
+     * 4*scroll_by is the number of bytes by which we scroll.
+     * The right-hand columns will fill with garbage or the start of the
+     * next pixel row, and the final "- (4*scroll_by)" is not to scroll in
+     * garbag from past the end of the frame buffer.
+     */
+    memmove(imagedata, imagedata + (4 * scroll_by),
+		       imagestride * disp_height - (4 * scroll_by));
+
+    disp_time += scroll_by * step;
+
+    /* Repaint the right edge */
+    {   int x;
+	for (x = disp_width - scroll_by; x < disp_width; x++) {
+	    repaint_column(x);
+	}
+    }
+
     /* Repaint the green line */
     green_line();
-    /* Repaint the right edge */
-    repaint_column(disp_width - 1);
 
     evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
-
-    disp_time += step;
 
     return(ECORE_CALLBACK_RENEW);
 }

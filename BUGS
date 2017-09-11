@@ -13,8 +13,6 @@ Use multiple CPUs by multiple calc threads. Give each a bigger step
 and assume that they run at the same speed? -> interesting effects on
 startup if CPU availability is not even. Compensate?
 ------------------------------------------------------------------------
-Wot if CPU is inadequate to keep up with real time scrolling?
-------------------------------------------------------------------------
 Fullscreen -f would be nice.
 ------------------------------------------------------------------------
 Add OCTAVES & PPOCT determining graphic height like -w -h?
