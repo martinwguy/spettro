@@ -7,6 +7,8 @@ Add sox's heatmap
 ------------------------------------------------------------------------
 Add optional frequency scale in hertz a sx and as notes a dx
 ------------------------------------------------------------------------
+Add optional time axis at top and/or bottom
+------------------------------------------------------------------------
 Add optional piano lines and staves
 ------------------------------------------------------------------------
 Use multiple CPUs by multiple calc threads. Give each a bigger step
@@ -17,7 +19,8 @@ Fullscreen -f would be nice.
 ------------------------------------------------------------------------
 Add OCTAVES & PPOCT determining graphic height like -w -h?
 ------------------------------------------------------------------------
-Add pentagram staves and piano lines (preferably with subpixel postioning)
+Add pentagram staves and piano lines
+preferably with subpixel positioning / antialiasing.
 ------------------------------------------------------------------------
 Add GUI keystrokes to:
 - zoom in and out, which affects both the frequency and time scales equally
