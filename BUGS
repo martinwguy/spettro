@@ -15,8 +15,7 @@ startup if CPU availability is not even. Compensate?
 ------------------------------------------------------------------------
 Wot if CPU is inadequate to keep up with real time scrolling?
 ------------------------------------------------------------------------
-Startup larger if you want. -w -h ? Fullscreen -f would be nice.
-Affects column height in pixels hence FFT size and speed.
+Fullscreen -f would be nice.
 ------------------------------------------------------------------------
 Add PPSEC and FFTFREQ
 ------------------------------------------------------------------------

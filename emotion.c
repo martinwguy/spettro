@@ -129,8 +129,8 @@ static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
 static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
 static int disp_height	= 480;
 static double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
-static int disp_offset	= 320;	/* Crosshair is in which display column? */
-
+static int disp_offset	= 320;	/* Crosshair is in which display column?
+				 * == disp_width / 2 */
 static double min_freq	= 27.5;		/* Range of frequencies to display: */
 static double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
@@ -178,25 +178,43 @@ main(int argc, char **argv)
     calc_t calc;	/* What to calculate FFTs for */
     char *filename;
 
-    while (argc > 1 && argv[1][0] == '-') {
-	switch (argv[1][1]) {
+    argv++; argc--;	/* Skip program name */
+    while (argc > 0 && argv[0][0] == '-') {
+	switch (argv[0][1]) {
 	case 'p':
 	    autoplay = TRUE;
 	    break;
 	case 'e':
 	    exit_when_played = TRUE;
 	    break;
+	case 'w':
+	    argv++; argc--;	 /* Advance to numeric argument */
+	    if ((disp_width = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-w what?\n");
+		exit(1);
+	    }
+	    disp_offset = disp_width / 2;
+	    break;
+	case 'h':
+	    argv++; argc--;	 /* Advance to numeric argument */
+	    if ((disp_height = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-h what?\n");
+		exit(1);
+	    }
+	    break;
 	default:
-	    fputs("Usage: spettro [-p] [-e] [file.wav]\n\
+usage:	    fputs("Usage: spettro [-p] [-e] [-h n] [-w n] [file.wav]\n\
 -p:\tPlay the file right away\n\
 -e:\tExit when the audio file has played\n\
-Default file is audio.wav\n", stderr);
+-h n:\tSet spectrogram display height to n pixels\n\
+-w n:\tSet spectrogram display width to n pixels\n\
+The default file is audio.wav\n", stderr);
 	    exit(1);
 	}
-	argc--, argv++;
+	argv++; argc--;
     }
 
-    filename = (argc > 1) ? argv[1] : "audio.wav";
+    filename = (argc > 0) ? (*argv) : "audio.wav";
 
     /* Initialize the graphics subsystem */
 
