@@ -125,17 +125,16 @@ static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
  * State variables
  */
 
-/* GUI */
+/* GUI state variables */
 static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
 static int disp_height	= 480;
 static double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
-static int disp_offset	= 320;	/* Crosshair is in which display column?
-				 * == disp_width / 2 */
+static int disp_offset;  	/* Crosshair is in which display column? */
 static double min_freq	= 27.5;		/* Range of frequencies to display: */
 static double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
-static double step	= 1/25.0;	/* time step per column = 1/ppsec */
+static double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */
@@ -193,7 +192,6 @@ main(int argc, char **argv)
 		fprintf(stderr, "-w what?\n");
 		exit(1);
 	    }
-	    disp_offset = disp_width / 2;
 	    break;
 	case 'h':
 	    argv++; argc--;	 /* Advance to numeric argument */
@@ -214,7 +212,32 @@ The default file is audio.wav\n", stderr);
 	argv++; argc--;
     }
 
-    filename = (argc > 0) ? (*argv) : "audio.wav";
+    /*
+     * Pick up parameter values from the environment
+     *
+     * Variables set with garbage values are silently ignored.
+     *
+     * These are mostly for testing or for programming a performance.
+     * Interactive users will probably use the zoom function to get more ppsec
+     */
+    {
+	char *cp; double n;	/* Temporaries */
+
+	if ((cp = getenv("PPSEC")) != NULL && (n = atof(cp)) > 0.0)
+	    ppsec = n;
+
+	if ((cp = getenv("FFTFREQ")) != NULL && (n = atof(cp)) > 0.0)
+	    fftfreq = n;
+    }
+
+    /* Set variables with derived values */
+
+    disp_offset = disp_width / 2;
+    step = 1 / ppsec;
+
+    /* Set default values for unset parameters */
+
+    filename = (argc > 0) ? argv[0] : "audio.wav";
 
     /* Initialize the graphics subsystem */
 

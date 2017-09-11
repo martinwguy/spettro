@@ -17,8 +17,6 @@ Wot if CPU is inadequate to keep up with real time scrolling?
 ------------------------------------------------------------------------
 Fullscreen -f would be nice.
 ------------------------------------------------------------------------
-Add PPSEC and FFTFREQ
-------------------------------------------------------------------------
 Add OCTAVES & PPOCT determining graphic height like -w -h?
 ------------------------------------------------------------------------
 Add pentagram staves and piano lines (preferably with subpixel postioning)
