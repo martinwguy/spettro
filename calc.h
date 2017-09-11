@@ -18,6 +18,7 @@ typedef struct calc {
     double		ppsec;	/* Pixel columns per second (or n_results?) */ 
     int			speclen; /* Size of spectrum == fftsize/2 */
     enum WINDOW_FUNCTION window;
+    void		*data;	/* Extra stuff not needed by the calc thread */
 } calc_t;
 
 typedef struct result {

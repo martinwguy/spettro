@@ -298,6 +298,7 @@ Default file is audio.wav\n", stderr);
     calc.ppsec  = ppsec;
     calc.speclen= fftfreq_to_speclen(fftfreq, sample_rate);
     calc.window = KAISER;
+    calc.data   = em;	/* Needed to start player when calc is ready */
 
     thread = ecore_thread_feedback_run(
 	calc_heavy, calc_notify, NULL, NULL, &calc, EINA_FALSE);
@@ -305,8 +306,6 @@ Default file is audio.wav\n", stderr);
 	fprintf(stderr, "Can't start FFT-calculating thread.\n");
 	goto quit;
     }
-
-    if (autoplay) play_from_start(em);
 
     /* Start main event loop */
     ecore_main_loop_begin();
@@ -514,7 +513,7 @@ paint_column(int pos_x, result_t *result)
 	maglen = disp_height;
 	mag = calloc(maglen, sizeof(*mag));
 	if (mag == NULL) {
-	   fprintf(stderr, "Out of memory in calc_notify.\n");
+	   fprintf(stderr, "Out of memory in paint_column.\n");
 	   exit(1);
 	}
 	max = interpolate(mag, maglen, result->spec, result->speclen,
@@ -584,6 +583,7 @@ static void
 calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 {
     calc_t   *calc   = (calc_t *)data;
+    Evas_Object *em = (Evas_Object *) calc->data;;
     result_t *result = (result_t *)msg_data;
     int pos_x;	/* Where would this column appear in the displayed region? */
 
@@ -601,6 +601,13 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     }
 
     remember_result(result);
+
+    /* To avoid an embarassing pause at the start of the graphics, we wait
+     * until the FFT delivers its first result before starting the player.
+     */
+    if (autoplay && playing == STOPPED) {
+	play_from_start(em);
+    }
 }
 
 static void
