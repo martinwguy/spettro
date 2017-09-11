@@ -7,6 +7,9 @@ show the current playing position.
 
 There is an screencast of it at https://youtu.be/fGRsLX0Ec1E
 
+What follows is a very early design document, aimed at the tablet/phone
+version. What is implemented already is described at the top of emotion.c
+
 User interface
 --------------
 For the touch-screen version, we want pinch to zoom, drag to pan with

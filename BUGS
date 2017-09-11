@@ -1,3 +1,26 @@
 ------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
+Make multiple command-line arguments work
+------------------------------------------------------------------------
+Add sox's heatmap
+------------------------------------------------------------------------
+Add optional frequency scale in hertz a sx and as notes a dx
+------------------------------------------------------------------------
+Add optional piano lines and staves
+------------------------------------------------------------------------
+Use multiple CPUs by multiple calc threads. Give each a bigger step
+and assume that they run at the same speed? -> interesting effects on
+startup if CPU availability is not even. Compensate?
+------------------------------------------------------------------------
+Wot if CPU is inadequate to keep up with real time scrolling?
+------------------------------------------------------------------------
+Startup larger if you want. -w -h ? Fullscreen -f would be nice.
+Affects column height in pixels hence FFT size and speed.
+------------------------------------------------------------------------
+Add PPSEC and FFTFREQ
+------------------------------------------------------------------------
+Add OCTAVES & PPOCT determining graphic height like -w -h?
+------------------------------------------------------------------------
+Add pentagram staves and piano lines (preferably with subpixel postioning)
+------------------------------------------------------------------------

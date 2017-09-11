@@ -1,56 +1,77 @@
 /*
  * Program: spettro
- *	Play an audio file displaying a scrolling log spectrogram.
+ *	Play an audio file displaying a scrolling log-frequency spectrogram.
  *
  * File: emotion.c
  *	Main routine implemented using Enlightenment's "emotion" interface.
  *
- * The audio file(s) is given as a command-line argument (default: audio.wav).
- * A window should open showing a graphical representation of the audio file:
+ * The audio file is given as a command-line argument
+ * A window opens showing a graphical representation of the audio file:
  * each frame of audio samples is shown as a vertical bar whose colors are
- * taken from the "heat maps" of sndfile-spectrogram or sox.
+ * taken from the "heat maps" of sndfile-spectrogram.
  *
  * The color at each point represents the energy in the sound at some
- * frequency (band) at a certain moment in time (or for a certain period).
- * The vertical axis, representing frequency, is logarithmic.
+ * frequency (band) at a certain moment in time (over a short period).
+ * The vertical axis, representing frequency, is logarithmic, giving an
+ * equal number of pixel rows in each octave of the scale, by default
+ * 9 octaves from 27.5 Hz (very bottom A) to 14080 Hz (the toppest A
+ * we can hear.)
  *
- * Compute the whole spectrogram from the start and
- * - display a column when computed if it falls within the displayed region
- * - when scrolling the display, paint new columns if their spectrogram
- *   has already been computed, otherwise leave them black.
- * Does the event loop have an idle task for the computation?
+ * It computes the spectrogram from start to finish, displaying the results
+ * pixel column immediately if it falls within the displayed region and
+ * displaying already-computed columns in blank regions that are revealed
+ * as the view moves in the audio file.
  *
- * At startup, the start of the piece is in the centre of the window with
- * the first frames of the audio file shown right of center.
+ * At startup, the start of the piece is at the centre of the window and
+ * the first seconds of the audio file are shown on the right half. The 
+ * left half is all grey.
+ *
  * If you hit play (press 'space'), the audio starts playing and the
  * display scrolls left so that the current playing position remains at the
- * centre of the window. Another space should pause the playback, another
- * make it continue from where it left off. At end of piece, the playback stops;
- * pressing space makes it start again from the beginning.
+ * centre of the window. Another space pauses the playback, another makes it
+ * continue from where it was. When it reaches the end of piece, the playback
+ * stops; pressing space makes it start again from the beginning.
+ * Variants:
+ * -p	Play the audio file and start scrolling the display immediately
+ * -e	Exit when the audio file has finished playing
  *
- * On the left of the spectrogram is a frequency scale in hertz; on the right
- * are the musical notes A0 C1 an so on. Optionally, the ten conventional stave
- * lines are overlayed in white, as can be black and white one-pixel-high lines
- * (preferably with subpixel postioning) at the frequencies of the piano notes.
+ * If you resize the window the displayed image is zoomed.
  *
- * Along the bottom there may be a time scale in seconds.
+ * If you hit Control-Q or poke the [X] icon in the window's titlebar, it quits.
  *
- * A time grid may also be displayed, anchored to the sound, not the screen,
- * showing beats in 50% green and first beats of bar in 100% green or 50% red.
+ * it runs in two threads:
+ * - the main thread handles GUI events, starts/stops the audio player,
+ *   tells the calc thread what to calculate, receives results, and
+ *   displays them.
+ * - The calc thread performs FFTs and reports back when they're done.
+ *
+ * == WIBNIs ==
+ *
+ * One day, there will be a frequency scale in hertz on the left of the
+ * spectrogram and on the right a frequency scale in musical notes with
+ * optional overlays of the ten ceonventional-notation staff lines and/or
+ * the notes of the piano as black and white one-pixel-high horizontal lines.
+ * Along the top or bottom there may be a time scale in seconds.
+ *
+ * Another day, you'll be overlay a time grid, anchored to the sound, with
+ * vertical lines marking beats in 50% green and first beats of bar in
+ * 100% green (or 50% red?).
  * When the bar lines are displayed, the user can drag individual beat lines;
  * the first time they do this, the rest of the beat lines pan. From the second
  * time onward, moving a different bar line stretches the beats between the
- * pointer and the last beat line that they dropped.
+ * beat line they're dragging and the last beat line that they dropped.
  *
- * The user can resize the window, in which case the displayed image is zoomed.
- * If they hit Control-Q or poke the [X] icon in the window's titlebar,
- * the application should quit.
+ * We'll need to give some way to change the number of beats per bar, maybe
+ * mark the beat lines manually, by default repeating the l.
  *
- * We use need two threads:
- * - The calc thread(s) which perform FFTs and report when they're done.
- * - The main thread which handles GUI events, starts/stops the audio player,
- *   tells the calc thread what to calculate, receives results and
- *   displays them.
+ * It would be nice to be able to write on the spectrogram with a one-pixel
+ * green pencil, which suggests storing the pixel data not the amplitude,
+ * and then save it.
+ * Then, if you press s, it saves the spectrogram as audiofilename.png?
+ * Then, when you reload, it imports from audiofilename.png
+ * all pixels of the pencil colour as an overlay on the spectral data.
+ * That would allow us to recompute the spectrogram with different parameters
+ * but preserving the annotations.
  *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
  */
@@ -254,7 +275,7 @@ Default file is audio.wav\n", stderr);
      * to fetch pixel data to be converted into spectra.
      * Emotion seems not to let us get the raw sample data or sampling rate
      * and doesn't know the file length until the "open_done" event arrives
-     * so we use libaudiofile for that.
+     * so we use libsndfile or libaudiofile for that.
      */
     if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
     sample_rate = audio_file_sampling_rate(audio_file);
