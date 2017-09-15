@@ -4,6 +4,8 @@
 
 ALL=spettro
 
+SRCS=emotion.c calc.c window.c spectrum.c interpolate.c colormap.c speclen.c \
+     sndfile.c
 OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o speclen.o \
      sndfile.o
 # or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
@@ -16,7 +18,8 @@ AUDIOFILELIB=	-lsndfile
 OTHER_LIBS=	$(AUDIOFILELIB) -lfftw3 -lm
 
 OPTFLAG=-O
-CFLAGS=-g $(EMOTION_CFLAGS) $(OPTFLAG)
+CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG)
+LDFLAGS=-pg
 
 all: $(ALL)
 
@@ -40,3 +43,6 @@ colormap.o:	colormap.h
 check:
 	@make OPTFLAG="-Os -Wall" clean all | grep -v ^cc
 	@make OPTFLAG="-Os -Wall" CC=clang clean all | grep -v ^clang
+
+tags:
+	ctags $(SRCS)
