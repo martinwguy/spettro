@@ -201,15 +201,20 @@ main(int argc, char **argv)
 	    }
 	    break;
 	default:
-usage:	    fputs("Usage: spettro [-p] [-e] [-h n] [-w n] [file.wav]\n\
+usage:	    fprintf(stderr,
+"Usage: spettro [-p] [-e] [-h n] [-w n] [file.wav]\n\
 -p:\tPlay the file right away\n\
 -e:\tExit when the audio file has played\n\
 -h n:\tSet spectrogram display height to n pixels\n\
 -w n:\tSet spectrogram display width to n pixels\n\
-The default file is audio.wav\n", stderr);
+The default file is audio.wav\n\
+Environment variables:\n\
+PPSEC     Pixel columns per second, default %g\n\
+FFTFREQ   FFT audio window is 1/this, default 1/%g of a second\n\
+DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
+", ppsec, fftfreq, -min_db);
 	    exit(1);
 	}
-	argv++; argc--;
     }
 
     /*
@@ -228,6 +233,9 @@ The default file is audio.wav\n", stderr);
 
 	if ((cp = getenv("FFTFREQ")) != NULL && (n = atof(cp)) > 0.0)
 	    fftfreq = n;
+
+	if ((cp = getenv("DYN_RANGE")) != NULL && (n = atof(cp)) > 0.0)
+	    min_db = -n;
     }
 
     /* Set variables with derived values */
