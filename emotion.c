@@ -120,6 +120,7 @@ static Eina_Bool timer_cb(void *data);
 /* FFT calculating thread */
 static void calc_heavy(void *data, Ecore_Thread *thread);
 static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
+static void calc_stop(void);
 
 /*
  * State variables
@@ -174,7 +175,9 @@ main(int argc, char **argv)
     Evas_Object *em;
     Ecore_Thread *thread;
 
-    calc_t calc;	/* What to calculate FFTs for */
+    static calc_t calc;	/* What to calculate FFTs for. It's static in case the
+			 * calculation thread runs on after main has quit,
+			 * which would cause a SEGV and gigabytes of core. */
     char *filename;
 
     argv++; argc--;	/* Skip program name */
@@ -378,6 +381,7 @@ quit:
 static void
 quitGUI(Ecore_Evas *ee EINA_UNUSED)
 {
+    calc_stop();
     ecore_main_loop_quit();
 }
 
@@ -652,6 +656,12 @@ calc_heavy(void *data, Ecore_Thread *thread)
 {
     calc_thread = thread;
     calc((calc_t *)data, calc_result);
+}
+
+static void
+calc_stop()
+{
+    (void) ecore_thread_cancel(calc_thread);
 }
 
 static void
