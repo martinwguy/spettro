@@ -1,15 +1,13 @@
 ------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
-Make multiple command-line arguments work
+Make playing multiple audio files work
 ------------------------------------------------------------------------
 Add sox's heatmap
 ------------------------------------------------------------------------
-Add optional frequency scale in hertz a sx and as notes a dx
+Add optional frequency scale in hertz on the left and as notes on the right
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
-------------------------------------------------------------------------
-Add optional piano lines and staves
 ------------------------------------------------------------------------
 Use multiple CPUs by multiple calc threads. Give each a bigger step
 and assume that they run at the same speed? -> interesting effects on

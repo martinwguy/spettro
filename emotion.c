@@ -34,6 +34,8 @@
  * Variants:
  * -p	Play the audio file and start scrolling the display immediately
  * -e	Exit when the audio file has finished playing
+ * -w n	Open the window n pixels wide (default: 640)
+ * -h n	Open the window n pixels high (default: 480)
  *
  * If you resize the window the displayed image is zoomed.
  *
@@ -53,8 +55,8 @@
  * the notes of the piano as black and white one-pixel-high horizontal lines.
  * Along the top or bottom there may be a time scale in seconds.
  *
- * Another day, you'll be overlay a time grid, anchored to the sound, with
- * vertical lines marking beats in 50% green and first beats of bar in
+ * Another day, you'll be able to overlay a time grid, anchored to the sound,
+ * with vertical lines marking beats in 50% green and first beats of bar in
  * 100% green (or 50% red?).
  * When the bar lines are displayed, the user can drag individual beat lines;
  * the first time they do this, the rest of the beat lines pan. From the second
@@ -65,8 +67,7 @@
  * mark the beat lines manually, by default repeating the l.
  *
  * It would be nice to be able to write on the spectrogram with a one-pixel
- * green pencil, which suggests storing the pixel data not the amplitude,
- * and then save it.
+ * green pencil, which suggests storing the pixel data instead of the amplitude.
  * Then, if you press s, it saves the spectrogram as audiofilename.png?
  * Then, when you reload, it imports from audiofilename.png
  * all pixels of the pencil colour as an overlay on the spectral data.
