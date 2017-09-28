@@ -11,6 +11,8 @@ OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o speclen.o \
 # or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
 # See also AUDIOFILELIB= below
 
+GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
+
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
 AUDIOFILELIB=	-lsndfile
@@ -18,7 +20,7 @@ AUDIOFILELIB=	-lsndfile
 OTHER_LIBS=	$(AUDIOFILELIB) -lfftw3 -lm
 
 OPTFLAG=-O
-CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG)
+CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\"
 LDFLAGS=
 
 all: $(ALL)

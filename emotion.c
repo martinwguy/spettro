@@ -205,6 +205,9 @@ main(int argc, char **argv)
 		exit(1);
 	    }
 	    break;
+	case 'v':
+	    printf("Version: %s\n", VERSION);
+	    exit(0);
 	default:
 usage:	    fprintf(stderr,
 "Usage: spettro [-p] [-e] [-h n] [-w n] [file.wav]\n\
@@ -212,6 +215,7 @@ usage:	    fprintf(stderr,
 -e:\tExit when the audio file has played\n\
 -h n:\tSet spectrogram display height to n pixels\n\
 -w n:\tSet spectrogram display width to n pixels\n\
+-v:\tPrint the version of spettro that you're using\n\
 The default file is audio.wav\n\
 Environment variables:\n\
 PPSEC     Pixel columns per second, default %g\n\
