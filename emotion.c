@@ -181,8 +181,9 @@ main(int argc, char **argv)
 			 * which would cause a SEGV and gigabytes of core. */
     char *filename;
 
-    argv++; argc--;	/* Skip program name */
-    while (argc > 0 && argv[0][0] == '-') {
+    for (argv++, argc--;	/* Skip program name */
+	 argc > 0 && argv[0][0] == '-';
+	 argv++, argc--) {
 	switch (argv[0][1]) {
 	case 'p':
 	    autoplay = TRUE;
