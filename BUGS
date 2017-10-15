@@ -28,3 +28,9 @@ Add GUI keystrokes to:
 - change brightness/contrast (i.e. change min_db, as max is normalised)
 - change fftfreq (impacting the result cache)
 ------------------------------------------------------------------------
+Green line flickers when enlarging with scarse processor
+------------------------------------------------------------------------
+Add "1" button to set 1:1 size
+------------------------------------------------------------------------
+Spettro window is always on top.
+------------------------------------------------------------------------
