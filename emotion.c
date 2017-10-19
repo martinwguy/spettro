@@ -110,11 +110,12 @@ static void quitGUI(Ecore_Evas *ee);
 
 /* Audio playing functions */
 static void pause_playing(Evas_Object *em);
-static void play_from_start(Evas_Object *em);
+static void start_playing(Evas_Object *em);
 static void continue_playing(Evas_Object *em);
+static void seek_by(Evas_Object *em, double by);
 
 /* Audio callback functions */
-static Ecore_Timer *timer;
+static Ecore_Timer *timer = NULL;
 static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
 static Eina_Bool timer_cb(void *data);
 
@@ -154,9 +155,11 @@ static int imagestride;
  * need redoing. */
 static result_t *results = NULL; /* Linked list of result structures */
 
-/* What the audio subsystem is doing. STOPPED means it has never played,
- * PLAYING means it should be playing audio, PAUSED means we've paused it
- * and it remembers when.
+/* What the audio subsystem is doing.
+ * STOPPED means it has never played or has reached the end of the piece
+ * 	   and stopped automatically, and that the timer is not running.
+ * PLAYING means it should be playing audio,
+ * PAUSED  means we've paused it and the timer is frozen.
  */
 static enum { STOPPED, PLAYING, PAUSED } playing = STOPPED;
 
@@ -432,13 +435,24 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    break;
 
 	case STOPPED:
-	    play_from_start(em);
+	    if (fabs(disp_time - floor(audio_length /step) * step) < DELTA)
+		disp_time = 0.0;
+	    repaint_display();
+	    start_playing(em);
 	    break;
 
 	case PAUSED:
 	    continue_playing(em);
 	    break;
 	}
+    }
+
+    /* Arrow <-/-> : Jump back/forward a second; with Shift, 10 seconds. */
+    if (strcmp(ev->key, "Left") == 0) {
+	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
+    }
+    if (strcmp(ev->key, "Right") == 0) {
+	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
     }
 }
 
@@ -448,14 +462,14 @@ static void
 pause_playing(Evas_Object *em)
 {
     emotion_object_play_set(em, EINA_FALSE);
-    ecore_timer_freeze(timer);
+    if (timer) ecore_timer_freeze(timer);
     playing = PAUSED;
 }
 
 static void
-play_from_start(Evas_Object *em)
+start_playing(Evas_Object *em)
 {
-    emotion_object_position_set(em, 0.0);
+    emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
     /* Ask to update the display so as to scroll one column at a time.
      * If the CPU is too slow, and the display update takes longer than
@@ -463,8 +477,6 @@ play_from_start(Evas_Object *em)
      * start scrolling by more than one pixel per callback to stay in sync.
      */
     timer = ecore_timer_add(step, timer_cb, (void *)em);
-    disp_time = 0.0;
-    repaint_display();
     playing = PLAYING;
 }
 
@@ -477,8 +489,107 @@ continue_playing(Evas_Object *em)
      */
     emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
-    ecore_timer_thaw(timer);
+    if (timer) ecore_timer_thaw(timer);
     playing = PLAYING;
+}
+
+/*
+ * Jump forwards or backwards in time, scrolling the display accordingly.
+ * This can be called while we are PLAYING or stopped.
+ */
+static void
+seek_by(Evas_Object *em, double by)
+{
+    double old_disp_time = disp_time;
+    double new_disp_time = disp_time + by;
+    int scroll_by;	/* By how many pixel columns do we have to scroll? */
+
+    if (new_disp_time < 0.0) {
+	new_disp_time = 0.0;
+	by = -old_disp_time;
+    }
+    /* Align to a multiple of 1/ppsec so that times in cached results
+     * continue to match. This is usually a no-op. */
+    if (new_disp_time >= audio_length) {
+	new_disp_time = floor(audio_length / step) * step;
+    }
+
+    by = new_disp_time - old_disp_time;
+
+    /* Avoid timer interrupts while we reposition */
+    if (playing == PLAYING)
+        if (timer) ecore_timer_freeze(timer);
+
+    scroll_by = lrint(by * ppsec);
+
+    if (scroll_by >= disp_width || scroll_by <= -disp_width) {
+	/* Redraw the whole display */
+	disp_time = new_disp_time;
+	repaint_display();
+    } else {
+        if (scroll_by != 0) {
+	    /* Replace the green line with spectrogram data */
+	    repaint_column(disp_offset);
+
+	    if (scroll_by < 0) {
+		/*
+		 * new_disp_time is earlier than the current displayed position
+		 * so scroll the existing display right
+		 *
+		 * new_disp_time is before the current displayed position
+		 * so scroll the existing display left.
+		 *
+		 * (4 * scroll_by) is the number of bytes by which we scroll.
+		 * The left-hand columns will fill with garbage or the end of
+		 * the prev pixel row, and the final "- (4*scroll_by)" is so as
+		 * not to scroll garbage from past the end of the frame buffer.
+		 */
+		scroll_by = -scroll_by;	 /* Make it positive */
+		memmove(imagedata + (4 * scroll_by), imagedata,
+			imagestride * disp_height - (4 * scroll_by));
+
+		disp_time = new_disp_time;
+
+		/* Repaint the left edge */
+		{   int x;
+		    for (x = 0; x < scroll_by; x++) {
+			repaint_column(x);
+		    }
+		}
+	    } else /* scroll_by > 0 */ {
+		/*
+		 * new_disp_time is after the current displayed position
+		 * so scroll the existing display left.
+		 *
+		 * (4 * scroll_by) is the number of bytes by which we scroll.
+		 * The right-hand columns will fill with garbage or the start of
+		 * the next pixel row, and the final "- (4*scroll_by)" is so as
+		 * not to scroll garbage from past the end of the frame buffer.
+		 */
+		memmove(imagedata, imagedata + (4 * scroll_by),
+			imagestride * disp_height - (4 * scroll_by));
+
+		disp_time = new_disp_time;
+
+		/* Repaint the right edge */
+		{   int x;
+		    for (x = disp_width - scroll_by; x < disp_width; x++) {
+			repaint_column(x);
+		    }
+		}
+	    }
+
+	    /* Repaint the green line */
+	    green_line();
+	}
+        evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
+    }
+
+    emotion_object_position_set(em, new_disp_time);
+
+    /* Resume timer if we paused it */
+    if (playing == PLAYING)
+        if (timer) ecore_timer_thaw(timer);
 }
 
 /*
@@ -497,7 +608,11 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
     // Evas_Object *em = data;	/* The Emotion object */
     playing = STOPPED;
-    ecore_timer_del(timer);
+    disp_time = floor(audio_length / step) * step;
+    if (timer) {
+	ecore_timer_del(timer);
+	timer = NULL;
+    }
     if (exit_when_played)
 	ecore_main_loop_quit();
 }
@@ -517,13 +632,13 @@ timer_cb(void *data)
 
     /* Scroll the display left by the correct number of pixels.
      *
-     * 4*scroll_by is the number of bytes by which we scroll.
-     * The right-hand columns will fill with garbage or the start of the
-     * next pixel row, and the final "- (4*scroll_by)" is not to scroll in
-     * garbag from past the end of the frame buffer.
+     * (4 * scroll_by) is the number of bytes by which we scroll.
+     * The right-hand columns will fill with garbage or the start of
+     * the next pixel row, and the final "- (4*scroll_by)" is so as
+     * not to scroll garbage from past the end of the frame buffer.
      */
     memmove(imagedata, imagedata + (4 * scroll_by),
-		       imagestride * disp_height - (4 * scroll_by));
+	    imagestride * disp_height - (4 * scroll_by));
 
     disp_time += scroll_by * step;
 
@@ -570,7 +685,8 @@ repaint_column(int column)
     /* If it's a valid time and the column has already been calculated,
      * repaint it from the cache */
     if (t >= 0.0 - DELTA && t < audio_length + DELTA &&
-        (r = recall_result(t)) != NULL) {
+        ((r = recall_result(t)) != NULL ? 1 :
+(fprintf(stderr, "Cache miss at %g\n", t), 0))) {
 	paint_column(column, r);
     } else {
 	/* ...otherwise paint it with the background colour */
@@ -680,8 +796,8 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 
     /* The Evas image that we need to write to */
 
-    /* If the time in question is within the displayed region, paint it */
-    /* For now, one pixel column per result */
+    /* If the time in question is within the displayed region, paint it. */
+    /* For now, there is one pixel column per result */
     pos_x = lrint(disp_offset + (result->t - disp_time) * calc->ppsec);
 
     /* Update the display if the column if is in the displayed region
@@ -697,7 +813,7 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
      * until the FFT delivers its first result before starting the player.
      */
     if (autoplay && playing == STOPPED) {
-	play_from_start(em);
+	start_playing(em);
     }
 }
 
