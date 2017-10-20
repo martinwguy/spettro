@@ -31,6 +31,10 @@
  * centre of the window. Another space pauses the playback, another makes it
  * continue from where it was. When it reaches the end of piece, the playback
  * stops; pressing space makes it start again from the beginning.
+ *
+ * The left and right arrow keys jump back or forwards by 1 second
+ * or 10 if shift is held.
+ *
  * Variants:
  * -p	Play the audio file and start scrolling the display immediately
  * -e	Exit when the audio file has finished playing
@@ -170,6 +174,21 @@ static double	sample_rate;		/* SR of the audio in Hertz */
 /* option flags */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
 static bool exit_when_played = FALSE;	/* -e  Exit when the fils has played */
+
+/* State variables (hacks) */
+
+/*
+ * If you call emotion_object_position_get() straight after
+ * emotion_object_position_set(), you don't get the position
+ * you just set, but instead the old position where it was.
+ * It seems that the thing _get() reads is only updated when
+ * the audio player thread runs. We work around this
+ * by not doing a timer scroll screen update if we just set
+ * the player position with the arrow keys. By the time the
+ * next timer interrupt occurs, default every 1/25th second,
+ * the player thread should have got a look-in.
+ */
+static bool eopg_unreliable = FALSE;
 
 int
 main(int argc, char **argv)
@@ -483,11 +502,12 @@ start_playing(Evas_Object *em)
 static void
 continue_playing(Evas_Object *em)
 {
-    /* Resynchronise the playing position to the display, as emotion
-     * seems to stop playing immediately but seems to throw away the
-     * unplayed part of the currently-playing audio buffer.
+    /* Resynchronise the playing position to the display,
+     * as emotion stops playing immediately but seems to throw away
+     * the unplayed part of the currently-playing audio buffer.
      */
     emotion_object_position_set(em, disp_time);
+    eopg_unreliable = TRUE;
     emotion_object_play_set(em, EINA_TRUE);
     if (timer) ecore_timer_thaw(timer);
     playing = PLAYING;
@@ -508,11 +528,14 @@ seek_by(Evas_Object *em, double by)
 	new_disp_time = 0.0;
 	by = -old_disp_time;
     }
-    /* Align to a multiple of 1/ppsec so that times in cached results
-     * continue to match. This is usually a no-op. */
     if (new_disp_time >= audio_length) {
-	new_disp_time = floor(audio_length / step) * step;
+	new_disp_time = audio_length;
     }
+
+    /* Align to a multiple of 1/ppsec so that times in cached results
+     * continue to match. This is usually a no-op.
+     */
+    new_disp_time = floor(new_disp_time / step + DELTA) * step;
 
     by = new_disp_time - old_disp_time;
 
@@ -533,16 +556,14 @@ seek_by(Evas_Object *em, double by)
 
 	    if (scroll_by < 0) {
 		/*
-		 * new_disp_time is earlier than the current displayed position
-		 * so scroll the existing display right
-		 *
 		 * new_disp_time is before the current displayed position
-		 * so scroll the existing display left.
+		 * so scroll the existing display right.
 		 *
 		 * (4 * scroll_by) is the number of bytes by which we scroll.
 		 * The left-hand columns will fill with garbage or the end of
-		 * the prev pixel row, and the final "- (4*scroll_by)" is so as
-		 * not to scroll garbage from past the end of the frame buffer.
+		 * the previous pixel row, so we repaint those columns.
+		 * The final "- (4 * scroll_by)" is so as not to write past
+		 * the end of the frame buffer.
 		 */
 		scroll_by = -scroll_by;	 /* Make it positive */
 		memmove(imagedata + (4 * scroll_by), imagedata,
@@ -552,9 +573,8 @@ seek_by(Evas_Object *em, double by)
 
 		/* Repaint the left edge */
 		{   int x;
-		    for (x = 0; x < scroll_by; x++) {
+		    for (x = 0; x < scroll_by; x++)
 			repaint_column(x);
-		    }
 		}
 	    } else /* scroll_by > 0 */ {
 		/*
@@ -573,9 +593,8 @@ seek_by(Evas_Object *em, double by)
 
 		/* Repaint the right edge */
 		{   int x;
-		    for (x = disp_width - scroll_by; x < disp_width; x++) {
+		    for (x = disp_width - scroll_by; x < disp_width; x++)
 			repaint_column(x);
-		    }
 		}
 	    }
 
@@ -585,7 +604,8 @@ seek_by(Evas_Object *em, double by)
         evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
     }
 
-    emotion_object_position_set(em, new_disp_time);
+    emotion_object_position_set(em, disp_time);
+    eopg_unreliable = TRUE;
 
     /* Resume timer if we paused it */
     if (playing == PLAYING)
@@ -607,12 +627,15 @@ static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
     // Evas_Object *em = data;	/* The Emotion object */
-    playing = STOPPED;
-    disp_time = floor(audio_length / step) * step;
     if (timer) {
 	ecore_timer_del(timer);
 	timer = NULL;
     }
+
+    /* These settings indicate that the player has stopped at end of track */
+    playing = STOPPED;
+    disp_time = floor(audio_length / step + DELTA) * step;
+
     if (exit_when_played)
 	ecore_main_loop_quit();
 }
@@ -630,22 +653,69 @@ timer_cb(void *data)
     /* Replace the green line with spectrogram data */
     repaint_column(disp_offset);
 
-    /* Scroll the display left by the correct number of pixels.
+    /*
+     * Scroll the display left by the correct number of pixels.
      *
      * (4 * scroll_by) is the number of bytes by which we scroll.
      * The right-hand columns will fill with garbage or the start of
      * the next pixel row, and the final "- (4*scroll_by)" is so as
      * not to scroll garbage from past the end of the frame buffer.
      */
-    memmove(imagedata, imagedata + (4 * scroll_by),
-	    imagestride * disp_height - (4 * scroll_by));
 
-    disp_time += scroll_by * step;
+    /* Workaround glitch in emotion 17:
+     * emotion_object_position_set(em, x); emotion_object_position_get(em)
+     * gives you the old time, presumably until the audio thread runs again.
+     * This makes the graphic jump to the side for one frame if you seek
+     * while it's playing.
+     */
+    {
+	/* The invalid time reading can present itself in successive timer
+	 * interrupts, so remember what the bad reading was and wait until
+	 * it changes. */
+	static int eopgu_scroll_by = 0;
 
-    /* Repaint the right edge */
-    {   int x;
-	for (x = disp_width - scroll_by; x < disp_width; x++) {
-	    repaint_column(x);
+	/* Is it still giving the same bogus reading? */
+	if (eopgu_scroll_by == scroll_by) return;
+	eopgu_scroll_by = 0;
+
+	/* If we just set the playing position, ignore the immediately
+	 * following reading.
+	 * Better way: take the bogus reading when you set it and compare
+	 * against that.
+	 */
+	if (eopg_unreliable) {
+	    eopgu_scroll_by = scroll_by;
+	    eopg_unreliable = FALSE;
+	    return;
+	}
+    }
+
+    if (scroll_by > 0) {
+	/* Usual case: scrolling the display left to advance in time */
+	memmove(imagedata, imagedata + (4 * scroll_by),
+		imagestride * disp_height - (4 * scroll_by));
+
+	disp_time += scroll_by * step;
+
+	/* Repaint the right edge */
+	{   int x;
+	    for (x = disp_width - scroll_by; x < disp_width; x++) {
+		repaint_column(x);
+	    }
+	}
+    }
+    if (scroll_by < 0) {
+	/* scroll_by can be negative if they just pressed "Left" */
+	memmove(imagedata + (4 * -scroll_by), imagedata,
+		imagestride * disp_height - (4 * -scroll_by));
+
+	disp_time += scroll_by * step;
+
+	/* Repaint the left edge */
+	{   int x;
+	    for (x = -scroll_by - 1; x >= 0; x--) {
+		repaint_column(x);
+	    }
 	}
     }
 
@@ -685,8 +755,7 @@ repaint_column(int column)
     /* If it's a valid time and the column has already been calculated,
      * repaint it from the cache */
     if (t >= 0.0 - DELTA && t < audio_length + DELTA &&
-        ((r = recall_result(t)) != NULL ? 1 :
-(fprintf(stderr, "Cache miss at %g\n", t), 0))) {
+        (r = recall_result(t)) != NULL) {
 	paint_column(column, r);
     } else {
 	/* ...otherwise paint it with the background colour */
