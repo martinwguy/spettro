@@ -644,7 +644,14 @@ static Eina_Bool
 timer_cb(void *data)
 {
     Evas_Object *em = (Evas_Object *)data;
-    double playing_time = emotion_object_position_get(em);
+
+    /*
+     * emotion's position reporting is unreliable and grainy.
+     * We get smoother scrolling especially after repositioning
+     * by just keeping time.
+     */
+    // double playing_time = emotion_object_position_get(em);
+    double playing_time = disp_time + step;
     int scroll_by = ((playing_time - disp_time) * ppsec) + 0.5;
 
     if (scroll_by == 0)
@@ -654,41 +661,13 @@ timer_cb(void *data)
     repaint_column(disp_offset);
 
     /*
-     * Scroll the display left by the correct number of pixels.
+     * Scroll the display sideways by the correct number of pixels.
      *
      * (4 * scroll_by) is the number of bytes by which we scroll.
      * The right-hand columns will fill with garbage or the start of
      * the next pixel row, and the final "- (4*scroll_by)" is so as
      * not to scroll garbage from past the end of the frame buffer.
      */
-
-    /* Workaround glitch in emotion 17:
-     * emotion_object_position_set(em, x); emotion_object_position_get(em)
-     * gives you the old time, presumably until the audio thread runs again.
-     * This makes the graphic jump to the side for one frame if you seek
-     * while it's playing.
-     */
-    {
-	/* The invalid time reading can present itself in successive timer
-	 * interrupts, so remember what the bad reading was and wait until
-	 * it changes. */
-	static int eopgu_scroll_by = 0;
-
-	/* Is it still giving the same bogus reading? */
-	if (eopgu_scroll_by == scroll_by) return;
-	eopgu_scroll_by = 0;
-
-	/* If we just set the playing position, ignore the immediately
-	 * following reading.
-	 * Better way: take the bogus reading when you set it and compare
-	 * against that.
-	 */
-	if (eopg_unreliable) {
-	    eopgu_scroll_by = scroll_by;
-	    eopg_unreliable = FALSE;
-	    return;
-	}
-    }
 
     if (scroll_by > 0) {
 	/* Usual case: scrolling the display left to advance in time */
