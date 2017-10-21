@@ -154,11 +154,6 @@ static Evas_Object *image;
 static unsigned char *imagedata = NULL;
 static int imagestride;
 
-/* Internal data used to remember the FFT result for each pixel value.
- * For now, it's just an array indexing them. When we can zoom this will
- * need redoing. */
-static result_t *results = NULL; /* Linked list of result structures */
-
 /* What the audio subsystem is doing:
  * STOPPED means it has reached the end of the piece and stopped automatically
  * PLAYING means it should be playing audio,
@@ -794,18 +789,40 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     }
 }
 
-/* For speed when seeking ahead of the last-computed column,
+/*
+ * Result cache, inside emotion.c because it wants to access disp_time
+ * to know when to throw away old results.
+ */
+
+/*
+ * Internal data used to remember the FFT result for each pixel value.
+ * For now, it's just an array indexing them. When we can zoom this will
+ * need redoing.
+ *
+ * We keep the results in time order from oldest to newest.
+ */
+static result_t *results = NULL; /* Linked list of result structures */
+static result_t *last_result = NULL; /* Last element in the linked list */
+
+/*
+ * For speed when seeking ahead of the last-computed column,
  * we remember the time of the most result most advanced in
- * time.
+ * time. This saves uselessly scanning the whole list of results.
  */
 static double latest_result_time = 0.0;
 
+/* "result" was obtained from malloc(); it is up to us to free it. */
 static void
 remember_result(result_t *result)
 {
-    /* Add at head of list for speed and simplicity */
-    result->next = results;
-    results = result;
+    /* Results are calculated in order so add at tail of list */
+    if (last_result == NULL) {
+	results = last_result = result;
+    } else {
+	last_result->next = result;
+	last_result = result;
+    }
+    result->next = NULL;
 
     if (result->t > latest_result_time)
 	latest_result_time = result->t;
