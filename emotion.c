@@ -159,13 +159,12 @@ static int imagestride;
  * need redoing. */
 static result_t *results = NULL; /* Linked list of result structures */
 
-/* What the audio subsystem is doing.
- * STOPPED means it has never played or has reached the end of the piece
- * 	   and stopped automatically, and that the timer is not running.
+/* What the audio subsystem is doing:
+ * STOPPED means it has reached the end of the piece and stopped automatically
  * PLAYING means it should be playing audio,
- * PAUSED  means we've paused it and the timer is frozen.
+ * PAUSED  means we've paused it
  */
-static enum { STOPPED, PLAYING, PAUSED } playing = STOPPED;
+static enum { STOPPED, PLAYING, PAUSED } playing = PAUSED;
 
 static audio_file_t *audio_file;
 static double	audio_length = 0.0;	/* Length of the audio in seconds */
@@ -174,6 +173,13 @@ static double	sample_rate;		/* SR of the audio in Hertz */
 /* option flags */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
 static bool exit_when_played = FALSE;	/* -e  Exit when the fils has played */
+
+/* State variables (hacks) */
+
+/* When they press arrow left or right to seek, we just increment pending_seek;
+ * the screen updating is then done in the next timer callback.
+ */
+static double pending_seek = 0.0;
 
 int
 main(int argc, char **argv)
@@ -365,6 +371,9 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
 	goto quit;
     }
 
+    /* Start screen-updating and scrolling timer */
+    timer = ecore_timer_add(step, timer_cb, (void *)em);
+
     /* Start main event loop */
     ecore_main_loop_begin();
 
@@ -423,7 +432,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	ecore_main_loop_quit();
     } else
 
-    /* Space: Play/Pause */
+    /* Space: Play/Pause/Replay */
     if (strcmp(ev->key, "space") == 0 ||
 	strcmp(ev->key, "XF86AudioPlay") == 0) {
 	switch (playing) {
@@ -432,10 +441,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    break;
 
 	case STOPPED:
-	    if (fabs(disp_time - floor(audio_length /step) * step) < DELTA) {
-		disp_time = 0.0;
-		repaint_display();
-	    }
+	    disp_time = 0.0;
+	    repaint_display();
 	    start_playing(em);
 	    break;
 
@@ -460,21 +467,14 @@ static void
 pause_playing(Evas_Object *em)
 {
     emotion_object_play_set(em, EINA_FALSE);
-    if (timer) ecore_timer_freeze(timer);
     playing = PAUSED;
 }
 
 static void
 start_playing(Evas_Object *em)
 {
-    emotion_object_position_set(em, disp_time);
+    emotion_object_position_set(em, disp_time + pending_seek);
     emotion_object_play_set(em, EINA_TRUE);
-    /* Ask to update the display so as to scroll one column at a time.
-     * If the CPU is too slow, and the display update takes longer than
-     * one timer period, the timer will be called less frequently and we
-     * start scrolling by more than one pixel per callback to stay in sync.
-     */
-    timer = ecore_timer_add(step, timer_cb, (void *)em);
     playing = PLAYING;
 }
 
@@ -487,7 +487,6 @@ continue_playing(Evas_Object *em)
      */
     emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
-    if (timer) ecore_timer_thaw(timer);
     playing = PLAYING;
 }
 
@@ -498,101 +497,14 @@ continue_playing(Evas_Object *em)
 static void
 seek_by(Evas_Object *em, double by)
 {
-    double old_disp_time = disp_time;
-    double new_disp_time = disp_time + by;
-    int scroll_by;	/* By how many pixel columns do we have to scroll? */
+    pending_seek += by;
+    emotion_object_position_set(em, disp_time + pending_seek);
 
-    if (new_disp_time < 0.0) {
-	new_disp_time = 0.0;
-	by = -old_disp_time;
+    /* If moving left after it has come to the end and stopped,
+     * we want it to play again. */
+    if (by < 0.0 && playing == STOPPED) {
+	start_playing(em);
     }
-    if (new_disp_time >= audio_length) {
-	new_disp_time = audio_length;
-    }
-
-    /* Align to a multiple of 1/ppsec so that times in cached results
-     * continue to match. This is usually a no-op.
-     */
-    new_disp_time = floor(new_disp_time / step + DELTA) * step;
-
-    by = new_disp_time - old_disp_time;
-
-    /* Avoid timer interrupts while we reposition */
-    if (playing == PLAYING)
-        if (timer) ecore_timer_freeze(timer);
-
-    scroll_by = lrint(by * ppsec);
-
-    if (scroll_by >= disp_width || scroll_by <= -disp_width) {
-	/* Redraw the whole display */
-	disp_time = new_disp_time;
-	repaint_display();
-    } else {
-        if (scroll_by != 0) {
-	    /* Replace the green line with spectrogram data */
-	    repaint_column(disp_offset);
-
-	    if (scroll_by < 0) {
-		/*
-		 * new_disp_time is before the current displayed position
-		 * so scroll the existing display right.
-		 *
-		 * (4 * scroll_by) is the number of bytes by which we scroll.
-		 * The left-hand columns will fill with garbage or the end of
-		 * the previous pixel row, so we repaint those columns.
-		 * The final "- (4 * scroll_by)" is so as not to write past
-		 * the end of the frame buffer.
-		 */
-		scroll_by = -scroll_by;	 /* Make it positive */
-		memmove(imagedata + (4 * scroll_by), imagedata,
-			imagestride * disp_height - (4 * scroll_by));
-
-		disp_time = new_disp_time;
-
-		/* Repaint the left edge */
-		{   int x;
-		    for (x = 0; x < scroll_by; x++)
-			repaint_column(x);
-		}
-
-		/* If moving left after it has come to the end and stopped,
-		 * we want it to play again. */
-		if (PLAYING == STOPPED)
-		    start_playing(em);
-
-	    } else /* scroll_by > 0 */ {
-		/*
-		 * new_disp_time is after the current displayed position
-		 * so scroll the existing display left.
-		 *
-		 * (4 * scroll_by) is the number of bytes by which we scroll.
-		 * The right-hand columns will fill with garbage or the start of
-		 * the next pixel row, and the final "- (4*scroll_by)" is so as
-		 * not to scroll garbage from past the end of the frame buffer.
-		 */
-		memmove(imagedata, imagedata + (4 * scroll_by),
-			imagestride * disp_height - (4 * scroll_by));
-
-		disp_time = new_disp_time;
-
-		/* Repaint the right edge */
-		{   int x;
-		    for (x = disp_width - scroll_by; x < disp_width; x++)
-			repaint_column(x);
-		}
-	    }
-
-	    /* Repaint the green line */
-	    green_line();
-	}
-        evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
-    }
-
-    emotion_object_position_set(em, disp_time);
-
-    /* Resume timer if we paused it */
-    if (playing == PLAYING)
-        if (timer) ecore_timer_thaw(timer);
 }
 
 /*
@@ -610,10 +522,6 @@ static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
     // Evas_Object *em = data;	/* The Emotion object */
-    if (timer) {
-	ecore_timer_del(timer);
-	timer = NULL;
-    }
 
     /* These settings indicate that the player has stopped at end of track */
     playing = STOPPED;
@@ -627,15 +535,32 @@ static Eina_Bool
 timer_cb(void *data)
 {
     Evas_Object *em = (Evas_Object *)data;
-
+    double new_disp_time;	/* Where we reposition to */
+    int scroll_by;		/* How many pixels to scroll by.
+				 * +ve = move forward in time, move display left
+				 * +ve = move back in time, move display right
+				 */
     /*
      * emotion's position reporting is unreliable and grainy.
      * We get smoother scrolling especially after repositioning
-     * by just keeping time.
+     * just by beating time.
      */
-    // double playing_time = emotion_object_position_get(em);
-    double playing_time = disp_time + step;
-    int scroll_by = ((playing_time - disp_time) * ppsec) + 0.5;
+    new_disp_time = disp_time + pending_seek; pending_seek = 0.0;
+    if (playing == PLAYING) new_disp_time += step;
+
+    if (new_disp_time < 0.0) {
+	new_disp_time = 0.0;
+    }
+    if (new_disp_time >= audio_length) {
+	new_disp_time = audio_length;
+    }
+
+    /* Align to a multiple of 1/ppsec so that times in cached results
+     * continue to match. This is usually a no-op.
+     */
+    new_disp_time = floor(new_disp_time / step + DELTA) * step;
+
+    scroll_by = lrint((new_disp_time - disp_time) * ppsec);
 
     if (scroll_by == 0)
 	return(ECORE_CALLBACK_RENEW);
@@ -657,7 +582,7 @@ timer_cb(void *data)
 	memmove(imagedata, imagedata + (4 * scroll_by),
 		imagestride * disp_height - (4 * scroll_by));
 
-	disp_time += scroll_by * step;
+	disp_time = new_disp_time;
 
 	/* Repaint the right edge */
 	{   int x;
@@ -667,12 +592,10 @@ timer_cb(void *data)
 	}
     }
     if (scroll_by < 0) {
-	/* scroll_by can be negative if they just pressed "Left" */
 	memmove(imagedata + (4 * -scroll_by), imagedata,
 		imagestride * disp_height - (4 * -scroll_by));
-fprintf(stderr, "Negative scroll in timer_cb\n");
 
-	disp_time += scroll_by * step;
+	disp_time = new_disp_time;
 
 	/* Repaint the left edge */
 	{   int x;
