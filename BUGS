@@ -22,7 +22,6 @@ preferably with subpixel positioning / antialiasing.
 ------------------------------------------------------------------------
 Add GUI keystrokes to:
 - pan up and down the frequency axis
-- pan left & right, which also skips forward or back in the audio if playing
 - zoom in and out, which affects both the frequency and time scales equally
   (or is it better to zoom the frequency and time axes separately?)
 - change brightness/contrast (i.e. change min_db, as max is normalised)
@@ -35,9 +34,10 @@ Add "1" button to set 1:1 size
 Spettro window is always on top.
 ------------------------------------------------------------------------
 If you jump right while it's still calculating, it should calculate for
-the xurrent screenful (from the playing position forwards or L-to-R?)
+the current screenful (from the playing position forwards or L-to-R?).
+In general, limited result precalculation/caching would be better.
+The visible region plus a screenful ahead?
 ------------------------------------------------------------------------
-If it plays to the end and stops, then you go left, it plays from the
-new position but doesn't scroll the display. I think at end it should
-pause and if you go left, play and scroll.
-----------------------------------------------------------------------
+When enlarging and missing timer interrupts so it should scroll by >1,
+the visuals get out of sync with the audio.
+------------------------------------------------------------------------
