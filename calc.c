@@ -25,7 +25,7 @@
  * The compute-FFTs function
  *
  * Results are returned in a result_t (struct result) which is obtained from
- + malloc, as is the "spec" field of it.
+ * malloc, as is the "spec" field of it.
  */
 void
 calc(calc_t *calc, void (*result_cb)(result_t *))
