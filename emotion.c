@@ -492,13 +492,24 @@ continue_playing(Evas_Object *em)
 
 /*
  * Jump forwards or backwards in time, scrolling the display accordingly.
- * This can be called while we are PLAYING or stopped.
+ * Here we just set pending_seek; the actual scrolling is done in timer_cb().
  */
 static void
 seek_by(Evas_Object *em, double by)
 {
+    double playing_time;
+
     pending_seek += by;
-    emotion_object_position_set(em, disp_time + pending_seek);
+    playing_time = disp_time + pending_seek;
+    if (playing_time > audio_length) {
+	playing_time = audio_length;
+	pending_seek = playing_time - disp_time;
+	if (playing == PLAYING) {
+            emotion_object_play_set(em, EINA_FALSE);
+	    playing = STOPPED;
+	}
+    }
+    emotion_object_position_set(em, playing_time);
 
     /* If moving left after it has come to the end and stopped,
      * we want it to play again. */
@@ -530,6 +541,12 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
     if (exit_when_played)
 	ecore_main_loop_quit();
 }
+
+/*
+ * The periodic timer callback that, when playing, scrolls the display by one pixel.
+ * When paused, the timer continues to run to update the display in response to
+ * seek commands.
+ */
 
 static Eina_Bool
 timer_cb(void *data)
@@ -577,38 +594,43 @@ timer_cb(void *data)
      * not to scroll garbage from past the end of the frame buffer.
      */
 
-    if (scroll_by > 0) {
-	/* Usual case: scrolling the display left to advance in time */
-	memmove(imagedata, imagedata + (4 * scroll_by),
-		imagestride * disp_height - (4 * scroll_by));
+    if (abs(scroll_by) >= disp_width) {
+	repaint_display();
+    } else {
+	if (scroll_by > 0) {
+	    /* Usual case: scrolling the display left to advance in time */
+	    memmove(imagedata, imagedata + (4 * scroll_by),
+		    imagestride * disp_height - (4 * scroll_by));
 
-	disp_time = new_disp_time;
+	    disp_time = new_disp_time;
 
-	/* Repaint the right edge */
-	{   int x;
-	    for (x = disp_width - scroll_by; x < disp_width; x++) {
-		repaint_column(x);
+	    /* Repaint the right edge */
+	    {   int x;
+		for (x = disp_width - scroll_by; x < disp_width; x++) {
+		    repaint_column(x);
+		}
 	    }
 	}
-    }
-    if (scroll_by < 0) {
-	memmove(imagedata + (4 * -scroll_by), imagedata,
-		imagestride * disp_height - (4 * -scroll_by));
+	if (scroll_by < 0) {
+	    /* Happens when they seek back in time */
+	    memmove(imagedata + (4 * -scroll_by), imagedata,
+		    imagestride * disp_height - (4 * -scroll_by));
 
-	disp_time = new_disp_time;
+	    disp_time = new_disp_time;
 
-	/* Repaint the left edge */
-	{   int x;
-	    for (x = -scroll_by - 1; x >= 0; x--) {
-		repaint_column(x);
+	    /* Repaint the left edge */
+	    {   int x;
+		for (x = -scroll_by - 1; x >= 0; x--) {
+		    repaint_column(x);
+		}
 	    }
 	}
+
+	/* Repaint the green line */
+	green_line();
+
+	evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
     }
-
-    /* Repaint the green line */
-    green_line();
-
-    evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
 
     return(ECORE_CALLBACK_RENEW);
 }
@@ -647,7 +669,7 @@ repaint_column(int column)
 	/* ...otherwise paint it with the background colour */
 	int y;
 	unsigned long *p = (unsigned long *)imagedata + column;
-	for (y=disp_height - 1; y >=0; y--) {
+	for (y=disp_height - 1; y >= 0; y--) {
             *p = background;
 	    p += imagestride / sizeof(unsigned long);
 	}
@@ -755,7 +777,7 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     /* For now, there is one pixel column per result */
     pos_x = lrint(disp_offset + (result->t - disp_time) * calc->ppsec);
 
-    /* Update the display if the column if is in the displayed region
+    /* Update the display if the column is in the displayed region
      * and isn't at the green line's position. */
     if (pos_x >= 0 && pos_x < disp_width && pos_x != disp_offset) {
 	paint_column(pos_x, result);
@@ -772,12 +794,21 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     }
 }
 
+/* For speed when seeking ahead of the last-computed column,
+ * we remember the time of the most result most advanced in
+ * time.
+ */
+static double latest_result_time = 0.0;
+
 static void
 remember_result(result_t *result)
 {
     /* Add at head of list for speed and simplicity */
     result->next = results;
     results = result;
+
+    if (result->t > latest_result_time)
+	latest_result_time = result->t;
 }
 
 /* Return the result for time t at the current speclen
@@ -786,6 +817,8 @@ static result_t *
 recall_result(double t)
 {
     result_t *p;
+
+    if (t > latest_result_time) return(NULL);
 
     for (p=results; p != NULL; p=p->next) {
 	/* If the time is the same, this is the result we want */
