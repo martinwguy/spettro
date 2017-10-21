@@ -175,21 +175,6 @@ static double	sample_rate;		/* SR of the audio in Hertz */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
 static bool exit_when_played = FALSE;	/* -e  Exit when the fils has played */
 
-/* State variables (hacks) */
-
-/*
- * If you call emotion_object_position_get() straight after
- * emotion_object_position_set(), you don't get the position
- * you just set, but instead the old position where it was.
- * It seems that the thing _get() reads is only updated when
- * the audio player thread runs. We work around this
- * by not doing a timer scroll screen update if we just set
- * the player position with the arrow keys. By the time the
- * next timer interrupt occurs, default every 1/25th second,
- * the player thread should have got a look-in.
- */
-static bool eopg_unreliable = FALSE;
-
 int
 main(int argc, char **argv)
 {
@@ -313,21 +298,14 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
     }
     green_line();
     evas_object_image_data_set(image, imagedata);
-#if 0
-    /* This version gives an image of fixed size in a window of the same size.
-     * Resizing the window leaves the image the same size aligned top left.
-     */
-    evas_object_image_fill_set(image, 0, 0, disp_width, disp_height);
-    ecore_evas_resize(ee, disp_width, disp_height);
-//ecore_evas_callback_resize_set(ee, _canvas_resize_cb);
-#else
-    /* This version gives an image that is automatically scaled with the window.
+
+    /* This gives an image that is automatically scaled with the window.
      * If you resize the window, the underlying image remains of the same size
      * and it is zoomed by the window system, giving a thick green line etc.
      */
     evas_object_image_filled_set(image, TRUE);
     ecore_evas_object_associate(ee, image, 0);
-#endif
+
     evas_object_resize(image, disp_width, disp_height);
     evas_object_focus_set(image, EINA_TRUE); /* Without this no keydown events*/
 
@@ -454,9 +432,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    break;
 
 	case STOPPED:
-	    if (fabs(disp_time - floor(audio_length /step) * step) < DELTA)
+	    if (fabs(disp_time - floor(audio_length /step) * step) < DELTA) {
 		disp_time = 0.0;
-	    repaint_display();
+		repaint_display();
+	    }
 	    start_playing(em);
 	    break;
 
@@ -507,7 +486,6 @@ continue_playing(Evas_Object *em)
      * the unplayed part of the currently-playing audio buffer.
      */
     emotion_object_position_set(em, disp_time);
-    eopg_unreliable = TRUE;
     emotion_object_play_set(em, EINA_TRUE);
     if (timer) ecore_timer_thaw(timer);
     playing = PLAYING;
@@ -576,6 +554,12 @@ seek_by(Evas_Object *em, double by)
 		    for (x = 0; x < scroll_by; x++)
 			repaint_column(x);
 		}
+
+		/* If moving left after it has come to the end and stopped,
+		 * we want it to play again. */
+		if (PLAYING == STOPPED)
+		    start_playing(em);
+
 	    } else /* scroll_by > 0 */ {
 		/*
 		 * new_disp_time is after the current displayed position
@@ -605,7 +589,6 @@ seek_by(Evas_Object *em, double by)
     }
 
     emotion_object_position_set(em, disp_time);
-    eopg_unreliable = TRUE;
 
     /* Resume timer if we paused it */
     if (playing == PLAYING)
@@ -687,6 +670,7 @@ timer_cb(void *data)
 	/* scroll_by can be negative if they just pressed "Left" */
 	memmove(imagedata + (4 * -scroll_by), imagedata,
 		imagestride * disp_height - (4 * -scroll_by));
+fprintf(stderr, "Negative scroll in timer_cb\n");
 
 	disp_time += scroll_by * step;
 

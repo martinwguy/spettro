@@ -34,3 +34,10 @@ Add "1" button to set 1:1 size
 ------------------------------------------------------------------------
 Spettro window is always on top.
 ------------------------------------------------------------------------
+If you jump right while it's still calculating, it should calculate for
+the xurrent screenful (from the playing position forwards or L-to-R?)
+------------------------------------------------------------------------
+If it plays to the end and stops, then you go left, it plays from the
+new position but doesn't scroll the display. I think at end it should
+pause and if you go left, play and scroll.
+----------------------------------------------------------------------
