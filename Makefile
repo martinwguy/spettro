@@ -3,6 +3,7 @@
 #
 
 ALL=spettro
+PREFIX=/usr/local
 
 SRCS=emotion.c calc.c window.c spectrum.c interpolate.c colormap.c speclen.c \
      sndfile.c
@@ -26,7 +27,7 @@ LDFLAGS=
 all: $(ALL)
 
 install: all
-	install $(ALL) ~/bin/
+	install $(ALL) $(PREFIX)/
 
 spettro: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(EMOTION_LIBS) $(OTHER_LIBS)
