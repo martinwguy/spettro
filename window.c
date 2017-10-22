@@ -25,12 +25,15 @@
 
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
 
-
 static double besseli0(double x);
 static double factorial(int k);
 
-void
-calc_kaiser_window(double *data, int datalen, double beta)
+static enum WINDOW_FUNCTION current_window_function = RECTANGULAR;
+static int current_datalen = 0;
+static double *current_window = NULL;
+
+double *
+kaiser_window(int datalen, double beta)
 {
     /*
      *         besseli0(beta * sqrt(1 - (2*x/N).^2))
@@ -39,7 +42,18 @@ calc_kaiser_window(double *data, int datalen, double beta)
      */
 
     double two_n_on_N, denom;
+    double *data;
     int k;
+
+    if (current_window_function == KAISER && current_datalen == datalen)
+	return(current_window);
+
+    current_window = realloc(current_window, datalen * sizeof(double));
+    if (current_window == NULL) {
+	fputs("Out of memory.\n", stderr);
+	exit(1);
+    }
+    data = current_window;
 
     denom = besseli0(beta);
 
@@ -54,14 +68,25 @@ calc_kaiser_window(double *data, int datalen, double beta)
 	data[k] = besseli0(beta * sqrt(1.0 - two_n_on_N * two_n_on_N)) / denom;
     }
 
-    return;
-} /* calc_kaiser_window */
+    return(data);
+}
 
-void
-calc_nuttall_window(double *data, int datalen)
+double *
+nuttall_window(int datalen)
 {
     const double a[4] = { 0.355768, 0.487396, 0.144232, 0.012604 };
+    double *data;
     int k;
+
+    if (current_window_function == NUTTALL && current_datalen == datalen)
+	return(current_window);
+
+    current_window = realloc(current_window, datalen * sizeof(double));
+    if (current_window == NULL) {
+	fputs("Out of memory.\n", stderr);
+	exit(1);
+    }
+    data = current_window;
 
     /*
      *	Nuttall window function from :
@@ -80,13 +105,24 @@ calc_nuttall_window(double *data, int datalen)
 		- a[3] * cos(6.0 * scale);
     }
 
-    return;
+    return(data);
 }
 
-void
-calc_hann_window(double * data, int datalen)
+double *
+hann_window(int datalen)
 {
+    double *data;
     int k;
+
+    if (current_window_function == HANN && current_datalen == datalen)
+	return(current_window);
+
+    current_window = realloc(current_window, datalen * sizeof(double));
+    if (current_window == NULL) {
+	fputs("Out of memory.\n", stderr);
+	exit(1);
+    }
+    data = current_window;
 
     /*
      *	Hann window function from :
@@ -98,7 +134,7 @@ calc_hann_window(double * data, int datalen)
 	data[k] = 0.5 * (1.0 - cos(2.0 * M_PI * k / (datalen - 1)));
     }
 
-    return;
+    return(data);
 }
 
 static double

@@ -32,12 +32,10 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
      * samples for better time precision, hoping to eliminate artifacts.
      */
     spec->time_domain	= calloc(2 * speclen + 1, sizeof(*spec->time_domain));
-    spec->window	= calloc(2 * speclen,	  sizeof(*spec->window));
     spec->freq_domain	= calloc(2 * speclen,	  sizeof(*spec->freq_domain));
     spec->mag_spec	= calloc(speclen + 1,	  sizeof(*spec->mag_spec));
     spec->plan = NULL;
     if (spec->time_domain == NULL ||
-	spec->window == NULL      ||
 	spec->freq_domain == NULL ||
 	spec->mag_spec == NULL) {
 	    destroy_spectrum(spec);
@@ -57,13 +55,13 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
     case RECTANGULAR:
 	break;
     case KAISER:
-	calc_kaiser_window(spec->window, 2 * speclen, 20.0);
+	spec->window = kaiser_window(2 * speclen, 20.0);
 	break;
     case NUTTALL:
-	calc_nuttall_window(spec->window, 2 * speclen);
+	spec->window = nuttall_window(2 * speclen);
 	break;
     case HANN:
-	calc_hann_window(spec->window, 2 * speclen);
+	spec->window = hann_window(2 * speclen);
 	break;
     default:
 	fprintf(stderr, "Internal error: Unknown window_function.\n");

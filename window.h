@@ -22,6 +22,6 @@ enum WINDOW_FUNCTION {
     HANN,
 };
 
-void calc_kaiser_window	(double *data, int datalen, double beta);
-void calc_nuttall_window(double *data, int datalen);
-void calc_hann_window	(double *data, int datalen);
+double *kaiser_window(int datalen, double beta);
+double *nuttall_window(int datalen);
+double *hann_window(int datalen);
