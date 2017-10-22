@@ -15,7 +15,7 @@ typedef struct calc {
     double		sr;	/* Sample rate of the piece */
     double		from;	/* From how far into the piece... */
     double		to;	/* ...to when? 0.0 means to the end. */
-    double		ppsec;	/* Pixel columns per second (or n_results?) */ 
+    double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
     enum WINDOW_FUNCTION window;
     void		*data;	/* Extra stuff not needed by the calc thread */

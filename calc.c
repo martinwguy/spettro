@@ -44,8 +44,6 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
     spectrum *spec;
     double  t;				/* Time from start of piece */
 
-    if (to == 0.0) to = length;
-
     fftsize = speclen * 2;	/* Not sure that an odd fftsize would work */
 
     spec = create_spectrum(speclen, calc->window);

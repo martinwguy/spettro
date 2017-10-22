@@ -167,7 +167,7 @@ static double	sample_rate;		/* SR of the audio in Hertz */
 
 /* option flags */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
-static bool exit_when_played = FALSE;	/* -e  Exit when the fils has played */
+static bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 
 /* State variables (hacks) */
 
@@ -353,7 +353,7 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
     calc.length = audio_length;
     calc.sr	= sample_rate;
     calc.from	= 0.0;
-    calc.to	= 0.0;
+    calc.to	= audio_length;
     calc.ppsec  = ppsec;
     calc.speclen= fftfreq_to_speclen(fftfreq, sample_rate);
     calc.window = KAISER;
