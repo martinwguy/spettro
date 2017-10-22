@@ -577,9 +577,6 @@ timer_cb(void *data)
     if (scroll_by == 0)
 	return(ECORE_CALLBACK_RENEW);
 
-    /* Replace the green line with spectrogram data */
-    repaint_column(disp_offset);
-
     /*
      * Scroll the display sideways by the correct number of pixels.
      *
@@ -593,6 +590,14 @@ timer_cb(void *data)
 	repaint_display();
     } else {
 	if (scroll_by > 0) {
+	    /*
+	     * If the green line will remain on the screen,
+	     * replace it with spectrogram data.
+	     * There are disp_offset columns left of the line.
+	     */
+	    if (scroll_by <= disp_offset)
+		repaint_column(disp_offset);
+
 	    /* Usual case: scrolling the display left to advance in time */
 	    memmove(imagedata, imagedata + (4 * scroll_by),
 		    imagestride * disp_height - (4 * scroll_by));
@@ -607,6 +612,14 @@ timer_cb(void *data)
 	    }
 	}
 	if (scroll_by < 0) {
+	    /*
+	     * If the green line will remain on the screen,
+	     * replace it with spectrogram data.
+	     * There are disp_width - disp_offset - 1 columns right of the line.
+	     */
+	    if (-scroll_by <= disp_width - disp_offset - 1)
+		repaint_column(disp_offset);
+
 	    /* Happens when they seek back in time */
 	    memmove(imagedata + (4 * -scroll_by), imagedata,
 		    imagestride * disp_height - (4 * -scroll_by));
@@ -654,6 +667,11 @@ repaint_column(int column)
 
     /* The already-calculated result */
     result_t *r;
+
+    if (column < 0 || column >= disp_width) {
+	fprintf(stderr, "Repainting column %d\n", column);
+	return;
+    }
 
     /* If it's a valid time and the column has already been calculated,
      * repaint it from the cache */
