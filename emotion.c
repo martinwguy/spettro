@@ -101,10 +101,12 @@
  */
 
 /* Helper functions */
-static void	 remember_result(result_t *result);
+static void	calc_columns(int from, int to, Evas_Object *em);
+static void	remember_result(result_t *result);
 static result_t *recall_result(double t);
-static void	repaint_display(void);
-static void	repaint_column(int column);
+static void	destroy_result(result_t *r);
+static void	repaint_display(Evas_Object *em);
+static bool	repaint_column(int column, Evas_Object *em);
 static void	paint_column(int column, result_t *result);
 static void	green_line(void);
 
@@ -176,17 +178,22 @@ static bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
  */
 static double pending_seek = 0.0;
 
+/*
+ * Internal data used to remember the FFT result for each pixel value.
+ * For now, it's just an array indexing them. When we can zoom this will
+ * need redoing.
+ *
+ * We keep the results in time order from oldest to newest.
+ */
+static result_t *results = NULL; /* Linked list of result structures */
+static result_t *last_result = NULL; /* Last element in the linked list */
+
 int
 main(int argc, char **argv)
 {
     Ecore_Evas *ee;
     Evas *canvas;
     Evas_Object *em;
-    Ecore_Thread *thread;
-
-    static calc_t calc;	/* What to calculate FFTs for. It's static in case the
-			 * calculation thread runs on after main has quit,
-			 * which would cause a SEGV and gigabytes of core. */
     char *filename;
 
     for (argv++, argc--;	/* Skip program name */
@@ -217,7 +224,7 @@ main(int argc, char **argv)
 	    printf("Version: %s\n", VERSION);
 	    exit(0);
 	default:
-usage:	    fprintf(stderr,
+	    fprintf(stderr,
 "Usage: spettro [-p] [-e] [-h n] [-w n] [file.wav]\n\
 -p:\tPlay the file right away\n\
 -e:\tExit when the audio file has played\n\
@@ -349,22 +356,7 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
 				   playback_finished_cb, NULL);
 
     /* Start FFT calculator */
-    calc.audio_file = audio_file;
-    calc.length = audio_length;
-    calc.sr	= sample_rate;
-    calc.from	= 0.0;
-    calc.to	= audio_length;
-    calc.ppsec  = ppsec;
-    calc.speclen= fftfreq_to_speclen(fftfreq, sample_rate);
-    calc.window = KAISER;
-    calc.data   = em;	/* Needed to start player when calc is ready */
-
-    thread = ecore_thread_feedback_run(
-	calc_heavy, calc_notify, NULL, NULL, &calc, EINA_FALSE);
-    if (thread == NULL) {
-	fprintf(stderr, "Can't start FFT-calculating thread.\n");
-	goto quit;
-    }
+    calc_columns(0, disp_width - 1, em);
 
     /* Start screen-updating and scrolling timer */
     timer = ecore_timer_add(step, timer_cb, (void *)em);
@@ -381,6 +373,40 @@ quit:
 #endif
 
     return 0;
+}
+
+static void
+calc_columns(int from, int to, Evas_Object *em)
+{
+    calc_t *calc = malloc(sizeof(calc_t));
+    Ecore_Thread *thread;
+
+    if (calc == NULL) {
+	fputs("Out of memory in calc_columns()\n", stderr);
+	exit(1);
+    }
+    calc->audio_file = audio_file;
+    calc->length = audio_length;
+    calc->sr	= sample_rate;
+    calc->from	= disp_time + (from - disp_offset) * step;
+    calc->to	= disp_time + (to - disp_offset) * step;
+    if (calc->from <= DELTA) calc->from = 0.0;
+    if (calc->to <= DELTA) calc->to = 0.0;
+    if (calc->from >= floor(audio_length / step) * step - DELTA)
+	calc->from = floor(audio_length / step) * step;
+    if (calc->to >= floor(audio_length / step) * step - DELTA)
+	calc->to = floor(audio_length / step) * step;
+    calc->ppsec  = ppsec;
+    calc->speclen= fftfreq_to_speclen(fftfreq, sample_rate);
+    calc->window = KAISER;
+    calc->data   = em;	/* Needed to start player when calc is ready */
+
+    thread = ecore_thread_feedback_run(
+	calc_heavy, calc_notify, NULL, NULL, calc, EINA_FALSE);
+    if (thread == NULL) {
+	fprintf(stderr, "Can't start FFT-calculating thread.\n");
+	exit(1);
+    }
 }
 
 /*
@@ -437,7 +463,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 
 	case STOPPED:
 	    disp_time = 0.0;
-	    repaint_display();
+	    repaint_display(em);
 	    start_playing(em);
 	    break;
 
@@ -496,6 +522,7 @@ seek_by(Evas_Object *em, double by)
 
     pending_seek += by;
     playing_time = disp_time + pending_seek;
+    if (playing_time < 0.0) playing_time = 0.0;
     if (playing_time > audio_length) {
 	playing_time = audio_length;
 	pending_seek = playing_time - disp_time;
@@ -560,10 +587,10 @@ timer_cb(void *data)
     new_disp_time = disp_time + pending_seek; pending_seek = 0.0;
     if (playing == PLAYING) new_disp_time += step;
 
-    if (new_disp_time < 0.0) {
+    if (new_disp_time < DELTA) {
 	new_disp_time = 0.0;
     }
-    if (new_disp_time >= audio_length) {
+    if (new_disp_time > audio_length - DELTA) {
 	new_disp_time = audio_length;
     }
 
@@ -574,11 +601,13 @@ timer_cb(void *data)
 
     scroll_by = lrint((new_disp_time - disp_time) * ppsec);
 
-    if (scroll_by == 0)
+    if (scroll_by == 0) {
 	return(ECORE_CALLBACK_RENEW);
+    }
 
     /*
-     * Scroll the display sideways by the correct number of pixels.
+     * Scroll the display sideways by the correct number of pixels
+     * and start a calc thread for the newly-revealed region.
      *
      * (4 * scroll_by) is the number of bytes by which we scroll.
      * The right-hand columns will fill with garbage or the start of
@@ -587,27 +616,34 @@ timer_cb(void *data)
      */
 
     if (abs(scroll_by) >= disp_width) {
-	repaint_display();
+	disp_time = new_disp_time;
+	calc_columns(0, disp_width - 1, em);
+	repaint_display(em);
     } else {
 	if (scroll_by > 0) {
 	    /*
 	     * If the green line will remain on the screen,
 	     * replace it with spectrogram data.
 	     * There are disp_offset columns left of the line.
+	     * If there is no result for the line, schedule its calculation
+	     * as it will need to be repainted when it has scrolled.
 	     */
 	    if (scroll_by <= disp_offset)
-		repaint_column(disp_offset);
+		repaint_column(disp_offset, em);
+
+	    disp_time = new_disp_time;
+
+	    /* The right edge is revealed */
+	    calc_columns(disp_width - scroll_by, disp_width - 1, em);
 
 	    /* Usual case: scrolling the display left to advance in time */
 	    memmove(imagedata, imagedata + (4 * scroll_by),
 		    imagestride * disp_height - (4 * scroll_by));
 
-	    disp_time = new_disp_time;
-
 	    /* Repaint the right edge */
 	    {   int x;
 		for (x = disp_width - scroll_by; x < disp_width; x++) {
-		    repaint_column(x);
+		    repaint_column(x, em);
 		}
 	    }
 	}
@@ -618,18 +654,21 @@ timer_cb(void *data)
 	     * There are disp_width - disp_offset - 1 columns right of the line.
 	     */
 	    if (-scroll_by <= disp_width - disp_offset - 1)
-		repaint_column(disp_offset);
+		repaint_column(disp_offset, em);
+
+	    disp_time = new_disp_time;
+
+	    /* The left edge is revealed. Draw from right to left. */
+	    calc_columns(-scroll_by - 1, 0, em);
 
 	    /* Happens when they seek back in time */
 	    memmove(imagedata + (4 * -scroll_by), imagedata,
 		    imagestride * disp_height - (4 * -scroll_by));
 
-	    disp_time = new_disp_time;
-
 	    /* Repaint the left edge */
 	    {   int x;
 		for (x = -scroll_by - 1; x >= 0; x--) {
-		    repaint_column(x);
+		    repaint_column(x, em);
 		}
 	    }
 	}
@@ -645,12 +684,12 @@ timer_cb(void *data)
 
 /* Repaint the whole display */
 static void
-repaint_display()
+repaint_display(Evas_Object *em)
 {
     int pos_x;
 
     for (pos_x=disp_width - 1; pos_x >= 0; pos_x--) {
-	repaint_column(pos_x);
+	repaint_column(pos_x, em);
     }
     green_line();
     evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
@@ -658,9 +697,11 @@ repaint_display()
 
 /* Repaint a column of the display from the result cache or paint it
  * with the background colour if it hasn't been calculated yet.
+ * Returns TRUE if the result was found in the cache and repainted,
+ *	   FALSE if it painted the background color or was off-limits.
  */
-static void
-repaint_column(int column)
+static bool
+repaint_column(int column, Evas_Object *em)
 {
     /* What time does this column represent? */
     double t = disp_time + (column - disp_offset) * step;
@@ -670,22 +711,25 @@ repaint_column(int column)
 
     if (column < 0 || column >= disp_width) {
 	fprintf(stderr, "Repainting column %d\n", column);
-	return;
+	return FALSE;
     }
 
     /* If it's a valid time and the column has already been calculated,
      * repaint it from the cache */
-    if (t >= 0.0 - DELTA && t < audio_length + DELTA &&
+    if (t >= 0.0 - DELTA && t <= audio_length + DELTA &&
         (r = recall_result(t)) != NULL) {
 	paint_column(column, r);
+	return TRUE;
     } else {
 	/* ...otherwise paint it with the background colour */
 	int y;
 	unsigned long *p = (unsigned long *)imagedata + column;
+
 	for (y=disp_height - 1; y >= 0; y--) {
             *p = background;
 	    p += imagestride / sizeof(unsigned long);
 	}
+	return FALSE;
     }
 }
 
@@ -718,7 +762,6 @@ paint_column(int pos_x, result_t *result)
      */
     for (i=maglen-1; i>=0; i--) {
 	unsigned long *pixelrow;
-	unsigned char color[3];
 
 	pixelrow = (unsigned long *)
 	    &imagedata[imagestride * ((disp_height - 1) - i)];
@@ -730,9 +773,11 @@ paint_column(int pos_x, result_t *result)
 		 gray);
 #else
 	/* colormap writes to color[] and we write to the pixel buffer */
-	colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
-	pixelrow[pos_pos_x] = (color[0]) | (color[1] << 8) |
-			  (color[2] << 16) | 0xFF000000;
+	{   unsigned char color[3];
+	    colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
+	    pixelrow[pos_pos_x] = (color[0]) | (color[1] << 8) |
+				  (color[2] << 16) | 0xFF000000;
+	}
 #endif
     }
 }
@@ -812,38 +857,53 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
  * to know when to throw away old results.
  */
 
-/*
- * Internal data used to remember the FFT result for each pixel value.
- * For now, it's just an array indexing them. When we can zoom this will
- * need redoing.
- *
- * We keep the results in time order from oldest to newest.
- */
-static result_t *results = NULL; /* Linked list of result structures */
-static result_t *last_result = NULL; /* Last element in the linked list */
-
-/*
- * For speed when seeking ahead of the last-computed column,
- * we remember the time of the most result most advanced in
- * time. This saves uselessly scanning the whole list of results.
- */
-static double latest_result_time = 0.0;
-
 /* "result" was obtained from malloc(); it is up to us to free it. */
 static void
 remember_result(result_t *result)
 {
-    /* Results are calculated in order so add at tail of list */
+    /* Drop any stored results that are before the displayed area */
+    while (results != NULL && results->t < disp_time - disp_offset * step - DELTA) {
+	result_t *r = results;
+	results = results->next;
+	destroy_result(r);
+    }
+    if (results == NULL) last_result = NULL;
+
+    result->next = NULL;
+
     if (last_result == NULL) {
 	results = last_result = result;
     } else {
-	last_result->next = result;
-	last_result = result;
+        /* If after the last one, add at tail of list */
+	if (result->t > last_result->t + DELTA) {
+	    last_result->next = result;
+	    last_result = result;
+	} else {
+	    /* If it's before the first one, tack it onto head of list */
+	    if (result->t < results->t - DELTA) {
+		result->next = results;
+		results = result;
+	    } else {
+		/* Otherwise find which element to place it after */
+		result_t *r;	/* The result after which we will place it */
+		for (r=results;
+		     r && r->next && r->next->t <= result->t + DELTA;
+		     r = r->next) {
+		    if (r->next->t <= result->t + DELTA &&
+			r->next->t >= result->t - DELTA) {
+			/* Same time: forget it */
+			destroy_result(result);
+			r = NULL; break;
+		    }
+		}
+		if (r) {
+		    result->next = r->next;
+		    r->next = result;
+		    if (last_result == r) last_result = result;
+	        }
+	    }
+	}
     }
-    result->next = NULL;
-
-    if (result->t > latest_result_time)
-	latest_result_time = result->t;
 }
 
 /* Return the result for time t at the current speclen
@@ -853,13 +913,26 @@ recall_result(double t)
 {
     result_t *p;
 
-    if (t > latest_result_time) return(NULL);
+    /* If it's later than the last cached result, we don't have it.
+     * This saves uselessly scanning the whole list of results.
+     */
+    if (last_result == NULL || t > last_result->t + DELTA)
+	return(NULL);
 
     for (p=results; p != NULL; p=p->next) {
 	/* If the time is the same, this is the result we want */
-	if (p->t > t - DELTA && p->t < t + DELTA) {
-	    return(p);
+	if (p->t >= t - DELTA && p->t <= t + DELTA) {
+	    break;
 	}
     }
-    return(NULL);
+    return(p);	/* NULL if not found */
+}
+
+/* Free the memory associated with a result structure */
+static void
+destroy_result(result_t *r)
+{
+    free(r->spec);
+    free(r->mag);
+    free(r);
 }

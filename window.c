@@ -31,6 +31,7 @@ static double factorial(int k);
 static enum WINDOW_FUNCTION current_window_function = RECTANGULAR;
 static int current_datalen = 0;
 static double *current_window = NULL;
+static double current_beta = 0.0;
 
 double *
 kaiser_window(int datalen, double beta)
@@ -45,15 +46,21 @@ kaiser_window(int datalen, double beta)
     double *data;
     int k;
 
-    if (current_window_function == KAISER && current_datalen == datalen)
-	return(current_window);
+    if (current_window != NULL &&
+	current_window_function == KAISER &&
+	current_datalen == datalen &&
+	current_beta == beta) return(current_window);
 
-    current_window = realloc(current_window, datalen * sizeof(double));
+    /* Don't free old windows because a calc thread may still be using them */
+    current_window = malloc(datalen * sizeof(double));
     if (current_window == NULL) {
 	fputs("Out of memory.\n", stderr);
 	exit(1);
     }
     data = current_window;
+    current_window_function = KAISER;
+    current_datalen = datalen;
+    current_beta = beta;
 
     denom = besseli0(beta);
 
@@ -81,12 +88,15 @@ nuttall_window(int datalen)
     if (current_window_function == NUTTALL && current_datalen == datalen)
 	return(current_window);
 
-    current_window = realloc(current_window, datalen * sizeof(double));
+    /* Don't free old windows because a calc thread may still be using them */
+    current_window = malloc(datalen * sizeof(double));
     if (current_window == NULL) {
 	fputs("Out of memory.\n", stderr);
 	exit(1);
     }
     data = current_window;
+    current_window_function = NUTTALL;
+    current_datalen = datalen;
 
     /*
      *	Nuttall window function from :
@@ -117,12 +127,15 @@ hann_window(int datalen)
     if (current_window_function == HANN && current_datalen == datalen)
 	return(current_window);
 
-    current_window = realloc(current_window, datalen * sizeof(double));
+    /* Don't free old windows because a calc thread may still be using them */
+    current_window = malloc(datalen * sizeof(double));
     if (current_window == NULL) {
 	fputs("Out of memory.\n", stderr);
 	exit(1);
     }
     data = current_window;
+    current_window_function = HANN;
+    current_datalen = datalen;
 
     /*
      *	Hann window function from :

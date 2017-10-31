@@ -44,7 +44,7 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
 
     spec->plan = fftw_plan_r2r_1d(2 * speclen,
 			    spec->time_domain, spec->freq_domain,
-			    FFTW_R2HC, FFTW_MEASURE /*| FFTW_PRESERVE_INPUT*/);
+			    FFTW_R2HC, FFTW_ESTIMATE /*| FFTW_PRESERVE_INPUT*/);
     if (spec->plan == NULL) {
 	fprintf(stderr, "create_spectrum(): failed to create plan\n");
 	destroy_spectrum(spec);
@@ -77,7 +77,7 @@ destroy_spectrum(spectrum *spec)
 {
     if (spec->plan) fftw_destroy_plan(spec->plan);
     free(spec->time_domain);
-    free(spec->window);
+    //free(spec->window);
     free(spec->freq_domain);
     free(spec->mag_spec);
     free(spec);

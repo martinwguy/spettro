@@ -27,6 +27,10 @@
  * Results are returned in a result_t (struct result) which is obtained from
  * malloc, as is the "spec" field of it.
  */
+
+/* Helper function */
+static result_t *get_result(calc_t *calc, spectrum *spec, double t);
+
 void
 calc(calc_t *calc, void (*result_cb)(result_t *))
 {
@@ -52,8 +56,24 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
 	return;
     }
 
-    for (t = from; t <= to + DELTA; t += step) {
+    /* Ascending ranges or a single point */
+    if (from <= to + DELTA)
+	for (t = from; t <= to + DELTA; t += step)
+	    (*result_cb)(get_result(calc, spec, t));
+
+    /* Descending ranges */
+    if (from > to + DELTA)
+	for (t = from; t >= to - DELTA; t -= step)
+	    (*result_cb)(get_result(calc, spec, t));
+
+    destroy_spectrum(spec);
+}
+
+static result_t *
+get_result(calc_t *calc, spectrum *spec, double t)
+{
         result_t *result;	/* The result structure */
+	int fftsize = calc->speclen * 2;
 
 	result = (result_t *) malloc(sizeof(result_t));
 	if (!result) {
@@ -62,12 +82,12 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
 	}
 
 	result->t = t;
-	result->speclen = speclen;
+	result->speclen = calc->speclen;
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
 	read_mono_audio_double(calc->audio_file, spec->time_domain,
-			       lrint(t * sr) - fftsize/2, fftsize);
+			       lrint(t * calc->sr) - fftsize/2, fftsize);
 
 	calc_magnitude_spectrum(spec);
 
@@ -76,7 +96,7 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
 	 * the already-allocated buffer and malloc a new one for next time.
 	 */
 	result->spec = spec->mag_spec;
-	spec->mag_spec = calloc(speclen + 1, sizeof (*spec->mag_spec));
+	spec->mag_spec = calloc(calc->speclen + 1, sizeof(*(spec->mag_spec)));
 	if (spec->mag_spec == NULL) {
 	    fprintf(stderr, "Out of memory in calc()\n");
 	    return;
@@ -85,8 +105,5 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
 	/* Mark the converted data as not having been calculated yet */
 	result->mag = NULL;
 
-	/* Send result to main loop */
-	(*result_cb)(result);
-    }
-    destroy_spectrum(spec);
+	return(result);
 }
