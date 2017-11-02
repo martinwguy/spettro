@@ -1,5 +1,5 @@
 /*
- * spettro.h - definitions and declarationa for everybody
+ * spettro.h - definitions and declarations for everybody
  */
 
 typedef enum {

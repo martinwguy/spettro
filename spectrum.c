@@ -14,6 +14,7 @@
 #include "spettro.h"
 #include "window.h"
 #include "spectrum.h"
+#include "lock.h"
 
 spectrum *
 create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
@@ -42,9 +43,18 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
 	    return(NULL);
     }
 
+    if (!lock_fftw3()) {
+	fprintf(stderr, "Cannot lock FFTW3.\n");
+	exit(1);
+    }
     spec->plan = fftw_plan_r2r_1d(2 * speclen,
 			    spec->time_domain, spec->freq_domain,
 			    FFTW_R2HC, FFTW_ESTIMATE /*| FFTW_PRESERVE_INPUT*/);
+    if (!unlock_fftw3()) {
+	fprintf(stderr, "Cannot unlock FFTW3.\n");
+	exit(1);
+    }
+
     if (spec->plan == NULL) {
 	fprintf(stderr, "create_spectrum(): failed to create plan\n");
 	destroy_spectrum(spec);
@@ -75,9 +85,19 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
 void
 destroy_spectrum(spectrum *spec)
 {
-    if (spec->plan) fftw_destroy_plan(spec->plan);
+    if (spec->plan) {
+	if (!lock_fftw3()) {
+	    fprintf(stderr, "Cannot lock FFTW3.\n");
+	    exit(1);
+	}
+	fftw_destroy_plan(spec->plan);
+	if (!unlock_fftw3()) {
+	    fprintf(stderr, "Cannot unlock FFTW3.\n");
+	    exit(1);
+	}
+    }
     free(spec->time_domain);
-    //free(spec->window);
+    /* free(spec->window);	window may be in use by another calc thread */
     free(spec->freq_domain);
     free(spec->mag_spec);
     free(spec);

@@ -5,10 +5,10 @@
 ALL=spettro
 PREFIX=/usr/local
 
-SRCS=emotion.c calc.c window.c spectrum.c interpolate.c colormap.c speclen.c \
-     sndfile.c
-OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o speclen.o \
-     sndfile.o
+SRCS=emotion.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
+     speclen.c sndfile.c
+OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o lock.o \
+     speclen.o sndfile.o
 # or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
 # See also AUDIOFILELIB= below
 
@@ -20,7 +20,7 @@ AUDIOFILELIB=	-lsndfile
 #AUDIOFILELIB=	-laudiofile
 OTHER_LIBS=	$(AUDIOFILELIB) -lfftw3 -lm
 
-OPTFLAG=-O
+OPTFLAG=-O -g
 CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\"
 LDFLAGS=
 

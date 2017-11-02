@@ -16,6 +16,8 @@
 #include <math.h>
 #include <fftw3.h>
 
+#include <Ecore.h>
+
 #include "spettro.h"
 #include "audiofile.h"
 #include "calc.h"
@@ -39,11 +41,10 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
     double length = calc->length;	/* length of whole piece in seconds */
     double from   = calc->from;		/* centre of first FFT bucket */
     double to	  = calc->to;		/* centre of last FFT bucket */
-    double ppsec  = calc->ppsec;	/* How many results per second? */
     int	   speclen= calc->speclen;	/* Max index into result->spec */
 
     /* Variables */
-    double step	  = 1 / ppsec;
+    double step	  = 1 / calc->ppsec;
     int	   fftsize;			/* == speclen * 2 */
     spectrum *spec;
     double  t;				/* Time from start of piece */
@@ -83,11 +84,20 @@ get_result(calc_t *calc, spectrum *spec, double t)
 
 	result->t = t;
 	result->speclen = calc->speclen;
+	result->thread = calc->thread;
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
+	if (!lock_audiofile()) {
+	    fprintf(stderr, "Cannot lock audio file\n");
+	    exit(1);
+	}
 	read_mono_audio_double(calc->audio_file, spec->time_domain,
 			       lrint(t * calc->sr) - fftsize/2, fftsize);
+	if (!unlock_audiofile()) {
+	    fprintf(stderr, "Cannot unlock audio file\n");
+	    exit(1);
+	}
 
 	calc_magnitude_spectrum(spec);
 

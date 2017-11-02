@@ -128,6 +128,8 @@ static Eina_Bool timer_cb(void *data);
 /* FFT calculating thread */
 static void calc_heavy(void *data, Ecore_Thread *thread);
 static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
+static void calc_end(void *data, Ecore_Thread *thread);
+static void calc_cancel(void *data, Ecore_Thread *thread);
 static void calc_stop(void);
 
 /*
@@ -170,6 +172,7 @@ static double	sample_rate;		/* SR of the audio in Hertz */
 /* option flags */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
 static bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
+static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
 
 /* State variables (hacks) */
 
@@ -220,6 +223,13 @@ main(int argc, char **argv)
 		exit(1);
 	    }
 	    break;
+	case 'j':
+	    argv++; argc--;	 /* Advance to numeric argument */
+	    if ((max_threads = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-j what?\n");
+		exit(1);
+	    }
+	    break;
 	case 'v':
 	    printf("Version: %s\n", VERSION);
 	    exit(0);
@@ -230,6 +240,7 @@ main(int argc, char **argv)
 -e:\tExit when the audio file has played\n\
 -h n:\tSet spectrogram display height to n pixels\n\
 -w n:\tSet spectrogram display width to n pixels\n\
+-j n:\tSet maximum number of threads to use (default: the number of CPUs)\n\
 -v:\tPrint the version of spettro that you're using\n\
 The default file is audio.wav\n\
 Environment variables:\n\
@@ -283,6 +294,9 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
     ecore_evas_show(ee);
 
     canvas = ecore_evas_get(ee);
+
+    /* Fiddle with ecore's settings */
+    if (max_threads > 0) ecore_thread_max_set(max_threads);
 
     /* Create the image and its memory buffer */
     image = evas_object_image_add(canvas);
@@ -402,7 +416,7 @@ calc_columns(int from, int to, Evas_Object *em)
     calc->data   = em;	/* Needed to start player when calc is ready */
 
     thread = ecore_thread_feedback_run(
-	calc_heavy, calc_notify, NULL, NULL, calc, EINA_FALSE);
+	calc_heavy, calc_notify, calc_end, calc_cancel, calc, EINA_FALSE);
     if (thread == NULL) {
 	fprintf(stderr, "Can't start FFT-calculating thread.\n");
 	exit(1);
@@ -417,7 +431,7 @@ calc_columns(int from, int to, Evas_Object *em)
 static void
 quitGUI(Ecore_Evas *ee EINA_UNUSED)
 {
-    calc_stop();
+    //calc_stop();
     ecore_main_loop_quit();
 }
 
@@ -471,12 +485,12 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	    continue_playing(em);
 	    break;
 	}
-    }
+    } else
 
     /* Arrow <-/-> : Jump back/forward a second; with Shift, 10 seconds. */
     if (strcmp(ev->key, "Left") == 0) {
 	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
-    }
+    } else
     if (strcmp(ev->key, "Right") == 0) {
 	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
     }
@@ -738,7 +752,7 @@ paint_column(int pos_x, result_t *result)
 {
     float *mag;
     int maglen;
-    static float max = 0.0;	/* maximum magnitude value seen so far */
+    static float max = 1.0;	/* maximum magnitude value seen so far */
     int i;
 
     if (result->mag != NULL) {
@@ -805,21 +819,38 @@ static void
 calc_result(result_t *result)
 {
     /* Send result to main loop */
-    ecore_thread_feedback(calc_thread, result);
+    ecore_thread_feedback(result->thread, result);
 }
 
 static void
 calc_heavy(void *data, Ecore_Thread *thread)
 {
-    calc_thread = thread;
-    calc((calc_t *)data, calc_result);
+    calc_t *c = (calc_t *)data;
+    c->thread = thread;
+    calc(c, calc_result);
+}
+static void
+calc_end(void *data, Ecore_Thread *thread)
+{
+    free(data);
 }
 
 static void
-calc_stop()
+calc_cancel(void *data, Ecore_Thread *thread)
 {
-    (void) ecore_thread_cancel(calc_thread);
+    free(data);
 }
+
+static void
+calc_stop(void)
+{
+    // (void) ecore_thread_cancel(calc->thread);
+}
+
+/*
+ * This is called from the calculation thread and can be called several
+ * times simultaneously.
+ */
 
 static void
 calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
@@ -922,6 +953,11 @@ recall_result(double t)
     for (p=results; p != NULL; p=p->next) {
 	/* If the time is the same, this is the result we want */
 	if (p->t >= t - DELTA && p->t <= t + DELTA) {
+	    break;
+	}
+	/* If the stored time is greater, it isn't there. */
+	if (p->t > t + DELTA) {
+	    p = NULL;
 	    break;
 	}
     }

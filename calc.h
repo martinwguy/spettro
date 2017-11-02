@@ -18,6 +18,7 @@ typedef struct calc {
     double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
     enum WINDOW_FUNCTION window;
+    Ecore_Thread *thread; /* The thread this calculator is running in */
     void		*data;	/* Extra stuff not needed by the calc thread */
 } calc_t;
 
@@ -27,6 +28,7 @@ typedef struct result {
     float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
     int maglen;		/* Length of magnitude data on log axis */
     float *mag;		/* Magnitude data from [0..maglen-1] */
+    Ecore_Thread *thread; /* The calc thread that this result came from */
     /* Linked list of results, not in any particular order */
     struct result *next;
 } result_t;
