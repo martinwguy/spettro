@@ -27,7 +27,7 @@ LDFLAGS=
 all: $(ALL)
 
 install: all
-	install $(ALL) $(PREFIX)/
+	install $(ALL) $(PREFIX)/bin/
 
 spettro: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(EMOTION_LIBS) $(OTHER_LIBS)
