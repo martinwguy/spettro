@@ -1,0 +1,41 @@
+------------------------------------------------------------------------
+Make playing multiple audio files work
+------------------------------------------------------------------------
+Add sox's heatmap
+------------------------------------------------------------------------
+Add optional frequency scale in hertz on the left and as notes on the right
+------------------------------------------------------------------------
+Add optional time axis at top and/or bottom
+------------------------------------------------------------------------
+Fullscreen -f would be nice.
+------------------------------------------------------------------------
+Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
+------------------------------------------------------------------------
+Add pentagram staves and piano lines
+possibly with (optional) subpixel positioning / antialiasing.
+------------------------------------------------------------------------
+Add GUI keystrokes to:
+- pan up and down the frequency axis
+- zoom in and out, which affects both the frequency and time scales equally
+  (or is it better to zoom the frequency and time axes separately?)
+- change brightness/contrast (i.e. change min_db, as max is normalised)
+- change fftfreq (impacting the result cache)
+------------------------------------------------------------------------
+Green line flickers when enlarging with scarse processor
+------------------------------------------------------------------------
+Add "1" button to set 1:1 size
+------------------------------------------------------------------------
+Spettro window is always on top.
+------------------------------------------------------------------------
+When enlarging and missing timer interrupts so it should scroll by >1,
+the visuals get out of sync with the audio.
+------------------------------------------------------------------------
+When dragging the mouse left or right, change the playing position.
+Visual effect after redraw is to drag the graphic.
+------------------------------------------------------------------------
+When dragging the mouse up or down, pan the frequency axis
+giving the same dragging-the-graphic effect.
+------------------------------------------------------------------------
+Full-piece spectrogram in miniature along the bottom edge so that you can
+seek to any position in a click and see which parts have been calculated?
+------------------------------------------------------------------------
