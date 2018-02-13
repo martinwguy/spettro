@@ -9,16 +9,12 @@ Add optional frequency scale in hertz on the left and as notes on the right
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
 ------------------------------------------------------------------------
-Use multiple CPUs by multiple calc threads. Give each a bigger step
-and assume that they run at the same speed? -> interesting effects on
-startup if CPU availability is not even. Compensate?
-------------------------------------------------------------------------
 Fullscreen -f would be nice.
 ------------------------------------------------------------------------
-Add OCTAVES & PPOCT determining graphic height like -w -h?
+Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
 ------------------------------------------------------------------------
 Add pentagram staves and piano lines
-preferably with subpixel positioning / antialiasing.
+possibly with (optional) subpixel positioning / antialiasing.
 ------------------------------------------------------------------------
 Add GUI keystrokes to:
 - pan up and down the frequency axis
@@ -40,4 +36,7 @@ The visible region plus a screenful ahead?
 ------------------------------------------------------------------------
 When enlarging and missing timer interrupts so it should scroll by >1,
 the visuals get out of sync with the audio.
+------------------------------------------------------------------------
+When tag not found, check if tags file has been updated
+(Control-Z, make tags, fg)
 ------------------------------------------------------------------------
