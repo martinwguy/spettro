@@ -549,7 +549,7 @@ seek_by(Evas_Object *em, double by)
 
     /* If moving left after it has come to the end and stopped,
      * we want it to play again. */
-    if (by < 0.0 && playing == STOPPED) {
+    if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
 	start_playing(em);
     }
 }
