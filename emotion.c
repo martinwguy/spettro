@@ -335,20 +335,30 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
 
     /* Initialize the audio subsystem */
 
+#if EMOTION_AUDIO
     em = emotion_object_add(canvas);
+#else
+    em = evas_object_smart_add(canvas, NULL);
+#endif
     if (!em) {
-	fputs("Couldn't initialize audio subsystem.\n", stderr);
+#if EMOTION_AUDIO
+	fputs("Couldn't initialize audio.\n", stderr);
+#else
+	fputs("Couldn't initialize graphics.\n", stderr);
+#endif
 	exit(1);
     }
 
     /* Load the audio file for playing */
 
+#if EMOTION_AUDIO
     emotion_object_init(em, NULL);
     emotion_object_video_mute_set(em, EINA_TRUE);
     if (emotion_object_file_set(em, filename) != EINA_TRUE) {
 	fputs("Couldn't load audio file.\n", stderr);
 	exit(1);
     }
+#endif
     evas_object_show(em);
 
     /* Open the audio file to find out sampling rate, length and to be able
@@ -365,9 +375,11 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
     /* Set GUI callbacks */
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
 
+#if EMOTION_AUDIO
     /* Set audio player callbacks */
     evas_object_smart_callback_add(em, "playback_finished",
 				   playback_finished_cb, NULL);
+#endif
 
     /* Start FFT calculator */
     calc_columns(0, disp_width - 1, em);
@@ -501,27 +513,33 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 static void
 pause_playing(Evas_Object *em)
 {
+#if EMOTION_AUDIO
     emotion_object_play_set(em, EINA_FALSE);
+#endif
     playing = PAUSED;
 }
 
 static void
 start_playing(Evas_Object *em)
 {
+#if EMOTION_AUDIO
     emotion_object_position_set(em, disp_time + pending_seek);
     emotion_object_play_set(em, EINA_TRUE);
+#endif
     playing = PLAYING;
 }
 
 static void
 continue_playing(Evas_Object *em)
 {
+#if EMOTION_AUDIO
     /* Resynchronise the playing position to the display,
      * as emotion stops playing immediately but seems to throw away
      * the unplayed part of the currently-playing audio buffer.
      */
     emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
+#endif
     playing = PLAYING;
 }
 
@@ -541,11 +559,15 @@ seek_by(Evas_Object *em, double by)
 	playing_time = audio_length;
 	pending_seek = playing_time - disp_time;
 	if (playing == PLAYING) {
+#if EMOTION_AUDIO
             emotion_object_play_set(em, EINA_FALSE);
+#endif
 	    playing = STOPPED;
 	}
     }
+#if EMOTION_AUDIO
     emotion_object_position_set(em, playing_time);
+#endif
 
     /* If moving left after it has come to the end and stopped,
      * we want it to play again. */
