@@ -5,9 +5,9 @@
 ALL=spettro
 PREFIX=/usr/local
 
-SRCS=emotion.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
+SRCS=main.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
      speclen.c sndfile.c
-OBJS=emotion.o calc.o window.o spectrum.o interpolate.o colormap.o lock.o \
+OBJS=main.o calc.o window.o spectrum.o interpolate.o colormap.o lock.o \
      speclen.o sndfile.o
 # or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
 # See also AUDIOFILELIB= below
@@ -36,7 +36,7 @@ spettro: $(OBJS)
 clean:
 	rm -f $(ALL) *.o core
 
-emotion.o:	calc.h window.h interpolate.h colormap.h audiofile.h
+main.o:		calc.h window.h interpolate.h colormap.h audiofile.h
 calc.o:		calc.h window.h spectrum.h audiofile.h
 audiofile.o:	audiofile.h
 spectrum.o:	spectrum.h
