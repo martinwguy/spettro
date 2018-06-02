@@ -310,9 +310,9 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
     }
     /* Clear the image buffer to the background colour */
     {	register int i;
-	register unsigned long *p = (unsigned long *)imagedata;
+	register unsigned int *p = (unsigned int *)imagedata;
 
-	for (i=(imagestride * disp_height) / sizeof(unsigned long);
+	for (i=(imagestride * disp_height) / sizeof(*p);
 	     i > 0;
 	     i--) {
 	    *p++ = background;
@@ -759,11 +759,11 @@ repaint_column(int column, Evas_Object *em)
     } else {
 	/* ...otherwise paint it with the background colour */
 	int y;
-	unsigned long *p = (unsigned long *)imagedata + column;
+	unsigned int *p = (unsigned int *)imagedata + column;
 
 	for (y=disp_height - 1; y >= 0; y--) {
             *p = background;
-	    p += imagestride / sizeof(unsigned long);
+	    p += imagestride / sizeof(*p);
 	}
 	return FALSE;
     }
@@ -797,22 +797,20 @@ paint_column(int pos_x, result_t *result)
      * Really we need to add max_db and have brightness/contast control.
      */
     for (i=maglen-1; i>=0; i--) {
-	unsigned long *pixelrow;
+	unsigned int *pixelrow;
 
-	pixelrow = (unsigned long *)
-	    &imagedata[imagestride * ((disp_height - 1) - i)];
+	pixelrow = (unsigned int *)&imagedata[imagestride * ((disp_height - 1) - i)];
 
 #if LITTLE_ENDIAN	/* Provided by stdlib.h on Linux-glibc */
 	/* Let colormap write directly to the pixel buffer */
 	colormap(20.0 * log10(mag[i] / max), min_db,
-		 (unsigned char *) (pixelrow + pos_x),
-		 gray);
+		 (unsigned char *)(pixelrow + pos_x), gray);
 #else
-	/* colormap writes to color[] and we write to the pixel buffer */
+	/* colormap writes to color[] and we swap them to the pixel buffer */
 	{   unsigned char color[3];
 	    colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
-	    pixelrow[pos_pos_x] = (color[0]) | (color[1] << 8) |
-				  (color[2] << 16) | 0xFF000000;
+	    pixelrow[pos_x] = (color[0]) | (color[1] << 8) |
+-                             (color[2] << 16) | 0xFF000000;
 	}
 #endif
     }
@@ -823,11 +821,11 @@ static void
 green_line()
 {
     int y;
-    unsigned long *p = (unsigned long *)imagedata + disp_offset;
+    unsigned int *p = (unsigned int *)imagedata + disp_offset;
 
     for (y=disp_height - 1; y >=0; y--) {
 	*p = 0xFF00FF00;
-	p += imagestride / sizeof(unsigned long);
+	p += imagestride / sizeof(*p);
     }
 }
 
