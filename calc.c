@@ -21,6 +21,7 @@
 #include "spettro.h"
 #include "audiofile.h"
 #include "calc.h"
+#include "lock.h"
 #include "spectrum.h"
 
 /*
@@ -79,7 +80,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	result = (result_t *) malloc(sizeof(result_t));
 	if (!result) {
 	    fprintf(stderr, "Out of memory in calc()\n");
-	    return;
+	    return NULL;
 	}
 
 	result->t = t;
@@ -88,8 +89,8 @@ get_result(calc_t *calc, spectrum *spec, double t)
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	if (!lock_audiofile()) {
-	    fprintf(stderr, "Cannot lock audio file\n");
+	 if (!lock_audiofile()) {
+	     fprintf(stderr, "Cannot lock audio file\n");
 	    exit(1);
 	}
 	read_audio_file(calc->audio_file, (char *) spec->time_domain,
@@ -110,7 +111,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	spec->mag_spec = calloc(calc->speclen + 1, sizeof(*(spec->mag_spec)));
 	if (spec->mag_spec == NULL) {
 	    fprintf(stderr, "Out of memory in calc()\n");
-	    return;
+	    return NULL;
 	}
 
 	/* Mark the converted data as not having been calculated yet */

@@ -941,7 +941,8 @@ static void
 calc_result(result_t *result)
 {
     /* Send result to main loop */
-    ecore_thread_feedback(result->thread, result);
+    if (result != NULL)
+	ecore_thread_feedback(result->thread, result);
 }
 
 static void
@@ -951,6 +952,7 @@ calc_heavy(void *data, Ecore_Thread *thread)
     c->thread = thread;
     calc(c, calc_result);
 }
+
 static void
 calc_end(void *data, Ecore_Thread *thread)
 {
