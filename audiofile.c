@@ -73,6 +73,7 @@ read_mono_audio_double(audio_file_t *audio_file, double *data,
     if (start >= 0) {
         afSeekFrame(af, AF_DEFAULT_TRACK, start);
     } else {
+	/* Fill before time 0.0 with silence */
         start = -start;
         afSeekFrame(af, AF_DEFAULT_TRACK, 0);
         memset(data, 0, start * sizeof(data[0]));
