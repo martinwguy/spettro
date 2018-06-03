@@ -558,6 +558,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case STOPPED:
 	    disp_time = 0.0;
 	    repaint_display(em);
+	    calc_columns(disp_offset, disp_width, em);
 	    start_playing(em);
 	    break;
 
