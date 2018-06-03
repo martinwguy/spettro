@@ -10,6 +10,7 @@ typedef struct audio_file {
 	SNDFILE *sndfile;
 	unsigned long samplerate;
 	unsigned long frames;
+	unsigned channels;
 } audio_file_t;
 
 typedef enum {
@@ -21,6 +22,8 @@ typedef enum {
 extern audio_file_t *open_audio_file(char *filename);
 
 extern int audio_file_length_in_frames(audio_file_t *audio_file);
+
+extern int audio_file_channels(audio_file_t *audio_file);
 
 extern double audio_file_sampling_rate(audio_file_t *audio_file);
 

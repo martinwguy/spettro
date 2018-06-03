@@ -49,6 +49,13 @@ audio_file_length_in_frames(audio_file_t *audio_file)
     return(afGetFrameCount(audio_file->af, AF_DEFAULT_TRACK));
 }
 
+/* Number of audio channels */
+int
+audio_file_channels(audio_file_t *audio_file)
+{
+    return(afGetChannels(audio_file->af, AF_DEFAULT_TRACK));
+}
+
 double
 audio_file_sampling_rate(audio_file_t *audio_file)
 {

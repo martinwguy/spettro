@@ -30,6 +30,7 @@ open_audio_file(char *filename)
     audio_file.sndfile = sndfile;
     audio_file.samplerate = info.samplerate;
     audio_file.frames = info.frames;
+    audio_file.channels = info.channels;
 
     return(&audio_file);
 }
@@ -38,6 +39,12 @@ int
 audio_file_length_in_frames(audio_file_t *audio_file)
 {
     return audio_file->frames;
+}
+
+int
+audio_file_channels(audio_file_t *audio_file)
+{
+    return(audio_file->channels);
 }
 
 double
