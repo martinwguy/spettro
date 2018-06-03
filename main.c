@@ -84,10 +84,18 @@
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <Evas.h>
+#if EMOTION_AUDIO
 #include <Emotion.h>
+#endif
 
 #include <stdlib.h>
 #include <math.h>	/* for lrint() */
+
+#if SDL_AUDIO
+# include <SDL/SDL.h>
+static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
+				 * will we next read samples to play? */
+#endif
 
 #include "spettro.h"
 #include "audiofile.h"
@@ -117,13 +125,20 @@ static void quitGUI(Ecore_Evas *ee);
 /* Audio playing functions */
 static void pause_playing(Evas_Object *em);
 static void start_playing(Evas_Object *em);
+static void stop_playing(Evas_Object *em);
 static void continue_playing(Evas_Object *em);
 static void seek_by(Evas_Object *em, double by);
 
-/* Audio callback functions */
 static Ecore_Timer *timer = NULL;
-static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
 static Eina_Bool timer_cb(void *data);
+
+/* Audio callback functions */
+#if EMOTION_AUDIO
+static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
+#endif
+#if SDL_AUDIO
+static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
+#endif
 
 /* FFT calculating thread */
 static void calc_heavy(void *data, Ecore_Thread *thread);
@@ -349,6 +364,13 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
 	exit(1);
     }
 
+#if SDL_AUDIO
+    if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+	fprintf(stderr, "Couldn't initialize SDL audio: %s.\n", SDL_GetError());
+	exit(1);
+    }
+#endif
+
     /* Load the audio file for playing */
 
 #if EMOTION_AUDIO
@@ -381,6 +403,24 @@ DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
 				   playback_finished_cb, NULL);
 #endif
 
+#if SDL_AUDIO
+    {
+	SDL_AudioSpec wavspec;
+
+	wavspec.freq = lrint(sample_rate);
+	wavspec.format = AUDIO_S16SYS;
+	wavspec.channels = audio_file_channels(audio_file);
+	wavspec.samples = 4096;
+	wavspec.callback = sdl_fill_audio;
+	wavspec.userdata = audio_file;
+
+	if (SDL_OpenAudio(&wavspec, NULL) < 0) {
+	    fprintf(stderr, "Couldn't initialize SDL audio: %s.\n", SDL_GetError());
+	    exit(1);
+	}
+    }
+#endif
+
     /* Start FFT calculator */
     calc_columns(0, disp_width - 1, em);
 
@@ -400,6 +440,34 @@ quit:
 
     return 0;
 }
+
+#if SDL_AUDIO
+/*
+ * SDL audio callback function to fill the buffer at "stream" with
+ * "len" bytes of audio data.
+ */
+static void
+sdl_fill_audio(void *userdata, Uint8 *stream, int len)
+{
+	audio_file_t *audiofile = (audio_file_t *)userdata;
+	int nchannels = audio_file_channels(audiofile);
+	int frames_to_read = len / (sizeof(short) * nchannels);
+	int frames_read;	/* How many were read from the file */
+
+	if ((frames_read = read_audio_file(audiofile, stream,
+			    af_signed, nchannels,
+			    sdl_start, frames_to_read)) <= 0) {
+	    /* End of file or read error. Treat as end of file */
+	    SDL_PauseAudio(1);
+	}
+	sdl_start += frames_read;
+
+	/* SDL has no "playback finished" callback, so spot it here */
+	if (sdl_start >= audio_file_length_in_frames(audiofile)) {
+	    stop_playing(NULL);
+	}
+}
+#endif
 
 static void
 calc_columns(int from, int to, Evas_Object *em)
@@ -516,6 +584,9 @@ pause_playing(Evas_Object *em)
 #if EMOTION_AUDIO
     emotion_object_play_set(em, EINA_FALSE);
 #endif
+#if SDL_AUDIO
+    SDL_PauseAudio(1);
+#endif
     playing = PAUSED;
 }
 
@@ -526,7 +597,31 @@ start_playing(Evas_Object *em)
     emotion_object_position_set(em, disp_time + pending_seek);
     emotion_object_play_set(em, EINA_TRUE);
 #endif
+#if SDL_AUDIO
+    sdl_start = lrint((disp_time + pending_seek) * sample_rate);
+    SDL_PauseAudio(0);
+#endif
     playing = PLAYING;
+}
+
+/* Stop playing because it has arrived at the end of the piece */
+static void
+stop_playing(Evas_Object *em)
+{
+#if EMOTION_AUDIO
+    emotion_object_play_set(em, EINA_FALSE);
+#endif
+#if SDL_AUDIO
+    /* Let SDL play last buffer of piece and pause on its own */
+    /* SDL_PauseAudio(1); */
+#endif
+
+    /* These settings indicate that the player has stopped at end of track */
+    playing = STOPPED;
+    disp_time = floor(audio_length / step + DELTA) * step;
+
+    if (exit_when_played)
+	ecore_main_loop_quit();
 }
 
 static void
@@ -540,6 +635,10 @@ continue_playing(Evas_Object *em)
     emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
 #endif
+#if SDL_AUDIO
+    sdl_start = lrint(disp_time * sample_rate);
+    SDL_PauseAudio(0);
+#endif
     playing = PLAYING;
 }
 
@@ -549,6 +648,7 @@ continue_playing(Evas_Object *em)
  */
 static void
 seek_by(Evas_Object *em, double by)
+
 {
     double playing_time;
 
@@ -562,11 +662,17 @@ seek_by(Evas_Object *em, double by)
 #if EMOTION_AUDIO
             emotion_object_play_set(em, EINA_FALSE);
 #endif
+#if SDL_AUDIO
+	    SDL_PauseAudio(1);
+#endif
 	    playing = STOPPED;
 	}
     }
 #if EMOTION_AUDIO
     emotion_object_position_set(em, playing_time);
+#endif
+#if SDL_AUDIO
+    sdl_start = lrint(playing_time * sample_rate);
 #endif
 
     /* If moving left after it has come to the end and stopped,
@@ -590,14 +696,9 @@ seek_by(Evas_Object *em, double by)
 static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
-    // Evas_Object *em = data;	/* The Emotion object */
+    Evas_Object *em =(Evas_Object *) data;
 
-    /* These settings indicate that the player has stopped at end of track */
-    playing = STOPPED;
-    disp_time = floor(audio_length / step + DELTA) * step;
-
-    if (exit_when_played)
-	ecore_main_loop_quit();
+    stop_playing(em);
 }
 
 /*

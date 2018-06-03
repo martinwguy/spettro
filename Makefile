@@ -18,11 +18,11 @@ EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
 AUDIOFILELIB=	-lsndfile
 #AUDIOFILELIB=	-laudiofile
-OTHER_LIBS=	$(AUDIOFILELIB) -lfftw3 -lm
+OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm
 
 OPTFLAG=-O -g
 CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
-	-DEMOTION_AUDIO
+	-DSDL_AUDIO
 LDFLAGS=
 
 all: $(ALL)
