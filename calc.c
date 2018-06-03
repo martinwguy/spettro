@@ -92,8 +92,9 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	    fprintf(stderr, "Cannot lock audio file\n");
 	    exit(1);
 	}
-	read_mono_audio_double(calc->audio_file, spec->time_domain,
-			       lrint(t * calc->sr) - fftsize/2, fftsize);
+	read_audio_file(calc->audio_file, (char *) spec->time_domain,
+			af_double, 1,
+			lrint(t * calc->sr) - fftsize/2, fftsize);
 	if (!unlock_audiofile()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");
 	    exit(1);

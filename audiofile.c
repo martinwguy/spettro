@@ -29,16 +29,16 @@ open_audio_file(char *filename)
     }
     audio_file->af = af;
 
-    /* We will only be reading as mono doubles and
-     * libaudiofile with virtual nchannels of 1 averages mixes stereo to mono.
+    /*
+     * We will be reading as mono doubles or as 16-bit native for soundcard,
+     * both native-endian. Don't care if it fails.
      */
-    if (afSetVirtualSampleFormat(af, AF_DEFAULT_TRACK, AF_SAMPFMT_DOUBLE,
-                                                       sizeof(double)) ||
-        afSetVirtualChannels(af, AF_DEFAULT_TRACK, 1)) {
-            fprintf(stderr, "Can't set virtual sample format.\n");
-	free(audio_file);
-            return NULL;
-    }
+    (void) afSetVirtualByteOrder(af, AF_DEFAULT_TRACK,
+#if LITTLE_ENDIAN
+			      AF_BYTEORDER_LITTLEENDIAN);
+#else
+			      AF_BYTEORDER_BIGENDIAN);
+#endif
 
     return(audio_file);
 }
@@ -56,19 +56,34 @@ audio_file_sampling_rate(audio_file_t *audio_file)
 }
 
 /*
- * Read sample frames, returning them as mono doubles.
+ * Read sample frames, returning them as mono doubles for the graphics or as
+ * the original audio as 16-bit in system-native bytendianness for the sound.
  *
+ * "data" is where to put the audio data.
+ * "format" is one of af_double or af_signed
+ * "channels" is the number of desired channels, 1 to monoise or copied from
+ *		the WAV file to play as-is.
  * "start" is the index of the first sample frame to read and may be negative.
  * "nframes" is the number of sample frames to read.
- * "data" is where to put the monoised data.
  */
 int
-read_mono_audio_double(audio_file_t *audio_file, double *data,
-		       int start, int nframes)
+read_audio_file(audio_file_t *audio_file, char *data,
+		af_format format, int channels,
+		int start, int nframes)
 {
     AFfilehandle af = audio_file->af;
     int frames;		/* How many did the last read() call return? */
     int total_frames = 0;
+    int framesize = (format == af_double ? sizeof(double) : sizeof(short))
+		    * channels;
+
+    if (afSetVirtualSampleFormat(af, AF_DEFAULT_TRACK,
+	format == af_double ? AF_SAMPFMT_DOUBLE : AF_SAMPFMT_TWOSCOMP,
+	format == af_double ? sizeof(double) : sizeof(short)) ||
+        afSetVirtualChannels(af, AF_DEFAULT_TRACK, channels)) {
+            fprintf(stderr, "Can't set virtual sample format.\n");
+	    return 0;
+    }
 
     if (start >= 0) {
         afSeekFrame(af, AF_DEFAULT_TRACK, start);
@@ -76,8 +91,8 @@ read_mono_audio_double(audio_file_t *audio_file, double *data,
 	/* Fill before time 0.0 with silence */
         start = -start;
         afSeekFrame(af, AF_DEFAULT_TRACK, 0);
-        memset(data, 0, start * sizeof(data[0]));
-        data += start;
+        memset(data, 0, start * framesize);
+        data += start * framesize;
         nframes -= start;
     }
     do {
@@ -96,7 +111,7 @@ read_mono_audio_double(audio_file_t *audio_file, double *data,
         memset(data, 0, (nframes - total_frames) * sizeof(data[0]));
     }
 
-    return(total_frames);
+    return total_frames;
 }
 
 void

@@ -4,13 +4,18 @@
  * but using libsndfile instead of libaudiofile.
  */
 
-#include <audiofile.h>
+#include <sndfile.h>
 
 typedef struct audio_file {
 	SNDFILE *sndfile;
 	unsigned long samplerate;
 	unsigned long frames;
 } audio_file_t;
+
+typedef enum {
+	af_double,
+	af_signed,	/* 16-bit native endian */
+} af_format;
 
 /* Returns a handle for the audio file, NULL on failure */
 extern audio_file_t *open_audio_file(char *filename);

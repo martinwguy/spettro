@@ -47,35 +47,48 @@ audio_file_sampling_rate(audio_file_t *audio_file)
 }
 
 /*
- * Read sample frames, returning them as mono doubles.
+ * Read sample frames, returning them as mono doubles for the graphics or as
+ * the original audio as 16-bit in system-native bytendianness for the sound.
  *
+ * "data" is where to put the audio data.
+ * "format" is one of af_double or af_signed
+ * "channels" is the number of desired channels, 1 to monoise or copied from
+ *		the WAV file to play as-is.
  * "start" is the index of the first sample frame to read and may be negative.
  * "nframes" is the number of sample frames to read.
- * "data" is where to put the monoised data.
  */
 int
-read_mono_audio_double(audio_file_t *audio_file, double *data,
-		       int start, int nframes)
+read_audio_file(audio_file_t *audio_file, char *data,
+		af_format format, int channels,
+		int start, int nframes)
 {
     SNDFILE *sndfile = audio_file->sndfile;
     int frames;		/* How many did the last read() call return? */
     int total_frames = 0;
+    int framesize = (format == af_double ? sizeof(double) : sizeof(short))
+		    * channels;
 
     if (start >= 0) {
         sf_seek(sndfile, start, SEEK_SET);
     } else {
+	/* Fill before time 0.0 with silence */
         start = -start;
         sf_seek(sndfile, 0, SEEK_SET);
-        memset(data, 0, start * sizeof(data[0]));
-        data += start;
+        memset(data, 0, start * framesize);
+        data += start * framesize;
         nframes -= start;
     }
     
     do {
-        frames = sfx_mix_mono_read_doubles(sndfile, data, nframes);
+	if (format == af_double) {
+            frames = sfx_mix_mono_read_doubles(sndfile, (double *)data, nframes);
+	} else {
+	    /* 16-bit native endian */
+	    frames = sf_readf_short(sndfile, (short *)data, nframes);
+	}
         if (frames > 0) {
 	    total_frames += frames;
-            data += frames;
+            data += frames * framesize;
             nframes -= frames;
         } else {
             /* We ask it to read past EOF so failure is normal */
@@ -84,7 +97,7 @@ read_mono_audio_double(audio_file_t *audio_file, double *data,
     } while (nframes > 0 && frames > 0);
 
     if (total_frames < nframes) {
-        memset(data, 0, (nframes - total_frames) * sizeof(data[0]));
+        memset(data, 0, (nframes - total_frames) * framesize);
     }
 
     return(total_frames);
