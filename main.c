@@ -549,10 +549,11 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Evas_Event_Key_Down *ev = einfo;
     Evas_Object *em = data;	/* The Emotion object */
     const Evas_Modifier *mods = evas_key_modifier_get(evas);
+    Eina_Bool Shift = evas_key_modifier_is_set(mods, "Shift");
+    Eina_Bool Control = evas_key_modifier_is_set(mods, "Control");
 
     /* Control-Q: Quit */
-    if (!strcmp(ev->key, "q")
-	&& evas_key_modifier_is_set(mods, "Control")) {
+    if (Control && !strcmp(ev->key, "q")) {
 	ecore_main_loop_quit();
     } else
 
@@ -581,10 +582,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
      */
     if (!strcmp(ev->key, "Left")) {
-	time_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
+	time_pan_by(em, Shift ? -10.0 : -1.0);
     } else
     if (!strcmp(ev->key, "Right")) {
-	time_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
+	time_pan_by(em, Shift ? 10.0 : 1.0);
     } else
 
     /*
@@ -593,12 +594,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * With Shift: an octave. without, a semitone
      */
     if (!strcmp(ev->key, "Up")) {
-	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift")
-			? 2.0 : pow(2.0, 1.0/12));
+	freq_pan_by(em, Shift ? 2.0 : pow(2.0, 1.0/12));
     } else
     if (!strcmp(ev->key, "Down")) {
-	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift")
-			? 1/2.0 : 1/pow(2.0, 1/12.0));
+	freq_pan_by(em, Shift ? 1/2.0 : 1/pow(2.0, 1/12.0));
     } else
 
     /* Zoom on the time axis */
@@ -618,11 +617,11 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     } else
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
-    if (!strcmp(ev->key, "plus") && evas_key_modifier_is_set(mods, "Control")) {
+    if (Control && !strcmp(ev->key, "plus")) {
 	freq_zoom_by(em, 2.0);
 	time_zoom_by(em, 2.0);
     } else
-    if (!strcmp(ev->key, "minus") && evas_key_modifier_is_set(mods, "Control")) {
+    if (Control && !strcmp(ev->key, "minus")) {
 	freq_zoom_by(em, 0.5);
 	time_zoom_by(em, 0.5);
     } else
