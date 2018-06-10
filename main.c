@@ -127,7 +127,8 @@ static void pause_playing(Evas_Object *em);
 static void start_playing(Evas_Object *em);
 static void stop_playing(Evas_Object *em);
 static void continue_playing(Evas_Object *em);
-static void seek_by(Evas_Object *em, double by);	/* Left/Right */
+static void time_pan_by(Evas_Object *em, double by);	/* Left/Right */
+static void time_zoom_by(Evas_Object *em, double by);	/* x/X */
 static void freq_pan_by(Evas_Object *em, double by);	/* Up/Down */
 static void freq_zoom_by(Evas_Object *em, double by);	/* y/Y */
 
@@ -580,10 +581,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
      */
     if (strcmp(ev->key, "Left") == 0) {
-	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
+	time_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
     } else
     if (strcmp(ev->key, "Right") == 0) {
-	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
+	time_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
     } else
 
     /*
@@ -599,6 +600,14 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 1/2.0
 							   : 1/pow(2.0, 1/12.0));
     } else
+
+    /* Zoom on the time axis */
+    if (strcmp(ev->key, "x") == 0) {
+	time_zoom_by(em, 0.5);
+    } else
+    if (strcmp(ev->key, "X") == 0) {
+	time_zoom_by(em, 2.0);
+    }
 
     /* Zoom on the frequency axis */
     if (strcmp(ev->key, "y") == 0) {
@@ -680,7 +689,7 @@ continue_playing(Evas_Object *em)
  * Here we just set pending_seek; the actual scrolling is done in timer_cb().
  */
 static void
-seek_by(Evas_Object *em, double by)
+time_pan_by(Evas_Object *em, double by)
 {
     double playing_time;
 
@@ -712,6 +721,19 @@ seek_by(Evas_Object *em, double by)
     if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
 	start_playing(em);
     }
+}
+
+/* Zoom the time axis on disp_time.
+ * Only ever done by 2.0 or 0.5 to improve result cache usefulness.
+ * The recalculation of every other pixel column should be triggered
+ * by repaint_display().
+ */
+static void
+time_zoom_by(Evas_Object *em, double by)
+{
+    ppsec *= by;
+    step = 1 / ppsec;
+    repaint_display(em);
 }
 
 /* Pan the display on the vertical axis by changing min_freq and max_freq
@@ -812,10 +834,12 @@ timer_cb(void *data)
      */
 
     if (abs(scroll_by) >= disp_width) {
+	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
 	calc_columns(0, disp_width - 1, em);
 	repaint_display(em);
     } else {
+	/* Otherwise, shift the overlapping region and calculate the new */
 	if (scroll_by > 0) {
 	    /*
 	     * If the green line will remain on the screen,
@@ -828,9 +852,6 @@ timer_cb(void *data)
 		repaint_column(disp_offset, em);
 
 	    disp_time = new_disp_time;
-
-	    /* The right edge is revealed */
-	    calc_columns(disp_width - scroll_by, disp_width - 1, em);
 
 	    /* Usual case: scrolling the display left to advance in time */
 	    memmove(imagedata, imagedata + (4 * scroll_by),
@@ -853,9 +874,6 @@ timer_cb(void *data)
 		repaint_column(disp_offset, em);
 
 	    disp_time = new_disp_time;
-
-	    /* The left edge is revealed. Draw from right to left. */
-	    calc_columns(-scroll_by - 1, 0, em);
 
 	    /* Happens when they seek back in time */
 	    memmove(imagedata + (4 * -scroll_by), imagedata,
@@ -925,6 +943,12 @@ repaint_column(int column, Evas_Object *em)
             *p = background;
 	    p += imagestride / sizeof(*p);
 	}
+
+	/* and if it was for a valid time, schedule its calculation */
+	if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
+	    calc_columns(column, column, em);
+	}
+
 	return FALSE;
     }
 }
