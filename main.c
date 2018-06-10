@@ -131,6 +131,7 @@ static void time_pan_by(Evas_Object *em, double by);	/* Left/Right */
 static void time_zoom_by(Evas_Object *em, double by);	/* x/X */
 static void freq_pan_by(Evas_Object *em, double by);	/* Up/Down */
 static void freq_zoom_by(Evas_Object *em, double by);	/* y/Y */
+static void change_dyn_range(Evas_Object *em, double by);/* * and / */
 
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);
@@ -269,6 +270,7 @@ Up/Down    Pan up/down the frequency axis by a semitone (an octave if Shift)\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Ctrl-+/-   Zoom in/out on both axes\n\
+Star/Slash Change the dynamic range to brighten/darken the darker areas\n\
 Environment variables:\n\
 PPSEC      Pixel columns per second, default %g\n\
 FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
@@ -634,6 +636,18 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	time_zoom_by(em, 0.5);
     } else
 
+    /* Change dynamic range of colour spectrum, like a brightness control.
+     * Star should brighten the dark areas, which is achieved by increasing
+     * the dynrange;
+     * Slash instead darkens them to reduce visibility of background noise.
+     */
+    if (!strcmp(ev->key, "asterisk")) {
+	change_dyn_range(em, 6.0);
+    } else
+    if (!strcmp(ev->key, "slash")) {
+	change_dyn_range(em, -6.0);
+    } else
+
 	fprintf(stderr, "Key \"%s\" pressed.\n", ev->key);
 }
 
@@ -778,6 +792,21 @@ freq_zoom_by(Evas_Object *em, double by)
     range /= by;
     min_freq = centre / range;
     max_freq = centre * range;
+
+    repaint_display(em);
+}
+
+/* Change the colour scale's dyna,ic range, thereby changing the brightness
+ * of the darker areas.
+ */
+static void
+change_dyn_range(Evas_Object *em, double by)
+{
+    /* As min_db is negative, subtracting from it makes it bigger */
+    min_db -= by;
+
+    /* min_db should not go positive */
+    if (min_db > -6.0) min_db = -6.0;
 
     repaint_display(em);
 }
