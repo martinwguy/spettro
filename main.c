@@ -551,14 +551,14 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     const Evas_Modifier *mods = evas_key_modifier_get(evas);
 
     /* Control-Q: Quit */
-    if (strcmp(ev->key, "q") == 0
+    if (!strcmp(ev->key, "q")
 	&& evas_key_modifier_is_set(mods, "Control")) {
 	ecore_main_loop_quit();
     } else
 
     /* Space: Play/Pause/Replay */
-    if (strcmp(ev->key, "space") == 0 ||
-	strcmp(ev->key, "XF86AudioPlay") == 0) {
+    if (!strcmp(ev->key, "space") ||
+	!strcmp(ev->key, "XF86AudioPlay")) {
 	switch (playing) {
 	case PLAYING:
 	    pause_playing(em);
@@ -580,10 +580,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     /*
      * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
      */
-    if (strcmp(ev->key, "Left") == 0) {
+    if (!strcmp(ev->key, "Left")) {
 	time_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
     } else
-    if (strcmp(ev->key, "Right") == 0) {
+    if (!strcmp(ev->key, "Right")) {
 	time_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
     } else
 
@@ -592,30 +592,42 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * The argument to freq_pan_by() is a multiplier for min_freq and max_freq
      * With Shift: an octave. without, a semitone
      */
-    if (strcmp(ev->key, "Up") == 0) {
-	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 2.0
-							   : pow(2.0, 1.0/12));
+    if (!strcmp(ev->key, "Up")) {
+	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift")
+			? 2.0 : pow(2.0, 1.0/12));
     } else
-    if (strcmp(ev->key, "Down") == 0) {
-	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 1/2.0
-							   : 1/pow(2.0, 1/12.0));
+    if (!strcmp(ev->key, "Down")) {
+	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift")
+			? 1/2.0 : 1/pow(2.0, 1/12.0));
     } else
 
     /* Zoom on the time axis */
-    if (strcmp(ev->key, "x") == 0) {
+    if (!strcmp(ev->key, "x")) {
 	time_zoom_by(em, 0.5);
     } else
-    if (strcmp(ev->key, "X") == 0) {
+    if (!strcmp(ev->key, "X")) {
 	time_zoom_by(em, 2.0);
-    }
+    } else
 
     /* Zoom on the frequency axis */
-    if (strcmp(ev->key, "y") == 0) {
+    if (!strcmp(ev->key, "y")) {
 	freq_zoom_by(em, 0.5);
     } else
-    if (strcmp(ev->key, "Y") == 0) {
+    if (!strcmp(ev->key, "Y")) {
 	freq_zoom_by(em, 2.0);
-    }
+    } else
+
+    /* Normal zoom-in zoom-out, i.e. both axes. */
+    if (!strcmp(ev->key, "plus") && evas_key_modifier_is_set(mods, "Control")) {
+	freq_zoom_by(em, 2.0);
+	time_zoom_by(em, 2.0);
+    } else
+    if (!strcmp(ev->key, "minus") && evas_key_modifier_is_set(mods, "Control")) {
+	freq_zoom_by(em, 0.5);
+	time_zoom_by(em, 0.5);
+    } else
+
+	fprintf(stderr, "Key \"%s\" pressed.\n", ev->key);
 }
 
 /* Audio-playing functions */
