@@ -261,10 +261,18 @@ main(int argc, char **argv)
 -j n:\tSet maximum number of threads to use (default: the number of CPUs)\n\
 -v:\tPrint the version of spettro that you're using\n\
 The default file is audio.wav\n\
+Keyboard commands:\n\
+Ctrl-Q     Quit\n\
+Space      Play/Pause/Resume/Restart the audio player\n\
+Left/Right Skip back/forward by one second (10 seconds if Shift is held)\n\
+Up/Down    Pan up/down the frequency axis by a semitone (an octave if Shift)\n\
+X/x        Zoom in/out on the time axis by a factor of 2\n\
+Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
+Ctrl-+/-   Zoom in/out on both axes\n\
 Environment variables:\n\
-PPSEC     Pixel columns per second, default %g\n\
-FFTFREQ   FFT audio window is 1/this, default 1/%g of a second\n\
-DYN_RANGE Dynamic range of amplitude values in decibels, default=%g\n\
+PPSEC      Pixel columns per second, default %g\n\
+FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
+DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 ", ppsec, fftfreq, -min_db);
 	    exit(1);
 	}
