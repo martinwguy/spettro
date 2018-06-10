@@ -127,7 +127,8 @@ static void pause_playing(Evas_Object *em);
 static void start_playing(Evas_Object *em);
 static void stop_playing(Evas_Object *em);
 static void continue_playing(Evas_Object *em);
-static void seek_by(Evas_Object *em, double by);
+static void seek_by(Evas_Object *em, double by);	/* Left/Right */
+static void pan_by(Evas_Object *em, double by);		/* Up/Down */
 
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);
@@ -484,12 +485,18 @@ calc_columns(int from, int to, Evas_Object *em)
     calc->sr	= sample_rate;
     calc->from	= disp_time + (from - disp_offset) * step;
     calc->to	= disp_time + (to - disp_offset) * step;
+
+    /*
+     * Limit start and end times to size of audio file
+     */
     if (calc->from <= DELTA) calc->from = 0.0;
     if (calc->to <= DELTA) calc->to = 0.0;
+    /* Last moment as a multiple of step */
     if (calc->from >= floor(audio_length / step) * step - DELTA)
 	calc->from = floor(audio_length / step) * step;
     if (calc->to >= floor(audio_length / step) * step - DELTA)
 	calc->to = floor(audio_length / step) * step;
+
     calc->ppsec  = ppsec;
     calc->speclen= fftfreq_to_speclen(fftfreq, sample_rate);
     calc->window = KAISER;
@@ -568,12 +575,28 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	}
     } else
 
-    /* Arrow <-/-> : Jump back/forward a second; with Shift, 10 seconds. */
+    /*
+     * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
+     */
     if (strcmp(ev->key, "Left") == 0) {
 	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? -10.0 : -1.0);
     } else
     if (strcmp(ev->key, "Right") == 0) {
 	seek_by(em, evas_key_modifier_is_set(mods, "Shift") ? 10.0 : 1.0);
+    } else
+
+    /*
+     * Arrow Up/Down: Pan the frequency axis.
+     * The argument to pan_by() is a multiplier for min_freq and max_freq
+     * With Shift: an octave. without, a semitone
+     */
+    if (strcmp(ev->key, "Up") == 0) {
+	pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 2.0
+							   : pow(2.0, 1.0/12));
+    }
+    if (strcmp(ev->key, "Down") == 0) {
+	pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 1/2.0
+							   : 1/pow(2.0, 1/12.0));
     }
 }
 
@@ -649,7 +672,6 @@ continue_playing(Evas_Object *em)
  */
 static void
 seek_by(Evas_Object *em, double by)
-
 {
     double playing_time;
 
@@ -681,6 +703,17 @@ seek_by(Evas_Object *em, double by)
     if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
 	start_playing(em);
     }
+}
+
+/* Pan the display on the vertical axis by changing min_freq and max_freq
+ * by a factor.
+ */
+static void
+pan_by(Evas_Object *em, double by)
+{
+    min_freq *= by;
+    max_freq *= by;
+    repaint_display(em);
 }
 
 /*
@@ -871,6 +904,7 @@ repaint_column(int column, Evas_Object *em)
     }
 }
 
+/* Paint a column for which we have result data */
 static void
 paint_column(int pos_x, result_t *result)
 {
@@ -879,21 +913,16 @@ paint_column(int pos_x, result_t *result)
     static float max = 1.0;	/* maximum magnitude value seen so far */
     int i;
 
-    if (result->mag != NULL) {
-	mag = result->mag;
-	maglen = result->maglen;
-    } else {
-	maglen = disp_height;
-	mag = calloc(maglen, sizeof(*mag));
-	if (mag == NULL) {
-	   fprintf(stderr, "Out of memory in paint_column.\n");
-	   exit(1);
-	}
-	max = interpolate(mag, maglen, result->spec, result->speclen,
-			 min_freq, max_freq, sample_rate, log_freq);
-	result->mag = mag;
-	result->maglen = maglen;
+    maglen = disp_height;
+    mag = calloc(maglen, sizeof(*mag));
+    if (mag == NULL) {
+       fprintf(stderr, "Out of memory in paint_column.\n");
+       exit(1);
     }
+    max = interpolate(mag, maglen, result->spec, result->speclen,
+		     min_freq, max_freq, sample_rate, log_freq);
+    result->mag = mag;
+    result->maglen = maglen;
 
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.

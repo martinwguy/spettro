@@ -22,6 +22,18 @@ typedef struct calc {
     void		*data;	/* Extra stuff not needed by the calc thread */
 } calc_t;
 
+/*
+ * Structure for results from calc() with the linear FFT for a pixel column,
+ * callbacked to calc_result() as each column is ready.
+ *
+ * Fields mag and maglen are not filled by calc(); the main routine calls
+ * interpolate() on each one to generate columns of magnitudes for the screen,
+ * as the mapping changes when they pan up and down or zoom the Y axis,
+ * without a need to recalculate the FFT. That is required if they change
+ * the FFT size, while zooming the time axis just requires more results to
+ * be calculated.
+ */
+
 typedef struct result {
     double t;		/* An FFT centred on what time through the piece? */
     int speclen;	/* The length of the linear spectrum */
