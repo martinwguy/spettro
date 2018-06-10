@@ -128,7 +128,8 @@ static void start_playing(Evas_Object *em);
 static void stop_playing(Evas_Object *em);
 static void continue_playing(Evas_Object *em);
 static void seek_by(Evas_Object *em, double by);	/* Left/Right */
-static void pan_by(Evas_Object *em, double by);		/* Up/Down */
+static void freq_pan_by(Evas_Object *em, double by);	/* Up/Down */
+static void freq_zoom_by(Evas_Object *em, double by);	/* y/Y */
 
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);
@@ -587,16 +588,24 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 
     /*
      * Arrow Up/Down: Pan the frequency axis.
-     * The argument to pan_by() is a multiplier for min_freq and max_freq
+     * The argument to freq_pan_by() is a multiplier for min_freq and max_freq
      * With Shift: an octave. without, a semitone
      */
     if (strcmp(ev->key, "Up") == 0) {
-	pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 2.0
+	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 2.0
 							   : pow(2.0, 1.0/12));
-    }
+    } else
     if (strcmp(ev->key, "Down") == 0) {
-	pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 1/2.0
+	freq_pan_by(em, evas_key_modifier_is_set(mods, "Shift") ? 1/2.0
 							   : 1/pow(2.0, 1/12.0));
+    } else
+
+    /* Zoom on the frequency axis */
+    if (strcmp(ev->key, "y") == 0) {
+	freq_zoom_by(em, 0.5);
+    } else
+    if (strcmp(ev->key, "Y") == 0) {
+	freq_zoom_by(em, 2.0);
     }
 }
 
@@ -709,10 +718,26 @@ seek_by(Evas_Object *em, double by)
  * by a factor.
  */
 static void
-pan_by(Evas_Object *em, double by)
+freq_pan_by(Evas_Object *em, double by)
 {
     min_freq *= by;
     max_freq *= by;
+    repaint_display(em);
+}
+
+/* Zoom the frequency axis by a factor, staying centred on the centre.
+ * Values > 1.0 zoom in; values < 1.0 zoom out.
+ */
+static void
+freq_zoom_by(Evas_Object *em, double by)
+{
+    double  centre = sqrt(min_freq * max_freq);
+    double   range = max_freq / centre;
+
+    range /= by;
+    min_freq = centre / range;
+    max_freq = centre * range;
+
     repaint_display(em);
 }
 
