@@ -15,9 +15,6 @@ Add pentagram staves and piano lines
 possibly with (optional) subpixel positioning / antialiasing.
 ------------------------------------------------------------------------
 Add GUI keystrokes to:
-- pan up and down the frequency axis
-- zoom in and out, which affects both the frequency and time scales equally
-  (or is it better to zoom the frequency and time axes separately?)
 - change brightness/contrast (i.e. change min_db, as max is normalised)
 - change fftfreq (impacting the result cache)
 ------------------------------------------------------------------------
