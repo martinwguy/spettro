@@ -254,7 +254,7 @@ main(int argc, char **argv)
 	    exit(0);
 	default:
 	    fprintf(stderr,
-"Usage: spettro [-p] [-e] [-h n] [-w n] [file.wav]\n\
+"Usage: spettro [-p] [-e] [-h n] [-w n] [-j n] [-v] [file.wav]\n\
 -p:\tPlay the file right away\n\
 -e:\tExit when the audio file has played\n\
 -h n:\tSet spectrogram display height to n pixels\n\
@@ -262,16 +262,16 @@ main(int argc, char **argv)
 -j n:\tSet maximum number of threads to use (default: the number of CPUs)\n\
 -v:\tPrint the version of spettro that you're using\n\
 The default file is audio.wav\n\
-Keyboard commands:\n\
+== Keyboard commands ==\n\
 Ctrl-Q     Quit\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by one second (10 seconds if Shift is held)\n\
 Up/Down    Pan up/down the frequency axis by a semitone (an octave if Shift)\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
-Ctrl-+/-   Zoom in/out on both axes\n\
-Star/Slash Change the dynamic range to brighten/darken the darker areas\n\
-Environment variables:\n\
+Plus/Minus Zoom in/out on both axes\n\
+Star/Slash Change the dynamic range to brighten/darken the quieter areas\n\
+== Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
 FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
@@ -591,10 +591,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     /*
      * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
      */
-    if (!strcmp(ev->key, "Left")) {
+    if (!strcmp(ev->key, "Left") || !strcmp(ev->key, "KP_Left")) {
 	time_pan_by(em, Shift ? -10.0 : -1.0);
     } else
-    if (!strcmp(ev->key, "Right")) {
+    if (!strcmp(ev->key, "Right") || !strcmp(ev->key, "KP_Right")) {
 	time_pan_by(em, Shift ? 10.0 : 1.0);
     } else
 
@@ -603,10 +603,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * The argument to freq_pan_by() is a multiplier for min_freq and max_freq
      * With Shift: an octave. without, a semitone
      */
-    if (!strcmp(ev->key, "Up")) {
+    if (!strcmp(ev->key, "Up") || !strcmp(ev->key, "KP_Up")) {
 	freq_pan_by(em, Shift ? 2.0 : pow(2.0, 1.0/12));
     } else
-    if (!strcmp(ev->key, "Down")) {
+    if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down")) {
 	freq_pan_by(em, Shift ? 1/2.0 : 1/pow(2.0, 1/12.0));
     } else
 
@@ -627,11 +627,11 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     } else
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
-    if (Control && !strcmp(ev->key, "plus")) {
+    if (!strcmp(ev->key, "plus") || !strcmp(ev->key, "KP_Add")) {
 	freq_zoom_by(em, 2.0);
 	time_zoom_by(em, 2.0);
     } else
-    if (Control && !strcmp(ev->key, "minus")) {
+    if (!strcmp(ev->key, "minus") || !strcmp(ev->key, "KP_Subtract")) {
 	freq_zoom_by(em, 0.5);
 	time_zoom_by(em, 0.5);
     } else
@@ -641,10 +641,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * the dynrange;
      * Slash instead darkens them to reduce visibility of background noise.
      */
-    if (!strcmp(ev->key, "asterisk")) {
+    if (!strcmp(ev->key, "asterisk") || !strcmp(ev->key, "KP_Multiply")) {
 	change_dyn_range(em, 6.0);
     } else
-    if (!strcmp(ev->key, "slash")) {
+    if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide")) {
 	change_dyn_range(em, -6.0);
     } else
 
