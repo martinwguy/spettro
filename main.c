@@ -439,6 +439,10 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 
     /* Start screen-updating and scrolling timer */
     timer = ecore_timer_add(step, timer_cb, (void *)em);
+    if (timer == NULL) {
+	fprintf(stderr, "Couldn't initialize scrolling timer.\n");
+	exit(1);
+    }
 
     /* Start main event loop */
     ecore_main_loop_begin();
@@ -766,6 +770,15 @@ time_zoom_by(Evas_Object *em, double by)
 {
     ppsec *= by;
     step = 1 / ppsec;
+
+    /* Change the screen-scrolling speed to match */
+    (void) ecore_timer_del(timer);
+    timer = ecore_timer_add(step, timer_cb, (void *)em);
+    if (timer == NULL) {
+	fprintf(stderr, "Couldn't change rate of scrolling timer.\n");
+	exit(1);
+    }
+
     repaint_display(em);
 }
 
