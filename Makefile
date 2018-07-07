@@ -16,14 +16,13 @@ GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
-AUDIOFILELIB=	-lsndfile
-#AUDIOFILELIB=	-laudiofile
+AUDIOFILELIB=	-lsndfile			# or -laudiofile
 OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm
+OPTFLAG=-O -march=native -mfastmath
 
-OPTFLAG=-O -g
 CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
 	-DSDL_AUDIO
-LDFLAGS=
+# or -DEMOTION_AUDIO, which works better than SDL but not at all on Ubuntu 16.04
 
 all: $(ALL)
 
