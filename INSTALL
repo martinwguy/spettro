@@ -1,0 +1,9 @@
+You have to compile spettro from source at present:
+
+Debian/ubuntu dependencies:
+	apt-get install e17-dev libsndfile-dev pkg-config
+
+then
+	make
+and
+	./spettro whatever.wav
