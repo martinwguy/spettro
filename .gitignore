@@ -1,4 +1,5 @@
-audio.wav
+audio.*
 *.o
 spettro
 core
+tags
