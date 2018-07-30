@@ -180,7 +180,7 @@ static int imagestride;
 /* What the audio subsystem is doing:
  * STOPPED means it has reached the end of the piece and stopped automatically
  * PLAYING means it should be playing audio,
- * PAUSED  means we've paused it
+ * PAUSED  means we've paused it or it hasn't started playing yet
  */
 static enum { STOPPED, PLAYING, PAUSED } playing = PAUSED;
 
@@ -1141,7 +1141,7 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
     /* To avoid an embarassing pause at the start of the graphics, we wait
      * until the FFT delivers its first result before starting the player.
      */
-    if (autoplay && playing == STOPPED) {
+    if (autoplay && playing != PLAYING) {
 	start_playing(em);
     }
 }
