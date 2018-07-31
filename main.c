@@ -43,7 +43,8 @@
  *
  * If you resize the window the displayed image is zoomed.
  *
- * If you hit Control-Q or poke the [X] icon in the window's titlebar, it quits.
+ * If you hit Control-Q, Control-C or poke the [X] icon in the titlebar,
+ * it quits.
  *
  * it runs in two threads:
  * - the main thread handles GUI events, starts/stops the audio player,
@@ -263,7 +264,7 @@ main(int argc, char **argv)
 -v:\tPrint the version of spettro that you're using\n\
 The default file is audio.wav\n\
 == Keyboard commands ==\n\
-Ctrl-Q     Quit\n\
+Ctrl-Q/C   Quit\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by one second (10 seconds if Shift is held)\n\
 Up/Down    Pan up/down the frequency axis by a semitone (an octave if Shift)\n\
@@ -566,8 +567,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Eina_Bool Shift = evas_key_modifier_is_set(mods, "Shift");
     Eina_Bool Control = evas_key_modifier_is_set(mods, "Control");
 
-    /* Control-Q: Quit */
-    if (Control && !strcmp(ev->key, "q")) {
+    /* Control-Q or Control-C: Quit */
+    if (Control && (!strcmp(ev->key, "q") || strcmp(ev->key, "c"))) {
 	ecore_main_loop_quit();
     } else
 
