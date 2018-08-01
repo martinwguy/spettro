@@ -2,7 +2,7 @@
  * Program: spettro
  *	Play an audio file displaying a scrolling log-frequency spectrogram.
  *
- * File: emotion.c
+ * File: main.c
  *	Main routine implemented using Enlightenment's "emotion" interface.
  *
  * The audio file is given as a command-line argument
@@ -32,25 +32,16 @@
  * continue from where it was. When it reaches the end of piece, the playback
  * stops; pressing space makes it start again from the beginning.
  *
- * The left and right arrow keys jump back or forwards by 1 second
- * or 10 if shift is held.
- *
- * Variants:
- * -p	Play the audio file and start scrolling the display immediately
- * -e	Exit when the audio file has finished playing
- * -w n	Open the window n pixels wide (default: 640)
- * -h n	Open the window n pixels high (default: 480)
- *
  * If you resize the window the displayed image is zoomed.
  *
- * If you hit Control-Q, Control-C or poke the [X] icon in the titlebar,
- * it quits.
+ * For command-line options and key bindings, see Usage.
  *
- * it runs in two threads:
+ * it runs in three threads:
  * - the main thread handles GUI events, starts/stops the audio player,
  *   tells the calc thread what to calculate, receives results, and
  *   displays them.
  * - The calc thread performs FFTs and reports back when they're done.
+ * - the timer thread scrolls the display in sync with the audio playback.
  *
  * == WIBNIs ==
  *
@@ -267,7 +258,7 @@ The default file is audio.wav\n\
 Ctrl-Q/C   Quit\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by one second (10 seconds if Shift is held)\n\
-Up/Down    Pan up/down the frequency axis by a semitone (an octave if Shift)\n\
+Up/Down    Pan up/down the frequency axis by a tone (an octave if Shift)\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
@@ -606,13 +597,13 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     /*
      * Arrow Up/Down: Pan the frequency axis.
      * The argument to freq_pan_by() is a multiplier for min_freq and max_freq
-     * With Shift: an octave. without, a semitone
+     * With Shift: an octave. without, a tone
      */
     if (!strcmp(ev->key, "Up") || !strcmp(ev->key, "KP_Up")) {
 	freq_pan_by(em, Shift ? 2.0 : pow(2.0, 1.0/12));
     } else
     if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down")) {
-	freq_pan_by(em, Shift ? 1/2.0 : 1/pow(2.0, 1/12.0));
+	freq_pan_by(em, Shift ? 1/2.0 : 1/pow(2.0, 1/6.0));
     } else
 
     /* Zoom on the time axis */
