@@ -66,7 +66,7 @@
  * green pencil, which suggests storing the pixel data instead of the amplitude.
  * Then, if you press s, it saves the spectrogram as audiofilename.png?
  * Then, when you reload, it imports from audiofilename.png
- * all pixels of the pencil colour as an overlay on the spectral data.
+ * all pixels of the pencil color as an overlay on the spectral data.
  * That would allow us to recompute the spectrogram with different parameters
  * but preserving the annotations.
  *
@@ -95,6 +95,8 @@ static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
 #include "interpolate.h"
 #include "colormap.h"
 #include "speclen.h"
+#include "overlay.h"
+#include "main.h"
 
 /*
  * Function prototypes
@@ -169,20 +171,22 @@ static void calc_stop(void);
  */
 
 /* GUI state variables */
-static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
-static int disp_height	= 480;
+       int disp_width	= 640;	/* Size of displayed drawing area in pixels */
+       int disp_height	= 480;
 static double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
 static int disp_offset;  	/* Crosshair is in which display column? */
-static double min_freq	= 27.5;		/* Range of frequencies to display: */
-static double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
+       double min_freq	= 27.5;		/* Range of frequencies to display: */
+       double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
 static double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */
+       bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
+       bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
 
-/* The colour for uncalculated areas: Alpha 255, RGB gray */
+/* The color for uncalculated areas: Alpha 255, RGB gray */
 #define background 0xFF808080
 
 /* Internal data used in notify callback to write on the image buffer */
@@ -231,68 +235,6 @@ main(int argc, char **argv)
     Evas_Object *em;
     char *filename;
 
-    for (argv++, argc--;	/* Skip program name */
-	 argc > 0 && argv[0][0] == '-';
-	 argv++, argc--) {
-	switch (argv[0][1]) {
-	case 'p':
-	    autoplay = TRUE;
-	    break;
-	case 'e':
-	    exit_when_played = TRUE;
-	    break;
-	case 'w':
-	    argv++; argc--;	 /* Advance to numeric argument */
-	    if ((disp_width = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-w what?\n");
-		exit(1);
-	    }
-	    break;
-	case 'h':
-	    argv++; argc--;	 /* Advance to numeric argument */
-	    if ((disp_height = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-h what?\n");
-		exit(1);
-	    }
-	    break;
-	case 'j':
-	    argv++; argc--;	 /* Advance to numeric argument */
-	    if ((max_threads = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-j what?\n");
-		exit(1);
-	    }
-	    break;
-	case 'v':
-	    printf("Version: %s\n", VERSION);
-	    exit(0);
-	default:
-	    fprintf(stderr,
-"Usage: spettro [-p] [-e] [-h n] [-w n] [-j n] [-v] [file.wav]\n\
--p:\tPlay the file right away\n\
--e:\tExit when the audio file has played\n\
--h n:\tSet spectrogram display height to n pixels\n\
--w n:\tSet spectrogram display width to n pixels\n\
--j n:\tSet maximum number of threads to use (default: the number of CPUs)\n\
--v:\tPrint the version of spettro that you're using\n\
-The default file is audio.wav\n\
-== Keyboard commands ==\n\
-Ctrl-Q/C   Quit\n\
-Space      Play/Pause/Resume/Restart the audio player\n\
-Left/Right Skip back/forward by one second (10 seconds if Shift is held)\n\
-Up/Down    Pan up/down the frequency axis by a tone (an octave if Shift)\n\
-X/x        Zoom in/out on the time axis by a factor of 2\n\
-Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
-Plus/Minus Zoom in/out on both axes\n\
-Star/Slash Change the dynamic range to brighten/darken the quieter areas\n\
-== Environment variables ==\n\
-PPSEC      Pixel columns per second, default %g\n\
-FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
-DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
-", ppsec, fftfreq, -min_db);
-	    exit(1);
-	}
-    }
-
     /*
      * Pick up parameter values from the environment
      *
@@ -312,6 +254,86 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 
 	if ((cp = getenv("DYN_RANGE")) != NULL && (n = atof(cp)) > 0.0)
 	    min_db = -n;
+
+	if ((cp = getenv("MIN_FREQ")) != NULL && (n = atof(cp)) > 0.0)
+	    min_freq = n;
+
+	if ((cp = getenv("MAX_FREQ")) != NULL && (n = atof(cp)) > 0.0)
+	    max_freq = n;
+    }
+
+    for (argv++, argc--;	/* Skip program name */
+	 argc > 0 && argv[0][0] == '-';
+	 argv++, argc--) {
+	switch (argv[0][1]) {
+	case 'p':
+	    autoplay = TRUE;
+	    break;
+	case 'e':
+	    exit_when_played = TRUE;
+	    break;
+	case 'w':
+	    argv++; argc--;	 /* Advance to numeric argument */
+	    if (argc == 0 || (disp_width = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-w what?\n");
+		exit(1);
+	    }
+	    break;
+	case 'h':
+	    argv++; argc--;	 /* Advance to numeric argument */
+	    if (argc == 0 || (disp_height = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-h what?\n");
+		exit(1);
+	    }
+	    break;
+	case 'j':
+	    argv++; argc--;	 /* Advance to numeric argument */
+	    if (argc == 0 || (max_threads = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-j what?\n");
+		exit(1);
+	    }
+	    break;
+	case 'k':	/* Draw black and white lines where piano keys fall */
+	    piano_lines = TRUE;
+	    break;
+	case 's':	/* Draw conventional score notation staff lines? */
+	    staff_lines = TRUE;
+	    break;
+	case 'v':
+	    printf("Version: %s\n", VERSION);
+	    exit(0);
+	default:
+	    fprintf(stderr,
+"Usage: spettro [-p] [-e] [-h n] [-w n] [-j n] [-v] [file.wav]\n\
+-p:\tPlay the file right away\n\
+-e:\tExit when the audio file has played\n\
+-h n:\tSet spectrogram display height to n pixels\n\
+-w n:\tSet spectrogram display width to n pixels\n\
+-j n:\tSet maximum number of threads to use (default: the number of CPUs)\n\
+-k\tOverlay black and white lines showing where the keys of a piano fall\n\
+-s\tOverlay conventional score notation staff lines\n\
+-v:\tPrint the version of spettro that you're using\n\
+The default file is audio.wav\n\
+== Keyboard commands ==\n\
+Ctrl-Q/C   Quit\n\
+Space      Play/Pause/Resume/Restart the audio player\n\
+Left/Right Skip back/forward by one second (10 seconds if Shift is held)\n\
+Up/Down    Pan up/down the frequency axis by a tone (an octave if Shift)\n\
+X/x        Zoom in/out on the time axis by a factor of 2\n\
+Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
+Plus/Minus Zoom in/out on both axes\n\
+Star/Slash Change the dynamic range to brighten/darken the quieter areas\n\
+k	   Toggle overlay of piano key frequencies\n\
+s	   Toggle overlay of conventional staff lines\n\
+== Environment variables ==\n\
+PPSEC      Pixel columns per second, default %g\n\
+FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
+DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
+MIN_FREQ   The frequency centred on the bottom pixel row, currently %g\n\
+MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
+", ppsec, fftfreq, -min_db, min_freq, max_freq);
+	    exit(1);
+	}
     }
 
     /* Set variables with derived values */
@@ -322,6 +344,9 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
     /* Set default values for unset parameters */
 
     filename = (argc > 0) ? argv[0] : "audio.wav";
+
+    /* Make the overlay, if any */
+    make_overlay();
 
     /* Initialize the graphics subsystem */
 
@@ -349,7 +374,7 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 	fprintf(stderr, "Out of memory allocating image data\n");
 	exit(1);
     }
-    /* Clear the image buffer to the background colour */
+    /* Clear the image buffer to the background color */
     {	register int i;
 	register unsigned int *p = (unsigned int *)imagedata;
 
@@ -669,7 +694,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	time_zoom_by(em, 0.5);
     } else
 
-    /* Change dynamic range of colour spectrum, like a brightness control.
+    /* Change dynamic range of color spectrum, like a brightness control.
      * Star should brighten the dark areas, which is achieved by increasing
      * the dynrange;
      * Slash instead darkens them to reduce visibility of background noise.
@@ -679,6 +704,19 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     } else
     if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide")) {
 	change_dyn_range(em, -6.0);
+    } else
+
+    /* Toggle staff line overlays */
+
+    if (!strcmp(ev->key, "k")) {
+	piano_lines = !piano_lines;
+	make_overlay();
+	repaint_display(em);
+    } else
+    if (!strcmp(ev->key, "s")) {
+	staff_lines = !staff_lines;
+	make_overlay();
+	repaint_display(em);
     } else
 
 	fprintf(stderr, "Key \"%s\" pressed.\n", ev->key);
@@ -842,7 +880,7 @@ freq_zoom_by(Evas_Object *em, double by)
     repaint_display(em);
 }
 
-/* Change the colour scale's dyna,ic range, thereby changing the brightness
+/* Change the color scale's dyna,ic range, thereby changing the brightness
  * of the darker areas.
  */
 static void
@@ -1013,7 +1051,7 @@ repaint_display(Evas_Object *em)
 }
 
 /* Repaint a column of the display from the result cache or paint it
- * with the background colour if it hasn't been calculated yet.
+ * with the background color if it hasn't been calculated yet.
  * Returns TRUE if the result was found in the cache and repainted,
  *	   FALSE if it painted the background color or was off-limits.
  */
@@ -1038,7 +1076,7 @@ repaint_column(int column, Evas_Object *em)
 	paint_column(column, r);
 	return TRUE;
     } else {
-	/* ...otherwise paint it with the background colour */
+	/* ...otherwise paint it with the background color */
 	int y;
 	unsigned int *p = (unsigned int *)imagedata + column;
 
@@ -1081,8 +1119,15 @@ paint_column(int pos_x, result_t *result)
      */
     for (i=maglen-1; i>=0; i--) {
 	unsigned int *pixelrow;
+	unsigned int ov;
 
 	pixelrow = (unsigned int *)&imagedata[imagestride * ((disp_height - 1) - i)];
+
+	/* Apply overlay of piano or staff lines */
+	if ((ov = get_overlay(i)) != 0) {
+	    pixelrow[pos_x] = ov;
+	    continue;
+	}
 
 #if LITTLE_ENDIAN	/* Provided by stdlib.h on Linux-glibc */
 	/* Let colormap write directly to the pixel buffer */

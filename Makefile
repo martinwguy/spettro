@@ -6,9 +6,9 @@ ALL=spettro
 PREFIX=/usr/local
 
 SRCS=main.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
-     speclen.c sndfile.c
+     speclen.c overlay.c sndfile.c
 OBJS=main.o calc.o window.o spectrum.o interpolate.o colormap.o lock.o \
-     speclen.o sndfile.o
+     speclen.o overlay.o sndfile.o
 # or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
 # See also AUDIOFILELIB= below
 
