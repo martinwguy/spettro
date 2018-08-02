@@ -8,3 +8,7 @@ the previous one is complete - can this happen?)
 ------------------------------------------------------------------------
 With SDL_TIMER, it sometimes gets jumpy, scrolling display once a second.
 ------------------------------------------------------------------------
+If you zoom in too much, the graphic turns upside down and zooms in.
+------------------------------------------------------------------------
+When zoomed into X axis, Left and Right should move less.
+------------------------------------------------------------------------
