@@ -621,7 +621,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Eina_Bool Control = evas_key_modifier_is_set(mods, "Control");
 
     /* Control-Q or Control-C: Quit */
-    if (Control && (!strcmp(ev->key, "q") || strcmp(ev->key, "c"))) {
+    if (Control && (!strcmp(ev->key, "q") || !strcmp(ev->key, "c"))) {
 	ecore_main_loop_quit();
     } else
 
