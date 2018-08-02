@@ -1,3 +1,5 @@
 ------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
+With SDL_TIMER, it sometimes gets jumpy, scrolling display once a second.
+------------------------------------------------------------------------

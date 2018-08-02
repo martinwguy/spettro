@@ -83,7 +83,7 @@
 #include <stdlib.h>
 #include <math.h>	/* for lrint() */
 
-#if SDL_AUDIO
+#if SDL_AUDIO || SDL_TIMER
 # include <SDL/SDL.h>
 static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
 				 * will we next read samples to play? */
@@ -125,15 +125,36 @@ static void freq_pan_by(Evas_Object *em, double by);	/* Up/Down */
 static void freq_zoom_by(Evas_Object *em, double by);	/* y/Y */
 static void change_dyn_range(Evas_Object *em, double by);/* * and / */
 
+/*
+ * Declarations for timer and its callback function
+ */
+#if ECORE_TIMER && SDL_TIMER
+# error "Define only one of ECORE_TIMER and SDL_TIMER"
+#endif
+
+#if ECORE_TIMER
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);
+#elif SDL_TIMER
+static SDL_TimerID timer = NULL;
+static Uint32 timer_cb(Uint32 interval, void *data);
+#else
+# error "Define ECORE_TIMER or SDL_TIMER"
+#endif
 
-/* Audio callback functions */
+/*
+ * Declarations for audio player and its callback function
+ */
+#if EMOTION_AUDIO && SDL_AUDIO
+# error "Define only one of EMOTION_AUDIO and SDL_AUDIO"
+#endif
+
 #if EMOTION_AUDIO
 static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
-#endif
-#if SDL_AUDIO
+#elif SDL_AUDIO
 static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
+#else
+# error "Define EMOTION_AUDIO or SDL_AUDIO"
 #endif
 
 /* FFT calculating thread */
@@ -369,10 +390,18 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 	exit(1);
     }
 
-#if SDL_AUDIO
-    if (SDL_Init(SDL_INIT_AUDIO) != 0) {
-	fprintf(stderr, "Couldn't initialize SDL audio: %s.\n", SDL_GetError());
-	exit(1);
+#if SDL_AUDIO || SDL_TIMER
+    {	Uint32 flags = 0;
+# if SDL_AUDIO
+	flags |= SDL_INIT_AUDIO;
+# endif
+# if SDL_TIMER
+	flags |= SDL_INIT_TIMER;
+# endif
+	if (SDL_Init(flags) != 0) {
+	    fprintf(stderr, "Couldn't initialize SDL: %s.\n", SDL_GetError());
+	    exit(1);
+	}
     }
 #endif
 
@@ -430,7 +459,11 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
     calc_columns(0, disp_width - 1, em);
 
     /* Start screen-updating and scrolling timer */
+#if ECORE_TIMER
     timer = ecore_timer_add(step, timer_cb, (void *)em);
+#elif SDL_TIMER
+    timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)em);
+#endif
     if (timer == NULL) {
 	fprintf(stderr, "Couldn't initialize scrolling timer.\n");
 	exit(1);
@@ -445,6 +478,10 @@ quit:
     /* Either of these makes it dump core */
     ecore_evas_free(ee);
     ecore_evas_shutdown();
+#endif
+
+#if SDL_AUDIO || SDL_TIMER
+    SDL_Quit();
 #endif
 
     return 0;
@@ -764,9 +801,13 @@ time_zoom_by(Evas_Object *em, double by)
     step = 1 / ppsec;
 
     /* Change the screen-scrolling speed to match */
+#if ECORE_TIMER
     (void) ecore_timer_del(timer);
     timer = ecore_timer_add(step, timer_cb, (void *)em);
     if (timer == NULL) {
+#elif SDL_TIMER
+    if (!SDL_RemoveTimer(timer) || (timer = SDL_AddTimer(step, timer_cb, NULL)) == NULL) {
+#endif
 	fprintf(stderr, "Couldn't change rate of scrolling timer.\n");
 	exit(1);
     }
@@ -841,8 +882,13 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
  * seek commands.
  */
 
+#if ECORE_TIMER
 static Eina_Bool
 timer_cb(void *data)
+#elif SDL_TIMER
+static Uint32
+timer_cb(Uint32 interval, void *data)
+#endif
 {
     Evas_Object *em = (Evas_Object *)data;
     double new_disp_time;	/* Where we reposition to */
@@ -946,7 +992,11 @@ timer_cb(void *data)
 	evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
     }
 
+#if ECORE_TIMER
     return(ECORE_CALLBACK_RENEW);
+#elif SDL_TIMER
+    return(interval);
+#endif
 }
 
 /* Repaint the whole display */

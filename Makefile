@@ -20,9 +20,14 @@ AUDIOFILELIB=	-lsndfile			# or -laudiofile
 OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm
 OPTFLAG=-O -g
 
+# Define one of EMOTION_AUDIO and SDL_AUDIO;
+# EMOTION_AUDIO works better than SDL_AUDIO but not at all on Ubuntu 16.04.
+
+# Define one of ECORE_TIMER and SDL_TIMER.
+# ECORE_TIMER is more precise; SDL_TIMER rounds to nearest 10ms and gets jumpy.
+
 CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
-	-DSDL_AUDIO
-# or -DEMOTION_AUDIO, which works better than SDL but not at all on Ubuntu 16.04
+	-DSDL_AUDIO -DECORE_TIMER
 
 all: $(ALL)
 
