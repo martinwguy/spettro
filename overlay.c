@@ -21,26 +21,25 @@
 #include <string.h>	/* for memset() */
 
 /* The array of overlay colours for every pixel column,
- * indexed from y=0 at the bottom to disp_height-1.
+ * indexed from y=0 at the bottom to disp_height-1
  */
-static unsigned int *overlay = NULL;
+static unsigned int *row_overlay = NULL;
 
-/* We remember what we calculated it for so as to recalculate it
- * automatically if anything has changed.
+/* and we remember what parameters we calculated it for so as to recalculate it
+ * automatically if anything changes.
  */
-static double overlay_min_freq;
-static double overlay_max_freq;
-static int    overlay_len;
+static double row_overlay_min_freq;
+static double row_overlay_max_freq;
+static int    row_overlay_len;
 
 /*
- * Calculate the overlay
+ * Calculate the overlays
  *
  * Uses main's globals:
  *    double min_freq, double max_freq, 
  *    int disp_height,
  *    bool piano_lines, bool staff_lines
  */
-
 
 void
 make_overlay()
@@ -54,23 +53,23 @@ make_overlay()
 	half_a_semitone = pow(2.0, 1/24.0);
 
     /* Check allocation of overlay array and zero it */
-    if (overlay == NULL ) {
-        overlay = malloc(len *sizeof(unsigned int));
-      if (overlay == NULL )
+    if (row_overlay == NULL ) {
+        row_overlay = malloc(len *sizeof(unsigned int));
+      if (row_overlay == NULL )
           /* Continue with no overlay */
           return;
       }
-      overlay_len = len;
+      row_overlay_len = len;
 
     /* Check for resize */
-    if (overlay_len != len) {
-      overlay = realloc(overlay, len *sizeof(unsigned int));
-      if (overlay == NULL )
+    if (row_overlay_len != len) {
+      row_overlay = realloc(row_overlay, len *sizeof(unsigned int));
+      if (row_overlay == NULL )
           /* Continue with no overlay */
           return;
-      overlay_len = len;
+      row_overlay_len = len;
     }
-    memset(overlay, 0, len * sizeof(unsigned int));
+    memset(row_overlay, 0, len * sizeof(unsigned int));
 
     if (piano_lines) {
 	/* Run up the piano keyboard blatting the pixels they hit */
@@ -88,7 +87,7 @@ make_overlay()
 
 	    /* If in screen range, write it to the overlay */
 	    if (magindex >= 0 && magindex < len)
-		overlay[magindex] = (color[note % 12] == 0)
+		row_overlay[magindex] = (color[note % 12] == 0)
 				    ? 0xFFFFFFFF	/* 0=White */
 				    : 0xFF000000;	/* 1=Black */
 	}
@@ -108,11 +107,11 @@ make_overlay()
 
 	    /* Staff lines are 3 pixels wide */
 	    if (magindex >= 0 && magindex < len)
-		overlay[magindex] = 0xFFFFFFFF;
+		row_overlay[magindex] = 0xFFFFFFFF;
 	    if (magindex-1 >= 0 && magindex-1 < len)
-		overlay[magindex-1] = 0xFFFFFFFF;
+		row_overlay[magindex-1] = 0xFFFFFFFF;
 	    if (magindex+1 >= 0 && magindex+1 < len)
-		overlay[magindex+1] = 0xFFFFFFFF;
+		row_overlay[magindex+1] = 0xFFFFFFFF;
         }
     }
 }
@@ -122,9 +121,9 @@ make_overlay()
  * 0xFFrrggbb = this colour
  */
 unsigned int
-get_overlay(int y)
+get_row_overlay(int y)
 {
-    if (overlay == NULL) return 0;
+    if (row_overlay == NULL) return 0;
 
     /* If anything moved, recalculate the overlay.
      *
@@ -132,15 +131,16 @@ get_overlay(int y)
      * will call make_overlay explicitly; these
      * others can change asynchronously.
      */
-    if (overlay_min_freq != min_freq ||
-	overlay_max_freq != max_freq ||
-	overlay_len != disp_height - 1) {
+    if (row_overlay_min_freq != min_freq ||
+	row_overlay_max_freq != max_freq ||
+	row_overlay_len != disp_height - 1)
+    {
 	make_overlay();
-	if (overlay == NULL) return 0;
-	overlay_min_freq = min_freq;
-	overlay_max_freq = max_freq;
-	overlay_len = disp_height - 1;
+	if (row_overlay == NULL) return 0;
+	row_overlay_min_freq = min_freq;
+	row_overlay_max_freq = max_freq;
+	row_overlay_len = disp_height - 1;
     }
 
-    return overlay[y];
+    return row_overlay[y];
 }

@@ -1124,7 +1124,7 @@ paint_column(int pos_x, result_t *result)
 	pixelrow = (unsigned int *)&imagedata[imagestride * ((disp_height - 1) - i)];
 
 	/* Apply overlay of piano or staff lines */
-	if ((ov = get_overlay(i)) != 0) {
+	if ((ov = get_row_overlay(i)) != 0) {
 	    pixelrow[pos_x] = ov;
 	    continue;
 	}

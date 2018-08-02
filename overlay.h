@@ -9,4 +9,4 @@
  * So does get_overlay to check that nothing has changed.
  */
 void make_overlay(void);
-unsigned int get_overlay(int y);
+unsigned int get_row_overlay(int y);
