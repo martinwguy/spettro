@@ -8,8 +8,8 @@
  * to calculate the complete spectrogram of the audio.
  *
  * The callback function signals a completed column of spectral data
- * which is coloured and its axis made logarithmic in the main loop
- * so as not to have to recalculate the FFT for zooms, pans and recolouring.
+ * which is colored and its axis made logarithmic in the main loop
+ * so as not to have to recalculate the FFT for zooms, pans and recoloring.
  */
 
 #include <stdlib.h>
