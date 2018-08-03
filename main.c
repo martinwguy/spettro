@@ -23,7 +23,7 @@
  * as the view moves in the audio file.
  *
  * At startup, the start of the piece is at the centre of the window and
- * the first seconds of the audio file are shown on the right half. The 
+ * the first seconds of the audio file are shown on the right half. The
  * left half is all grey.
  *
  * If you hit play (press 'space'), the audio starts playing and the
@@ -82,6 +82,9 @@
 
 #include <stdlib.h>
 #include <math.h>	/* for lrint() */
+#include <malloc.h>
+#include <string.h>	/* for memset() */
+#include <errno.h>
 
 #if SDL_AUDIO || SDL_TIMER
 # include <SDL/SDL.h>
@@ -95,20 +98,18 @@ static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
 #include "interpolate.h"
 #include "colormap.h"
 #include "speclen.h"
-#include "overlay.h"
-#include "main.h"
 
 /*
  * Function prototypes
  */
 
 /* Helper functions */
-static void	calc_columns(int from, int to, Evas_Object *em);
+static void	calc_columns(int from, int to);
 static void	remember_result(result_t *result);
 static result_t *recall_result(double t);
 static void	destroy_result(result_t *r);
-static void	repaint_display(Evas_Object *em);
-static bool	repaint_column(int column, Evas_Object *em);
+static void	repaint_display(void);
+static bool	repaint_column(int column);
 static void	paint_column(int column, result_t *result);
 static void	green_line(void);
 
@@ -117,15 +118,15 @@ static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
 
 /* Audio playing functions */
-static void pause_playing(Evas_Object *em);
-static void start_playing(Evas_Object *em);
-static void stop_playing(Evas_Object *em);
-static void continue_playing(Evas_Object *em);
-static void time_pan_by(Evas_Object *em, double by);	/* Left/Right */
-static void time_zoom_by(Evas_Object *em, double by);	/* x/X */
-static void freq_pan_by(Evas_Object *em, double by);	/* Up/Down */
-static void freq_zoom_by(Evas_Object *em, double by);	/* y/Y */
-static void change_dyn_range(Evas_Object *em, double by);/* * and / */
+static void pause_playing();
+static void start_playing();
+static void stop_playing();
+static void continue_playing();
+static void time_pan_by(double by);	/* Left/Right */
+static void time_zoom_by(double by);	/* x/X */
+static void freq_pan_by(double by);	/* Up/Down */
+static void freq_zoom_by(double by);	/* y/Y */
+static void change_dyn_range(double by);/* * and / */
 
 /*
  * Declarations for timer and its callback function
@@ -167,24 +168,34 @@ static void calc_cancel(void *data, Ecore_Thread *thread);
 static void calc_stop(void);
 
 /*
+ * Declarations for overlay module
+ */
+
+static void		make_row_overlay(void);
+static unsigned int	get_row_overlay(int y);
+static void		set_col_overlay_left(int y);
+static void		set_col_overlay_right(int y);
+static unsigned int	get_col_overlay(int y);
+
+/*
  * State variables
  */
 
 /* GUI state variables */
-       int disp_width	= 640;	/* Size of displayed drawing area in pixels */
-       int disp_height	= 480;
+static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
+static int disp_height	= 480;
 static double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
 static int disp_offset;  	/* Crosshair is in which display column? */
-       double min_freq	= 27.5;		/* Range of frequencies to display: */
-       double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
+static double min_freq	= 27.5;		/* Range of frequencies to display: */
+static double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
 static double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */
-       bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
-       bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
+static bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
+static bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
 
 /* The color for uncalculated areas: Alpha 255, RGB gray */
 #define background 0xFF808080
@@ -227,13 +238,17 @@ static double pending_seek = 0.0;
 static result_t *results = NULL; /* Linked list of result structures */
 static result_t *last_result = NULL; /* Last element in the linked list */
 
+/* The Emotion or Evas-Ecore object */
+static Evas_Object *em = NULL;
+
 int
 main(int argc, char **argv)
 {
     Ecore_Evas *ee;
     Evas *canvas;
-    Evas_Object *em;
     char *filename;
+    double col_overlay_left_time = -1.0;	/* Undefined */
+    double col_overlay_right_time = -1.0;	/* Undefined */
 
     /*
      * Pick up parameter values from the environment
@@ -299,6 +314,24 @@ main(int argc, char **argv)
 	case 's':	/* Draw conventional score notation staff lines? */
 	    staff_lines = TRUE;
 	    break;
+	case 'l': case 'r':
+	    if (argc < 2) {
+lwhat:		fprintf(stderr, "-%c what?\n", argv[0][1]);
+		exit(1);
+	    }
+	    errno = 0;
+	    {
+		char *endptr;
+		double arg = strtof(argv[0], &endptr);
+
+		if (errno == ERANGE || endptr == argv[0]) goto lwhat;
+		switch (argv[0][1]) {
+		case 'l': col_overlay_left_time = arg; break;
+		case 'r': col_overlay_right_time = arg; break;
+		}
+	    }
+	    argv++; argc--;	 /* Consume numeric argument */
+	    break;
 	case 'v':
 	    printf("Version: %s\n", VERSION);
 	    exit(0);
@@ -325,6 +358,7 @@ Plus/Minus Zoom in/out on both axes\n\
 Star/Slash Change the dynamic range to brighten/darken the quieter areas\n\
 k	   Toggle overlay of piano key frequencies\n\
 s	   Toggle overlay of conventional staff lines\n\
+l/r        Set the left/right bar markers to get an overlay of bar lines\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
 FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
@@ -341,12 +375,17 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
     disp_offset = disp_width / 2;
     step = 1 / ppsec;
 
+    if (col_overlay_left_time != -1.0)
+	set_col_overlay_left(lrint(col_overlay_left_time / step));
+    if (col_overlay_right_time != -1.0)
+	set_col_overlay_right(lrint(col_overlay_right_time / step));
+
     /* Set default values for unset parameters */
 
     filename = (argc > 0) ? argv[0] : "audio.wav";
 
-    /* Make the overlay, if any */
-    make_overlay();
+    /* Make the row overlay mask, if any */
+    make_row_overlay();
 
     /* Initialize the graphics subsystem */
 
@@ -481,13 +520,13 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 #endif
 
     /* Start FFT calculator */
-    calc_columns(0, disp_width - 1, em);
+    calc_columns(0, disp_width - 1);
 
     /* Start screen-updating and scrolling timer */
 #if ECORE_TIMER
     timer = ecore_timer_add(step, timer_cb, (void *)em);
 #elif SDL_TIMER
-    timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)em);
+    timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)NULL);
 #endif
     if (timer == NULL) {
 	fprintf(stderr, "Couldn't initialize scrolling timer.\n");
@@ -541,7 +580,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 #endif
 
 static void
-calc_columns(int from, int to, Evas_Object *em)
+calc_columns(int from, int to)
 {
     calc_t *calc = malloc(sizeof(calc_t));
     Ecore_Thread *thread;
@@ -630,18 +669,18 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	!strcmp(ev->key, "XF86AudioPlay")) {
 	switch (playing) {
 	case PLAYING:
-	    pause_playing(em);
+	    pause_playing();
 	    break;
 
 	case STOPPED:
 	    disp_time = 0.0;
-	    repaint_display(em);
-	    calc_columns(disp_offset, disp_width, em);
-	    start_playing(em);
+	    repaint_display();
+	    calc_columns(disp_offset, disp_width);
+	    start_playing();
 	    break;
 
 	case PAUSED:
-	    continue_playing(em);
+	    continue_playing();
 	    break;
 	}
     } else
@@ -650,10 +689,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
      */
     if (!strcmp(ev->key, "Left") || !strcmp(ev->key, "KP_Left")) {
-	time_pan_by(em, Shift ? -10.0 : -1.0);
+	time_pan_by(Shift ? -10.0 : -1.0);
     } else
     if (!strcmp(ev->key, "Right") || !strcmp(ev->key, "KP_Right")) {
-	time_pan_by(em, Shift ? 10.0 : 1.0);
+	time_pan_by(Shift ? 10.0 : 1.0);
     } else
 
     /*
@@ -662,36 +701,36 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * With Shift: an octave. without, a tone
      */
     if (!strcmp(ev->key, "Up") || !strcmp(ev->key, "KP_Up")) {
-	freq_pan_by(em, Shift ? 2.0 : pow(2.0, 1.0/12));
+	freq_pan_by(Shift ? 2.0 : pow(2.0, 1.0/12));
     } else
     if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down")) {
-	freq_pan_by(em, Shift ? 1/2.0 : 1/pow(2.0, 1/6.0));
+	freq_pan_by(Shift ? 1/2.0 : 1/pow(2.0, 1/6.0));
     } else
 
     /* Zoom on the time axis */
     if (!strcmp(ev->key, "x")) {
-	time_zoom_by(em, 0.5);
+	time_zoom_by(0.5);
     } else
     if (!strcmp(ev->key, "X")) {
-	time_zoom_by(em, 2.0);
+	time_zoom_by(2.0);
     } else
 
     /* Zoom on the frequency axis */
     if (!strcmp(ev->key, "y")) {
-	freq_zoom_by(em, 0.5);
+	freq_zoom_by(0.5);
     } else
     if (!strcmp(ev->key, "Y")) {
-	freq_zoom_by(em, 2.0);
+	freq_zoom_by(2.0);
     } else
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
     if (!strcmp(ev->key, "plus") || !strcmp(ev->key, "KP_Add")) {
-	freq_zoom_by(em, 2.0);
-	time_zoom_by(em, 2.0);
+	freq_zoom_by(2.0);
+	time_zoom_by(2.0);
     } else
     if (!strcmp(ev->key, "minus") || !strcmp(ev->key, "KP_Subtract")) {
-	freq_zoom_by(em, 0.5);
-	time_zoom_by(em, 0.5);
+	freq_zoom_by(0.5);
+	time_zoom_by(0.5);
     } else
 
     /* Change dynamic range of color spectrum, like a brightness control.
@@ -700,23 +739,31 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * Slash instead darkens them to reduce visibility of background noise.
      */
     if (!strcmp(ev->key, "asterisk") || !strcmp(ev->key, "KP_Multiply")) {
-	change_dyn_range(em, 6.0);
+	change_dyn_range(6.0);
     } else
     if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide")) {
-	change_dyn_range(em, -6.0);
+	change_dyn_range(-6.0);
     } else
 
     /* Toggle staff line overlays */
 
     if (!strcmp(ev->key, "k")) {
 	piano_lines = !piano_lines;
-	make_overlay();
-	repaint_display(em);
+	make_row_overlay();
+	repaint_display();
     } else
     if (!strcmp(ev->key, "s")) {
 	staff_lines = !staff_lines;
-	make_overlay();
-	repaint_display(em);
+	make_row_overlay();
+	repaint_display();
+    } else
+
+    /* Set left or right bar line position to current play position */
+    if (!strcmp(ev->key, "l")) {
+	set_col_overlay_left(lrint(disp_time / step));
+    } else
+    if (!strcmp(ev->key, "r")) {
+	set_col_overlay_right(lrint(disp_time / step));
     } else
 
 	fprintf(stderr, "Key \"%s\" pressed.\n", ev->key);
@@ -725,7 +772,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 /* Audio-playing functions */
 
 static void
-pause_playing(Evas_Object *em)
+pause_playing()
 {
 #if EMOTION_AUDIO
     emotion_object_play_set(em, EINA_FALSE);
@@ -737,7 +784,7 @@ pause_playing(Evas_Object *em)
 }
 
 static void
-start_playing(Evas_Object *em)
+start_playing()
 {
 #if EMOTION_AUDIO
     emotion_object_position_set(em, disp_time + pending_seek);
@@ -752,7 +799,7 @@ start_playing(Evas_Object *em)
 
 /* Stop playing because it has arrived at the end of the piece */
 static void
-stop_playing(Evas_Object *em)
+stop_playing()
 {
 #if EMOTION_AUDIO
     emotion_object_play_set(em, EINA_FALSE);
@@ -771,7 +818,7 @@ stop_playing(Evas_Object *em)
 }
 
 static void
-continue_playing(Evas_Object *em)
+continue_playing()
 {
 #if EMOTION_AUDIO
     /* Resynchronise the playing position to the display,
@@ -793,7 +840,7 @@ continue_playing(Evas_Object *em)
  * Here we just set pending_seek; the actual scrolling is done in timer_cb().
  */
 static void
-time_pan_by(Evas_Object *em, double by)
+time_pan_by(double by)
 {
     double playing_time;
 
@@ -823,7 +870,7 @@ time_pan_by(Evas_Object *em, double by)
     /* If moving left after it has come to the end and stopped,
      * we want it to play again. */
     if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
-	start_playing(em);
+	start_playing();
     }
 }
 
@@ -833,7 +880,7 @@ time_pan_by(Evas_Object *em, double by)
  * by repaint_display().
  */
 static void
-time_zoom_by(Evas_Object *em, double by)
+time_zoom_by(double by)
 {
     ppsec *= by;
     step = 1 / ppsec;
@@ -850,25 +897,25 @@ time_zoom_by(Evas_Object *em, double by)
 	exit(1);
     }
 
-    repaint_display(em);
+    repaint_display();
 }
 
 /* Pan the display on the vertical axis by changing min_freq and max_freq
  * by a factor.
  */
 static void
-freq_pan_by(Evas_Object *em, double by)
+freq_pan_by(double by)
 {
     min_freq *= by;
     max_freq *= by;
-    repaint_display(em);
+    repaint_display();
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
  * Values > 1.0 zoom in; values < 1.0 zoom out.
  */
 static void
-freq_zoom_by(Evas_Object *em, double by)
+freq_zoom_by(double by)
 {
     double  centre = sqrt(min_freq * max_freq);
     double   range = max_freq / centre;
@@ -877,14 +924,14 @@ freq_zoom_by(Evas_Object *em, double by)
     min_freq = centre / range;
     max_freq = centre * range;
 
-    repaint_display(em);
+    repaint_display();
 }
 
 /* Change the color scale's dyna,ic range, thereby changing the brightness
  * of the darker areas.
  */
 static void
-change_dyn_range(Evas_Object *em, double by)
+change_dyn_range(double by)
 {
     /* As min_db is negative, subtracting from it makes it bigger */
     min_db -= by;
@@ -892,7 +939,7 @@ change_dyn_range(Evas_Object *em, double by)
     /* min_db should not go positive */
     if (min_db > -6.0) min_db = -6.0;
 
-    repaint_display(em);
+    repaint_display();
 }
 
 /*
@@ -909,8 +956,6 @@ change_dyn_range(Evas_Object *em, double by)
 static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
-    Evas_Object *em =(Evas_Object *) data;
-
     stop_playing(em);
 }
 
@@ -928,7 +973,6 @@ static Uint32
 timer_cb(Uint32 interval, void *data)
 #endif
 {
-    Evas_Object *em = (Evas_Object *)data;
     double new_disp_time;	/* Where we reposition to */
     int scroll_by;		/* How many pixels to scroll by.
 				 * +ve = move forward in time, move display left
@@ -973,8 +1017,8 @@ timer_cb(Uint32 interval, void *data)
     if (abs(scroll_by) >= disp_width) {
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
-	calc_columns(0, disp_width - 1, em);
-	repaint_display(em);
+	calc_columns(0, disp_width - 1);
+	repaint_display();
     } else {
 	/* Otherwise, shift the overlapping region and calculate the new */
 	if (scroll_by > 0) {
@@ -986,7 +1030,7 @@ timer_cb(Uint32 interval, void *data)
 	     * as it will need to be repainted when it has scrolled.
 	     */
 	    if (scroll_by <= disp_offset)
-		repaint_column(disp_offset, em);
+		repaint_column(disp_offset);
 
 	    disp_time = new_disp_time;
 
@@ -997,7 +1041,7 @@ timer_cb(Uint32 interval, void *data)
 	    /* Repaint the right edge */
 	    {   int x;
 		for (x = disp_width - scroll_by; x < disp_width; x++) {
-		    repaint_column(x, em);
+		    repaint_column(x);
 		}
 	    }
 	}
@@ -1008,7 +1052,7 @@ timer_cb(Uint32 interval, void *data)
 	     * There are disp_width - disp_offset - 1 columns right of the line.
 	     */
 	    if (-scroll_by <= disp_width - disp_offset - 1)
-		repaint_column(disp_offset, em);
+		repaint_column(disp_offset);
 
 	    disp_time = new_disp_time;
 
@@ -1019,7 +1063,7 @@ timer_cb(Uint32 interval, void *data)
 	    /* Repaint the left edge */
 	    {   int x;
 		for (x = -scroll_by - 1; x >= 0; x--) {
-		    repaint_column(x, em);
+		    repaint_column(x);
 		}
 	    }
 	}
@@ -1038,13 +1082,13 @@ timer_cb(Uint32 interval, void *data)
 }
 
 /* Repaint the whole display */
-static void
-repaint_display(Evas_Object *em)
+void
+repaint_display(void)
 {
     int pos_x;
 
     for (pos_x=disp_width - 1; pos_x >= 0; pos_x--) {
-	repaint_column(pos_x, em);
+	repaint_column(pos_x);
     }
     green_line();
     evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
@@ -1056,7 +1100,7 @@ repaint_display(Evas_Object *em)
  *	   FALSE if it painted the background color or was off-limits.
  */
 static bool
-repaint_column(int column, Evas_Object *em)
+repaint_column(int column)
 {
     /* What time does this column represent? */
     double t = disp_time + (column - disp_offset) * step;
@@ -1087,14 +1131,15 @@ repaint_column(int column, Evas_Object *em)
 
 	/* and if it was for a valid time, schedule its calculation */
 	if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
-	    calc_columns(column, column, em);
+	    calc_columns(column, column);
 	}
 
 	return FALSE;
     }
 }
 
-/* Paint a column for which we have result data */
+/* Paint a column for which we have result data.
+ * pos_x is a screen coordinate. */
 static void
 paint_column(int pos_x, result_t *result)
 {
@@ -1102,6 +1147,23 @@ paint_column(int pos_x, result_t *result)
     int maglen;
     static float max = 1.0;	/* maximum magnitude value seen so far */
     int i;
+    unsigned int ov;		/* Overlay color temp; 0 = none */
+
+    /*
+     * Apply column overlay, converting screen x-coord to piece x-coord.
+     */
+    if ((ov = get_col_overlay(pos_x)) != 0) {
+	int y;			/* Y coordinate */
+	unsigned char *p;	/* pointer to pixel to set */
+
+	for (y=disp_height-1,
+	     p = (unsigned char *)((unsigned int *)imagedata + pos_x);
+	     y >= 0;
+	     y--, p += imagestride) {
+		*(unsigned int *)p = ov;
+	}
+	return;
+    }
 
     maglen = disp_height;
     mag = calloc(maglen, sizeof(*mag));
@@ -1119,12 +1181,13 @@ paint_column(int pos_x, result_t *result)
      */
     for (i=maglen-1; i>=0; i--) {
 	unsigned int *pixelrow;
-	unsigned int ov;
 
 	pixelrow = (unsigned int *)&imagedata[imagestride * ((disp_height - 1) - i)];
 
-	/* Apply overlay of piano or staff lines */
-	if ((ov = get_row_overlay(i)) != 0) {
+	/*
+	 * Apply row overlay
+	 */
+	if ( (ov = get_row_overlay(i)) != 0) {
 	    pixelrow[pos_x] = ov;
 	    continue;
 	}
@@ -1206,7 +1269,6 @@ static void
 calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 {
     calc_t   *calc   = (calc_t *)data;
-    Evas_Object *em = (Evas_Object *) calc->data;;
     result_t *result = (result_t *)msg_data;
     int pos_x;	/* Where would this column appear in the displayed region? */
 
@@ -1229,7 +1291,7 @@ calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
      * until the FFT delivers its first result before starting the player.
      */
     if (autoplay && playing != PLAYING) {
-	start_playing(em);
+	start_playing();
     }
 }
 
@@ -1321,4 +1383,245 @@ destroy_result(result_t *r)
     free(r->spec);
     free(r->mag);
     free(r);
+}
+
+/*
+ * Stuff to draw overlays on the graphic
+ *
+ * - horizontal lines showing the frequencies of piano keys and/or
+ *   of the conventional score notation pentagram lines.
+ *   RSN: Guitar strings!
+ * - vertical lines to mark the bars and beats, user-adjustable
+ *
+ * == Row overlay ==
+ *
+ * The row overlay is implemented by having an array with an element for each
+ * pixel of a screen column, with each element saying whether there's an overlay
+ * color at that height: 0 means no, 0xFFRRGGBB says of which colour if so.
+ *
+ * When the vertical axis is panned or zoomed, or the vertical window size
+ * changes, the row overlay matrix must be recalculated.
+ *
+ * == Column overlay ==
+ *
+ * The column overlay shows (will show!) draggable bar lines three pixels wide
+ * with intermediate beat markers 1 pixel wide. The column overlay takes
+ * priority over the row overlay, so that "bar lines" are maintained whole.
+ *
+ * The column overlay is created with mouse clicks, say:
+ * Left button to mark the start of a bar, right to mark the end of a bar.
+ * A three-pixel wide vertical bar appears at that point, when both are given
+ * the bar lines are repeated left and right at that separation.
+ *
+ * Numeric keys then set the number of beats per bar, shown as 1-pixel-wide
+ * vertical bars.
+ * Both bar and beat lines are extended left and right of the marked points.
+ */
+
+/* The array of overlay colours for every pixel column,
+ * indexed from y=0 at the bottom to disp_height-1
+ */
+static unsigned int *row_overlay = NULL;
+
+/* and we remember what parameters we calculated it for so as to recalculate it
+ * automatically if anything changes.
+ */
+static double row_overlay_min_freq;
+static double row_overlay_max_freq;
+static int    row_overlay_len;
+
+/*
+ * Calculate the overlays
+ */
+
+static void
+make_row_overlay()
+{
+    int note;	/* Of 88-note piano: 0 = Bottom A, 87 = top C */
+#define NOTE_A440	48  /* A above middle C */
+    static double half_a_semitone = 0.0;
+    int len = disp_height;
+
+    if (half_a_semitone == 0.0)
+	half_a_semitone = pow(2.0, 1/24.0);
+
+    /* Check allocation of overlay array and zero it */
+    if (row_overlay == NULL ) {
+        row_overlay = malloc(len *sizeof(unsigned int));
+      if (row_overlay == NULL )
+          /* Continue with no overlay */
+          return;
+      }
+      row_overlay_len = len;
+
+    /* Check for resize */
+    if (row_overlay_len != len) {
+      row_overlay = realloc(row_overlay, len *sizeof(unsigned int));
+      if (row_overlay == NULL )
+          /* Continue with no overlay */
+          return;
+      row_overlay_len = len;
+    }
+    memset(row_overlay, 0, len * sizeof(unsigned int));
+
+    if (piano_lines) {
+	/* Run up the piano keyboard blatting the pixels they hit */
+	for (note = 0; note < 88; note++) {
+	    /* Colour of notes in octave,  starting from A */
+	    static bool color[12] = { 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1 };
+
+#define note_to_freq(note) (440.0 * pow(2.0, (1/12.0) * (note - NOTE_A440)))
+#define freq_to_magindex(freq)	lrint((log(freq) - log(min_freq)) /	\
+				(log(max_freq) - log(min_freq)) *	\
+				(disp_height - 1))
+
+	    double freq = note_to_freq(note);
+	    int magindex = freq_to_magindex(freq);
+
+	    /* If in screen range, write it to the overlay */
+	    if (magindex >= 0 && magindex < len)
+		row_overlay[magindex] = (color[note % 12] == 0)
+				    ? 0xFFFFFFFF	/* 0=White */
+				    : 0xFF000000;	/* 1=Black */
+	}
+    }
+
+    if (staff_lines) {
+	/* Which note numbers do the staff lines fall on? */
+	static int notes[] = {
+	    22, 26, 29, 32, 36,
+	    43, 46, 50, 53, 56
+	};
+	int i;
+
+	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
+	    double freq = note_to_freq(notes[i]);
+	    int magindex = freq_to_magindex(freq);
+
+	    /* Staff lines are 3 pixels wide */
+	    if (magindex >= 0 && magindex < len)
+		row_overlay[magindex] = 0xFFFFFFFF;
+	    if (magindex-1 >= 0 && magindex-1 < len)
+		row_overlay[magindex-1] = 0xFFFFFFFF;
+	    if (magindex+1 >= 0 && magindex+1 < len)
+		row_overlay[magindex+1] = 0xFFFFFFFF;
+        }
+    }
+}
+
+/* What colour overlays this pixel row?
+ * 0x00000000 = Nothing
+ * 0xFFrrggbb = this colour
+ */
+static unsigned int
+get_row_overlay(int y)
+{
+    if (row_overlay == NULL) return 0;
+
+    /* If anything moved, recalculate the overlay.
+     *
+     * Changes to piano_lines or score_lines
+     * will call make_row_overlay explicitly; these
+     * others can change asynchronously.
+     */
+    if (row_overlay_min_freq != min_freq ||
+	row_overlay_max_freq != max_freq ||
+	row_overlay_len != disp_height - 1)
+    {
+	make_row_overlay();
+	if (row_overlay == NULL) return 0;
+	row_overlay_min_freq = min_freq;
+	row_overlay_max_freq = max_freq;
+	row_overlay_len = disp_height - 1;
+    }
+
+    return row_overlay[y];
+}
+
+/*
+ * Column overlays marking bar lines and beats
+ *
+ * The column overlays depend on the clicked start and end of a bar,
+ * measured in pixels, not time, for convenience.
+ * If a beat line doesn't fall exactly on a pixel's timestamp, we round
+ * it to the nearest pixel.
+ */
+
+/* Markers for start and end of bar in pixels from the start of the piece.
+ *
+ * Maybe: with no beats, 1-pixel-wide bar line.
+ * With beats, 3 pixels wide.
+ */
+#define UNDEFINED ((unsigned int) -1)
+static unsigned int col_overlay_left = UNDEFINED;
+static unsigned int col_overlay_right = UNDEFINED;
+static unsigned int beats_per_bar = 0;	/* 0 = No beat lines, only bar lines */
+
+/* Set start and end of marked bar.
+ * X is the number of pixels from the start of the piece. */
+static void
+set_col_overlay_left(int x)
+{
+    /* Setting left to the right of right cancels right */
+    if (col_overlay_right != UNDEFINED && x > col_overlay_right)
+	col_overlay_right = UNDEFINED;
+
+    col_overlay_left = x;
+    repaint_display();
+}
+
+void
+static set_col_overlay_right(int x)
+{
+    /* Setting right to the left of left cancels left */
+    if (col_overlay_left != UNDEFINED && x < col_overlay_left)
+	col_overlay_left = UNDEFINED;
+
+    col_overlay_right = x;
+    repaint_display();
+}
+
+/*
+ * What colour overlays this screen column?
+ *
+ * 0x00000000 = Nothing
+ * 0xFFrrggbb = this colour
+ */
+static unsigned int
+get_col_overlay(int x)
+{
+    unsigned int stride;	/* How wide is the bar in pixels? */
+
+    /* If neither of the bar positions is defined, do nothing */
+    if (col_overlay_left == UNDEFINED && col_overlay_right == UNDEFINED)
+	return 0;
+
+    /* Convert x to column index in whole piece */
+    x += lrint(disp_time / step) - disp_offset;
+
+    /* If only one of the bar positions is defined, paint it.
+     * Idem if they've defined both bar lines at the same point.
+     */
+    if (col_overlay_left == UNDEFINED ||
+	col_overlay_right == UNDEFINED ||
+	col_overlay_left == col_overlay_right) {
+
+	if (x == col_overlay_left || x == col_overlay_right)
+	    return 0xFFFFFFFF;
+	else
+	    return 0;
+    }
+
+    /* This should never happen */
+    if (col_overlay_left > col_overlay_right) {
+	return 0;
+    }
+
+    /* Both bar positions are defined. See if this column falls on one. */
+    stride = col_overlay_right - col_overlay_left;
+    if (x % stride == col_overlay_left % stride) {
+	return 0xFFFFFFFF;	/* White */
+    } else {
+        return 0;
+    }
 }

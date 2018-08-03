@@ -6,16 +6,16 @@ ALL=spettro
 PREFIX=/usr/local
 
 SRCS=main.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
-     speclen.c overlay.c sndfile.c
+     speclen.c sndfile.c
 OBJS=main.o calc.o window.o spectrum.o interpolate.o colormap.o lock.o \
-     speclen.o overlay.o sndfile.o
+     speclen.o sndfile.o
 # or audiofile.o to use libaudiofile (no Ogg support) instead of libsndfile 
 # See also AUDIOFILELIB= below
 
 GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
-EMOTION_LIBS=`  pkg-config --libs   emotion evas ecore ecore-evas eo`
+EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas eo`
 AUDIOFILELIB=	-lsndfile			# or -laudiofile
 OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm
 OPTFLAG=-O -g
