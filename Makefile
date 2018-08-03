@@ -52,5 +52,5 @@ check:
 	@make OPTFLAG="-Os -Wall" clean all | grep -v ^cc
 	@make OPTFLAG="-Os -Wall" CC=clang clean all | grep -v ^clang
 
-tags:
+tags: $(SRCS)
 	ctags $(SRCS)
