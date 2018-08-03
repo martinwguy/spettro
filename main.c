@@ -109,7 +109,7 @@ static void	remember_result(result_t *result);
 static result_t *recall_result(double t);
 static void	destroy_result(result_t *r);
 static void	repaint_display(void);
-static bool	repaint_column(int column);
+static void	repaint_column(int column);
 static void	paint_column(int column, result_t *result);
 static void	green_line(void);
 
@@ -634,14 +634,7 @@ quitGUI(Ecore_Evas *ee EINA_UNUSED)
 /*
  * Keypress events
  *
- * Control-Q	Quit application
- * Space	Play/Pause/Continue (also Media button "|> ||")
- *
  * Other interesting key names are:
- *	"Left"		Arrow <
- *	"Right"		Arrow >
- *	"Up"		Arrow ^
- *	"Down"		Arrow v
  *	"Prior"		PgUp
  *	"Next"		PgDn
  *	"XF86AudioPlay"	Media button >
@@ -686,25 +679,28 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     } else
 
     /*
-     * Arrow <-/->: Jump back/forward a second; with Shift, 10 seconds.
+     * Arrow <-/->: Jump back/forward a second.
+     * with Shift, 10 seconds. With Control one pixel.
      */
     if (!strcmp(ev->key, "Left") || !strcmp(ev->key, "KP_Left")) {
-	time_pan_by(Shift ? -10.0 : -1.0);
+	time_pan_by(-(Control ? step : Shift ? 10.0 : 1.0));
     } else
     if (!strcmp(ev->key, "Right") || !strcmp(ev->key, "KP_Right")) {
-	time_pan_by(Shift ? 10.0 : 1.0);
+	time_pan_by(Control ? step : Shift ? 10.0 : 1.0);
     } else
 
     /*
-     * Arrow Up/Down: Pan the frequency axis.
+     * Arrow Up/Down: Pan the frequency axis by a tone.
+     * With Shift: by an octave. With Control, by a pixel.
      * The argument to freq_pan_by() is a multiplier for min_freq and max_freq
-     * With Shift: an octave. without, a tone
      */
     if (!strcmp(ev->key, "Up") || !strcmp(ev->key, "KP_Up")) {
-	freq_pan_by(Shift ? 2.0 : pow(2.0, 1.0/12));
+	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (disp_height-1))  :
+		    Shift ? 2.0 : pow(2.0, 1/6.0));
     } else
     if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down")) {
-	freq_pan_by(Shift ? 1/2.0 : 1/pow(2.0, 1/6.0));
+	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
+		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
     } else
 
     /* Zoom on the time axis */
@@ -1099,7 +1095,7 @@ repaint_display(void)
  * Returns TRUE if the result was found in the cache and repainted,
  *	   FALSE if it painted the background color or was off-limits.
  */
-static bool
+static void
 repaint_column(int column)
 {
     /* What time does this column represent? */
@@ -1110,7 +1106,7 @@ repaint_column(int column)
 
     if (column < 0 || column >= disp_width) {
 	fprintf(stderr, "Repainting column %d\n", column);
-	return FALSE;
+	return;
     }
 
     /* If it's a valid time and the column has already been calculated,
@@ -1118,7 +1114,6 @@ repaint_column(int column)
     if (t >= 0.0 - DELTA && t <= audio_length + DELTA &&
         (r = recall_result(t)) != NULL) {
 	paint_column(column, r);
-	return TRUE;
     } else {
 	/* ...otherwise paint it with the background color */
 	int y;
@@ -1133,9 +1128,8 @@ repaint_column(int column)
 	if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
 	    calc_columns(column, column);
 	}
-
-	return FALSE;
     }
+    return;
 }
 
 /* Paint a column for which we have result data.
