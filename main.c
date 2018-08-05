@@ -887,7 +887,8 @@ time_zoom_by(double by)
     timer = ecore_timer_add(step, timer_cb, (void *)em);
     if (timer == NULL) {
 #elif SDL_TIMER
-    if (!SDL_RemoveTimer(timer) || (timer = SDL_AddTimer(step, timer_cb, NULL)) == NULL) {
+    if (!SDL_RemoveTimer(timer) ||
+	(timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, NULL)) == NULL) {
 #endif
 	fprintf(stderr, "Couldn't change rate of scrolling timer.\n");
 	exit(1);
@@ -997,7 +998,11 @@ timer_cb(Uint32 interval, void *data)
     scroll_by = lrint((new_disp_time - disp_time) * ppsec);
 
     if (scroll_by == 0) {
+#if ECORE_TIMER
 	return(ECORE_CALLBACK_RENEW);
+#elif SDL_TIMER
+	return(interval);
+#endif
     }
 
     /*
