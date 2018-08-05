@@ -145,6 +145,8 @@ static Uint32 timer_cb(Uint32 interval, void *data);
 # error "Define ECORE_TIMER or SDL_TIMER"
 #endif
 
+static void do_scroll(void);
+
 /*
  * Declarations for audio player and its callback function
  */
@@ -963,12 +965,30 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
  */
 
 #if ECORE_TIMER
+
 static Eina_Bool
 timer_cb(void *data)
+{
+    do_scroll();
+    return(ECORE_CALLBACK_RENEW);
+}
+
 #elif SDL_TIMER
+
 static Uint32
 timer_cb(Uint32 interval, void *data)
+{
+    do_scroll();
+    return(interval);
+}
+
 #endif
+
+/*
+ * Really scroll the screen according to pending_seek
+ */
+static void
+do_scroll()
 {
     double new_disp_time;	/* Where we reposition to */
     int scroll_by;		/* How many pixels to scroll by.
@@ -997,13 +1017,7 @@ timer_cb(Uint32 interval, void *data)
 
     scroll_by = lrint((new_disp_time - disp_time) * ppsec);
 
-    if (scroll_by == 0) {
-#if ECORE_TIMER
-	return(ECORE_CALLBACK_RENEW);
-#elif SDL_TIMER
-	return(interval);
-#endif
-    }
+    if (scroll_by == 0) return;
 
     /*
      * Scroll the display sideways by the correct number of pixels
@@ -1074,12 +1088,6 @@ timer_cb(Uint32 interval, void *data)
 
 	evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
     }
-
-#if ECORE_TIMER
-    return(ECORE_CALLBACK_RENEW);
-#elif SDL_TIMER
-    return(interval);
-#endif
 }
 
 /* Repaint the whole display */
