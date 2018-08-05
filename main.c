@@ -129,15 +129,24 @@ static void freq_zoom_by(double by);	/* y/Y */
 static void change_dyn_range(double by);/* * and / */
 
 /*
- * Declarations for timer and its callback function
+ * Declarations for timer and its callback function.
+ *
+ * The timer callback should scroll the screen, but we can do precious little
+ * in the actual timer callback function because it is called asynchronously,
+ * so instead it adds a user-defined event to the event queue, which is then
+ * called in an orderly manner by the main event loop.
  */
+
 #if ECORE_TIMER && SDL_TIMER
 # error "Define only one of ECORE_TIMER and SDL_TIMER"
 #endif
 
 #if ECORE_TIMER
 static Ecore_Timer *timer = NULL;
-static Eina_Bool timer_cb(void *data);
+static Eina_Bool timer_cb(void *data);	/* The timer callback function */
+static int scroll_event;   /* Our user-defined event to activate scrolling */
+/* The function that actuates the actual scrolling */
+static Eina_Bool scroll_cb(void *data, int type, void *event);
 #elif SDL_TIMER
 static SDL_TimerID timer = NULL;
 static Uint32 timer_cb(Uint32 interval, void *data);
@@ -526,6 +535,10 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 
     /* Start screen-updating and scrolling timer */
 #if ECORE_TIMER
+    /* The timer callback just generates an event, which is processed in
+     * the main ecore event loop to do the scrolling in the main loop */
+    scroll_event = ecore_event_type_new();
+    ecore_event_handler_add(scroll_event, scroll_cb, NULL);
     timer = ecore_timer_add(step, timer_cb, (void *)em);
 #elif SDL_TIMER
     timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)NULL);
@@ -969,8 +982,16 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 static Eina_Bool
 timer_cb(void *data)
 {
+    /* Generate a user-defined event which will be processed in the main loop */
+    ecore_event_add(scroll_event, NULL, NULL, NULL);
+    return ECORE_CALLBACK_RENEW;
+}
+
+static Eina_Bool
+scroll_cb(void *data, int type, void *event)
+{
     do_scroll();
-    return(ECORE_CALLBACK_RENEW);
+    return ECORE_CALLBACK_DONE;
 }
 
 #elif SDL_TIMER
