@@ -1,8 +1,16 @@
 You have to compile spettro from source at present:
 
-Debian/ubuntu dependencies:
-	apt-get install e17-dev libsndfile-dev pkg-config
+Debian/Ubuntu/Mint dependencies:
+	apt-get install e17-dev libecore-dev libemotion-dev libsdl-dev
+	apt-get install libsndfile-dev	# or libaudiofile-dev - See Makefile
+	apt-get install libfftw3-dev libsdl-dev pkg-config
+and a compiler of some kind - on Debian/Ubuntu/Mint
+	apt-get install build-essential
+will do the trick for sure.
 
+	apt-get install git
+	git clone git://github.com/martinwguy/spettro
+	cd spettro
 then
 	make
 and

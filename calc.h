@@ -6,6 +6,9 @@
  * The result data is the linear FFT magnitudes from 0Hz to Nyquist frequency.
  */
 
+#include <pthread.h>
+
+#include "spettro.h"
 #include "window.h"
 
 /* The parameters to calc(), saying what it should FFT. */
@@ -18,8 +21,11 @@ typedef struct calc {
     double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
     enum WINDOW_FUNCTION window;
-    Ecore_Thread *thread; /* The thread this calculator is running in */
-    void		*data;	/* Extra stuff not needed by the calc thread */
+#if ECORE_MAIN
+    Ecore_Thread *	thread; /* The thread this calculator is running in */
+#elif SDL_MAIN
+    pthread_t		thread;
+#endif
 } calc_t;
 
 /*
@@ -40,9 +46,12 @@ typedef struct result {
     float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
     int maglen;		/* Length of magnitude data on log axis */
     float *mag;		/* Magnitude data from [0..maglen-1] */
+#if ECORE_MAIN
     Ecore_Thread *thread; /* The calc thread that this result came from */
-    /* Linked list of results, not in any particular order */
-    struct result *next;
+#elif SDL_MAIN
+    pthread_t thread;
+#endif
+    struct result *next; /* Linked list of results in time order */
 } result_t;
 
 extern void calc(calc_t *data, void (*result_cb)(result_t *));

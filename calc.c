@@ -12,11 +12,15 @@
  * so as not to have to recalculate the FFT for zooms, pans and recoloring.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <math.h>
 #include <fftw3.h>
 
+#if ECORE_MAIN
 #include <Ecore.h>
+#endif
 
 #include "spettro.h"
 #include "audiofile.h"
@@ -71,6 +75,9 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
     destroy_spectrum(spec);
 }
 
+/*
+ * Calculate the magnitude spectrum for a column
+ */
 static result_t *
 get_result(calc_t *calc, spectrum *spec, double t)
 {
