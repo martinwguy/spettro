@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<TITLE>Spettro manual</TITLE>
+<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</HEAD>
+<BODY>
+<H1 ALIGN=CENTER>SPETTRO</H1>
+<P ALIGN=CENTER>Visualise music as it plays</P>
+<HR>
+<IMG SRC="screenshot.png" ALIGN=RIGHT>
+Spettro plays a sound file and displays a scrolling
+log-frequency-axis as it plays.
+<P>
+"Normal" spectrograms usually have a linear frequency axis,
+which means that the top half of the graphic represents the
+top octave of the sound, the next octave down occupies
+the next quarter of the screen and so on, leaving all the musical
+information crushed into the bottom few lines.
+<P>
+Spettro is different. With its logarithmic frequency axis, every
+octave occupies the same amount of space, spreading the musical
+information out evenly in the same way as in conventional musical 
+score notation.
+<H2>Usage</H2>
+To use it, you launch it from the command line with the audio file name
+as its argument, press the space bar to start it playing, pause it,
+or carry on playing it. When it gets to the end of the piece it stops,
+and pressing Space again to start again from the beginning.
+<H3>Key strokes to position the graphic</H3>
+<DL>
+ <DT>&larr; &rarr;
+  <DD>Left arrow skips back one second in the audio file.
+      If you hold down one of the Shift keys and press Left arrow,
+      It skips back 10 seconds, or if you hold down Control, it
+      skips back by one screen pixel.
+  <BR>Right arrow works similarly but skips forward in time instead of back.
+ <DT>&uarr; &darr;
+  <DD>Up arrow pans moves you up the frequency axis by a whole tone,
+      moving the graphic down; down arrow moves you down, revealing
+      more of the bass frequencies. If Shift is held down, they pan by
+      an octave instead of a tone; if Ctrl is held, it pans by one pixel
+      for extra-precise positioning.
+ <DT>x X
+  <DD>Pressing a lower case 'x' zooms out by a factor of two on the time
+      axis, so that twice as much of the audio becomes visible; upper case
+      'X' zooms in, enlarging the central half of the display to fit the
+      whole window.
+ <DT>y Y
+  <DD>Similarly, 'y' zooms out on the frequency axis,
+      showing twice the frequency range as before and compressing
+      the graphic in the vertical direction; 'Y' zooms in by a factor of
+      two so that what was the central half of the graphic now fills the
+      whole height.
+ <DT>+ -
+  <DD>Either of the Plus keys zooms in on both axes, like X and Y
+      simultaneously, and the Minus keys zoom out in both directions.
+</DL>
+<H3>Overlays</H3>
+Spettro can overlay the graphic with sets of horizontal and vertical lines,
+originally intended to help produce the musical score of a piece for which you
+only have the sound.
+<H4>Horizontal overlays: staff lines and piano keys</H4>
+<DL>
+ <DT>s
+  <DD>The 's' key makes spettro overlay the graphic with two five-line
+      pentagrams used in manuscript score notation, making it look more
+      like a conventional musical score.
+      <BR>From top to bottom, the score lines are centred at:
+      <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
+      <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz) 
+      <BR>Pressing 's' again removes the score lines.
+ <DT>p
+  <DD>The 'p' key, instead, overlays the spectrogram with the frequencies
+      of all 88 notes of a grand piano's keyboard: the white notes are
+      shown as horizontal white lines and the black notes as black lines from
+      A0(27.5Hz) to C8(4186Hz).
+      <BR>Pressing 'p' again removes the score lines.
+</DL>
+You can show both of these overlays at the same time: the piano key lines
+are a single pixel high, and the staff lines are three pixels thick.
+
+<H4>Vertical overlays: bar lines</H4>
+
+To help score the rhythm, you can overlay vertical lines, evenly spaced in time.
+These might correspond to bar lines, or to regular beats in the music.
+<BR>To do this, you position the graphic so that the central green line
+is at the start of one bar, and press 'l' (Ell), then move right until the
+green line is at the start of the following bar and press 'r'. Evenly-spaced
+bar lines will appear throughout the piece.
+<BR>To have the bar lines in sync with the music, position the bar lines with
+precision you can zoom in on the start of a bar using 'X', then use the
+Left and Right arrow keys to scroll the graphic by a single pixel.
+<DL>
+ <DT>l
+  <DD>The Ell key marks the start (left side) of a bar.
+ <DT>r
+  <DD>The 'r' key marks the end (right side) of a bar,
+      or the start of the following bar, as you prefer to see it.
+</DL>
+<HR>
+Martin Guy <martinwguy&#64;gmail.com>, August 2018.
+</BODY>
+</HTML>
+
