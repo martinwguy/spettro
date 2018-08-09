@@ -1,7 +1,3 @@
-Add guitar strings E2 A2 D3 G3 B3 E4 / 329.6 246.9 196.0 146.8 110 82.4
-Bass guitar: G2 D2 A1 E1 / 98.0 73.4 55.0 41.2
-------------------------------------------------------------------------
-Scroll with an event, not in the timer callback.
 ------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
@@ -31,8 +27,6 @@ giving the same dragging-the-graphic effect.
 ------------------------------------------------------------------------
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
-------------------------------------------------------------------------
-Activate log_freq and see if linear works. Or delete it.
 ------------------------------------------------------------------------
 Let them change the FFT window function.
 ------------------------------------------------------------------------

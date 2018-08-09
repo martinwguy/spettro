@@ -62,6 +62,12 @@ originally intended to help produce the musical score of a piece for which you
 only have the sound.
 <H4>Horizontal overlays: staff lines and piano keys</H4>
 <DL>
+ <DT>p
+  <DD>The 'p' key overlays the spectrogram with the frequencies
+      of the 88 notes of a grand piano: the white notes are
+      shown as horizontal white lines and the black notes as black lines
+      from A0(27.5Hz) to C8(4186Hz).
+      <BR>Pressing 'p' again removes the piano lines.
  <DT>s
   <DD>The 's' key makes spettro overlay the graphic with two five-line
       pentagrams used in manuscript score notation, making it look more
@@ -70,36 +76,86 @@ only have the sound.
       <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
       <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz) 
       <BR>Pressing 's' again removes the score lines.
- <DT>p
-  <DD>The 'p' key, instead, overlays the spectrogram with the frequencies
-      of all 88 notes of a grand piano's keyboard: the white notes are
-      shown as horizontal white lines and the black notes as black lines from
-      A0(27.5Hz) to C8(4186Hz).
-      <BR>Pressing 'p' again removes the score lines.
+ <DT>g
+  <DD>The 'g' key, instead, overlays the frequencies of the six strings
+      of a classical guitar, centred at:
+      <BR>E2(82.4Hz) A2(110Hz) D3(146.8Hz) G3(196.0Hz) B3(246.9Hz) E4 (329.6Hz)
+      <BR>Pressing 'g' again removes the piano lines.
 </DL>
-You can show both of these overlays at the same time: the piano key lines
-are a single pixel high, and the staff lines are three pixels thick.
+Staff lines and guitar lines are both three pixels thick, and
+if you select guitar lines while score lines are displayed, the score lines
+are removed and vice versa because they overlap and make a mess.
+However, you can display the piano lines together with either of them,
+for example to identify notes above the top score line or to see the positions
+of fretted strings on a guitar.
 
 <H4>Vertical overlays: bar lines</H4>
 
 To help score the rhythm, you can overlay vertical lines, evenly spaced in time.
 These might correspond to bar lines, or to regular beats in the music.
 <BR>To do this, you position the graphic so that the central green line
-is at the start of one bar, and press 'l' (Ell), then move right until the
-green line is at the start of the following bar and press 'r'. Evenly-spaced
+is at the start of one bar, and press '[', then move right until the
+green line is at the start of the following bar and press ']'. Evenly-spaced
 bar lines will appear throughout the piece.
-<BR>To have the bar lines in sync with the music, position the bar lines with
-precision you can zoom in on the start of a bar using 'X', then use the
-Left and Right arrow keys to scroll the graphic by a single pixel.
+<BR>To position the bar lines precisely in time with the music,
+you can zoom in on the start of a bar using 'X', then hold down the 'Ctrl' key
+and use the Left and Right arrow keys to scroll the graphic by a single pixel.
 <DL>
- <DT>l
-  <DD>The Ell key marks the start (left side) of a bar.
- <DT>r
-  <DD>The 'r' key marks the end (right side) of a bar,
-      or the start of the following bar, as you prefer to see it.
+ <DT>[
+  <DD>Open square bracket marks the start (left side) of a bar.
+ <DT>]
+  <DD>Close square bracket marks the end (right side) of a bar
+      (or the start of the following bar, as you prefer to see it.)
+</DL>
+
+<H3>Command-line arguments</H3>
+
+On spettro's command line you can supply various option flags before the
+audio file name:
+<DL>
+ <DT>-a
+  <DD>Autoplay the file when the program starts up
+ <DT>-e
+  <DD>Exit when the audio file has finished playing
+ <DT>-h n
+  <DD>Set spectrogram display height to n pixels
+ <DT>-w n
+  <DD>Set spectrogram display width to n pixels
+ <DT>-j n
+  <DD>Set maximum number of threads to use (default: the number of CPUs)
+ <DT>-p
+  <DD>Overlay black and white lines showing where 88-note piano keys are
+ <DT>-s
+  <DD>Overlay the conventional score notation pentagrams
+ <DT>-g
+  <DD>Overlay lines showing the positions of a classical guitar's strings
+ <DT>-v
+  <DD>Print the version of spettro that you're using
+ <DT>--help
+  <DD>Show a summary of all option flags, keys and environment variables.
+</DL>
+If no filename is supplied, it opens "audio.wav"
+
+<H3>Environment variables</H3>
+
+You can also tune some of spettro's internal parameters by setting environment
+variables on the command line, for example
+<BLOCKQUOTE>
+PPSEC=100&nbsp; FFTFREQ=10 &nbsp;spettro"
+</BLOCKQUOTE>
+<DL>
+ <DT>PPSEC
+  <DD>Pixel columns per second, default 25
+ <DT>FFTFREQ
+  <DD>FFT audio window is 1/this, defaulting to 1/5 of a second
+ <DT>DYN_RANGE
+  <DD>Dynamic range of amplitude values in decibels, default=100
+ <DT>MIN_FREQ
+  <DD>The frequency centred on the bottom pixel row, currently 27.5 (A1)
+ <DT>MAX_FREQ
+  <DD>The frequency centred on the top pixel row, currently 14080 (A9)
 </DL>
 <HR>
 Martin Guy <martinwguy&#64;gmail.com>, August 2018.
 </BODY>
 </HTML>
-

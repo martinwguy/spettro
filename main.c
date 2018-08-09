@@ -227,6 +227,7 @@ static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool gray	= FALSE;	/* Display in shades of gray? */
 static bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
 static bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
+static bool guitar_lines= FALSE;	/* Draw guitar string lines? */
 
 /* The color for uncalculated areas: Alpha 255, RGB gray */
 #if EVAS_VIDEO
@@ -277,10 +278,11 @@ enum key {
     KEY_MINUS,
     KEY_STAR,
     KEY_SLASH,
-    KEY_K,
+    KEY_P,
     KEY_S,
-    KEY_L,
-    KEY_R,
+    KEY_G,
+    KEY_BAR_START,
+    KEY_BAR_END,
 };
 static bool Shift, Control;
 static void do_key(enum key);
@@ -376,6 +378,11 @@ main(int argc, char **argv)
 	    break;
 	case 's':	/* Draw conventional score notation staff lines? */
 	    staff_lines = TRUE;
+	    guitar_lines = FALSE;
+	    break;
+	case 'g':	/* Draw guitar string lines? */
+	    guitar_lines = TRUE;
+	    staff_lines = FALSE;
 	    break;
 	case 'l': case 'r':
 	    if (argc < 2) {
@@ -400,18 +407,18 @@ lwhat:		fprintf(stderr, "-%c what?\n", argv[0][1]);
 	    exit(0);
 	default:
 	    fprintf(stderr,
-"Usage: spettro [-p] [-e] [-h n] [-w n] [-j n] [-v] [file.wav]\n\
--p:\tPlay the file right away\n\
--e:\tExit when the audio file has played\n\
--h n:\tSet spectrogram display height to n pixels\n\
--w n:\tSet spectrogram display width to n pixels\n\
--j n:\tSet maximum number of threads to use (default: the number of CPUs)\n\
--k\tOverlay black and white lines showing where the keys of a piano fall\n\
--s\tOverlay conventional score notation staff lines\n\
--v:\tPrint the version of spettro that you're using\n\
-The default file is audio.wav\n\
+"Usage: spettro [-a] [-e] [-h n] [-w n] [-j n] [-p] [-s] [-g] [-v] [file.wav]\n\
+-a:    Autoplay the file on startup\n\
+-e:    Exit when the audio file has played\n\
+-h n  Set spectrogram display height to n pixels\n\
+-w n  Set spectrogram display width to n pixels\n\
+-j n  Set maximum number of threads to use (default: the number of CPUs)\n\
+-p    Overlay black and white lines showing where 88-note piano keys are\n\
+-s    Overlay conventional score notation pentagrams as white lines\n\
+-g    Overlay lines showing the positions of a classical guitar's strings\n\
+-v:   Print the version of spettro that you're using\n\
+If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
-Ctrl-Q/C   Quit\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by one second\n\
            (by 10 seconds if Shift is held; by one pixel if Control is held)\n\
@@ -421,12 +428,14 @@ X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quieter areas\n\
-k	   Toggle overlay of piano key frequencies\n\
+p	   Toggle overlay of piano key frequencies\n\
 s	   Toggle overlay of conventional staff lines\n\
+g          Toggle overlay of classical guitar string frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
+Ctrl-Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
-FFTFREQ    FFT audio window is 1/this, default 1/%g of a second\n\
+FFTFREQ    FFT audio window is 1/this, defaulting to 1/%g of a second\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, currently %g\n\
 MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
@@ -699,10 +708,11 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 	    case SDLK_MINUS:	     key = KEY_MINUS;	break;
 	    case SDLK_ASTERISK:	     key = KEY_STAR;	break;
 	    case SDLK_SLASH:	     key = KEY_SLASH;	break;
-	    case SDLK_k:	     key = KEY_K;	break;
+	    case SDLK_p:	     key = KEY_P;	break;
 	    case SDLK_s:	     key = KEY_S;	break;
-	    case SDLK_l:	     key = KEY_L;	break;
-	    case SDLK_r:	     key = KEY_R;	break;
+	    case SDLK_g:	     key = KEY_G;	break;
+	    case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
+	    case SDLK_RIGHTBRACKET:  key = KEY_BAR_END; break;
 	    default:
 		fprintf(stderr, "Unknown key %d\n", event.key.keysym.sym);
 		break;
@@ -899,14 +909,20 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_STAR;
     else if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide"))
 	key = KEY_SLASH;
-    else if (!strcmp(ev->key, "k"))
-	key = KEY_K;
+    else if (!strcmp(ev->key, "p"))
+	key = KEY_P;
     else if (!strcmp(ev->key, "s"))
 	key = KEY_S;
-    else if (!strcmp(ev->key, "l"))
-	key = KEY_L;
-    else if (!strcmp(ev->key, "r"))
-	key = KEY_R;
+    else if (!strcmp(ev->key, "g"))
+	key = KEY_G;
+    else if (!strcmp(ev->key, "bracketleft"))
+	key = KEY_BAR_START;
+    else if (!strcmp(ev->key, "bracketright"))
+	key = KEY_BAR_END;
+/*
+    else
+	fprintf(stderr, "Key \"%s\" was pressed.\n", ev->key);
+ */
 
     do_key(key);
 }
@@ -1005,19 +1021,21 @@ do_key(enum key key)
 	break;
 
     /* Toggle staff/piano line overlays */
-    case KEY_K:
+    case KEY_P:
     case KEY_S:
-	if (key == KEY_K) piano_lines = !piano_lines;
-	if (key == KEY_S) staff_lines = !staff_lines;
+    case KEY_G:
+	if (key == KEY_P) piano_lines = !piano_lines;
+	if (key == KEY_S) if (staff_lines = !staff_lines) guitar_lines = FALSE;
+	if (key == KEY_G) if (guitar_lines = !guitar_lines) staff_lines = FALSE;
 	make_row_overlay();
 	repaint_display();
 	break;
 
     /* Set left or right bar line position to current play position */
-    case KEY_L:
+    case KEY_BAR_START:
 	set_col_overlay_left(disp_time);
 	break;
-    case KEY_R:
+    case KEY_BAR_END:
 	set_col_overlay_right(disp_time);
 	break;
 
@@ -1929,8 +1947,8 @@ make_row_overlay()
     if (staff_lines) {
 	/* Which note numbers do the staff lines fall on? */
 	static int notes[] = {
-	    22, 26, 29, 32, 36,
-	    43, 46, 50, 53, 56
+	    22, 26, 29, 32, 36,	/* G2 B2 D3 F3 A3 */
+	    43, 46, 50, 53, 56	/* E4 G4 B4 D5 F5 */
 	};
 	int i;
 
@@ -1939,6 +1957,27 @@ make_row_overlay()
 	    int magindex = freq_to_magindex(freq);
 
 	    /* Staff lines are 3 pixels wide */
+	    if (magindex >= 0 && magindex < len)
+		row_overlay[magindex] = 0xFFFFFFFF;
+	    if (magindex-1 >= 0 && magindex-1 < len)
+		row_overlay[magindex-1] = 0xFFFFFFFF;
+	    if (magindex+1 >= 0 && magindex+1 < len)
+		row_overlay[magindex+1] = 0xFFFFFFFF;
+        }
+    }
+
+    if (guitar_lines) {
+	/* Which note numbers do the guitar strings fall on? */
+	static int notes[] = {
+	    19, 24, 29, 34, 38, 43  /* Classical guitar: E2 A2 D3 G3 B3 E4 */
+	};
+	int i;
+
+	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
+	    double freq = note_to_freq(notes[i]);
+	    int magindex = freq_to_magindex(freq);
+
+	    /* Guitar lines are also 3 pixels wide */
 	    if (magindex >= 0 && magindex < len)
 		row_overlay[magindex] = 0xFFFFFFFF;
 	    if (magindex-1 >= 0 && magindex-1 < len)
