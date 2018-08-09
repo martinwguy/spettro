@@ -32,8 +32,6 @@ giving the same dragging-the-graphic effect.
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
 ------------------------------------------------------------------------
-Speed-optimize calc() to prepare FFTW3 spec once, not per call.
-------------------------------------------------------------------------
 Activate log_freq and see if linear works. Or delete it.
 ------------------------------------------------------------------------
 Let them change the FFT window function.

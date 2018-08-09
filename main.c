@@ -224,7 +224,6 @@ static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
 static double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
-static bool log_freq	= TRUE;		/* Use a logarithmic frequency axis? */
 static bool gray	= FALSE;	/* Display in shades of gray? */
 static bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
 static bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
@@ -908,8 +907,6 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_L;
     else if (!strcmp(ev->key, "r"))
 	key = KEY_R;
-    else
-	fprintf(stderr, "Key \"%s\" pressed.\n", ev->key);
 
     do_key(key);
 }
@@ -1519,7 +1516,7 @@ paint_column(int pos_x, result_t *result)
        exit(1);
     }
     max = interpolate(mag, maglen, result->spec, result->speclen,
-		     min_freq, max_freq, sample_rate, log_freq);
+		     min_freq, max_freq, sample_rate);
     result->mag = mag;
     result->maglen = maglen;
 
