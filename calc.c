@@ -115,7 +115,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	 * the already-allocated buffer and malloc a new one for next time.
 	 */
 	result->spec = spec->mag_spec;
-	spec->mag_spec = calloc(calc->speclen + 1, sizeof(*(spec->mag_spec)));
+	spec->mag_spec = malloc((calc->speclen+1) * sizeof(*(spec->mag_spec)));
 	if (spec->mag_spec == NULL) {
 	    fprintf(stderr, "Out of memory in calc()\n");
 	    return NULL;
