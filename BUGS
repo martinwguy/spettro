@@ -15,9 +15,6 @@ min_freq > max_freq... and it works!
 ------------------------------------------------------------------------
 When zoomed into X axis, Left and Right should move less.
 ------------------------------------------------------------------------
-When you mark only the right bar marker, it doesn't appear a a single
-white line, as left-only does. Why not???
-------------------------------------------------------------------------
 When scrolling screenfuls, it calculates loads of stuff that's
 already off-screen.
 ------------------------------------------------------------------------

@@ -1569,7 +1569,7 @@ paint_column(int pos_x, result_t *result)
 # endif
     }
 #elif SDL_VIDEO
-    if (SDL_MUSTLOCK(screen) && SDL_LockSurface(screen)!= 0 ) {
+    if (SDL_MUSTLOCK(screen) && SDL_LockSurface(screen) != 0 ) {
 	fprintf(stderr, "Can't lock screen: %s\n", SDL_GetError());
 	return;
     }
@@ -1734,16 +1734,16 @@ calc_notify(result_t *result)
     /* What screen coordinate does this result correspond to? */
     pos_x = lrint(disp_offset + (result->t - disp_time) * ppsec);
 
+    remember_result(result);
+
     /* Update the display if the column is in the displayed region
-     * and isn't at the green line's position or under a bar line.
+     * and isn't at the green line's position
      */
     if (pos_x >= 0 && pos_x < disp_width &&
-	pos_x != disp_offset && get_col_overlay(pos_x) == 0) {
+	pos_x != disp_offset) {
 	paint_column(pos_x, result);
 	update_column(pos_x);
     }
-
-    remember_result(result);
 
     /* To avoid an embarassing pause at the start of the graphics, we wait
      * until the FFT delivers its first result before starting the player.
@@ -2031,7 +2031,7 @@ get_row_overlay(int y)
  * Maybe: with no beats, 1-pixel-wide bar line.
  * With beats, 3 pixels wide.
  */
-#define UNDEFINED NAN
+#define UNDEFINED (-1.0)
 static double col_overlay_left_time = UNDEFINED;
 static double col_overlay_right_time = UNDEFINED;
 static unsigned int beats_per_bar = 0;	/* 0 = No beat lines, only bar lines */
