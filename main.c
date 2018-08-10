@@ -42,6 +42,19 @@
  *   with the audio playback. THe actual scrolling is done in the main loop
  *   in response to an event posted by the timer thread.
  *
+ * == Mouse handling ==
+ *
+ * On Ctrl-mouse down, the left and right bar lines are set at the
+ * mouse position.
+ *
+ * Mouse click and drag should pan the display in real time.
+ *
+ * So it should be Control-Mouse-Down that positions the left or right bar line
+ * at the mouse position. The bar line should appear when you press the button
+ * and if you move it while holding the button, the bar line should move too,
+ * being positioned definitively when you release the mouse button.
+ * If they release Control before MouseUp, no change should be made.
+ *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
  */
 
@@ -104,6 +117,7 @@ static void	update_column(int pos_x);
 /* Enlightenment's GUI callbacks */
 #if EVAS_VIDEO
 static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
+static void mouseDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
 #endif
 
@@ -585,7 +599,10 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 
 #if EVAS_VIDEO
     /* Set GUI callbacks */
-    evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN, keyDown, em);
+    evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN,
+				   keyDown, em);
+    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_DOWN,
+				   mouseDown, em);
 #endif
 
 #if EMOTION_AUDIO
@@ -668,11 +685,28 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 	    case SDLK_g:	     key = KEY_G;	break;
 	    case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
 	    case SDLK_RIGHTBRACKET:  key = KEY_BAR_END; break;
-	    default:
-		fprintf(stderr, "Unknown key %d\n", event.key.keysym.sym);
-		break;
 	    }
 	    if (key != KEY_NONE) do_key(key);
+	    break;
+
+	case SDL_MOUSEBUTTONDOWN:
+	    {
+		double when = (event.button.x - disp_offset) * step;
+		/* To detect Shift and Control states, it looks like we have to
+		 * examine the keys ourselves */
+		bool shift, ctrl;
+		Uint8 *keystate = SDL_GetKeyState(NULL);
+
+		shift = keystate[SDLK_LSHIFT] || keystate[SDLK_RSHIFT];
+		ctrl = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
+
+		if (ctrl) switch (event.button.button) {
+		case SDL_BUTTON_LEFT:
+		    set_col_overlay_left(when); break;
+		case SDL_BUTTON_RIGHT:
+		    set_col_overlay_right(when); break;
+		}
+	    }
 	    break;
 
 	case SDL_VIDEORESIZE:
@@ -880,6 +914,30 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
  */
 
     do_key(key);
+}
+
+static void
+mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
+{
+    Evas_Event_Mouse_Down *ev = einfo;
+    Evas_Object *em = data;	/* The Emotion object */
+
+    /* Evas_Point *output = &(ev->output); /* In world coordinates */
+    Evas_Coord_Point *where = &(ev->canvas);
+    double when = (where->x - disp_offset) * step;
+    Evas_Modifier *modifiers = ev->modifiers;
+    bool shift = evas_key_modifier_is_set(modifiers, "Shift");
+    bool control = evas_key_modifier_is_set(modifiers, "Control");
+
+    /* Bare left and right click: position bar lines */
+    if (control) {
+	switch (ev->button) {
+	case 1:
+	    set_col_overlay_left(when); break;
+	case 3:
+	    set_col_overlay_right(when); break;
+	}
+    }
 }
 #endif
 
