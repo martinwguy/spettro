@@ -1,11 +1,6 @@
 ------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
-It occasionally, at random, paints a column too bright.
-This may be because we do too much in the timer callback and call
-non-rientrant routines. (Or because a second timer CB launches before
-the previous one is complete - can this happen?)
-------------------------------------------------------------------------
 With SDL_TIMER, it sometimes gets jumpy, scrolling the display
 once every half second instead of smoothly. The timer interrupt *is*
 running every 40ms.
@@ -25,7 +20,4 @@ white line, as left-only does. Why not???
 ------------------------------------------------------------------------
 When scrolling screenfuls, it calculates loads of stuff that's
 already off-screen.
-------------------------------------------------------------------------
-When zooming out on X axis whith start of piece in left pane, the
-first column is not repainted grey.
 ------------------------------------------------------------------------
