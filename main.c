@@ -3,7 +3,9 @@
  *	Play an audio file displaying a scrolling log-frequency spectrogram.
  *
  * File: main.c
- *	Main routine implemented using Enlightenment's "emotion" interface.
+ *	Main routine, parameter handling, reading and servicing key strokes,
+ *	scheduling FFT calculations and receiving the results,
+ *	the FFT result cache and drawing overlays on rows and columns.
  *
  * The audio file is given as a command-line argument
  * A window opens showing a graphical representation of the audio file:
@@ -16,11 +18,6 @@
  * equal number of pixel rows in each octave of the scale, by default
  * 9 octaves from 27.5 Hz (very bottom A) to 14080 Hz (the toppest A
  * we can hear.)
- *
- * It computes the spectrogram from start to finish, displaying the results
- * pixel column immediately if it falls within the displayed region and
- * displaying already-computed columns in blank regions that are revealed
- * as the view moves in the audio file.
  *
  * At startup, the start of the piece is at the centre of the window and
  * the first seconds of the audio file are shown on the right half. The
@@ -36,39 +33,14 @@
  *
  * For command-line options and key bindings, see Usage.
  *
- * it runs in three threads:
+ * it runs in three types of thread:
  * - the main thread handles GUI events, starts/stops the audio player,
  *   tells the calc thread what to calculate, receives results, and
  *   displays them.
  * - The calc thread performs FFTs and reports back when they're done.
- * - the timer thread scrolls the display in sync with the audio playback.
- *
- * == WIBNIs ==
- *
- * One day, there will be a frequency scale in hertz on the left of the
- * spectrogram and on the right a frequency scale in musical notes with
- * optional overlays of the ten ceonventional-notation staff lines and/or
- * the notes of the piano as black and white one-pixel-high horizontal lines.
- * Along the top or bottom there may be a time scale in seconds.
- *
- * Another day, you'll be able to overlay a time grid, anchored to the sound,
- * with vertical lines marking beats in 50% green and first beats of bar in
- * 100% green (or 50% red?).
- * When the bar lines are displayed, the user can drag individual beat lines;
- * the first time they do this, the rest of the beat lines pan. From the second
- * time onward, moving a different bar line stretches the beats between the
- * beat line they're dragging and the last beat line that they dropped.
- *
- * We'll need to give some way to change the number of beats per bar, maybe
- * mark the beat lines manually, by default repeating the l.
- *
- * It would be nice to be able to write on the spectrogram with a one-pixel
- * green pencil, which suggests storing the pixel data instead of the amplitude.
- * Then, if you press s, it saves the spectrogram as audiofilename.png?
- * Then, when you reload, it imports from audiofilename.png
- * all pixels of the pencil color as an overlay on the spectral data.
- * That would allow us to recompute the spectrogram with different parameters
- * but preserving the annotations.
+ * - the timer thread is called periodically to scroll the display in sync
+ *   with the audio playback. THe actual scrolling is done in the main loop
+ *   in response to an event posted by the timer thread.
  *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
  */
@@ -83,7 +55,7 @@
 #include <string.h>	/* for memset() */
 #include <errno.h>
 
-/* Libraries' header files */
+/* Libraries' header files. See config.h for working combinations of defines */
 
 #if ECORE_TIMER || EVAS_VIDEO || ECORE_MAIN
 #include <Ecore.h>
@@ -102,8 +74,9 @@
 # include <SDL/SDL.h>
 #endif
 
-/* Local header files */
-
+/*
+ * Local header files
+ */
 
 #include "audiofile.h"
 #include "calc.h"
@@ -145,20 +118,12 @@ static void freq_pan_by(double by);	/* Up/Down */
 static void freq_zoom_by(double by);	/* y/Y */
 static void change_dyn_range(double by);/* * and / */
 
-/*
- * Declarations for timer and its callback function.
- *
- * The timer callback should scroll the screen, but we can do precious little
- * in the actual timer callback function because it is called asynchronously,
- * so instead it adds a user-defined event to the event queue, which is then
- * called in an orderly manner by the main event loop.
- */
-
+/* The timer and its callback function. */
 #if ECORE_TIMER
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);	/* The timer callback function */
 static int scroll_event;   /* Our user-defined event to activate scrolling */
-/* The function that actuates the actual scrolling */
+/* The function that does the actual scrolling */
 static Eina_Bool scroll_cb(void *data, int type, void *event);
 #elif SDL_TIMER
 static SDL_TimerID timer = NULL;
@@ -169,13 +134,7 @@ static Uint32 timer_cb(Uint32 interval, void *data);
 
 static void do_scroll(void);
 
-/*
- * Declarations for audio player and its callback function
- */
-#if EMOTION_AUDIO && SDL_AUDIO
-# error "Define only one of EMOTION_AUDIO and SDL_AUDIO"
-#endif
-
+/* The audio player and its callback function */
 #if EMOTION_AUDIO
 static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
 #elif SDL_AUDIO
@@ -196,13 +155,12 @@ static void calc_stop(void);
 #elif SDL_MAIN
 static void *calc_heavy(void *data);
 static void calc_notify(result_t *result);
+#else
+# error "Define ECORE_MAIN or SDL_MAIN"
 #endif
 static void calc_result(result_t *result);
 
-/*
- * Declarations for overlay module
- */
-
+/* Overlays */
 static void		make_row_overlay(void);
 static unsigned int	get_row_overlay(int y);
 static void		set_col_overlay_left(double when);
@@ -229,7 +187,7 @@ static bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
 static bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
 static bool guitar_lines= FALSE;	/* Draw guitar string lines? */
 
-/* The color for uncalculated areas: Alpha 255, RGB gray */
+/* The color for uncalculated areas:  RGB gray */
 #if EVAS_VIDEO
 #define background 0xFF808080
 #elif SDL_VIDEO
@@ -287,19 +245,15 @@ enum key {
 static bool Shift, Control;
 static void do_key(enum key);
 
-/* State variables (hacks) */
+/* State variables */
 
 /* When they press arrow left or right to seek, we just increment pending_seek;
- * the screen updating is then done in the next timer callback.
+ * the screen updating is then done in response to the next timer callback.
  */
 static double pending_seek = 0.0;
 
 /*
- * Internal data used to remember the FFT result for each pixel value.
- * For now, it's just an array indexing them. When we can zoom this will
- * need redoing.
- *
- * We keep the results in time order from oldest to newest.
+ * FFT result cache
  */
 static result_t *results = NULL; /* Linked list of result structures */
 static result_t *last_result = NULL; /* Last element in the linked list */
@@ -664,7 +618,8 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
     /* Start screen-updating and scrolling timer */
 #if ECORE_TIMER
     /* The timer callback just generates an event, which is processed in
-     * the main ecore event loop to do the scrolling in the main loop */
+     * the main ecore event loop to do the scrolling in the main loop
+     */
     scroll_event = ecore_event_type_new();
     ecore_event_handler_add(scroll_event, scroll_cb, NULL);
     timer = ecore_timer_add(step, timer_cb, (void *)em);
@@ -1156,8 +1111,8 @@ time_pan_by(double by)
 
 /* Zoom the time axis on disp_time.
  * Only ever done by 2.0 or 0.5 to improve result cache usefulness.
- * The recalculation of every other pixel column should be triggered
- * by repaint_display().
+ * The recalculation of every other pixel column is triggered by
+ * the call to repaint_display().
  */
 static void
 time_zoom_by(double by)
@@ -1244,7 +1199,8 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 #endif
 
 /*
- * The periodic timer callback that, when playing, scrolls the display by one pixel.
+ * The periodic timer callback that, when playing, schedules scrolling of
+ * the display by one pixel.
  * When paused, the timer continues to run to update the display in response to
  * seek commands.
  */
