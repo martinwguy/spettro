@@ -177,9 +177,10 @@ static void calc_result(result_t *result);
 /* Overlays */
 static void		make_row_overlay(void);
 static unsigned int	get_row_overlay(int y);
-static void		set_col_overlay_left(double when);
-static void		set_col_overlay_right(double when);
+static void		set_left_bar_time(double when);
+static void		set_right_bar_time(double when);
 static unsigned int	get_col_overlay(int y);
+static bool		is_bar_line(int x);
 
 /*
  * State variables
@@ -280,8 +281,6 @@ main(int argc, char **argv)
     Evas *canvas;
 #endif
     char *filename;
-    double col_overlay_left_time = -1.0;	/* Undefined */
-    double col_overlay_right_time = -1.0;	/* Undefined */
 
     /*
      * Pick up parameter values from the environment
@@ -364,8 +363,8 @@ lwhat:		fprintf(stderr, "-%c what?\n", argv[0][1]);
 
 		if (errno == ERANGE || endptr == argv[0]) goto lwhat;
 		switch (argv[0][1]) {
-		case 'l': col_overlay_left_time = arg; break;
-		case 'r': col_overlay_right_time = arg; break;
+		case 'l': set_left_bar_time(arg); break;
+		case 'r': set_right_bar_time(arg); break;
 		}
 	    }
 	    argv++; argc--;	 /* Consume numeric argument */
@@ -416,11 +415,6 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 
     disp_offset = disp_width / 2;
     step = 1 / ppsec;
-
-    if (col_overlay_left_time != -1.0)
-	set_col_overlay_left(col_overlay_left_time);
-    if (col_overlay_right_time != -1.0)
-	set_col_overlay_right(col_overlay_right_time);
 
     /* Set default values for unset parameters */
 
@@ -702,9 +696,9 @@ MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 
 		if (ctrl) switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
-		    set_col_overlay_left(when); break;
+		    set_left_bar_time(when); break;
 		case SDL_BUTTON_RIGHT:
-		    set_col_overlay_right(when); break;
+		    set_right_bar_time(when); break;
 		}
 	    }
 	    break;
@@ -933,9 +927,9 @@ mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     if (control) {
 	switch (ev->button) {
 	case 1:
-	    set_col_overlay_left(when); break;
+	    set_left_bar_time(when); break;
 	case 3:
-	    set_col_overlay_right(when); break;
+	    set_right_bar_time(when); break;
 	}
     }
 }
@@ -1046,10 +1040,10 @@ do_key(enum key key)
 
     /* Set left or right bar line position to current play position */
     case KEY_BAR_START:
-	set_col_overlay_left(disp_time);
+	set_left_bar_time(disp_time);
 	break;
     case KEY_BAR_END:
-	set_col_overlay_right(disp_time);
+	set_right_bar_time(disp_time);
 	break;
 
     default:
@@ -2046,33 +2040,31 @@ get_row_overlay(int y)
  * With beats, 3 pixels wide.
  */
 #define UNDEFINED (-1.0)
-static double col_overlay_left_time = UNDEFINED;
-static double col_overlay_right_time = UNDEFINED;
+static double bar_left_time = UNDEFINED;
+static double bar_right_time = UNDEFINED;
+/* The bar position converted to a pixel index into the whole piece */
+#define bar_left_ticks (lrint(bar_left_time / step))
+#define bar_right_ticks (lrint(bar_right_time / step))
+
 static unsigned int beats_per_bar = 0;	/* 0 = No beat lines, only bar lines */
 
 /* Set start and end of marked bar. */
 static void
-set_col_overlay_left(double when)
+set_left_bar_time(double when)
 {
-    /* Setting left to the right of right cancels right */
-    if (col_overlay_right_time != UNDEFINED && when > col_overlay_right_time)
-	col_overlay_right_time = UNDEFINED;
-
-    col_overlay_left_time = when;
-    repaint_display();
+    if (when >= 0.0 && when <= audio_length + DELTA) {
+	bar_left_time = when;
+	repaint_display();
+    }
 }
 
 static void
-set_col_overlay_right(double when)
+set_right_bar_time(double when)
 {
-    unsigned int x = lrint(when / step);
-
-    /* Setting right to the left of left cancels left */
-    if (col_overlay_left_time != UNDEFINED && when < col_overlay_left_time)
-	col_overlay_left_time = UNDEFINED;
-
-    col_overlay_right_time = when;
-    repaint_display();
+    if (when >= 0.0 && when <= audio_length + DELTA) {
+	bar_right_time = when;
+	repaint_display();
+    }
 }
 
 /*
@@ -2084,42 +2076,39 @@ set_col_overlay_right(double when)
 static unsigned int
 get_col_overlay(int x)
 {
-    /* The bar position converted to a pixel index into the whole piece */
-    unsigned int col_overlay_left_ticks = lrint(col_overlay_left_time / step);
-    unsigned int col_overlay_right_ticks = lrint(col_overlay_right_time / step);
+    return is_bar_line(x) ? 0xFFFFFFFF : 0;
+}
 
-    /* If neither of the bar positions is defined, do nothing */
-    if (col_overlay_left_time == UNDEFINED &&
-	col_overlay_right_time == UNDEFINED) return 0;
+/* Does screen column x coincide with the position of a bar line? */
+static bool
+is_bar_line(int x)
+{
+    int bar_width;	/* How long is the bar in pixels? */
 
-    /* Convert x to column index in whole piece */
+    /* Convert screen-x to column index into the whole piece */
     x += lrint(disp_time / step) - disp_offset;
 
-    /* If only one of the bar positions is defined, paint it.
-     * Idem if they've defined both bar lines at the same pixel.
+    /* If neither of the bar positions is defined, there are none displayed */
+    if (bar_left_time == UNDEFINED &&
+	bar_right_time == UNDEFINED) return FALSE;
+
+    /* They can set the "left" and "right" bar lines the other way round too */
+    bar_width = bar_right_ticks - bar_left_ticks;
+    if (bar_width < 0) bar_width = -bar_width;
+
+    /* If only one of the bar positions is defined, only that one is displayed.
+     * Idem if they've defined both bar lines in the same pixel column.
+     *
+     * Both UNDEFINED is handled above; if either are UNDEFINED here,
+     * bar_*_ticks will not be called.
      */
-    if (col_overlay_left_time == UNDEFINED ||
-	col_overlay_right_time == UNDEFINED ||
-	col_overlay_left_ticks == col_overlay_right_ticks) {
+    if (bar_left_time == UNDEFINED ||
+	bar_right_time == UNDEFINED ||
+	bar_left_ticks == bar_right_ticks) {
 
-	if (x == col_overlay_left_ticks || x == col_overlay_right_ticks)
-	    return 0xFFFFFFFF;
-	else
-	    return 0;
-    }
-
-    /* This should never happen */
-    if (col_overlay_left_ticks > col_overlay_right_ticks) {
-	return 0;
+	return x == bar_left_ticks || x == bar_right_ticks;
     }
 
     /* Both bar positions are defined. See if this column falls on one. */
-    {
-	/* How long is the bar in pixels? */
-        unsigned int bar_width = col_overlay_right_ticks - col_overlay_left_ticks;
-	if (x % bar_width == col_overlay_left_ticks % bar_width)
-	    return 0xFFFFFFFF;	/* White */
-	else
-	    return 0;
-    }
+    return x % bar_width == bar_left_ticks % bar_width;
 }
