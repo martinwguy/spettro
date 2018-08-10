@@ -313,7 +313,7 @@ main(int argc, char **argv)
 	 argc > 0 && argv[0][0] == '-';
 	 argv++, argc--) {
 	switch (argv[0][1]) {
-	case 'p':
+	case 'a':
 	    autoplay = TRUE;
 	    break;
 	case 'e':
