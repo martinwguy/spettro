@@ -1,9 +1,8 @@
 ------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
-With SDL_TIMER, it sometimes gets jumpy, scrolling the display
-once every half second instead of smoothly. The timer interrupt *is*
-running every 40ms.
+With SDL_TIMER zoomed in on X, the CPU load makes it unable to
+signal results and the display gets screwed.
 ------------------------------------------------------------------------
 If you zoom in too much, the graphic turns upside down and zooms in.
 Zoom by 2: centre=622.254 range=11.3137 min_freq=55 max_freq=7040
@@ -17,4 +16,6 @@ When zoomed into X axis, Left and Right should move less.
 ------------------------------------------------------------------------
 When scrolling screenfuls, it calculates loads of stuff that's
 already off-screen.
+------------------------------------------------------------------------
+If you X-zoom and X-zoom again before it's finished repainting, it dumps core.
 ------------------------------------------------------------------------
