@@ -881,7 +881,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     else if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down"))
 	key = KEY_DOWN;
     else if (!strcmp(ev->key, "x") || !strcmp(ev->key, "X"))
-	key = KEY_X;	/* ...hoping that Shift is set properly */
+	key = KEY_X;
     else if (!strcmp(ev->key, "y") || !strcmp(ev->key, "Y"))
 	key = KEY_Y;
     else if (!strcmp(ev->key, "plus") || !strcmp(ev->key, "KP_Add"))
@@ -1174,9 +1174,8 @@ time_zoom_by(double by)
 
     /* Change the screen-scrolling speed to match */
 #if ECORE_TIMER
-    (void) ecore_timer_del(timer);
-    timer = ecore_timer_add(step, timer_cb, (void *)em);
-    if (timer == NULL) {
+    if (ecore_timer_del(timer) == NULL ||
+	(timer = ecore_timer_add(step, timer_cb, (void *)em)) == NULL) {
 #elif SDL_TIMER
     if (!SDL_RemoveTimer(timer) ||
 	(timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, NULL)) == NULL) {
