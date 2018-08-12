@@ -19,12 +19,12 @@ EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas eo`
 
 AUDIOFILELIB=-lsndfile  # or -laudiofile and change sndfile.o to audiofile.o
 
-OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm
+OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm -lX11
 
 OPTFLAG=-O -g
 
 CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
-	-DUSE_EMOTION
+	-DUSE_EMOTION -pthread
 
 SRCS=main.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
      speclen.c sndfile.c
