@@ -1741,8 +1741,6 @@ calc_notify(result_t *result)
     /* What screen coordinate does this result correspond to? */
     pos_x = lrint(disp_offset + (result->t - disp_time) * ppsec);
 
-    remember_result(result);
-
     /* Update the display if the column is in the displayed region
      * and isn't at the green line's position
      */
@@ -1751,6 +1749,8 @@ calc_notify(result_t *result)
 	paint_column(pos_x, result);
 	update_column(pos_x);
     }
+
+    remember_result(result);
 
     /* To avoid an embarassing pause at the start of the graphics, we wait
      * until the FFT delivers its first result before starting the player.
