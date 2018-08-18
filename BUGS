@@ -1,4 +1,9 @@
 ------------------------------------------------------------------------
+When zoomed in on the X axis (i.e. when CPU is at 100%), USE_SDL (SDL_VIDEO)
+sometimes leaves fragments of the green line in the spectral columns and
+occasionally paints hugs squares of diagonal green-tinted garbage.
+It's done this since SDL_VIDEO was implemented in commit ec24.
+------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
 With SDL_TIMER zoomed in on X, the CPU load makes it unable to
