@@ -1,3 +1,13 @@
+
+------------------------------------------------------------------------
+Improve result cache so that we precalculate half a screenful ahead and
+so that we can cancel scheduled calculations that are no longer on the
+radar (e.g. when they seek far repeatedly).
+-> Keep track of scheduled calculations in a double linked list in time
+order with calc structure (fftfreq etc).
+------------------------------------------------------------------------
+When changing bar line positions, repaint just the old bar lines and the
+new, not the whole display.
 ------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
