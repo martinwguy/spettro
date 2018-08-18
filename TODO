@@ -1,10 +1,12 @@
-
 ------------------------------------------------------------------------
-Improve result cache so that we precalculate half a screenful ahead and
-so that we can cancel scheduled calculations that are no longer on the
-radar (e.g. when they seek far repeatedly).
--> Keep track of scheduled calculations in a double linked list in time
-order with calc structure (fftfreq etc).
+Be able to cache results that have different calculation parameters.
+This needs doing before letting them change fftfreq from the GUI.
+------------------------------------------------------------------------
+Improve result cache so that we precalculate ahead of right screen edge
+and so that we can cancel scheduled calculations that are no longer in
+the time period we cache.
+-> Keep track of scheduled calculations (in a double linked list in time
+order with associated calc structure.
 ------------------------------------------------------------------------
 When changing bar line positions, repaint just the old bar lines and the
 new, not the whole display.
