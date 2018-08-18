@@ -394,7 +394,7 @@ Up/Down    Pan up/down the frequency axis by a tone\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
-Star/Slash Change the dynamic range by 6dB to brighten/darken the quieter areas\n\
+Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 p	   Toggle overlay of piano key frequencies\n\
 s	   Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar string frequencies\n\
@@ -403,9 +403,12 @@ Ctrl-Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
 FFTFREQ    FFT audio window is 1/this, defaulting to 1/%g of a second\n\
-DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, currently %g\n\
 MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
+DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
+Zooms on the time axis (X,x,+,-) change PPSEC\n\
+Frequency-axis zooms and pans (Up,Down,Y,y,+,-) change MIN_FREQ and MAX_FREQ\n\
+Brightness controls (*,/) change DYN_RANGE\n\
 ", ppsec, fftfreq, -min_db, min_freq, max_freq);
 	    exit(1);
 	}
