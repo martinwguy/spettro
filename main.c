@@ -399,7 +399,7 @@ p	   Toggle overlay of piano key frequencies\n\
 s	   Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar string frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
-Ctrl-Q/Ctrl-C   Quit\n\
+Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
 FFTFREQ    FFT audio window is 1/this, defaulting to 1/%g of a second\n\
@@ -664,7 +664,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    key     = KEY_NONE;
 
 	    switch (event.key.keysym.sym) {
-	    case SDLK_q:
+	    case SDLK_q:	     key = KEY_QUIT;	break;
 	    case SDLK_c:if (Control) key = KEY_QUIT;	break;
 	    case SDLK_SPACE:	     key = KEY_SPACE;	break;
 	    case SDLK_LEFT:	     key = KEY_LEFT;	break;
@@ -871,7 +871,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Shift = evas_key_modifier_is_set(mods, "Shift");
     Control = evas_key_modifier_is_set(mods, "Control");
 
-    if (Control && (!strcmp(ev->key, "q") || !strcmp(ev->key, "c")))
+    if (!strcmp(ev->key, "q") || (Control && (!strcmp(ev->key, "c"))))
 	key = KEY_QUIT;
     else if (!strcmp(ev->key, "space"))
 	key = KEY_SPACE;
