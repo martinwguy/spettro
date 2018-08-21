@@ -1,5 +1,5 @@
 /*
- * audiofile.c - Stuff to read audio samples from a sound file
+ * audio_file.c - Stuff to read audio samples from a sound file
  *
  * Implemented using one of:
  * - libaudiofile, which can only read a few formats, and not ogg or mp3,
@@ -13,11 +13,9 @@
 #include <stdio.h>		/* for error messages */
 #include <string.h>		/* for memset() */
 
-#include "audiofile.h"		/* Our header file */
+#include "audio_file.h"		/* Our header file */
 
 #if USE_LIBAUDIOFILE
-
-#include <audiofile.h>		/* Their header file */
 
 audio_file_t *
 open_audio_file(char *filename)
@@ -136,8 +134,6 @@ close_audio_file(audio_file_t *audio_file)
 }
 
 #elif USE_LIBSNDFILE
-
-#include <sndfile.h>		/* libsndfile's header */
 
 static sf_count_t sfx_mix_mono_read_doubles(SNDFILE *file, double *data,
 					    sf_count_t datalen);

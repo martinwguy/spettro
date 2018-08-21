@@ -91,7 +91,7 @@
  * Local header files
  */
 
-#include "audiofile.h"
+#include "audio_file.h"
 #include "calc.h"
 #include "interpolate.h"
 #include "colormap.h"

@@ -1,5 +1,5 @@
 /*
- * audiofile.h - include file for clients of audiofile.c
+ * audio_file.h - include file for clients of audio_file.c
  */
 
 #if USE_LIBAUDIOFILE

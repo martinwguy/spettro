@@ -23,7 +23,7 @@
 #endif
 
 #include "spettro.h"
-#include "audiofile.h"
+#include "audio_file.h"
 #include "calc.h"
 #include "lock.h"
 #include "spectrum.h"

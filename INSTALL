@@ -15,18 +15,24 @@ will do the trick for sure, but
 will probably be enough.
 
 
-GETTING THE SOURCE CODE
+FETCHING THE SOURCE CODE
 
 	apt-get install git
 	git clone git://github.com/martinwguy/spettro
+	cd spettro
 
 
 COMPILATION
 
-	cd spettro
-then
+	aclocal
+	autoconf
+	automake --add-missing
+	./configure
 	make
-and
+
+
+EXECUTION
+
 	./spettro whatever.wav
 
 
