@@ -4,7 +4,6 @@
 
 #include <stdlib.h>	/* for exit() */
 #include <stdio.h>	/* for fprintf(stderr, ...) */
-#include <assert.h>
 #include <math.h>
 
 #include "spettro.h"
@@ -46,22 +45,21 @@ colormap(double value, double min_db, unsigned char *color, bool gray_scale)
     int indx;
 
     if (gray_scale) {
-     	/* "value" is a negative value in decibels.
-    	 * black (0,0,0) is for <= -180.0, and the other 255 values
-    	 * should cover the range from -180 to 0 evenly.
-    	 * (value/min_db) is >=0.0  and <1.0
-    	 * because both value and min_db are negative.
-    	 * (v/s) * 255.0 goes from 0.0 to 254.9999999 and
-    	 * floor((v/s) * 255) gives us 0 to 254
-    	 * converted to 255 to 1 by subtracting it from 255.
-	 */
     	int gray; /* The pixel value */
 
     	if (value <= min_db) {
-    		gray = 0;
+	    gray = 0;
     	} else {
-    		gray = 255 - lrint(floor((value / min_db) * 255.0));
-    		assert(gray >= 1 && gray <= 255);
+	    /* "value" is a negative value in decibels.
+	     * black (0,0,0) is for <= -180.0, and the other 255 values
+	     * should cover the range from -180 to 0 evenly.
+	     * (value/min_db) is >=0.0  and <1.0
+	     * because both value and min_db are negative.
+	     * (v/s) * 255.0 goes from 0.0 to 254.9999999 and
+	     * floor((v/s) * 255) gives us 0 to 254
+	     * converted to 255 to 1 by subtracting it from 255.
+	     */
+	    gray = 255 - lrint(floor((value / min_db) * 255.0));
 	}
     	color[0] = color[1] = color[2] = gray;
     	return;
