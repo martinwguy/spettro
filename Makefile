@@ -16,15 +16,15 @@ GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 #
 # To choose the audio file reading library:
 # USE_LIBAUDIOFILE and AUDIOFILELIB=-laudiofile (can't read Oggs or MP3s) or
-# USE_LIBSNDFILE   and AUDILFILELIB=-lsndfile   (can't read MP's)
+# USE_LIBSNDFILE   and AUDIOFILELIB=-lsndfile   (can't read MP's)
 
 CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
-	-DUSE_EMOTION -DUSE_LIBAUDIOFILE -pthread
+	-DUSE_EMOTION -DUSE_LIBSNDFILE -pthread
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas eo`
 
-AUDIOFILELIB=-laudiofile
+AUDIOFILELIB=-lsndfile
 # or -laudiofile and in OBJS change sndfile.o to audiofile.o
 
 OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm -lX11
