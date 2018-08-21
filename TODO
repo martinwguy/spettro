@@ -1,4 +1,8 @@
 ------------------------------------------------------------------------
+Improve the USE_ stuff in Makefile. ./configure?
+------------------------------------------------------------------------
+Cache the decoded audio file in a disk file if it's compressed.
+------------------------------------------------------------------------
 Be able to cache results that have different calculation parameters.
 This needs doing before letting them change fftfreq from the GUI.
 ------------------------------------------------------------------------
