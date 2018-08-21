@@ -13,24 +13,28 @@ GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 # USE_SDL uses SDL for everything so you don't need the Enlightenent toolkit
 #	at all but it works worse. If you use this, add -pthread to CFLAGS,
 #	-LX11 to OTHER_LIBS and remove EMOTION_CFLAGS and EMOTION_LIBS
+#
+# To choose the audio file reading library:
+# USE_LIBAUDIOFILE and AUDIOFILELIB=-laudiofile (can't read Oggs or MP3s) or
+# USE_LIBSNDFILE   and AUDILFILELIB=-lsndfile   (can't read MP's)
+
+CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
+	-DUSE_EMOTION -DUSE_LIBAUDIOFILE -pthread
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas eo`
 
-AUDIOFILELIB=-lsndfile
+AUDIOFILELIB=-laudiofile
 # or -laudiofile and in OBJS change sndfile.o to audiofile.o
 
 OTHER_LIBS=	$(AUDIOFILELIB) -lSDL -lfftw3 -lm -lX11
 
 OPTFLAG=-O -g
 
-CFLAGS= $(EMOTION_CFLAGS) $(OPTFLAG) -DVERSION=\"$(GIT_VERSION)\" \
-	-DUSE_EMOTION -pthread
-
 SRCS=main.c calc.c window.c spectrum.c interpolate.c colormap.c lock.c \
-     speclen.c sndfile.c
+     speclen.c audiofile.c
 OBJS=main.o calc.o window.o spectrum.o interpolate.o colormap.o lock.o \
-     speclen.o sndfile.o
+     speclen.o audiofile.o
 # or audiofile.o and set AUDIOFILELIB=-laudiofile above
 
 all: spettro
@@ -44,8 +48,7 @@ colormap.o:	colormap.h
 lock.o:		lock.h
 audiofile.o:	audiofile.h
 speclen.o:	speclen.h
-sndfile.o:	sndfile.h
-audiofile.o:	audiofile.h
+audiofile.o:	audiofile.h Makefile
 
 install: all
 	install $(ALL) $(PREFIX)/bin/

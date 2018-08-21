@@ -1,8 +1,8 @@
 /*
  * audiofile.h - include file for clients of audiofile.c
- *
- * Implemented using libaudiofile, which can only read a few formats.
  */
+
+#if USE_LIBAUDIOFILE
 
 #include <audiofile.h>
 
@@ -10,12 +10,27 @@ typedef struct audio_file {
 	AFfilehandle af;
 } audio_file_t;
 
+#elif USE_LIBSNDFILE
+
+#include <sndfile.h>
+
+typedef struct audio_file {
+	SNDFILE *sndfile;
+	unsigned long samplerate;
+	unsigned long frames;
+	unsigned channels;
+} audio_file_t;
+
+#else
+#error "Define USE_LIBAUDIOFILE or USE_LIBSNDFILE"
+#endif
+
 typedef enum {
 	af_double,
 	af_signed,	/* 16-bit native endian */
 } af_format;
 
-/* Returns a handle for the audio file, NULL on failure */
+/* Return a handle for the audio file, NULL on failure */
 extern audio_file_t *open_audio_file(char *filename);
 
 extern int audio_file_length_in_frames(audio_file_t *audio_file);
