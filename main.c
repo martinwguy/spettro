@@ -84,7 +84,7 @@
 #endif
 
 #if SDL_AUDIO || SDL_TIMER || SDL_MAIN
-# include <SDL/SDL.h>
+# include <SDL.h>
 #endif
 
 /*

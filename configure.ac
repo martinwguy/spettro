@@ -4,14 +4,35 @@ AC_PROG_CC
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
-AC_CHECK_HEADERS([errno.h])
-AC_CHECK_HEADERS([fftw3.h])
-AC_CHECK_HEADERS([limits.h])
-AC_CHECK_HEADERS([malloc.h])
-AC_CHECK_HEADERS([math.h])
-AC_CHECK_HEADERS([stdio.h])
-AC_CHECK_HEADERS([stdlib.h])
-AC_CHECK_HEADERS([string.h])
+# Obligatory headers
+AC_CHECK_HEADERS_ONCE([errno.h fftw3.h limits.h malloc.h math.h stdio.h])
 
-AC_CHECK_LIB([fftw3],[lock_fftw3])
+# Optional headers
+export CPPFLAGS="`pkg-config --cflags emotion`"
+AC_CHECK_HEADER([Emotion.h])
+export CPPFLAGS="`pkg-config --cflags evas`"
+AC_CHECK_HEADER([Evas.h])
+export CPPFLAGS="`pkg-config --cflags ecore-evas`"
+AC_CHECK_HEADER([Ecore_Evas.h])
+export CPPFLAGS="`pkg-config --cflags ecore`"
+AC_CHECK_HEADER([Ecore.h])
+export CPPFLAGS="`sdl-config --cflags`"
+AC_CHECK_HEADER([SDL.h])
+export CPPFLAGS=
+
+AC_CHECK_HEADER([sndfile.h])
+AC_CHECK_HEADER([audiofile.h])
+
+# Obligatory libraries
 AC_CHECK_LIB([m],[lrint])
+AC_CHECK_LIB([fftw3],[fftw_plan_r2r_1d])
+
+# Optional libraries
+AC_CHECK_LIB([SDL],[SDL_Init])
+AC_CHECK_LIB([emotion],[emotion_object_video_mute_set])
+AC_CHECK_LIB([evas],[evas_object_image_add])
+AC_CHECK_LIB([ecore],[ecore_main_loop_begin])
+AC_CHECK_LIB([ecore_evas],[ecore_evas_init])
+AC_CHECK_LIB([eo],[emotion_object_add])
+AC_CHECK_LIB([sndfile],[sf_open])
+AC_CHECK_LIB([audiofile],[afOpenFile])

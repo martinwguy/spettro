@@ -28,13 +28,13 @@ spettro_SOURCES = main.c config.h spettro.h \
 	audio_file.h calc.h colormap.h interpolate.h lock.h \
 	speclen.h spectrum.h window.h
 
-EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas eo`
-EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas eo`
+EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas`
+EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas`
 
 tags:
 	ctags $(spettro_SOURCES)
 
-clean-local:
+mrproper:
 	rm -f tags Makefile Makefile.in aclocal.m4 compile config.log \
 		config.status configure depcomp install-sh missing
 	rm -rf .deps autom4te.cache
