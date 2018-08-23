@@ -58,6 +58,7 @@
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
  */
 
+#include "configure.h"
 #include "config.h"
 
 /* System header files */
