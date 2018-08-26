@@ -34,7 +34,7 @@ EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas`
 tags:
 	ctags $(spettro_SOURCES)
 
-mrproper:
+mrproper: clean
 	rm -f tags Makefile Makefile.in aclocal.m4 compile config.log \
 		config.status configure depcomp install-sh missing
 	rm -rf .deps autom4te.cache
