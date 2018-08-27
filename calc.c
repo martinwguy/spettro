@@ -42,19 +42,14 @@ void
 calc(calc_t *calc, void (*result_cb)(result_t *))
 {
     /* The real function parameters */
-    double sr	  = calc->sr;		/* audio sample rate */
-    double length = calc->length;	/* length of whole piece in seconds */
     double from   = calc->from;		/* centre of first FFT bucket */
     double to	  = calc->to;		/* centre of last FFT bucket */
     int	   speclen= calc->speclen;	/* Max index into result->spec */
 
     /* Variables */
     double step	  = 1 / calc->ppsec;
-    int	   fftsize;			/* == speclen * 2 */
     spectrum *spec;
     double  t;				/* Time from start of piece */
-
-    fftsize = speclen * 2;	/* Not sure that an odd fftsize would work */
 
     spec = create_spectrum(speclen, calc->window);
     if (spec == NULL) {

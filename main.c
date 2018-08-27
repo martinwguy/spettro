@@ -171,7 +171,6 @@ static void calc_heavy(void *data, Ecore_Thread *thread);
 static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
 static void calc_end(void *data, Ecore_Thread *thread);
 static void calc_cancel(void *data, Ecore_Thread *thread);
-static void calc_stop(void);
 #elif SDL_MAIN
 static void *calc_heavy(void *data);
 static void calc_notify(result_t *result);
@@ -688,6 +687,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    case SDLK_g:	     key = KEY_G;	break;
 	    case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
 	    case SDLK_RIGHTBRACKET:  key = KEY_BAR_END; break;
+	    default: break;
 	    }
 	    if (key != KEY_NONE) do_key(key);
 	    break;
@@ -697,11 +697,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
 		double when = (event.button.x - disp_offset) * step;
 		/* To detect Shift and Control states, it looks like we have to
 		 * examine the keys ourselves */
-		bool shift, ctrl;
 		Uint8 *keystate = SDL_GetKeyState(NULL);
-
-		shift = keystate[SDLK_LSHIFT] || keystate[SDLK_RSHIFT];
-		ctrl = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
+		bool ctrl = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
 
 		if (ctrl) switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
@@ -761,7 +758,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	int frames_to_read = len / (sizeof(short) * nchannels);
 	int frames_read;	/* How many were read from the file */
 
-	if ((frames_read = read_audio_file(audiofile, stream,
+	if ((frames_read = read_audio_file(audiofile, (char *)stream,
 			    af_signed, nchannels,
 			    sdl_start, frames_to_read)) <= 0) {
 	    /* End of file or read error. Treat as end of file */
@@ -848,7 +845,6 @@ calc_columns(int from, int to)
 static void
 quitGUI(Ecore_Evas *ee EINA_UNUSED)
 {
-    //calc_stop();
     ecore_main_loop_quit();
 }
 
@@ -870,7 +866,6 @@ static void
 keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 {
     Evas_Event_Key_Down *ev = einfo;
-    Evas_Object *em = data;	/* The Emotion object */
     const Evas_Modifier *mods = evas_key_modifier_get(evas);
     enum key key = KEY_NONE;
 
@@ -924,12 +919,9 @@ static void
 mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 {
     Evas_Event_Mouse_Down *ev = einfo;
-    Evas_Object *em = data;	/* The Emotion object */
-
     Evas_Coord_Point *where = &(ev->canvas);
     double when = (where->x - disp_offset) * step;
     Evas_Modifier *modifiers = ev->modifiers;
-    bool shift = evas_key_modifier_is_set(modifiers, "Shift");
     bool control = evas_key_modifier_is_set(modifiers, "Control");
 
     /* Bare left and right click: position bar lines */
@@ -1489,8 +1481,8 @@ repaint_column(int column)
 	paint_column(column, r);
     } else {
 	/* ...otherwise paint it with the background color */
-	int y;
 #if EVAS_VIDEO
+	int y;
 	unsigned int *p = (unsigned int *)imagedata + column;
 
 	for (y=disp_height - 1; y >= 0; y--) {
@@ -1731,12 +1723,6 @@ calc_cancel(void *data, Ecore_Thread *thread)
 {
     free(data);
 }
-
-static void
-calc_stop(void)
-{
-    // (void) ecore_thread_cancel(calc->thread);
-}
 #endif
 
 static void
@@ -1747,7 +1733,7 @@ calc_notify(result_t *result)
 #endif
 {
 #if ECORE_MAIN
-    calc_t   *calc   = (calc_t *)data;
+    /* calc_t   *calc   = (calc_t *)data; */
     result_t *result = (result_t *)msg_data;
 #endif
     int pos_x;	/* Where would this column appear in the displayed region? */
@@ -2060,8 +2046,6 @@ static double bar_right_time = UNDEFINED;
 /* The bar position converted to a pixel index into the whole piece */
 #define bar_left_ticks (lrint(bar_left_time / step))
 #define bar_right_ticks (lrint(bar_right_time / step))
-
-static unsigned int beats_per_bar = 0;	/* 0 = No beat lines, only bar lines */
 
 /* Set start and end of marked bar. */
 static void
