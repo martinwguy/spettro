@@ -128,9 +128,9 @@ static void quitGUI(Ecore_Evas *ee);
 #endif
 
 /* Audio playing functions */
-static void pause_playing();
-static void start_playing();
-static void stop_playing();
+static void pause_playing(void);
+static void start_playing(void);
+static void stop_playing(void);
 static void continue_playing();
 static void time_pan_by(double by);	/* Left/Right */
 static void time_zoom_by(double by);	/* x/X */
@@ -771,7 +771,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 
 	/* SDL has no "playback finished" callback, so spot it here */
 	if (sdl_start >= audio_file_length_in_frames(audiofile)) {
-	    stop_playing(NULL);
+	    stop_playing();
 	}
 }
 #endif
@@ -877,8 +877,19 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Shift = evas_key_modifier_is_set(mods, "Shift");
     Control = evas_key_modifier_is_set(mods, "Control");
 
-    if (!strcmp(ev->key, "q") || (Control && (!strcmp(ev->key, "c"))))
-	key = KEY_QUIT;
+    /* Handle single-character strings separately, not for speed but to avoid
+     * tons of compiler warnings "array index 2 is past the end of the array"
+     * due to glibc's stupid 17-line #define for strcmp().
+     */
+    if (ev->key[1] == '\0') switch (ev->key[0]) {
+	case 'q': key = KEY_QUIT;		break;
+	case 'c': if (Control) key = KEY_QUIT;	break;
+	case 'x': case 'X': key = KEY_X;	break;
+	case 'y': case 'Y': key = KEY_Y;	break;
+	case 'p': key = KEY_P;			break;
+	case 's': key = KEY_S;			break;
+	case 'g': key = KEY_G;			break;
+    }
     else if (!strcmp(ev->key, "space"))
 	key = KEY_SPACE;
     else if (!strcmp(ev->key, "Left") || !strcmp(ev->key, "KP_Left"))
@@ -889,10 +900,6 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_UP;
     else if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down"))
 	key = KEY_DOWN;
-    else if (!strcmp(ev->key, "x") || !strcmp(ev->key, "X"))
-	key = KEY_X;
-    else if (!strcmp(ev->key, "y") || !strcmp(ev->key, "Y"))
-	key = KEY_Y;
     else if (!strcmp(ev->key, "plus") || !strcmp(ev->key, "KP_Add"))
 	key = KEY_PLUS;
     else if (!strcmp(ev->key, "minus") || !strcmp(ev->key, "KP_Subtract"))
@@ -901,12 +908,6 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_STAR;
     else if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide"))
 	key = KEY_SLASH;
-    else if (!strcmp(ev->key, "p"))
-	key = KEY_P;
-    else if (!strcmp(ev->key, "s"))
-	key = KEY_S;
-    else if (!strcmp(ev->key, "g"))
-	key = KEY_G;
     else if (!strcmp(ev->key, "bracketleft"))
 	key = KEY_BAR_START;
     else if (!strcmp(ev->key, "bracketright"))
@@ -925,7 +926,6 @@ mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Evas_Event_Mouse_Down *ev = einfo;
     Evas_Object *em = data;	/* The Emotion object */
 
-    /* Evas_Point *output = &(ev->output); /* In world coordinates */
     Evas_Coord_Point *where = &(ev->canvas);
     double when = (where->x - disp_offset) * step;
     Evas_Modifier *modifiers = ev->modifiers;
@@ -1040,9 +1040,16 @@ do_key(enum key key)
     case KEY_P:
     case KEY_S:
     case KEY_G:
-	if (key == KEY_P) piano_lines = !piano_lines;
-	if (key == KEY_S) if (staff_lines = !staff_lines) guitar_lines = FALSE;
-	if (key == KEY_G) if (guitar_lines = !guitar_lines) staff_lines = FALSE;
+	if (key == KEY_P)
+	    piano_lines = !piano_lines;
+	if (key == KEY_S) {
+	    staff_lines = !staff_lines;
+	    if (staff_lines) guitar_lines = FALSE;
+	}
+	if (key == KEY_G) {
+	    guitar_lines = !guitar_lines;
+	    if (guitar_lines) staff_lines = FALSE;
+	}
 	make_row_overlay();
 	repaint_display();
 	break;
@@ -1254,7 +1261,7 @@ change_dyn_range(double by)
 static void
 playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 {
-    stop_playing(em);
+    stop_playing();
 }
 #endif
 
