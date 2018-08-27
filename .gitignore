@@ -15,3 +15,7 @@ configure
 depcomp
 install-sh
 missing
+configure.h
+configure.h.in
+configure.h.in~
+stamp-h1
