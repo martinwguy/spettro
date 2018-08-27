@@ -17,7 +17,7 @@
 #elif SDL_LOCKS
 # include <SDL.h>
 # include <SDL_thread.h>
-  typedef SDL_lock lock_t;
+  typedef SDL_mutex *lock_t;
 # define do_lock(lockp)   (SDL_mutexP(*lockp) == 0)
 # define do_unlock(lockp) (SDL_mutexV(*lockp) == 0)
 #else
@@ -36,7 +36,7 @@ initialize(lock_t *lockp, bool *initp)
 #if ECORE_LOCKS
 	if (eina_lock_new(lockp) != EINA_TRUE)
 #elif SDL_LOCKS
-	if ( (*lockp = SDL_createmutex()) == NULL )
+	if ( (*lockp = SDL_CreateMutex()) == NULL )
 #endif
 	    return(FALSE);
 	*initp = TRUE;

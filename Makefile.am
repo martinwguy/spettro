@@ -17,7 +17,7 @@
 # USE_LIBAUDIOFILE in AM_CFLAGS and use -laudiofile in AM_LDFLAGS
 # The main difference is that libaudiofile can't read Ogg files.
 
-AM_CFLAGS = -DUSE_EMOTION_SDL -DUSE_LIBSNDFILE $(EMOTION_CFLAGS) $(SDL_CFLAGS) -pthread
+AM_CFLAGS = -DUSE_EMOTION -DUSE_LIBSNDFILE $(EMOTION_CFLAGS) $(SDL_CFLAGS)
 AM_LDFLAGS = -lsndfile $(AUDIOFILELIB) $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
 
 bin_PROGRAMS = spettro
@@ -35,8 +35,8 @@ audio_file.o: Makefile
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas`
-SDL_CFLAGS=`sdl-config --cflags`
-SDL_LIBS=  `sdl-config --libs`
+SDL_CFLAGS=`sdl-config --cflags` -pthread
+SDL_LIBS=  `sdl-config --libs` -lX11 -pthread
 
 tags:
 	ctags $(spettro_SOURCES)

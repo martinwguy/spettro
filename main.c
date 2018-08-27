@@ -64,6 +64,7 @@
 /* System header files */
 
 #include <stdlib.h>
+#include <unistd.h>	/* for sleep() */
 #include <math.h>	/* for lrint() */
 #include <malloc.h>
 #include <string.h>	/* for memset() */
@@ -86,6 +87,10 @@
 
 #if SDL_AUDIO || SDL_TIMER || SDL_MAIN
 # include <SDL.h>
+#endif
+
+#if SDL_MAIN
+#include <X11/Xlib.h>	/* for XInitThreads() */
 #endif
 
 /*
@@ -578,7 +583,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
     emotion_object_init(em, NULL);
     emotion_object_video_mute_set(em, EINA_TRUE);
     if (emotion_object_file_set(em, filename) != EINA_TRUE) {
-	fputs("Couldn't load audio file.\n", stderr);
+	fputs("Emotion couldn't load the audio file. Try compiling with -DUSE_EMOTION_SDL\n", stderr);
 	exit(1);
     }
     evas_object_show(em);
