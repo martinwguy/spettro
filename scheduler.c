@@ -39,8 +39,11 @@
 #include "main.h"
 #include "scheduler.h"
 
+#if 0
 #define DEBUG(...) fprintf(stderr, __VA_ARGS__)
+#else
 #define DEBUG(...) do{}while(0)
+#endif
 
 #include <malloc.h>		/* for free(!) */
 
@@ -191,17 +194,52 @@ DEBUG("List is empty\r");
 	return NULL;
     }
 
+    /* First, drop any list items that are off the left side of the screen */
+    while (list != NULL && list->to < disp_time - disp_offset*step - DELTA) {
+	calc_t *old_cp = list;
+	old_cp = list; 	/* Remember cell to free */
+	list = list->next;
+	/* New first cell , if any, has no previous one */
+	if (list != NULL) list->prev = NULL;
+	free(old_cp);
+    }
+
+    if (list == NULL) {
+DEBUG("List is empty after dropping before-screens\r");
+	unlock_list();
+	return NULL;
+    }
+
     /* Search the list to find the first calculation that is >= disp_time.
      * We include disp_time itself because it will need to be repainted
      * as soon as the next scroll happens, so having it ready is preferable.
      */
-    for (cpp = &list;
-         (*cpp) != NULL && (*cpp)->from < disp_time - DELTA;
-	 cpp = &((*cpp)->next))
-	    ;
-
+    for (cpp = &list; (*cpp) != NULL; cpp = &((*cpp)->next)) {
+	if ((*cpp)->from >= disp_time - DELTA) {
+	    /* Found the first time >= disp_time */
+	    break;
+	}
+    }
+    /* If the first one >= disp_time is off the right side of the screen,
+     * remove it and anything after it */
     if (*cpp != NULL &&
-	(*cpp)->from < disp_time + (disp_width - disp_offset) * step) {
+	(*cpp)->from > disp_time + (disp_width-1-disp_offset)*step + DELTA) {
+	calc_t *cp = *cpp;	/* List pointer to free unwanted cells */
+	while (cp != NULL) {
+	    calc_t *old_cp = cp;
+	    cp = cp->next;
+	    free(old_cp);
+	}
+	*cpp = NULL;
+    }
+
+    if (list == NULL) {
+DEBUG("List is empty after dropping after-screens\r");
+	unlock_list();
+	return NULL;
+    }
+
+    if (*cpp != NULL) {
     	/* We have a column after disp_time that's on-screen so
 	 * remove this calc_t from the list and hand it to the
 	 * hungry calculation thread. */
@@ -217,26 +255,17 @@ DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
 	return(cp);
     }
 
-    if (*cpp == NULL) {
-	/* We got to the end of the list and all work is <= disp_time.
-	 * See if there's any stuff on-screen before disp_time
-	 */
+    if (*cpp == NULL & cpp != &list) {
+	/* We got to the end of the list and all work is <= disp_time */
 	calc_t *cp;
 	static calc_t calc;	/* Used for measuring the structure layout */
 
 	/* Get address of last cell in the list */
 	cp = (calc_t *)((char *)cpp - (((char *)&calc.next - (char *)&calc)));
 
-	/* If it's before the start of the screen, don't bother. */
-	if (cp->from < disp_time - disp_offset * step - DELTA) {
-DEBUG("Last cell is < disp_time and before start of screen\n");
-	    unlock_list();
-	    return(NULL);
-	}
-
 DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
 
-	/* The last element is on-screen, so remove it and calculate it */
+	/* Remove the last element and tell FFT to calculate it */
 	if (cp->prev == NULL) list = NULL;
 	else cp->prev->next = NULL;
 	cp->prev = cp->next = NULL;	/* Not necessary but */
@@ -245,7 +274,7 @@ DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
 	unlock_list();
 	return cp;
     }
-DEBUG("Buuuu\n");
+DEBUG("List is empty after all\r");
 
     unlock_list();
     return NULL;
