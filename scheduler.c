@@ -64,14 +64,16 @@ static calc_t *list = NULL;
 
 /* Launch the scheduler. Returns TRUE on success.
  * It turns out we don't need a scheduler thread; the FFT threads just call
- * get_work() repeatedly */
+ * get_work() repeatedly.
+ *
+ * "nthreads" says how many FFT threads to start; 0 means the same number
+ * as there are CPUs.
+ */
 void
-start_scheduler()
+start_scheduler(int nthreads)
 {
-    int nthreads;	/* How many FFT-calculating threads to run? */
-
 #if ECORE_MAIN
-    nthreads = ecore_thread_max_get();
+    if (nthreads == 0) nthreads = ecore_thread_max_get();
 
     /* Start the FFT calculation threads, which ask get_work() for work */
     while (nthreads-- > 0) {
@@ -92,7 +94,7 @@ start_scheduler()
 	}
 
 	/* Start the FFT threads */
-	nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+	if (nthreads == 0) nthreads = sysconf(_SC_NPROCESSORS_ONLN);
 	while (nthreads-- > 0) {
 	    pthread_t thread;
 	    if (pthread_create(&thread, &attr, calc_heavy, NULL) != 0) {

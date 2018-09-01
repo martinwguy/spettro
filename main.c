@@ -477,9 +477,6 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
     canvas = ecore_evas_get(ee);
 
-    /* Fiddle with ecore's settings */
-    if (max_threads > 0) ecore_thread_max_set(max_threads);
-
     /* Create the image and its memory buffer */
     image = evas_object_image_add(canvas);
     evas_object_image_colorspace_set(image, EVAS_COLORSPACE_ARGB8888);
@@ -587,7 +584,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	(double) audio_file_length_in_frames(audio_file) / sample_rate;
 
     /* Now we have audio_length, we can schedule the initial screen refresh */
-    start_scheduler();
+    start_scheduler(max_threads);
     calc_columns(disp_offset, disp_width - 1);
 
 #if EVAS_VIDEO
