@@ -6,26 +6,37 @@
  * The result data is the linear FFT magnitudes from 0Hz to Nyquist frequency.
  */
 
-#include <pthread.h>
+#if ECORE_MAIN
+#include <Ecore.h>
+#endif
 
+#if SDL_MAIN
+#include <pthread.h>
+#endif
+
+#include "audio_file.h"
 #include "spettro.h"
 #include "window.h"
 
-/* The parameters to calc(), saying what it should FFT. */
+/* The parameters to calc(), saying what it should FFT.
+ * Also, an element of the list of FFTs to perform used by the scheduler.
+ */
 typedef struct calc {
     audio_file_t *	audio_file; /* Our audio file handle */
     double		length;	/* Length of piece in seconds */
     double		sr;	/* Sample rate of the piece */
     double		from;	/* From how far into the piece... */
-    double		to;	/* ...to when? 0.0 means to the end. */
+    double		to;	/* ...to when? =="from" means just "from" */
     double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
     enum WINDOW_FUNCTION window;
 #if ECORE_MAIN
     Ecore_Thread *	thread; /* The thread this calculator is running in */
 #elif SDL_MAIN
-    pthread_t		thread;
+    // pthread_t		thread;
 #endif
+    struct calc *	next;	/* List of calcs to perform, in time order */
+    struct calc *	prev;	/* Reverse pointer of doubly-linked list */
 } calc_t;
 
 /*
@@ -54,4 +65,4 @@ typedef struct result {
     struct result *next; /* Linked list of results in time order */
 } result_t;
 
-extern void calc(calc_t *data, void (*result_cb)(result_t *));
+extern void calc(calc_t *data);

@@ -5,3 +5,6 @@ bool unlock_fftw3(void);
 
 bool lock_audiofile(void);
 bool unlock_audiofile(void);
+
+bool lock_list(void);
+bool unlock_list(void);

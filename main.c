@@ -99,10 +99,12 @@
 
 #include "audio_file.h"
 #include "calc.h"
-#include "interpolate.h"
 #include "colormap.h"
+#include "interpolate.h"
+#include "scheduler.h"
 #include "speclen.h"
 #include "spettro.h"
+#include "main.h"
 
 /*
  * Function prototypes
@@ -165,20 +167,6 @@ static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
 # error "Define EMOTION_AUDIO or SDL_AUDIO"
 #endif
 
-/* FFT calculating thread functions and callbacks */
-#if ECORE_MAIN
-static void calc_heavy(void *data, Ecore_Thread *thread);
-static void calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
-static void calc_end(void *data, Ecore_Thread *thread);
-static void calc_cancel(void *data, Ecore_Thread *thread);
-#elif SDL_MAIN
-static void *calc_heavy(void *data);
-static void calc_notify(result_t *result);
-#else
-# error "Define ECORE_MAIN or SDL_MAIN"
-#endif
-static void calc_result(result_t *result);
-
 /* Overlays */
 static void		make_row_overlay(void);
 static unsigned int	get_row_overlay(int y);
@@ -192,15 +180,15 @@ static bool		is_bar_line(int x);
  */
 
 /* GUI state variables */
-static int disp_width	= 640;	/* Size of displayed drawing area in pixels */
-static int disp_height	= 480;
-static double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
-static int disp_offset;  	/* Crosshair is in which display column? */
+       int disp_width	= 640;	/* Size of displayed drawing area in pixels */
+       int disp_height	= 480;
+       double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
+       int disp_offset;  	/* Crosshair is in which display column? */
 static double min_freq	= 27.5;		/* Range of frequencies to display: */
 static double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
 static double ppsec	= 25.0;		/* pixel columns per second */
-static double step;			/* time step per column = 1/ppsec */
+       double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool gray	= FALSE;	/* Display in shades of gray? */
 static bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
@@ -512,7 +500,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    *p++ = background;
 	}
     }
-    green_line();
+
     evas_object_image_data_set(image, imagedata);
 
     /* This gives an image that is automatically scaled with the window.
@@ -552,11 +540,10 @@ Brightness controls (*,/) change DYN_RANGE\n\
 		SDL_GetError());
         exit(1);
     }
+#endif /* SDL_VIDEO */
 
     green_line();
-
     update_display();
-#endif /* SDL_VIDEO */
 
     /* Initialize the audio subsystem */
 
@@ -599,6 +586,10 @@ Brightness controls (*,/) change DYN_RANGE\n\
     audio_length =
 	(double) audio_file_length_in_frames(audio_file) / sample_rate;
 
+    /* Now we have audio_length, we can schedule the initial screen refresh */
+    start_scheduler();
+    calc_columns(disp_offset, disp_width - 1);
+
 #if EVAS_VIDEO
     /* Set GUI callbacks */
     evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN,
@@ -630,9 +621,6 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	}
     }
 #endif
-
-    /* Start FFT calculator */
-    calc_columns(0, disp_width - 1);
 
     /* Start screen-updating and scrolling timer */
 #if ECORE_TIMER
@@ -774,7 +762,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 #endif
 
 /*
- * Schedule the FFT thread to calculate the results for these display columns
+ * Schedule the FFT thread(s) to calculate the results for these display columns
  */
 static void
 calc_columns(int from, int to)
@@ -809,30 +797,25 @@ calc_columns(int from, int to)
     calc->speclen= fftfreq_to_speclen(fftfreq, sample_rate);
     calc->window = KAISER;
 
-#if ECORE_MAIN
-    thread = ecore_thread_feedback_run(
-	calc_heavy, calc_notify, calc_end, calc_cancel, calc, EINA_FALSE);
-    if (thread == NULL) {
-	fprintf(stderr, "Can't start FFT-calculating thread.\n");
-	exit(1);
-    }
-#elif SDL_MAIN
-    {
-	pthread_attr_t attr;
-
-	if (pthread_attr_init(&attr) != 0 ||
-	    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) != 0) {
-	    fprintf(stderr, "Failed to create/set thread attributes.\n");
-	    return;
+    /* If for a single column, just schedule it */
+    if (from == to) schedule(calc);
+    else { /* otherwise, schedule each column individually */
+	double t;
+	/* Handle descending ranges */
+	if (calc->from > calc->to) {
+	    double tmp = calc->from;
+	    calc->from = calc->to;
+	    calc->to = tmp;
 	}
-	if (pthread_create(&(calc->thread), &attr, calc_heavy, calc) != 0) {
-	    fprintf(stderr, "Cannot create calculation thread: %s\n",
-		    strerror(errno));
-	    return;
+	/* Schedule each column as a separate calculation */
+	for (t=calc->from; t <= calc->to + DELTA; t+=step) {
+	    calc_t *new = malloc(sizeof(calc_t));
+	    memcpy(new, calc, sizeof(calc_t));
+	    new->from = new->to = t;
+	    schedule(new);
 	}
-	pthread_attr_destroy(&attr);
+	free(calc);
     }
-#endif
 }
 
 /*
@@ -1657,31 +1640,37 @@ update_column(int pos_x)
  *	Interface to FFT calculator
  */
 
-/* The function called to start a calculation */
+/* The function called as the body of the FFT-calculation threads.
+ *
+ * Get work from the scheduler, do it, call the result callback and repeat.
+ * If get_work() returns NULL, there is nothing to do, so sleep a little.
+ */
 #if ECORE_MAIN
-static void
+void
 calc_heavy(void *data, Ecore_Thread *thread)
 #elif SDL_MAIN
-static void *
+void *
 calc_heavy(void *data)
 #endif
 {
-    calc_t *c = (calc_t *)data;
+    /* The main loop of each calculation thread */
+    while (TRUE) {
+	calc_t *work;
+
+	if ((work = get_work()) == NULL) {
+	    /* Sleep for a tenth of a second */
+	    usleep((useconds_t)100000);
+	} else {
 #if ECORE_MAIN
-    c->thread = thread;
-#elif SDL_MAIN
-    /* SDL stores the thread ID in the structure when it creates the thread */
+	    work->thread = thread;
 #endif
-    calc(c, calc_result);
-
-#if SDL_MAIN
-    return(NULL);
-#endif
-
+	    calc(work);
+	}
+    }
 }
 
 /* The callback called by calculation threads to report a result */
-static void
+void
 calc_result(result_t *result)
 {
     /* Send result back to main loop */
@@ -1695,7 +1684,7 @@ calc_result(result_t *result)
 	event.user.data1 = result;
 	if (SDL_PushEvent(&event) != 0) {
 	    /* The Event queue is full. let it empty and try again. */
-	    sleep(1);
+	    usleep(100000);
 	    if (SDL_PushEvent(&event) != 0) {
 		fprintf(stderr, "Couldn't post a result event\n");
 		return;
@@ -1705,27 +1694,7 @@ calc_result(result_t *result)
 #endif
 }
 
-#if ECORE_MAIN
-/* Functions called in the main loop when a thread
- * calc_heavy 	The function that should run in another thread.
- * calc_notify 	The function that will receive the data send by func_heavy in the main loop.
- * calc_end 	The function that will be called in the main loop if the thread terminate correctly.
- * calc_cancel 	The function that will be called in the main loop if the thread is cancelled.
- */
-static void
-calc_end(void *data, Ecore_Thread *thread)
-{
-    free(data);
-}
-
-static void
-calc_cancel(void *data, Ecore_Thread *thread)
-{
-    free(data);
-}
-#endif
-
-static void
+void
 #if ECORE_MAIN
 calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 #elif SDL_MAIN
@@ -1733,7 +1702,6 @@ calc_notify(result_t *result)
 #endif
 {
 #if ECORE_MAIN
-    /* calc_t   *calc   = (calc_t *)data; */
     result_t *result = (result_t *)msg_data;
 #endif
     int pos_x;	/* Where would this column appear in the displayed region? */

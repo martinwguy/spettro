@@ -28,14 +28,15 @@ bin_PROGRAMS = spettro
 
 spettro_SOURCES = main.c config.h spettro.h \
 	audio_file.c calc.c colormap.c interpolate.c lock.c \
-	speclen.c spectrum.c window.c \
+	scheduler.c speclen.c spectrum.c window.c \
 	audio_file.h calc.h colormap.h interpolate.h lock.h \
-	speclen.h spectrum.h window.h
+	scheduler.h speclen.h spectrum.h window.h
 
 main.o: Makefile
 calc.o: Makefile
 lock.o: Makefile
 audio_file.o: Makefile
+scheduler.o: Makefile
 
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas`

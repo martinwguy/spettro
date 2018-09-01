@@ -52,6 +52,8 @@ static lock_t fftw3_lock;
 static bool fftw3_lock_is_initialized = FALSE;
 static lock_t audiofile_lock;
 static bool audiofile_lock_is_initialized = FALSE;
+static lock_t list_lock;
+static bool list_lock_is_initialized = FALSE;
 
 bool
 lock_fftw3()
@@ -81,4 +83,19 @@ bool
 unlock_audiofile()
 {
     return do_unlock(&audiofile_lock);
+}
+
+bool
+lock_list()
+{
+    if (!initialize(&list_lock, &list_lock_is_initialized))
+	return FALSE;
+    else
+	return do_lock(&list_lock);
+}
+
+bool
+unlock_list()
+{
+    return do_unlock(&list_lock);
 }

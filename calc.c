@@ -1,8 +1,7 @@
 /*
  * calc.c - Do all the heavy calculation of spectra.
  *
- * This file's only entry point is as the "func_heavy" parameter to
- * ecore_thread_feedback_run()
+ * This file's only entry point is calc()
  *
  * The data points to a structure containing are all it needs to know
  * to calculate the complete spectrogram of the audio.
@@ -27,23 +26,26 @@
 #include "calc.h"
 #include "lock.h"
 #include "spectrum.h"
+#include "main.h"	/* for calc_result() */
 
 /*
  * The compute-FFTs function
  *
  * Results are returned in a result_t (struct result) which is obtained from
- * malloc, as is the "spec" field of it.
+ * malloc, as is the "spec" field of it to calc_result() in main.c.
+ * Passing a constant callback address down the call chain is just too awful.
  */
 
 /* Helper function */
 static result_t *get_result(calc_t *calc, spectrum *spec, double t);
 
 void
-calc(calc_t *calc, void (*result_cb)(result_t *))
+calc(calc_t *calc)
 {
     /* The real function parameters */
     double from   = calc->from;		/* centre of first FFT bucket */
-    double to	  = calc->to;		/* centre of last FFT bucket */
+    double to	  = calc->to;		/* centre of last FFT bucket;
+					 * If == 0.0, just do "from" */
     int	   speclen= calc->speclen;	/* Max index into result->spec */
 
     /* Variables */
@@ -57,15 +59,20 @@ calc(calc_t *calc, void (*result_cb)(result_t *))
 	return;
     }
 
-    /* Ascending ranges or a single point */
-    if (from <= to + DELTA)
-	for (t = from; t <= to + DELTA; t += step)
-	    (*result_cb)(get_result(calc, spec, t));
+    /* Ascending ranges or a single point.
+     * Also handles to == 0.0, which is just "from".
+     */
+    if (to == 0.0 || from <= to + DELTA) {
+	t = from; 
+	do {
+	    calc_result(get_result(calc, spec, t));
+	} while ((t += step) <= to + DELTA);
+    }
 
     /* Descending ranges */
-    if (from > to + DELTA)
+    if (to != 0.0 && from > to + DELTA)
 	for (t = from; t >= to - DELTA; t -= step)
-	    (*result_cb)(get_result(calc, spec, t));
+	    calc_result(get_result(calc, spec, t));
 
     destroy_spectrum(spec);
 }
@@ -87,12 +94,14 @@ get_result(calc_t *calc, spectrum *spec, double t)
 
 	result->t = t;
 	result->speclen = calc->speclen;
+#if ECORE_MAIN
 	result->thread = calc->thread;
+#endif
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	 if (!lock_audiofile()) {
-	     fprintf(stderr, "Cannot lock audio file\n");
+	if (!lock_audiofile()) {
+	    fprintf(stderr, "Cannot lock audio file\n");
 	    exit(1);
 	}
 	read_audio_file(calc->audio_file, (char *) spec->time_domain,
