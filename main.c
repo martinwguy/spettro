@@ -1175,6 +1175,9 @@ time_zoom_by(double by)
 	exit(1);
     }
 
+    /* Zooming by < 1.0 increases the step size */
+    if (by < 1.0) reschedule_for_bigger_step();
+
     repaint_display();
 }
 

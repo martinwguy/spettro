@@ -46,6 +46,7 @@
 #endif
 
 #include <malloc.h>		/* for free(!) */
+#include <math.h>		/* for floor() */
 
 #if ECORE_MAIN
 #include <Ecore.h>
@@ -126,7 +127,7 @@ DEBUG("Adding to empty list:\n");
     }
 
     for (cpp = &list;
-    	 *cpp != NULL && (*cpp)->from < calc->from - DELTA;
+	 *cpp != NULL && (*cpp)->from < calc->from - DELTA;
 	 cpp = &((*cpp)->next))
 	;
 
@@ -135,7 +136,7 @@ DEBUG("Adding to empty list:\n");
      * replace it.
      */
     if (*cpp == NULL) {
-    	/* At end of list. Just add it to the end. */
+	/* At end of list. Just add it to the end. */
 DEBUG("Adding at end of list\n");
 	calc->next = NULL;
 	/* For the prev pointer, cpp points at its "next" item */
@@ -156,7 +157,7 @@ DEBUG("Replacing existing item\n");
 DEBUG("Adding before later item\n");
 	calc_t *cp = *cpp; /* The item to add it before */
 
-    	/* Add it before the one that is later than it. */
+	/* Add it before the one that is later than it. */
 	calc->next = cp;
 	calc->prev = cp->prev;
 	if (calc->prev) calc->prev->next = calc;
@@ -197,7 +198,7 @@ DEBUG("List is empty\r");
     /* First, drop any list items that are off the left side of the screen */
     while (list != NULL && list->to < disp_time - disp_offset*step - DELTA) {
 	calc_t *old_cp = list;
-	old_cp = list; 	/* Remember cell to free */
+	old_cp = list;	/* Remember cell to free */
 	list = list->next;
 	/* New first cell , if any, has no previous one */
 	if (list != NULL) list->prev = NULL;
@@ -240,7 +241,7 @@ DEBUG("List is empty after dropping after-screens\r");
     }
 
     if (*cpp != NULL) {
-    	/* We have a column after disp_time that's on-screen so
+	/* We have a column after disp_time that's on-screen so
 	 * remove this calc_t from the list and hand it to the
 	 * hungry calculation thread. */
 	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
@@ -278,6 +279,34 @@ DEBUG("List is empty after all\r");
 
     unlock_list();
     return NULL;
+}
+
+/* When they zoom out on the frequency axis, we need to remove all the
+ * scheduled calculations that no longer correspond to a pixel column.
+ */
+void
+reschedule_for_bigger_step()
+{
+    calc_t **cpp;
+
+    lock_list();
+
+    for (cpp = &list; *cpp != NULL; /* see below */) {
+	/* If its time is no longer a multiple of the step, drop it */
+	if ((*cpp)->from > floor((*cpp)->from / step) * step + DELTA) {
+	    calc_t *cp = *cpp;	/* Old cell to free */
+	    /* Rewrite "next" field of previous cell or the "list" pointer */
+	    *cpp = cp->next;
+	    /* and the "prev" field of the following cell, if there is one */
+	    if (cp->next) cp->next->prev = cp->prev;
+	    free(cp);
+	    /* and *cpp is already the next cell to examine */
+	} else {
+	    cpp = &((*cpp)->next);	/* loop reinitialization */
+	}
+    }
+
+    unlock_list();
 }
 
 static void
