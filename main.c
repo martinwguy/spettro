@@ -1742,8 +1742,8 @@ calc_notify(result_t *result)
 static void
 remember_result(result_t *result)
 {
-    /* Drop any stored results that are before the displayed area */
-    while (results != NULL && results->t < disp_time - disp_offset * step - DELTA) {
+    /* Drop any stored results more than half a screenful before the display */
+    while (results != NULL && results->t < disp_time - (disp_offset + disp_width/2) * step - DELTA) {
 	result_t *r = results;
 	results = results->next;
 	destroy_result(r);
