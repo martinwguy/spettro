@@ -10,10 +10,6 @@
 #include <Ecore.h>
 #endif
 
-#if SDL_MAIN
-#include <pthread.h>
-#endif
-
 #include "audio_file.h"
 #include "spettro.h"
 #include "window.h"
@@ -31,9 +27,7 @@ typedef struct calc {
     int			speclen; /* Size of spectrum == fftsize/2 */
     enum WINDOW_FUNCTION window;
 #if ECORE_MAIN
-    Ecore_Thread *	thread; /* The thread this calculator is running in */
-#elif SDL_MAIN
-    // pthread_t		thread;
+    Ecore_Thread *	thread;
 #endif
     struct calc *	next;	/* List of calcs to perform, in time order */
     struct calc *	prev;	/* Reverse pointer of doubly-linked list */
@@ -58,9 +52,7 @@ typedef struct result {
     int maglen;		/* Length of magnitude data on log axis */
     float *mag;		/* Magnitude data from [0..maglen-1] */
 #if ECORE_MAIN
-    Ecore_Thread *thread; /* The calc thread that this result came from */
-#elif SDL_MAIN
-    pthread_t thread;
+    Ecore_Thread *	thread;
 #endif
     struct result *next; /* Linked list of results in time order */
 } result_t;

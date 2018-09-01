@@ -50,6 +50,7 @@
 #include <unistd.h>		/* for sysconf() */
 #include <errno.h>
 #include <string.h>		/* for strerror() */
+#include <pthread.h>
 #endif
 
 static void print_list(void);
