@@ -932,7 +932,7 @@ do_key(enum key key)
 	exit(0);	/* atexit() calls SDL_Quit() */
 #endif
 	break;
-    case KEY_SPACE:	/* Play/Pause/Replay */
+    case KEY_SPACE:	/* Play/Pause/Rewind */
 	switch (playing) {
 	case PLAYING:
 	    pause_playing();
@@ -941,7 +941,6 @@ do_key(enum key key)
 	case STOPPED:
 	    disp_time = 0.0;
 	    repaint_display();
-	    calc_columns(disp_offset, disp_width);
 	    start_playing();
 	    break;
 
@@ -1141,12 +1140,12 @@ time_pan_by(double by)
 #if SDL_AUDIO
     sdl_start = lrint(playing_time * sample_rate);
 #endif
-
     /* If moving left after it has come to the end and stopped,
-     * we want it to play again. */
+     * we want to go into pause state */
     if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
-	start_playing();
+       playing = PAUSED;
     }
+
 }
 
 /* Zoom the time axis on disp_time.
