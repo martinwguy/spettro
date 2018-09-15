@@ -1,6 +1,4 @@
 ------------------------------------------------------------------------
-Improve the USE_ stuff in Makefile. ./configure?
-------------------------------------------------------------------------
 Cache the decoded audio file in a disk file if it's compressed.
 ------------------------------------------------------------------------
 Be able to cache results that have different calculation parameters.
@@ -45,4 +43,8 @@ Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
 ------------------------------------------------------------------------
 Let them change the FFT window function.
+------------------------------------------------------------------------
+React better to CPU overload, by changing the scrolling rate to
+scroll by more pixel columnss less frequently (e.g. set TI-in-progress global,
+and if set at TI entry, skip this scroll and halve the timer rate.)
 ------------------------------------------------------------------------

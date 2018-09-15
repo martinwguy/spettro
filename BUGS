@@ -11,8 +11,14 @@ signal results and the display gets screwed.
 ------------------------------------------------------------------------
 When zoomed into X axis, Left and Right should move less.
 ------------------------------------------------------------------------
-When scrolling screenfuls, it calculates loads of stuff that's
-already off-screen.
-------------------------------------------------------------------------
 If you X-zoom and X-zoom again before it's finished repainting, it dumps core.
+[Is this still true?)
+------------------------------------------------------------------------
+It sometimes gets column repaints wrong.
+
+Single-pixel-wide bright or dark stripes appear in the graphic when the
+display is scrolling. The bug is sporadic; sometimes two runs will give the
+same vertical stripes, other times not, or different.
+
+This may be due to doing too much in the timer interrupt routine.
 ------------------------------------------------------------------------
