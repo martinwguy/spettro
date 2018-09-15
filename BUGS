@@ -9,14 +9,6 @@ If the evas_close functions are called on exit, it dumps core.
 With SDL_TIMER zoomed in on X, the CPU load makes it unable to
 signal results and the display gets screwed.
 ------------------------------------------------------------------------
-If you zoom in too much, the graphic turns upside down and zooms in.
-Zoom by 2: centre=622.254 range=11.3137 min_freq=55 max_freq=7040
-Zoom by 2: centre=622.254 range=5.65685 min_freq=110 max_freq=3520
-Zoom by 2: centre=622.254 range=2.82843 min_freq=220 max_freq=1760
-Zoom by 2: centre=622.254 range=1.41421 min_freq=440 max_freq=880
-Zoom by 2: centre=622.254 range=0.707107 min_freq=880 max_freq=440 <--
-min_freq > max_freq... and it works!
-------------------------------------------------------------------------
 When zoomed into X axis, Left and Right should move less.
 ------------------------------------------------------------------------
 When scrolling screenfuls, it calculates loads of stuff that's
