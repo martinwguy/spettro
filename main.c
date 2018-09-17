@@ -566,7 +566,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
     emotion_object_init(em, NULL);
     emotion_object_video_mute_set(em, EINA_TRUE);
     if (emotion_object_file_set(em, filename) != EINA_TRUE) {
-	fputs("Emotion couldn't load the audio file. Try compiling with -DUSE_EMOTION_SDL\n", stderr);
+	fputs("Couldn't load audio file. Try compiling with -DUSE_EMOTION_SDL in Makefile.am\n", stderr);
 	exit(1);
     }
     evas_object_show(em);
