@@ -29,7 +29,8 @@ open_audio_file(char *filename)
     }
 
     if ((af = afOpenFile(filename, "r", NULL)) == NULL) {
-	fprintf(stderr, "libaudiofile failed to open the file.\n");
+	/* By default it prints a line to stderr, which is what we want.
+	 * For better error handling use afSetErrorHandler() */
 	free(audio_file);
 	return(NULL);
     }
@@ -147,7 +148,8 @@ open_audio_file(char *filename)
     memset(&info, 0, sizeof(info));
 
     if ((sndfile = sf_open(filename, SFM_READ, &info)) == NULL) {
-	fprintf(stderr, "libsndfile failed to open the file.\n");
+	fprintf(stderr, "libsndfile failed to open \"%s\": %s\n",
+		filename, sf_strerror(NULL));
 	return(NULL);
     }
     audio_file.sndfile = sndfile;
