@@ -15,7 +15,9 @@ configure
 depcomp
 install-sh
 missing
-configure.h
-configure.h.in
-configure.h.in~
+config.guess
+config.sub
+configure.h*
+ltmain.sh
 stamp-h1
+test-driver
