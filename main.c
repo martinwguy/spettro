@@ -259,6 +259,11 @@ main(int argc, char **argv)
 #endif
     char *filename;
 
+    /* Local versions to delay setting until audio_length is known */
+#define UNDEFINED (-1.0)
+    double bar_left_time = UNDEFINED;
+    double bar_right_time = UNDEFINED;
+
     /*
      * Pick up parameter values from the environment
      *
@@ -352,9 +357,10 @@ main(int argc, char **argv)
 		    exit(1);
 		}
 		switch (letter) {
-		case 'l': set_bar_left_time(arg); break;
-		case 'r': set_bar_right_time(arg); break;
+		case 'l': bar_left_time = arg; break;
+		case 'r': bar_right_time = arg; break;
 		}
+		/* We can't call set_bar_*_time() until audio_length is known */
 	    }
 	    break;
 	case 'v':
@@ -578,7 +584,22 @@ Brightness controls (*,/) change DYN_RANGE\n\
     audio_length =
 	(double) audio_file_length_in_frames(audio_file) / sample_rate;
 
-    /* Now we have audio_length, we can schedule the initial screen refresh */
+    /* Now we have audio_length, we can set the bar times if given... */
+
+    if (bar_left_time != UNDEFINED) {
+	if (bar_left_time > audio_length + DELTA) {
+	    fprintf(stderr, "-l time is after the end of the audio\n");
+	    exit(1);
+	} else set_bar_left_time(bar_left_time);
+    }
+    if (bar_right_time != UNDEFINED) {
+	if (bar_right_time > audio_length + DELTA) {
+	    fprintf(stderr, "-r time is after the end of the audio\n");
+	    exit(1);
+	} else set_bar_right_time(bar_right_time);
+    }
+
+    /* ... and schedule the initial screen refresh */
     start_scheduler(max_threads);
     calc_columns(disp_offset, disp_width - 1);
 
