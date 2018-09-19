@@ -48,3 +48,5 @@ React better to CPU overload, by changing the scrolling rate to
 scroll by more pixel columnss less frequently (e.g. set TI-in-progress global,
 and if set at TI entry, skip this scroll and halve the timer rate.)
 ------------------------------------------------------------------------
+Key to display playing time = text overlays -> axis markers
+------------------------------------------------------------------------
