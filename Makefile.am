@@ -16,13 +16,14 @@
 # USE_LIBSNDFILE in AM_CFLAGS and use -lsndfile in AM_LDFLAGS
 # USE_LIBAUDIOFILE in AM_CFLAGS and use -laudiofile in AM_LDFLAGS
 # The main difference is that libaudiofile can't read Ogg files.
+# If -DUSE_LIBAUDIOFILE, change -lsndfile to -laudiofile in AM_LDFLAGS
 #
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
 
 AM_CFLAGS = -DUSE_EMOTION -DUSE_LIBSNDFILE $(EMOTION_CFLAGS) $(SDL_CFLAGS) \
 	    -march=native
-AM_LDFLAGS = -lsndfile $(AUDIOFILELIB) $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
+AM_LDFLAGS = -lsndfile $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
 
 bin_PROGRAMS = spettro
 
