@@ -305,7 +305,23 @@ main(int argc, char **argv)
     for (argv++, argc--;	/* Skip program name */
 	 argc > 0 && argv[0][0] == '-';
 	 argv++, argc--) {
-	switch (argv[0][1]) {
+	int letter = argv[0][1];
+
+	/* For flags that take an argument, advance argv[0] to point to it */
+	switch (letter) {
+	case 'w': case 'h': case 'j': case 'l': case 'r':
+	    if (argv[0][2] == '\0') {
+		argv++, argc--;		/* -j3 */
+	    } else {
+		 argv[0] += 2;		/* -j 3 */
+	    }
+	    if (argc < 1 || argv[0][0] == '\0') {
+		fprintf(stderr, "-%c what?\n", letter);
+		exit(1);
+	    }
+	}
+
+	switch (letter) {
 	case 'a':
 	    autoplay = TRUE;
 	    break;
@@ -313,23 +329,20 @@ main(int argc, char **argv)
 	    exit_when_played = TRUE;
 	    break;
 	case 'w':
-	    argv++; argc--;	 /* Advance to numeric argument */
-	    if (argc == 0 || (disp_width = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-w what?\n");
+	    if ((disp_width = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-w width must be > 0\n");
 		exit(1);
 	    }
 	    break;
 	case 'h':
-	    argv++; argc--;	 /* Advance to numeric argument */
-	    if (argc == 0 || (disp_height = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-h what?\n");
+	    if ((disp_height = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-w height must be > 0\n");
 		exit(1);
 	    }
 	    break;
 	case 'j':
-	    argv++; argc--;	 /* Advance to numeric argument */
-	    if (argc == 0 || (max_threads = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-j what?\n");
+	    if ((max_threads = atoi(argv[0])) < 0) {
+		fprintf(stderr, "-j threads must be >= 0 ?\n");
 		exit(1);
 	    }
 	    break;
@@ -345,22 +358,20 @@ main(int argc, char **argv)
 	    staff_lines = FALSE;
 	    break;
 	case 'l': case 'r':
-	    if (argc < 2) {
-lwhat:		fprintf(stderr, "-%c what?\n", argv[0][1]);
-		exit(1);
-	    }
 	    errno = 0;
 	    {
 		char *endptr;
 		double arg = strtof(argv[0], &endptr);
 
-		if (errno == ERANGE || endptr == argv[0]) goto lwhat;
-		switch (argv[0][1]) {
+		if (arg < 0.0 || errno == ERANGE || endptr == argv[0]) {
+		    fprintf(stderr, "-%c seconds must be a floating point value\n", letter);
+		    exit(1);
+		}
+		switch (letter) {
 		case 'l': set_left_bar_time(arg); break;
 		case 'r': set_right_bar_time(arg); break;
 		}
 	    }
-	    argv++; argc--;	 /* Consume numeric argument */
 	    break;
 	case 'v':
 	    printf("Version: %s\n", VERSION);
