@@ -686,7 +686,9 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    case SDLK_p:	     key = KEY_P;	break;
 	    case SDLK_s:	     key = KEY_S;	break;
 	    case SDLK_g:	     key = KEY_G;	break;
+	    case SDLK_l:
 	    case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
+	    case SDLK_r:
 	    case SDLK_RIGHTBRACKET:  key = KEY_BAR_END; break;
 	    default: break;
 	    }
@@ -880,6 +882,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'p': key = KEY_P;			break;
 	case 's': key = KEY_S;			break;
 	case 'g': key = KEY_G;			break;
+	case 'l': key = KEY_BAR_START;		break;
+	case 'r': key = KEY_BAR_END;		break;
     }
     else if (!strcmp(ev->key, "space"))
 	key = KEY_SPACE;
