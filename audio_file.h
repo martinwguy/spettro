@@ -2,8 +2,7 @@
  * audio_file.h - include file for clients of audio_file.c
  */
 
-#ifndef HAVE_INCLUDED_AUDIO_FILE_H
-# define HAVE_INCLUDED_AUDIO_FILE_H
+#ifndef AUDIO_FILE_H
 
 #if USE_LIBAUDIOFILE
 
@@ -49,4 +48,5 @@ extern int read_audio_file(audio_file_t *audio_file, char *data,
 
 extern void close_audio_file(audio_file_t *audio_file);
 
+# define AUDIO_FILE_H
 #endif /* HAVE_INCLUDED_AUDIO_FILE_H */

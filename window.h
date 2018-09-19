@@ -15,6 +15,8 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef WINDOW_H
+
 enum WINDOW_FUNCTION {
     RECTANGULAR,
     KAISER,
@@ -25,3 +27,6 @@ enum WINDOW_FUNCTION {
 double *kaiser_window(int datalen, double beta);
 double *nuttall_window(int datalen);
 double *hann_window(int datalen);
+
+#define WINDOW_H
+#endif

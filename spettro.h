@@ -2,6 +2,8 @@
  * spettro.h - definitions and declarations for everybody
  */
 
+#ifndef SPETTRO_H
+
 typedef int bool;
 
 #ifndef FALSE
@@ -13,3 +15,6 @@ typedef int bool;
 
 /* Slop factor for comparisons involving calculated floating point values. */
 #define DELTA (1.0e-6)
+
+#define SPETTRO_H
+#endif

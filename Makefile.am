@@ -28,9 +28,9 @@ bin_PROGRAMS = spettro
 
 spettro_SOURCES = main.c config.h spettro.h \
 	audio_file.c calc.c colormap.c interpolate.c lock.c \
-	scheduler.c speclen.c spectrum.c window.c \
+	overlay.c scheduler.c speclen.c spectrum.c window.c \
 	audio_file.h calc.h colormap.h interpolate.h lock.h \
-	scheduler.h speclen.h spectrum.h window.h
+	overlay.h scheduler.h speclen.h spectrum.h window.h
 
 main.o: Makefile
 calc.o: Makefile

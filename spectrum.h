@@ -1,5 +1,7 @@
 /* From sndfile-tools/src/spectrum.h */
 
+#ifndef SPECTRUM_H
+
 typedef struct
 {	int speclen;
 	enum WINDOW_FUNCTION wfunc;
@@ -16,3 +18,6 @@ typedef struct
 extern spectrum *create_spectrum(int speclen, enum WINDOW_FUNCTION window_function);
 extern void destroy_spectrum(spectrum *spec);
 extern void calc_magnitude_spectrum(spectrum *spec);
+
+#define SPECTRUM_H
+#endif
