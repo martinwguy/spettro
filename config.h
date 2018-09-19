@@ -23,6 +23,8 @@
 # define ECORE_TIMER	1
 # define ECORE_MAIN	1
 # define ECORE_LOCKS	1
+#else
+# error "Define one of USE_EMOTION USE_SDL and USE_EMOTION_SDL in Makefile.am"
 #endif
 
 #define CONFIG_H
