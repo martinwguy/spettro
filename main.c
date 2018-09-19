@@ -170,8 +170,8 @@ static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
 /* Overlays */
 static void		make_row_overlay(void);
 static unsigned int	get_row_overlay(int y);
-static void		set_left_bar_time(double when);
-static void		set_right_bar_time(double when);
+static void		set_bar_left_time(double when);
+static void		set_bar_right_time(double when);
 static unsigned int	get_col_overlay(int y);
 static bool		is_bar_line(int x);
 
@@ -368,8 +368,8 @@ main(int argc, char **argv)
 		    exit(1);
 		}
 		switch (letter) {
-		case 'l': set_left_bar_time(arg); break;
-		case 'r': set_right_bar_time(arg); break;
+		case 'l': set_bar_left_time(arg); break;
+		case 'r': set_bar_right_time(arg); break;
 		}
 	    }
 	    break;
@@ -698,9 +698,9 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
 		if (ctrl) switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
-		    set_left_bar_time(when); break;
+		    set_bar_left_time(when); break;
 		case SDL_BUTTON_RIGHT:
-		    set_right_bar_time(when); break;
+		    set_bar_right_time(when); break;
 		}
 	    }
 	    break;
@@ -919,9 +919,9 @@ mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     if (control) {
 	switch (ev->button) {
 	case 1:
-	    set_left_bar_time(when); break;
+	    set_bar_left_time(when); break;
 	case 3:
-	    set_right_bar_time(when); break;
+	    set_bar_right_time(when); break;
 	}
     }
 }
@@ -1038,10 +1038,10 @@ do_key(enum key key)
 
     /* Set left or right bar line position to current play position */
     case KEY_BAR_START:
-	set_left_bar_time(disp_time);
+	set_bar_left_time(disp_time);
 	break;
     case KEY_BAR_END:
-	set_right_bar_time(disp_time);
+	set_bar_right_time(disp_time);
 	break;
 
     default:
@@ -2027,7 +2027,7 @@ static double bar_right_time = UNDEFINED;
 
 /* Set start and end of marked bar. */
 static void
-set_left_bar_time(double when)
+set_bar_left_time(double when)
 {
     if (when >= 0.0 && when <= audio_length + DELTA) {
 	bar_left_time = when;
@@ -2036,7 +2036,7 @@ set_left_bar_time(double when)
 }
 
 static void
-set_right_bar_time(double when)
+set_bar_right_time(double when)
 {
     if (when >= 0.0 && when <= audio_length + DELTA) {
 	bar_right_time = when;
