@@ -50,9 +50,11 @@ and if set at TI entry, skip this scroll and halve the timer rate.)
 ------------------------------------------------------------------------
 Key to display playing time = text overlays -> axis markers
 ------------------------------------------------------------------------
-Add a key to resynchronise the audio to the display.
-------------------------------------------------------------------------
 Make mouse clicks work in EFL.
 ------------------------------------------------------------------------
 Add a "play from" flag.
+------------------------------------------------------------------------
+Make do_scroll jump to the current playing position, reworking the
+pending_scroll logic. Is is true that Emotion get_play_position is
+grainy?
 ------------------------------------------------------------------------
