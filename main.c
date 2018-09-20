@@ -237,6 +237,7 @@ enum key {
     KEY_P,
     KEY_S,
     KEY_G,
+    KEY_T,
     KEY_BAR_START,
     KEY_BAR_END,
 };
@@ -389,9 +390,10 @@ X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
-p	   Toggle overlay of piano key frequencies\n\
-s	   Toggle overlay of conventional staff lines\n\
+p          Toggle overlay of piano key frequencies\n\
+s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar string frequencies\n\
+t          Show the current playing time on stdout\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
@@ -686,6 +688,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    case SDLK_p:	     key = KEY_P;	break;
 	    case SDLK_s:	     key = KEY_S;	break;
 	    case SDLK_g:	     key = KEY_G;	break;
+	    case SDLK_t:	     key = KEY_T;	break;
 	    case SDLK_l:
 	    case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
 	    case SDLK_r:
@@ -882,6 +885,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'p': key = KEY_P;			break;
 	case 's': key = KEY_S;			break;
 	case 'g': key = KEY_G;			break;
+	case 't': key = KEY_T;			break;
 	case 'l': key = KEY_BAR_START;		break;
 	case 'r': key = KEY_BAR_END;		break;
     }
@@ -1043,6 +1047,13 @@ do_key(enum key key)
 	}
 	make_row_overlay();
 	repaint_display();
+	break;
+
+    /* Display the current playing time */
+    case KEY_T:
+	printf("%02d:%02d (%g seconds)\n",	(int) disp_time / 60,
+					(int) disp_time % 60,
+					disp_time);
 	break;
 
     /* Set left or right bar line position to current play position */
