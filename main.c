@@ -252,6 +252,7 @@ static void do_key(enum key);
  * the screen updating is then done in response to the next timer callback.
  */
 static double pending_seek = 0.0;
+static int get_next_SDL_event(SDL_Event *event);
 
 int
 main(int argc, char **argv)
@@ -665,7 +666,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	SDL_Event event;
 	enum key key;
 
-	while (SDL_WaitEvent(&event)) switch (event.type) {
+	/* Prioritise UI events over window refreshes, results and such */
+	while (get_next_SDL_event(&event)) switch (event.type) {
 
 	case SDL_QUIT:
 	    stop_scheduler();
@@ -796,6 +798,33 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	if (sdl_start >= audio_file_length_in_frames(audiofile)) {
 	    stop_playing();
 	}
+}
+#endif
+
+#if SDL_MAIN
+static int
+get_next_SDL_event(SDL_Event *event)
+{
+    SDL_Event event;
+
+    /* First, see if there are any UI events to be had */
+    switch (SDL_PeepEvent(&event, 1, SDL_GETEVENT,
+			  SDL_EVENTMASK(SDL_QUIT) |
+			  SDL_EVENTMASK(SDL_KEYDOWN) |
+			  SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN)) {
+    case -1:
+	fprintf(stderr, "Some error from SDL_PeepEvent().\n");
+	return 0;
+    case 0:
+	break;
+    case 1:
+	return 1;
+    default:
+	fprintf(stderr, "Wierd return from SDL_PeepEvent\n");
+    }
+
+    /* No? Wait for all events */
+    return SDL_WaitEvent(&event);
 }
 #endif
 
@@ -1336,6 +1365,7 @@ timer_cb(void *data)
 	ecore_event_add(scroll_event, NULL, NULL, NULL);
 	scroll_event_pending = TRUE;
     }
+
     return ECORE_CALLBACK_RENEW;
 }
 
