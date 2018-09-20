@@ -1320,13 +1320,22 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
  * seek commands.
  */
 
+/* This is used to ensure that only one scroll event is ever in the queue,
+ * otherwise is you're short of CPU, the event queue fills up with
+ * unprocessed scroll events and other events (keypresses, results) are lost.
+ */
+static bool scroll_event_pending = FALSE;
+
 #if ECORE_TIMER
 
 static Eina_Bool
 timer_cb(void *data)
 {
     /* Generate a user-defined event which will be processed in the main loop */
-    ecore_event_add(scroll_event, NULL, NULL, NULL);
+    if (!scroll_event_pending) {
+	ecore_event_add(scroll_event, NULL, NULL, NULL);
+	scroll_event_pending = TRUE;
+    }
     return ECORE_CALLBACK_RENEW;
 }
 
@@ -1342,12 +1351,20 @@ scroll_cb(void *data, int type, void *event)
 static Uint32
 timer_cb(Uint32 interval, void *data)
 {
-    SDL_Event event;
 
-    event.type = SDL_USEREVENT;
-    event.user.code = SCROLL_EVENT;
-    if (SDL_PushEvent(&event) != 0) {
-	fprintf(stderr, "Couldn't push an SDL scroll event\n");
+    /* We only want one scroll event pending at a time, otherwise if there's
+     * insufficient CPU, the event queue fills up with them and other events
+     * stop working too (result events, key presses etc)
+     */
+    if (!scroll_event_pending) {
+	SDL_Event event;
+
+	event.type = SDL_USEREVENT;
+	event.user.code = SCROLL_EVENT;
+	if (SDL_PushEvent(&event) != 0) {
+	    fprintf(stderr, "Couldn't push an SDL scroll event\n");
+	}
+	scroll_event_pending = TRUE;
     }
 
     /* Should use SDL_GetTicks() to make it keep in sync with the audio */
@@ -1367,6 +1384,8 @@ do_scroll()
 				 * +ve = move forward in time, move display left
 				 * +ve = move back in time, move display right
 				 */
+
+    scroll_event_pending = FALSE;
     /*
      * emotion's position reporting is unreliable and grainy.
      * We get smoother scrolling especially after repositioning
