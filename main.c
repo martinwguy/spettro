@@ -664,6 +664,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	while (SDL_WaitEvent(&event)) switch (event.type) {
 
 	case SDL_QUIT:
+	    SDL_RemoveTimer(timer);
 	    exit(0);
 
 	case SDL_KEYDOWN:
@@ -719,13 +720,23 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    /* One day */
 	    break;
 
-	case SDL_USEREVENT:
-	    /* Column result from a calculation thread */
-	    {
-		result_t *result = (result_t *) event.user.data1;
-		calc_notify(result);
-	    }
+#define RESULT_EVENT 0
+#define SCROLL_EVENT 1
 
+	case SDL_USEREVENT:
+	    switch (event.user.code) {
+	    case RESULT_EVENT:
+		/* Column result from a calculation thread */
+		calc_notify((result_t *) event.user.data1);
+		break;
+	    case SCROLL_EVENT:
+		do_scroll();
+		break;
+	    default:
+		fprintf(stderr, "Unknown SDL_USEREVENT code %d\n",
+			event.user.code);
+		break;
+	    }
 	    break;
 
 	default:
@@ -1299,9 +1310,15 @@ scroll_cb(void *data, int type, void *event)
 static Uint32
 timer_cb(Uint32 interval, void *data)
 {
-    do_scroll();
+    SDL_Event event;
 
-    /* Should use SDL_Ticks() to make it keep in sync with the audio */
+    event.type = SDL_USEREVENT;
+    event.user.code = SCROLL_EVENT;
+    if (SDL_PushEvent(&event) != 0) {
+	fprintf(stderr, "Couldn't push an SDL scroll event\n");
+    }
+
+    /* Should use SDL_GetTicks() to make it keep in sync with the audio */
     return(interval);
 }
 
@@ -1711,6 +1728,7 @@ calc_result(result_t *result)
     {
 	SDL_Event event;
 	event.type = SDL_USEREVENT;
+	event.user.code = RESULT_EVENT;
 	event.user.data1 = result;
 	if (SDL_PushEvent(&event) != 0) {
 	    /* The Event queue is full. let it empty and try again. */
