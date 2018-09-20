@@ -47,8 +47,10 @@
 
 #include <malloc.h>		/* for free(!) */
 #include <math.h>		/* for floor() */
+#include <stdlib.h>		/* for exit() */
 
 #if ECORE_MAIN
+#include <unistd.h>		/* for usleep() */
 #include <Ecore.h>
 #elif SDL_MAIN
 #include <unistd.h>		/* for sysconf() */
@@ -62,25 +64,49 @@ static void print_list(void);
 /* The list of moments to calculate */
 static calc_t *list = NULL;
 
-/* Launch the scheduler. Returns TRUE on success.
- * It turns out we don't need a scheduler thread; the FFT threads just call
- * get_work() repeatedly.
+/* start_scheduler(): Launch the scheduler. Returns TRUE on success.
+ *
+ * It turns out we don't need a separate thread for the scheduler:
+ * the FFT threads just call get_work() repeatedly.
  *
  * "nthreads" says how many FFT threads to start; 0 means the same number
  * as there are CPUs.
  */
+
+static int threads = 0;		/* The number of threads we have started */
+#if ECORE_MAIN
+static Ecore_Thread **thread;	/* Array of threads */
+#elif SDL_MAIN
+static pthread_t *thread;	/* Array of threads */
+#endif
 void
 start_scheduler(int nthreads)
 {
 #if ECORE_MAIN
     if (nthreads == 0) nthreads = ecore_thread_max_get();
 
-    /* Start the FFT calculation threads, which ask get_work() for work */
-    while (nthreads-- > 0) {
-	if (ecore_thread_feedback_run(calc_heavy, calc_notify,
-				      NULL, NULL, NULL, EINA_FALSE) == NULL) {
-	    fprintf(stderr, "Can't start FFT-calculating thread.\n");
-	    exit(1);
+    thread = (Ecore_Thread **) malloc(nthreads * sizeof(Ecore_Thread *));
+    if (thread == NULL) {
+	fprintf(stderr, "Out of memory allocating %d threads\n", nthreads);
+	exit(1);
+    }
+
+    /* Start the FFT calculation threads, which ask get_work() for work. */
+    /* try_no_queue==TRUE so that all threads run simultaneously. */
+    for (threads=0; threads < nthreads; threads++) {
+	thread[threads] = ecore_thread_feedback_run(calc_heavy, calc_notify,
+				      NULL, NULL, NULL, EINA_TRUE);
+	if (thread[threads] == NULL) {
+	    fprintf(stderr, "Can't start an FFT-calculating thread.\n");
+	    if (threads == 0) {
+		/* Can't start the first thread: fatal */
+		exit(1);
+	    } else {
+		/* There's at least one thread, so carry on with that */
+		threads++;
+		break;
+	    }
+	} else {
 	}
     }
 #elif SDL_MAIN
@@ -93,11 +119,17 @@ start_scheduler(int nthreads)
 	    fprintf(stderr, "Cannot set pthread attributes. Continuing anyway...\n");
 	}
 
-	/* Start the FFT threads */
 	if (nthreads == 0) nthreads = sysconf(_SC_NPROCESSORS_ONLN);
-	while (nthreads-- > 0) {
-	    pthread_t thread;
-	    if (pthread_create(&thread, &attr, calc_heavy, NULL) != 0) {
+
+	thread = (pthread_t *) malloc(nthreads * sizeof(pthread_t));
+	if (thread == NULL) {
+	    fprintf(stderr, "Out of memory allocating %d threads\n", nthreads);
+	    exit(1);
+	}
+
+	/* Start the FFT threads */
+	for (threads=0; threads < nthreads; threads++) {
+	    if (pthread_create(&thread[threads], &attr, calc_heavy, NULL) != 0) {
 		fprintf(stderr, "Cannot create a calculation thread: %s\n",
 			strerror(errno));
 		return;
@@ -106,6 +138,40 @@ start_scheduler(int nthreads)
 
 	pthread_attr_destroy(&attr);
     }
+#endif
+}
+
+void
+stop_scheduler(void)
+{
+    int n;	/* loop variable */
+
+#if ECORE_MAIN
+
+    int active = 0;	/* How many threads haven't stopped? */
+
+    /* Tell Ecore to cancel the thread when it can */
+    for (n=0; n < threads; n++) {
+	if (ecore_thread_cancel(thread[n]))
+	    thread[n] = NULL;
+	else
+	    active++;
+    }
+    /* Wait for the threads to die */
+    while ((active = ecore_thread_active_get()) > 0) {
+	fprintf(stderr, "Waiting for %d threads to die.\n", active);
+	usleep(100000);
+    }
+
+#elif SDL_MAIN
+
+    for (n=0; n < threads; n++) {
+	if (pthread_cancel(thread[n]) != 0) {
+	    fprintf(stderr, "Failed to cancel thread %d\n", n);
+	}
+    }
+    /* SDL threads are set to die immediately */
+
 #endif
 }
 

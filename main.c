@@ -91,6 +91,7 @@
 
 #if SDL_MAIN
 #include <X11/Xlib.h>	/* for XInitThreads() */
+#include <pthread.h>
 #endif
 
 /*
@@ -603,6 +604,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
     /* ... and schedule the initial screen refresh */
     start_scheduler(max_threads);
+    /* From here on, do not goto quit. */
     calc_columns(disp_offset, disp_width - 1);
 
 #if EVAS_VIDEO
@@ -664,6 +666,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	while (SDL_WaitEvent(&event)) switch (event.type) {
 
 	case SDL_QUIT:
+	    stop_scheduler();
 	    SDL_RemoveTimer(timer);
 	    exit(0);
 
@@ -746,11 +749,14 @@ Brightness controls (*,/) change DYN_RANGE\n\
 #endif
 
 quit:
-    /* Tidy up and quit */
+    /* Tidy up and quit.
+     * You can only goto quit BEFORE starting the scheduler because
+     * to cancel threads, EFL requires the main loop to be running
+     */
 #if EVAS_VIDEO
-#if 0
-    /* Either of these makes it dump core */
     ecore_evas_free(ee);
+#if 0
+    /* This makes it dump core or barf error messages about bad magic */
     ecore_evas_shutdown();
 #endif
 #endif
@@ -961,9 +967,13 @@ do_key(enum key key)
     case KEY_NONE:	/* They pressed something else */
 	break;
     case KEY_QUIT:	/* Quit */
+	if (playing == PLAYING) stop_playing();
+	stop_scheduler();
 #if ECORE_MAIN
+	(void) ecore_timer_del(timer);
 	ecore_main_loop_quit();
 #elif SDL_MAIN
+	SDL_RemoveTimer(timer);
 	exit(0);	/* atexit() calls SDL_Quit() */
 #endif
 	break;
@@ -1701,7 +1711,16 @@ calc_heavy(void *data)
 #endif
 {
     /* The main loop of each calculation thread */
+#if ECORE_MAIN
+    /* Loop until this thread is scheduled to be cancelled */
+    while (ecore_thread_check(thread) == FALSE) {
+#elif SDL_MAIN
+    int oldtype;
+    if (pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype)) {
+	fprintf(stderr, "calc_heavy cannot set thread cancel type.\n");
+    }
     while (TRUE) {
+#endif
 	calc_t *work;
 
 	if ((work = get_work()) == NULL) {

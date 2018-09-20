@@ -65,14 +65,25 @@ calc(calc_t *calc)
     if (to == 0.0 || from <= to + DELTA) {
 	t = from; 
 	do {
-	    calc_result(get_result(calc, spec, t));
+	    result_t *result = get_result(calc, spec, t);
+#if ECORE_MAIN
+	    /* Don't return a result if our thread has a cancel request */
+	    if (ecore_thread_check(result->thread) == FALSE)
+#endif
+	    calc_result(result);
 	} while ((t += step) <= to + DELTA);
     }
 
     /* Descending ranges */
     if (to != 0.0 && from > to + DELTA)
-	for (t = from; t >= to - DELTA; t -= step)
-	    calc_result(get_result(calc, spec, t));
+	for (t = from; t >= to - DELTA; t -= step) {
+	    result_t *result = get_result(calc, spec, t);
+#if ECORE_MAIN
+	    /* Don't return a result if our thread has a cancel request */
+	    if (ecore_thread_check(result->thread) == FALSE)
+#endif
+	    calc_result(result);
+    }
 
     destroy_spectrum(spec);
 }
