@@ -239,6 +239,7 @@ enum key {
     KEY_S,
     KEY_G,
     KEY_T,
+    KEY_REDRAW,
     KEY_BAR_START,
     KEY_BAR_END,
 };
@@ -395,6 +396,7 @@ p          Toggle overlay of piano key frequencies\n\
 s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar string frequencies\n\
 t          Show the current playing time on stdout\n\
+Crtl-R     Redraw the display, should it get out of sync with the audio\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
@@ -696,6 +698,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    case SDLK_l:
 	    case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
 	    case SDLK_r:
+		if (Control)	   { key = KEY_REDRAW; break; }
 	    case SDLK_RIGHTBRACKET:  key = KEY_BAR_END; break;
 	    default: break;
 	    }
@@ -904,7 +907,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'g': key = KEY_G;			break;
 	case 't': key = KEY_T;			break;
 	case 'l': key = KEY_BAR_START;		break;
-	case 'r': key = KEY_BAR_END;		break;
+	case 'r': if (Control) { key = KEY_REDRAW; break; }
+		  key = KEY_BAR_END;		break;
     }
     else if (!strcmp(ev->key, "space"))
 	key = KEY_SPACE;
@@ -964,8 +968,10 @@ static void
 do_key(enum key key)
 {
     switch (key) {
+
     case KEY_NONE:	/* They pressed something else */
 	break;
+
     case KEY_QUIT:	/* Quit */
 	if (playing == PLAYING) stop_playing();
 	stop_scheduler();
@@ -977,6 +983,7 @@ do_key(enum key key)
 	exit(0);	/* atexit() calls SDL_Quit() */
 #endif
 	break;
+
     case KEY_SPACE:	/* Play/Pause/Rewind */
 	switch (playing) {
 	case PLAYING:
@@ -1072,9 +1079,24 @@ do_key(enum key key)
 
     /* Display the current playing time */
     case KEY_T:
-	printf("%02d:%02d (%g seconds)\n",	(int) disp_time / 60,
-					(int) disp_time % 60,
-					disp_time);
+	printf("%02d:%02d (%g seconds)\n", (int) disp_time / 60,
+					   (int) disp_time % 60,
+					   disp_time);
+	break;
+
+    /* The display has got corrupted, so refresh it at the current
+     * playing time. */
+    case KEY_REDRAW:
+#if EMOTION_AUDIO
+	disp_time = emotion_object_position_get(em);
+#elif SDL_AUDIO
+	/* The current playing time is in sdl_start, counted in frames
+	 * since the start of the piece.
+	 */
+	disp_time = sdl_start / sample_rate;
+#endif
+	disp_time = lrint(disp_time / step) * step;
+	repaint_display();
 	break;
 
     /* Set left or right bar line position to current play position */
