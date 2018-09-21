@@ -97,6 +97,7 @@
  * Local header files
  */
 
+#include "audio.h"
 #include "audio_file.h"
 #include "cache.h"
 #include "calc.h"
@@ -126,13 +127,7 @@ static void	update_column(int pos_x);
 static void quitGUI(Ecore_Evas *ee);
 #endif
 
-/* Audio playing functions */
-static void pause_playing(void);
-static void start_playing(void);
-static void stop_playing(void);
-static void continue_playing();
-static void set_playing_time(double when);
-static double get_playing_time(void);
+/* Functions performing UI actions */
 static void time_pan_by(double by);	/* Left/Right */
 static void time_zoom_by(double by);	/* x/X */
 static void freq_pan_by(double by);	/* Up/Down */
@@ -158,12 +153,6 @@ static void do_scroll(void);
 /* The audio player and its callback function */
 #if EMOTION_AUDIO
 static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
-#elif SDL_AUDIO
-static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
-static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
-				 * will we next read samples to play? */
-#else
-# error "Define EMOTION_AUDIO or SDL_AUDIO"
 #endif
 
 /*
@@ -198,26 +187,20 @@ static Uint32 background;
 static Evas_Object *image;
 static unsigned char *imagedata = NULL;
 static int imagestride;		/* How many bytes per screen line ?*/
-static Evas_Object *em = NULL;	/* The Emotion or Evas-Ecore object */
+       Evas_Object *em = NULL;	/* The Emotion or Evas-Ecore object */
 #endif
 #if SDL_VIDEO
 static SDL_Surface *screen;
 #endif
 
-/* What the audio subsystem is doing:
- * STOPPED means it has reached the end of the piece and stopped automatically
- * PLAYING means it should be playing audio,
- * PAUSED  means we've paused it or it hasn't started playing yet
- */
-static enum { STOPPED, PLAYING, PAUSED } playing = PAUSED;
 
-static audio_file_t *audio_file;
+       audio_file_t *audio_file;
        double	audio_length = 0.0;	/* Length of the audio in seconds */
-static double	sample_rate;		/* SR of the audio in Hertz */
+       double	sample_rate;		/* SR of the audio in Hertz */
 
 /* option flags */
 static bool autoplay = FALSE;	/* -p  Start playing the file right away */
-static bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
+       bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
 
 /* State variables */
@@ -599,29 +582,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 				   mouseDown, em);
 #endif
 
-#if EMOTION_AUDIO
-    /* Set audio player callbacks */
-    evas_object_smart_callback_add(em, "playback_finished",
-				   playback_finished_cb, NULL);
-#endif
-
-#if SDL_AUDIO
-    {
-	SDL_AudioSpec wavspec;
-
-	wavspec.freq = lrint(sample_rate);
-	wavspec.format = AUDIO_S16SYS;
-	wavspec.channels = audio_file_channels(audio_file);
-	wavspec.samples = 4096;
-	wavspec.callback = sdl_fill_audio;
-	wavspec.userdata = audio_file;
-
-	if (SDL_OpenAudio(&wavspec, NULL) < 0) {
-	    fprintf(stderr, "Couldn't initialize SDL audio: %s.\n", SDL_GetError());
-	    exit(1);
-	}
-    }
-#endif
+    init_audio(audio_file);
 
     /* Start screen-updating and scrolling timer */
 #if ECORE_TIMER
@@ -729,34 +690,6 @@ quit:
 
     return 0;
 }
-
-#if SDL_AUDIO
-/*
- * SDL audio callback function to fill the buffer at "stream" with
- * "len" bytes of audio data.
- */
-static void
-sdl_fill_audio(void *userdata, Uint8 *stream, int len)
-{
-	audio_file_t *audiofile = (audio_file_t *)userdata;
-	int nchannels = audio_file_channels(audiofile);
-	int frames_to_read = len / (sizeof(short) * nchannels);
-	int frames_read;	/* How many were read from the file */
-
-	if ((frames_read = read_audio_file(audiofile, (char *)stream,
-			    af_signed, nchannels,
-			    sdl_start, frames_to_read)) <= 0) {
-	    /* End of file or read error. Treat as end of file */
-	    SDL_PauseAudio(1);
-	}
-	sdl_start += frames_read;
-
-	/* SDL has no "playback finished" callback, so spot it here */
-	if (sdl_start >= audio_file_length_in_frames(audiofile)) {
-	    stop_playing();
-	}
-}
-#endif
 
 #if SDL_MAIN
 static int
@@ -995,102 +928,6 @@ do_key(enum key key)
     default:
 	fprintf(stderr, "Bogus KEY_ number %d\n", key);
     }
-}
-
-/* Audio-playing functions */
-
-static void
-pause_playing()
-{
-#if EMOTION_AUDIO
-    emotion_object_play_set(em, EINA_FALSE);
-#endif
-#if SDL_AUDIO
-    SDL_PauseAudio(1);
-#endif
-    playing = PAUSED;
-}
-
-/* Start playing the audio from disp_time into the piece */
-static void
-start_playing()
-{
-#if EMOTION_AUDIO
-    emotion_object_position_set(em, disp_time);
-    emotion_object_play_set(em, EINA_TRUE);
-#endif
-#if SDL_AUDIO
-    sdl_start = lrint(disp_time * sample_rate);
-    SDL_PauseAudio(0);
-#endif
-    playing = PLAYING;
-}
-
-/* Stop playing because it has arrived at the end of the piece */
-static void
-stop_playing()
-{
-#if EMOTION_AUDIO
-    emotion_object_play_set(em, EINA_FALSE);
-#endif
-#if SDL_AUDIO
-    /* Let SDL play last buffer of piece and pause on its own */
-    /* SDL_PauseAudio(1); */
-#endif
-
-    /* These settings indicate that the player has stopped at end of track */
-    playing = STOPPED;
-    disp_time = floor(audio_length / step + DELTA) * step;
-
-    if (exit_when_played) {
-#if ECORE_MAIN
-	ecore_main_loop_quit();
-#elif SDL_MAIN
-	SDL_Quit();
-#endif
-    }
-}
-
-static void
-continue_playing()
-{
-#if EMOTION_AUDIO
-    /* Resynchronise the playing position to the display,
-     * as emotion stops playing immediately but seems to throw away
-     * the unplayed part of the currently-playing audio buffer.
-     */
-    emotion_object_position_set(em, disp_time);
-    emotion_object_play_set(em, EINA_TRUE);
-#endif
-#if SDL_AUDIO
-    sdl_start = lrint(disp_time * sample_rate);
-    SDL_PauseAudio(0);
-#endif
-    playing = PLAYING;
-}
-
-static void
-set_playing_time(double when)
-{
-#if EMOTION_AUDIO
-    emotion_object_position_set(em, when);
-#endif
-#if SDL_AUDIO
-    sdl_start = lrint(when * sample_rate);
-#endif
-}
-
-static double
-get_playing_time(void)
-{
-#if EMOTION_AUDIO
-    return emotion_object_position_get(em);
-#elif SDL_AUDIO
-    /* The current playing time is in sdl_start, counted in frames
-     * since the start of the piece.
-     */
-    return (double)sdl_start / sample_rate;
-#endif
 }
 
 /*
