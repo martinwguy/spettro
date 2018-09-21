@@ -56,3 +56,5 @@ Make do_scroll jump to the current playing position, reworking the
 pending_scroll logic. Is is true that Emotion get_play_position is
 grainy?
 ------------------------------------------------------------------------
+Add -m mute flag to be able to test emotion graphics
+------------------------------------------------------------------------
