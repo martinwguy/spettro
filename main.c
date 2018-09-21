@@ -170,6 +170,16 @@ static bool gray	= FALSE;	/* Display in shades of gray? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
        bool guitar_lines= FALSE;	/* Draw guitar string lines? */
 
+/* Other option flags */
+static bool autoplay = FALSE;	/* -p  Start playing the file right away */
+       bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
+static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
+
+/* Audio file info */
+       audio_file_t *audio_file;
+       double	audio_length = 0.0;	/* Length of the audio in seconds */
+       double	sample_rate;		/* SR of the audio in Hertz */
+
 /* The color for uncalculated areas:  RGB gray */
 #if EVAS_VIDEO
 #define background 0xFF808080
@@ -188,22 +198,7 @@ static int imagestride;		/* How many bytes per screen line ?*/
 static SDL_Surface *screen;
 #endif
 
-
-       audio_file_t *audio_file;
-       double	audio_length = 0.0;	/* Length of the audio in seconds */
-       double	sample_rate;		/* SR of the audio in Hertz */
-
 /* option flags */
-static bool autoplay = FALSE;	/* -p  Start playing the file right away */
-       bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
-static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
-
-/* State variables */
-
-/* When they press arrow left or right to seek, we just increment pending_seek;
- * the screen updating is then done in response to the next timer callback.
- */
-static double pending_seek = 0.0;
 
 #if SDL_MAIN
 static int get_next_SDL_event(SDL_Event *event);
