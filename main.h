@@ -22,6 +22,7 @@ extern void calc_notify(result_t *result);
 extern void calc_result(result_t *result);
 
 extern void repaint_display(void);
+extern void do_scroll(void);
 
 /* GUI state variables */
 extern int disp_width;		/* Size of displayed drawing area in pixels */

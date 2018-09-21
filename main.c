@@ -108,6 +108,7 @@
 #include "overlay.h"
 #include "scheduler.h"
 #include "speclen.h"
+#include "timer.h"
 #include "main.h"
 
 /*
@@ -134,21 +135,7 @@ static void freq_pan_by(double by);	/* Up/Down */
 static void freq_zoom_by(double by);	/* y/Y */
 static void change_dyn_range(double by);/* * and / */
 
-/* The timer and its callback function. */
-#if ECORE_TIMER
-static Ecore_Timer *timer = NULL;
-static Eina_Bool timer_cb(void *data);	/* The timer callback function */
-static int scroll_event;   /* Our user-defined event to activate scrolling */
-/* The function that does the actual scrolling */
-static Eina_Bool scroll_cb(void *data, int type, void *event);
-#elif SDL_TIMER
-static SDL_TimerID timer = NULL;
-static Uint32 timer_cb(Uint32 interval, void *data);
-#else
-# error "Define ECORE_TIMER or SDL_TIMER"
-#endif
-
-static void do_scroll(void);
+       void do_scroll(void);
 
 /*
  * State variables
@@ -574,21 +561,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
     init_audio(audio_file);
 
-    /* Start screen-updating and scrolling timer */
-#if ECORE_TIMER
-    /* The timer callback just generates an event, which is processed in
-     * the main ecore event loop to do the scrolling in the main loop
-     */
-    scroll_event = ecore_event_type_new();
-    ecore_event_handler_add(scroll_event, scroll_cb, NULL);
-    timer = ecore_timer_add(step, timer_cb, (void *)em);
-#elif SDL_TIMER
-    timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)NULL);
-#endif
-    if (timer == NULL) {
-	fprintf(stderr, "Couldn't initialize scrolling timer.\n");
-	exit(1);
-    }
+    start_timer();
 
 #if ECORE_MAIN
     /* Start main event loop */
@@ -603,7 +576,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
 	case SDL_QUIT:
 	    stop_scheduler();
-	    SDL_RemoveTimer(timer);
+	    stop_timer();
 	    exit(0);	/* atexit() calls SDL_Quit() */
 
 	case SDL_KEYDOWN:
@@ -635,9 +608,6 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	case SDL_VIDEORESIZE:
 	    /* One day */
 	    break;
-
-#define RESULT_EVENT 0
-#define SCROLL_EVENT 1
 
 	case SDL_USEREVENT:
 	    switch (event.user.code) {
@@ -790,11 +760,10 @@ do_key(enum key key)
     case KEY_QUIT:	/* Quit */
 	if (playing == PLAYING) stop_playing();
 	stop_scheduler();
+	stop_timer();
 #if ECORE_MAIN
-	(void) ecore_timer_del(timer);
 	ecore_main_loop_quit();
 #elif SDL_MAIN
-	SDL_RemoveTimer(timer);
 	exit(0);	/* atexit() calls SDL_Quit() */
 #endif
 	break;
@@ -965,16 +934,7 @@ time_zoom_by(double by)
     step = 1 / ppsec;
 
     /* Change the screen-scrolling speed to match */
-#if ECORE_TIMER
-    if (ecore_timer_del(timer) == NULL ||
-	(timer = ecore_timer_add(step, timer_cb, (void *)em)) == NULL) {
-#elif SDL_TIMER
-    if (!SDL_RemoveTimer(timer) ||
-	(timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, NULL)) == NULL) {
-#endif
-	fprintf(stderr, "Couldn't change rate of scrolling timer.\n");
-	exit(1);
-    }
+    change_timer_interval(step);
 
     /* Zooming by < 1.0 increases the step size */
     if (by < 1.0) reschedule_for_bigger_step();
@@ -1025,70 +985,9 @@ change_dyn_range(double by)
 }
 
 /*
- * The periodic timer callback that, when playing, schedules scrolling of
- * the display by one pixel.
- * When paused, the timer continues to run to update the display in response to
- * seek commands.
- */
-
-/* This is used to ensure that only one scroll event is ever in the queue,
- * otherwise is you're short of CPU, the event queue fills up with
- * unprocessed scroll events and other events (keypresses, results) are lost.
- */
-static bool scroll_event_pending = FALSE;
-
-#if ECORE_TIMER
-
-static Eina_Bool
-timer_cb(void *data)
-{
-    /* Generate a user-defined event which will be processed in the main loop */
-    if (!scroll_event_pending) {
-	ecore_event_add(scroll_event, NULL, NULL, NULL);
-	scroll_event_pending = TRUE;
-    }
-
-    return ECORE_CALLBACK_RENEW;
-}
-
-static Eina_Bool
-scroll_cb(void *data, int type, void *event)
-{
-    do_scroll();
-    return ECORE_CALLBACK_DONE;
-}
-
-#elif SDL_TIMER
-
-static Uint32
-timer_cb(Uint32 interval, void *data)
-{
-
-    /* We only want one scroll event pending at a time, otherwise if there's
-     * insufficient CPU, the event queue fills up with them and other events
-     * stop working too (result events, key presses etc)
-     */
-    if (!scroll_event_pending) {
-	SDL_Event event;
-
-	event.type = SDL_USEREVENT;
-	event.user.code = SCROLL_EVENT;
-	if (SDL_PushEvent(&event) != 0) {
-	    fprintf(stderr, "Couldn't push an SDL scroll event\n");
-	}
-	scroll_event_pending = TRUE;
-    } else
-	fprintf(stderr, "SDL timer event pending.\n");
-
-    return(interval);
-}
-
-#endif
-
-/*
  * Really scroll the screen
  */
-static void
+void
 do_scroll()
 {
     double new_disp_time;	/* Where we reposition to */
