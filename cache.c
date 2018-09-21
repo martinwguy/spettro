@@ -4,8 +4,9 @@
  * to know when to throw away old results.
  */
 
+#include "spettro.h"
 #include "calc.h"	/* for result_t */
-#include "main.h"	/* for result_t */
+#include "main.h"
 
 #include <stdlib.h>	/* for free() */
 
