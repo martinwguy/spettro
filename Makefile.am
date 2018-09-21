@@ -27,6 +27,11 @@ AM_LDFLAGS = -lsndfile $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
 
 bin_PROGRAMS = spettro
 
+desktopdir = $(datadir)/appllications
+desktop_DATA = spettro.desktop
+icondir = $(datadir)/icons
+icon_DATA = spettro.png
+
 spettro_SOURCES = main.c config.h spettro.h \
 	audio_file.c cache.c calc.c colormap.c interpolate.c key.c lock.c \
 	overlay.c scheduler.c speclen.c spectrum.c window.c \
