@@ -2,11 +2,11 @@
 
 #ifndef KEY_H
 
-#include <SDL.h>
-
 #if ECORE_MAIN
+#include <Evas.h>
 extern void keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo);
 #elif SDL_MAIN
+#include <SDL.h>
 extern enum key sdl_key_decode(SDL_Event *eventp);
 #endif
 
@@ -34,6 +34,16 @@ enum key {
     KEY_BAR_END,
 };
 extern bool Shift, Control;
+
+/* Functions supplied by key.c */
+#if ECORE_MAIN
+extern void keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo);
+#elif SDL_MAIN
+enum key sdl_key_decode(SDL_Event *eventp);
+#endif
+
+/* Callback supplied by the caller */
+extern void do_key(enum key);
 
 #define KEY_H
 #endif

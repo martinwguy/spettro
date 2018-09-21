@@ -23,7 +23,7 @@ bool Shift, Control;
  * The SDL equivalent of this is in SDL's main lood at the end of main().
  */
 
-static void
+void
 keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 {
     Evas_Event_Key_Down *ev = einfo;

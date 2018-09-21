@@ -35,6 +35,7 @@ spettro_SOURCES = main.c config.h spettro.h \
 
 main.o: Makefile
 calc.o: Makefile
+key.o: Makefile
 lock.o: Makefile
 audio_file.o: Makefile
 scheduler.o: Makefile

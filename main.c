@@ -122,7 +122,6 @@ static void	update_column(int pos_x);
 
 /* Enlightenment's GUI callbacks */
 #if EVAS_VIDEO
-static void keyDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void mouseDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
 #endif
@@ -219,15 +218,16 @@ static bool autoplay = FALSE;	/* -p  Start playing the file right away */
 static bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
 
-static void do_key(enum key);
-
 /* State variables */
 
 /* When they press arrow left or right to seek, we just increment pending_seek;
  * the screen updating is then done in response to the next timer callback.
  */
 static double pending_seek = 0.0;
+
+#if SDL_MAIN
 static int get_next_SDL_event(SDL_Event *event);
+#endif
 
 int
 main(int argc, char **argv)
@@ -869,7 +869,7 @@ mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 /*
  * Process a keystroke.  Also inspects the variables Control and Shift.
  */
-static void
+void
 do_key(enum key key)
 {
     switch (key) {
