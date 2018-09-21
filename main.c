@@ -1020,7 +1020,7 @@ start_playing()
     emotion_object_play_set(em, EINA_TRUE);
 #endif
 #if SDL_AUDIO
-    sdl_start = lrint((disp_time) * sample_rate);
+    sdl_start = lrint(disp_time * sample_rate);
     SDL_PauseAudio(0);
 #endif
     playing = PLAYING;
@@ -1273,7 +1273,6 @@ timer_cb(Uint32 interval, void *data)
     } else
 	fprintf(stderr, "SDL timer event pending.\n");
 
-    /* Should use SDL_GetTicks() to make it keep in sync with the audio */
     return(interval);
 }
 
