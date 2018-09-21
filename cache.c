@@ -7,6 +7,8 @@
 #include "calc.h"	/* for result_t */
 #include "main.h"	/* for result_t */
 
+#include <stdlib.h>	/* for free() */
+
 static void destroy_result(result_t *r);
 
 static result_t *results = NULL; /* Linked list of result structures */

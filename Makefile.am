@@ -28,9 +28,9 @@ AM_LDFLAGS = -lsndfile $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
 bin_PROGRAMS = spettro
 
 spettro_SOURCES = main.c config.h spettro.h \
-	audio_file.c cache.c calc.c colormap.c interpolate.c lock.c \
+	audio_file.c cache.c calc.c colormap.c interpolate.c key.c lock.c \
 	overlay.c scheduler.c speclen.c spectrum.c window.c \
-	audio_file.h cache.h calc.h colormap.h interpolate.h lock.h \
+	audio_file.h cache.h calc.h colormap.h interpolate.h key.h lock.h \
 	overlay.h scheduler.h speclen.h spectrum.h window.h
 
 main.o: Makefile

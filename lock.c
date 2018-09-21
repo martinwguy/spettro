@@ -2,7 +2,8 @@
  * Code to provide mutexes to protect non-thread-safe libraries and functions
  */
 
-#include "config.h"
+#include "spettro.h"
+#include "lock.h"
 
 /*
  * Define the lock type and the locking and unlocking functions
@@ -23,9 +24,6 @@
 #else
 # error "Define one of ECORE_LOCKS and SDL_LOCKS"
 #endif
-
-#include "spettro.h"
-#include "lock.h"
 
 /* The lock initialization function */
 

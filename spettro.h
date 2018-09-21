@@ -4,6 +4,9 @@
 
 #ifndef SPETTRO_H
 
+#include "configure.h"
+#include "config.h"
+
 typedef int bool;
 
 #ifndef FALSE
