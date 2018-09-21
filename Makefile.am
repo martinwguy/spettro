@@ -33,12 +33,13 @@ icondir = $(datadir)/icons
 icon_DATA = spettro.png
 
 spettro_SOURCES = main.c config.h spettro.h \
-	audio_file.c cache.c calc.c colormap.c interpolate.c key.c lock.c \
-	audio.c mouse.c overlay.c scheduler.c speclen.c spectrum.c window.c \
-	audio_file.h cache.h calc.h colormap.h interpolate.h key.h lock.h \
-	audio.h mouse.h overlay.h scheduler.h speclen.h spectrum.h window.h
+	audio.c audio_file.c cache.c calc.c colormap.c interpolate.c key.c \
+	lock.c mouse.c overlay.c scheduler.c speclen.c spectrum.c window.c \
+	audio.h audio_file.h cache.h calc.h colormap.h interpolate.h key.h \
+	lock.h mouse.h overlay.h scheduler.h speclen.h spectrum.h window.h
 
 main.o: Makefile
+audio.o: Makefile
 calc.o: Makefile
 key.o: Makefile
 lock.o: Makefile

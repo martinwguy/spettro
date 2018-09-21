@@ -150,11 +150,6 @@ static Uint32 timer_cb(Uint32 interval, void *data);
 
 static void do_scroll(void);
 
-/* The audio player and its callback function */
-#if EMOTION_AUDIO
-static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
-#endif
-
 /*
  * State variables
  */
@@ -1033,26 +1028,6 @@ change_dyn_range(double by)
 
     repaint_display();
 }
-
-/*
- *	Audio callbacks
- */
-
-#if EMOTION_AUDIO
-/*
- * Callback is called when the player gets to the end of the piece.
- *
- * The "playback_started" event is useless because in emotion 0.28 it is
- * delivered when playback of audio finishes (!)
- * An alternative would be the "decode_stop" callback but "playback_finished"
- * is delivered first.
- */
-static void
-playback_finished_cb(void *data, Evas_Object *obj, void *ev)
-{
-    stop_playing();
-}
-#endif
 
 /*
  * The periodic timer callback that, when playing, schedules scrolling of

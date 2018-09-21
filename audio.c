@@ -13,13 +13,18 @@ extern audio_file_t *audio_file;
 #include <math.h>
 
 #if EMOTION_AUDIO
+
 #include <Emotion.h>
 extern Evas_Object *em;
+static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
+
 #elif SDL_AUDIO
+
 #include <SDL.h>
 static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
 				 * will we next read samples to play? */
 static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
+
 #endif
 
 enum playing playing = PAUSED;
@@ -51,6 +56,22 @@ init_audio(audio_file_t *audio_file)
 # error "Define one of EMOTION_AUDIO or SDL_AUDIO"
 #endif
 }
+
+#if EMOTION_AUDIO
+/*
+ * Callback is called when the player gets to the end of the piece.
+ *
+ * The "playback_started" event is useless because in emotion 0.28 it is
+ * delivered when playback of audio finishes (!)
+ * An alternative would be the "decode_stop" callback but "playback_finished"
+ * is delivered first.
+ */
+static void
+playback_finished_cb(void *data, Evas_Object *obj, void *ev)
+{
+    stop_playing();
+}
+#endif
 
 void
 pause_playing()
