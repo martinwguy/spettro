@@ -803,28 +803,26 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 
 #if SDL_MAIN
 static int
-get_next_SDL_event(SDL_Event *event)
+get_next_SDL_event(SDL_Event *eventp)
 {
-    SDL_Event event;
-
     /* First, see if there are any UI events to be had */
-    switch (SDL_PeepEvent(&event, 1, SDL_GETEVENT,
+    switch (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
 			  SDL_EVENTMASK(SDL_QUIT) |
 			  SDL_EVENTMASK(SDL_KEYDOWN) |
-			  SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN)) {
+			  SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN))) {
     case -1:
-	fprintf(stderr, "Some error from SDL_PeepEvent().\n");
+	fprintf(stderr, "Some error from SDL_PeepEvents().\n");
 	return 0;
     case 0:
 	break;
     case 1:
 	return 1;
     default:
-	fprintf(stderr, "Wierd return from SDL_PeepEvent\n");
+	fprintf(stderr, "Wierd return from SDL_PeepEvents\n");
     }
 
-    /* No? Wait for all events */
-    return SDL_WaitEvent(&event);
+    /* No UI events? Wait for all events */
+    return SDL_WaitEvent(eventp);
 }
 #endif
 
