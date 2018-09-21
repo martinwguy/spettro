@@ -45,14 +45,14 @@
  * == Mouse handling ==
  *
  * On Ctrl-mouse down, the left and right bar lines are set at the
- * mouse position.
+ * mouse position. *DONE*
  *
  * Mouse click and drag should pan the display in real time.
  *
- * So it should be Control-Mouse-Down that positions the left or right bar line
- * at the mouse position. The bar line should appear when you press the button
+ * The bar line should appear when you press the button
  * and if you move it while holding the button, the bar line should move too,
  * being positioned definitively when you release the mouse button.
+ * THe other bar lines on each side should expand and collapse to match
  * If they release Control before MouseUp, no change should be made.
  *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
@@ -103,6 +103,7 @@
 #include "colormap.h"
 #include "interpolate.h"
 #include "key.h"
+#include "mouse.h"
 #include "overlay.h"
 #include "scheduler.h"
 #include "speclen.h"
@@ -122,7 +123,6 @@ static void	update_column(int pos_x);
 
 /* Enlightenment's GUI callbacks */
 #if EVAS_VIDEO
-static void mouseDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void quitGUI(Ecore_Evas *ee);
 #endif
 
@@ -659,17 +659,19 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
 	case SDL_MOUSEBUTTONDOWN:
 	    {
-		double when = (event.button.x - disp_offset) * step;
 		/* To detect Shift and Control states, it looks like we have to
 		 * examine the keys ourselves */
 		Uint8 *keystate = SDL_GetKeyState(NULL);
-		bool ctrl = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
+		Shift = keystate[SDLK_LSHIFT] || keystate[SDLK_RSHIFT];
+		Control = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
 
-		if (ctrl) switch (event.button.button) {
+		switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
-		    set_bar_left_time(when); break;
 		case SDL_BUTTON_RIGHT:
-		    set_bar_right_time(when); break;
+		    do_mouse(event.button.x, event.button.y,
+			     event.button.button == SDL_BUTTON_LEFT
+				 ? LEFT_BUTTON : RIGHT_BUTTON,
+			     MOUSE_DOWN);
 		}
 	    }
 	    break;
@@ -838,32 +840,11 @@ calc_columns(int from, int to)
  */
 
 #if ECORE_MAIN
-
 /* Quit on window close or Control-Q */
 static void
 quitGUI(Ecore_Evas *ee EINA_UNUSED)
 {
     ecore_main_loop_quit();
-}
-
-static void
-mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
-{
-    Evas_Event_Mouse_Down *ev = einfo;
-    Evas_Coord_Point *where = &(ev->canvas);
-    double when = (where->x - disp_offset) * step;
-    Evas_Modifier *modifiers = ev->modifiers;
-    bool control = evas_key_modifier_is_set(modifiers, "Control");
-
-    /* Bare left and right click: position bar lines */
-    if (control) {
-	switch (ev->button) {
-	case 1:
-	    set_bar_left_time(when); break;
-	case 3:
-	    set_bar_right_time(when); break;
-	}
-    }
 }
 #endif
 
