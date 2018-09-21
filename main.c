@@ -131,6 +131,7 @@ static void pause_playing(void);
 static void start_playing(void);
 static void stop_playing(void);
 static void continue_playing();
+static void set_playing_time(double when);
 static double get_playing_time(void);
 static void time_pan_by(double by);	/* Left/Right */
 static void time_zoom_by(double by);	/* x/X */
@@ -278,7 +279,7 @@ main(int argc, char **argv)
 
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
-	case 'w': case 'h': case 'j': case 'l': case 'r':
+	case 'w': case 'h': case 'j': case 'l': case 'r': case 'p':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -326,17 +327,19 @@ main(int argc, char **argv)
 	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    break;
-	case 'l': case 'r':
+	case 'p':	/* Play starting from time t */
+	case 'l': case 'r':	/* Set bar line positions */
 	    errno = 0;
 	    {
 		char *endptr;
 		double arg = strtof(argv[0], &endptr);
 
 		if (arg < 0.0 || errno == ERANGE || endptr == argv[0]) {
-		    fprintf(stderr, "-%c seconds must be a floating point value\n", letter);
+		    fprintf(stderr, "-%c seconds must be a positive floating point value\n", letter);
 		    exit(1);
 		}
 		switch (letter) {
+		case 'p': disp_time = arg; break;
 		case 'l': bar_left_time = arg; break;
 		case 'r': bar_right_time = arg; break;
 		}
@@ -566,8 +569,10 @@ Brightness controls (*,/) change DYN_RANGE\n\
     audio_length =
 	(double) audio_file_length_in_frames(audio_file) / sample_rate;
 
-    /* Now we have audio_length, we can set the bar times if given... */
+    /* Apply the -p flag */
+    if (disp_time != 0.0) set_playing_time(disp_time);
 
+    /* Now we have audio_length, we can set the bar times if given... */
     if (bar_left_time != UNDEFINED) {
 	if (bar_left_time > audio_length + DELTA) {
 	    fprintf(stderr, "-l time is after the end of the audio\n");
@@ -584,7 +589,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
     /* ... and schedule the initial screen refresh */
     start_scheduler(max_threads);
     /* From here on, do not goto quit. */
-    calc_columns(disp_offset, disp_width - 1);
+    calc_columns(0, disp_width - 1);
 
 #if EVAS_VIDEO
     /* Set GUI callbacks */
@@ -1064,6 +1069,17 @@ continue_playing()
     playing = PLAYING;
 }
 
+static void
+set_playing_time(double when)
+{
+#if EMOTION_AUDIO
+    emotion_object_position_set(em, when);
+#endif
+#if SDL_AUDIO
+    sdl_start = lrint(when * sample_rate);
+#endif
+}
+
 static double
 get_playing_time(void)
 {
@@ -1099,12 +1115,8 @@ time_pan_by(double by)
 	    playing = STOPPED;
 	}
     }
-#if EMOTION_AUDIO
-    emotion_object_position_set(em, playing_time);
-#endif
-#if SDL_AUDIO
-    sdl_start = lrint(playing_time * sample_rate);
-#endif
+    set_playing_time(playing_time);
+
     /* If moving left after it has come to the end and stopped,
      * we want to go into pause state */
     if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
