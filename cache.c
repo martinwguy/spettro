@@ -1,7 +1,5 @@
-
 /*
- * Result cache, inside main.c because it wants to access disp_time
- * to know when to throw away old results.
+ * cache.c - Result cache
  */
 
 #include "spettro.h"
