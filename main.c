@@ -131,6 +131,7 @@ static void pause_playing(void);
 static void start_playing(void);
 static void stop_playing(void);
 static void continue_playing();
+static double get_playing_time(void);
 static void time_pan_by(double by);	/* Left/Right */
 static void time_zoom_by(double by);	/* x/X */
 static void freq_pan_by(double by);	/* Up/Down */
@@ -992,14 +993,7 @@ do_key(enum key key)
     /* The display has got corrupted, so refresh it at the current
      * playing time. */
     case KEY_REDRAW:
-#if EMOTION_AUDIO
-	disp_time = emotion_object_position_get(em);
-#elif SDL_AUDIO
-	/* The current playing time is in sdl_start, counted in frames
-	 * since the start of the piece.
-	 */
-	disp_time = sdl_start / sample_rate;
-#endif
+	disp_time = get_playing_time();
 	disp_time = lrint(disp_time / step) * step;
 	repaint_display();
 	break;
@@ -1031,15 +1025,16 @@ pause_playing()
     playing = PAUSED;
 }
 
+/* Start playing the audio from disp_time into the piece */
 static void
 start_playing()
 {
 #if EMOTION_AUDIO
-    emotion_object_position_set(em, disp_time + pending_seek);
+    emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
 #endif
 #if SDL_AUDIO
-    sdl_start = lrint((disp_time + pending_seek) * sample_rate);
+    sdl_start = lrint((disp_time) * sample_rate);
     SDL_PauseAudio(0);
 #endif
     playing = PLAYING;
@@ -1088,21 +1083,31 @@ continue_playing()
     playing = PLAYING;
 }
 
+static double
+get_playing_time(void)
+{
+#if EMOTION_AUDIO
+    return emotion_object_position_get(em);
+#elif SDL_AUDIO
+    /* The current playing time is in sdl_start, counted in frames
+     * since the start of the piece.
+     */
+    return (double)sdl_start / sample_rate;
+#endif
+}
+
 /*
  * Jump forwards or backwards in time, scrolling the display accordingly.
- * Here we just set pending_seek; the actual scrolling is done in timer_cb().
  */
 static void
 time_pan_by(double by)
 {
     double playing_time;
 
-    pending_seek += by;
-    playing_time = disp_time + pending_seek;
+    playing_time = disp_time + by;
     if (playing_time < 0.0) playing_time = 0.0;
     if (playing_time > audio_length) {
 	playing_time = audio_length;
-	pending_seek = playing_time - disp_time;
 	if (playing == PLAYING) {
 #if EMOTION_AUDIO
             emotion_object_play_set(em, EINA_FALSE);
@@ -1125,6 +1130,7 @@ time_pan_by(double by)
        playing = PAUSED;
     }
 
+    /* The screen will be scrolled at the next timer event */
 }
 
 /* Zoom the time axis on disp_time.
@@ -1271,7 +1277,8 @@ timer_cb(Uint32 interval, void *data)
 	    fprintf(stderr, "Couldn't push an SDL scroll event\n");
 	}
 	scroll_event_pending = TRUE;
-    }
+    } else
+	fprintf(stderr, "SDL timer event pending.\n");
 
     /* Should use SDL_GetTicks() to make it keep in sync with the audio */
     return(interval);
@@ -1280,7 +1287,7 @@ timer_cb(Uint32 interval, void *data)
 #endif
 
 /*
- * Really scroll the screen according to pending_seek
+ * Really scroll the screen
  */
 static void
 do_scroll()
@@ -1292,13 +1299,8 @@ do_scroll()
 				 */
 
     scroll_event_pending = FALSE;
-    /*
-     * emotion's position reporting is unreliable and grainy.
-     * We get smoother scrolling especially after repositioning
-     * just by beating time.
-     */
-    new_disp_time = disp_time + pending_seek; pending_seek = 0.0;
-    if (playing == PLAYING) new_disp_time += step;
+
+    new_disp_time = get_playing_time();
 
     if (new_disp_time < DELTA) {
 	new_disp_time = 0.0;
@@ -1314,8 +1316,6 @@ do_scroll()
 
     scroll_by = lrint((new_disp_time - disp_time) * ppsec);
 
-    if (scroll_by == 0) return;
-
     /*
      * Scroll the display sideways by the correct number of pixels
      * and start a calc thread for the newly-revealed region.
@@ -1325,7 +1325,7 @@ do_scroll()
      * the next pixel row, and the final "- (4*scroll_by)" is so as
      * not to scroll garbage from past the end of the frame buffer.
      */
-
+    if (scroll_by != 0)
     if (abs(scroll_by) >= disp_width) {
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
@@ -1417,7 +1417,6 @@ do_scroll()
 
 	/* The whole screen has changed (well, unless there's background) */
 	update_display();
-
     }
 }
 
@@ -1616,7 +1615,7 @@ green_line()
 #endif
 }
 
-/* Tell the video subsystem to update the whole display from the pixel data */
+/* Tell the video subsystem to update the display from the pixel data */
 static void
 update_display(void)
 {
