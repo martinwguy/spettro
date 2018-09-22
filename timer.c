@@ -90,6 +90,7 @@ bool scroll_event_pending = FALSE;
 static Eina_Bool
 timer_cb(void *data)
 {
+fprintf(stderr, "timer_cb\n");
     /* Generate a user-defined event which will be processed in the main loop */
     if (!scroll_event_pending) {
 	ecore_event_add(scroll_event, NULL, NULL, NULL);
@@ -123,8 +124,9 @@ timer_cb(Uint32 interval, void *data)
 	event.user.code = SCROLL_EVENT;
 	if (SDL_PushEvent(&event) != 0) {
 	    fprintf(stderr, "Couldn't push an SDL scroll event\n");
+	} else {
+	    scroll_event_pending = TRUE;
 	}
-	scroll_event_pending = TRUE;
     } else
 	fprintf(stderr, "SDL timer event pending.\n");
 

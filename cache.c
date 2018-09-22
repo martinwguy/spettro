@@ -1,5 +1,12 @@
 /*
  * cache.c - Result cache
+ *
+ * We remember the FFT results we have calculated as result_t's, in time order,
+ * which reflect the parameters that gave rise to that result and the
+ * linear magnitude data.
+ *
+ * The mapping from this to screen coordinates and colors is done on-the-fly
+ * at screen update time by paint_column() calling interpolate() and colormap().
  */
 
 #include "spettro.h"
@@ -17,6 +24,8 @@ static result_t *last_result = NULL; /* Last element in the linked list */
 void
 remember_result(result_t *result)
 {
+    int speclen = result->speclen;
+
     /* Drop any stored results more than half a screenful before the display */
     while (results != NULL && results->t < disp_time - (disp_offset + disp_width/2) * step - DELTA) {
 	result_t *r = results;
@@ -46,8 +55,9 @@ remember_result(result_t *result)
 		     r && r->next && r->next->t <= result->t + DELTA;
 		     r = r->next) {
 		    if (r->next->t <= result->t + DELTA &&
-			r->next->t >= result->t - DELTA) {
-			/* Same time: forget it */
+			r->next->t >= result->t - DELTA &&
+			r->next->speclen == speclen) {
+			/* Same time, same size: forget it */
 			destroy_result(result);
 			r = NULL; break;
 		    }
@@ -65,7 +75,7 @@ remember_result(result_t *result)
 /* Return the result for time t at the current speclen
  * or NULL if it hasn't been calculated yet */
 result_t *
-recall_result(double t)
+recall_result(double t, int speclen)
 {
     result_t *p;
 
@@ -76,8 +86,10 @@ recall_result(double t)
 	return(NULL);
 
     for (p=results; p != NULL; p=p->next) {
-	/* If the time is the same, this is the result we want */
-	if (p->t >= t - DELTA && p->t <= t + DELTA) {
+	/* If the time is the same and speclen is the same,
+	 * this is the result we want */
+	if (p->t >= t - DELTA && p->t <= t + DELTA &&
+	    p->speclen == speclen) {
 	    break;
 	}
 	/* If the stored time is greater, it isn't there. */

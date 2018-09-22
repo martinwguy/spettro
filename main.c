@@ -144,8 +144,8 @@ static void change_dyn_range(double by);/* * and / */
 /* GUI state variables */
        int disp_width	= 640;	/* Size of displayed drawing area in pixels */
        int disp_height	= 480;
-       double disp_time	= 0.0; 	/* When in the audio file is the crosshair? */
-       int disp_offset;  	/* Crosshair is in which display column? */
+       double disp_time	= 0.0;	/* When in the audio file is the crosshair? */
+       int disp_offset; 	/* Crosshair is in which display column? */
        double min_freq	= 27.5;		/* Range of frequencies to display: */
        double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
 static double min_db	= -100.0;	/* Values below this are black */
@@ -868,6 +868,17 @@ do_key(enum key key)
 					   disp_time);
 	break;
 
+    case KEY_F:
+	if (Shift) {
+	   /* Increase FFT size */
+	   fftfreq /= 2;
+	} else {
+	   /* Decrease FFT size */
+	   fftfreq *= 2;
+	}
+	repaint_display();
+	break;
+
     /* The display has got corrupted, so refresh it at the current
      * playing time. */
     case KEY_REDRAW:
@@ -1149,20 +1160,18 @@ repaint_column(int column)
 {
     /* What time does this column represent? */
     double t = disp_time + (column - disp_offset) * step;
-
-    /* The already-calculated result */
     result_t *r;
 
     if (column < 0 || column >= disp_width) {
-	fprintf(stderr, "Repainting column %d\n", column);
+	fprintf(stderr, "Repainting off-screen column %d\n", column);
 	return;
     }
 
     /* If it's a valid time and the column has already been calculated,
      * repaint it from the cache */
     if (t >= 0.0 - DELTA && t <= audio_length + DELTA &&
-        (r = recall_result(t)) != NULL) {
-	paint_column(column, r);
+	(r = recall_result(t, fftfreq_to_speclen(fftfreq, sample_rate)))) {
+	    paint_column(column, r);
     } else {
 	/* ...otherwise paint it with the background color */
 #if EVAS_VIDEO

@@ -29,6 +29,7 @@ enum key {
     KEY_S,
     KEY_G,
     KEY_T,
+    KEY_F,
     KEY_REDRAW,
     KEY_BAR_START,
     KEY_BAR_END,
