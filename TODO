@@ -46,5 +46,6 @@ Let them change the FFT window function.
 ------------------------------------------------------------------------
 Key to display playing time = text overlays -> axis markers
 ------------------------------------------------------------------------
-Add -m mute flag to be able to test emotion graphics
+Add -m mute flag to be able to test emotion graphics.
+This needs scrolling by regular timer, not by audio position.
 ------------------------------------------------------------------------
