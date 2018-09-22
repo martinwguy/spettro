@@ -4,9 +4,18 @@ You have to compile spettro from source at present.
 PREPARATION
 
 On Debian/Ubuntu/Mint you need to:
-	apt-get install e17-dev libecore-dev libemotion-dev libsdl-dev
-	apt-get install libsndfile-dev	# or libaudiofile-dev - See Makefile
-	apt-get install libfftw3-dev libsdl-dev pkg-config
+	# Always
+	apt-get install libfftw3-dev pkg-config
+
+	# For -DUSE_SDL (the default); (See Makefile.am)
+	apt-get install libsdl-dev
+	# or, for -DUSE_EMOTION:
+	apt-get install e17-dev libecore-dev libemotion-dev
+
+	# For -DUSE_LIBSNDFILE (the default):
+	apt-get install libsndfile-dev
+	# or, for -DUSE_LIBAUDIOFILE
+	apt-get install libaudiofile-dev
 
 and a compiler of some kind:
 	apt-get install build-essential
