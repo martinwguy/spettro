@@ -127,8 +127,7 @@ timer_cb(Uint32 interval, void *data)
 	} else {
 	    scroll_event_pending = TRUE;
 	}
-    } else
-	fprintf(stderr, "SDL timer event pending.\n");
+    }
 
     return(interval);
 }
