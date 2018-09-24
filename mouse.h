@@ -13,4 +13,5 @@ extern void do_mouse(unsigned screen_x, unsigned screen_y, int button, bool down
 #if EVAS_VIDEO
 #include <Evas.h>
 extern void mouseDown(void *data, Evas *e, Evas_Object *obj, void *event_info);
+extern void mouseUp(void *data, Evas *e, Evas_Object *obj, void *event_info);
 #endif

@@ -11,7 +11,9 @@
 /* The timer and its callback function. */
 #if ECORE_TIMER
 
-@include <Ecore.h>
+#include <Ecore.h>
+#include <Evas.h>
+extern Evas_Object *em;	/* From main.c */
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);	/* The timer callback function */
 static int scroll_event;   /* Our user-defined event to activate scrolling */
@@ -42,7 +44,7 @@ start_timer()
     timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)NULL);
 #endif
     if (timer == NULL) {
-	fprintf(stderr, "Couldn't initialize scrolling timer.\n");
+	fprintf(stderr, "Couldn't initialize scrolling timer for step of %g secs.\n", step);
 	exit(1);
     }
 }
@@ -90,7 +92,6 @@ bool scroll_event_pending = FALSE;
 static Eina_Bool
 timer_cb(void *data)
 {
-fprintf(stderr, "timer_cb\n");
     /* Generate a user-defined event which will be processed in the main loop */
     if (!scroll_event_pending) {
 	ecore_event_add(scroll_event, NULL, NULL, NULL);
