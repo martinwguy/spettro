@@ -557,6 +557,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
 				   keyDown, em);
     evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_DOWN,
 				   mouseDown, em);
+    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_UP,
+				   mouseUp, em);
 #endif
 
     init_audio(audio_file);
@@ -587,6 +589,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    break;
 
 	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEBUTTONUP:
 	    {
 		/* To detect Shift and Control states, it looks like we have to
 		 * examine the keys ourselves */
@@ -600,7 +603,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
 		    do_mouse(event.button.x, event.button.y,
 			     event.button.button == SDL_BUTTON_LEFT
 				 ? LEFT_BUTTON : RIGHT_BUTTON,
-			     MOUSE_DOWN);
+			     event.type == SDL_MOUSEBUTTONDOWN
+				? MOUSE_DOWN : MOUSE_UP);
 		}
 	    }
 	    break;
