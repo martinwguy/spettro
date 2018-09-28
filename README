@@ -23,6 +23,15 @@ Tap or click the screen or hit space to start/pause/resume/restart playback.
 Panning left and right skips the song to the new position.
 Panning up and down moves the view on the frequency axis.
 
+You can set bar lines by Control-clicking the left and right mouse buttons
+at the starts of two consecutive bars: it shows a grid of bar lines by
+extending them at regular intervals left and right of the marked positions.
+
+PLANNED:
+Pressing 2, 3, 4, 5, 6 etc sets the number of beats per bar to N.
+1 gives you just the bar lines, 0 turns bar lines off.
+
+
 A time grid would be nice too, with a button to turn it on/off and, when on,
 with a setting for the number of beats per bar giving more a luminous line
 every N "beats". Users can drag a bar line to align it to a feature.

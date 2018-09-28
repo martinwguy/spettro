@@ -3,8 +3,8 @@
  * Stuff to draw overlays on the graphic
  *
  * - horizontal lines showing the frequencies of piano keys and/or
- *   of the conventional score notation pentagram lines.
- *   RSN: Guitar strings!
+ *   of the conventional score notation pentagram lines or guitar strings.
+
  * - vertical lines to mark the bars and beats, user-adjustable
  *
  * == Row overlay ==
@@ -18,18 +18,11 @@
  *
  * == Column overlay ==
  *
- * The column overlay shows (will show!) draggable bar lines three pixels wide
- * with intermediate beat markers 1 pixel wide. The column overlay takes
- * priority over the row overlay, so that "bar lines" are maintained whole.
- *
- * The column overlay is created with mouse clicks, say:
- * Left button to mark the start of a bar, right to mark the end of a bar.
- * A three-pixel wide vertical bar appears at that point, when both are given
- * the bar lines are repeated left and right at that separation.
- *
- * Numeric keys then set the number of beats per bar, shown as 1-pixel-wide
- * vertical bars.
- * Both bar and beat lines are extended left and right of the marked points.
+ * The column overlay shows draggable bar lines a pixel wide (one day they
+ * will be 3 pixels wide with intermediate beat markers 1 pixel wide).
+ * The column overlay takes priority over the row overlay, so that
+ * "bar lines" are maintained whole, not cut, and the bar lines overlay the
+ * green line to avoid flashing them as they cross it.
  */
 
 #include "spettro.h"
