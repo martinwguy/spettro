@@ -335,7 +335,7 @@ If no filename is supplied, it opens \"audio.wav\"\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by one second\n\
            (by 10 seconds if Shift is held; by one pixel if Control is held)\n\
-Up/Down    Pan up/down the frequency axis by a tone\n\
+Up/Down    Pan up/down the frequency axis by a whole tone\n\
            (by an octave if Shift is held; by one pixel if Control is held)\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
