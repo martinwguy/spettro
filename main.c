@@ -583,7 +583,6 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	SDL_Event event;
 	enum key key;
 
-	/* Prioritise UI events over window refreshes, results and such */
 	while (get_next_SDL_event(&event)) switch (event.type) {
 
 	case SDL_QUIT:
@@ -673,6 +672,7 @@ quit:
 static int
 get_next_SDL_event(SDL_Event *eventp)
 {
+    /* Prioritise UI events over window refreshes, results and such */
     /* First, see if there are any UI events to be had */
     switch (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
 			  SDL_EVENTMASK(SDL_QUIT) |
