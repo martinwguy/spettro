@@ -143,6 +143,9 @@ continue_playing()
     playing = PLAYING;
 }
 
+/*
+ * Position the audio player at the specified time in seconds.
+ */
 void
 set_playing_time(double when)
 {

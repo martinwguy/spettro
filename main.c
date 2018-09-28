@@ -927,9 +927,13 @@ time_pan_by(double by)
     double playing_time;
 
     playing_time = disp_time + by;
+
     if (playing_time < 0.0) playing_time = 0.0;
-    if (playing_time > audio_length) {
-	playing_time = audio_length;
+
+    /* If we're at/after the end of the piece, stop */
+    if (playing_time > audio_length) playing_time = audio_length;
+    if (playing_time == audio_length) {
+	/* If playing, stop */
 	if (playing == PLAYING) {
 #if EMOTION_AUDIO
             emotion_object_play_set(em, EINA_FALSE);
@@ -940,6 +944,7 @@ time_pan_by(double by)
 	    playing = STOPPED;
 	}
     }
+
     set_playing_time(playing_time);
 
     /* If moving left after it has come to the end and stopped,
