@@ -157,10 +157,6 @@ static bool autoplay = FALSE;	/* -p  Start playing the file right away */
        bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
 
-/* Audio file info */
-       audio_file_t *audio_file;
-       double	audio_length = 0.0;	/* Length of the audio in seconds */
-       double	sample_rate;		/* SR of the audio in Hertz */
 
 /* The color for uncalculated areas:  RGB gray */
 #if EVAS_VIDEO
@@ -180,11 +176,12 @@ static int imagestride;		/* How many bytes per screen line ?*/
 static SDL_Surface *screen;
 #endif
 
-/* option flags */
-
 #if SDL_MAIN
 static int get_next_SDL_event(SDL_Event *event);
 #endif
+
+/* The currently opened audio file */
+static audio_file_t *	audio_file;
 
 int
 main(int argc, char **argv)
@@ -528,9 +525,6 @@ Brightness controls (*,/) change DYN_RANGE\n\
      * so we use libsndfile or libaudiofile for that.
      */
     if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
-    sample_rate = audio_file_sampling_rate(audio_file);
-    audio_length =
-	(double) audio_file_length_in_frames(audio_file) / sample_rate;
 
     /* Apply the -p flag */
     if (disp_time != 0.0) set_playing_time(disp_time);

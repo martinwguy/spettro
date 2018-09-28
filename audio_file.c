@@ -15,6 +15,10 @@
 
 #include "audio_file.h"		/* Our header file */
 
+/* Audio file info */
+double		audio_length = 0.0;	/* Length of the audio in seconds */
+double		sample_rate;		/* SR of the audio in Hertz */
+
 #if USE_LIBAUDIOFILE
 
 audio_file_t *
@@ -35,6 +39,12 @@ open_audio_file(char *filename)
 	return(NULL);
     }
     audio_file->af = af;
+    audio_file->samplerate = afGetRate(af, AF_DEFAULT_TRACK);
+    audio_file->frames = afGetFrameCount(af, AF_DEFAULT_TRACK);
+    audio_file->channels = afGetChannels(af, AF_DEFAULT_TRACK);
+
+    sample_rate = audio_file->samplerate;
+    audio_length = (double)audio_file->frames / sample_rate;
 
     /*
      * We will be reading as mono doubles or as 16-bit native for soundcard,
@@ -48,25 +58,6 @@ open_audio_file(char *filename)
 #endif
 
     return(audio_file);
-}
-
-int
-audio_file_length_in_frames(audio_file_t *audio_file)
-{
-    return(afGetFrameCount(audio_file->af, AF_DEFAULT_TRACK));
-}
-
-/* Number of audio channels */
-int
-audio_file_channels(audio_file_t *audio_file)
-{
-    return(afGetChannels(audio_file->af, AF_DEFAULT_TRACK));
-}
-
-double
-audio_file_sampling_rate(audio_file_t *audio_file)
-{
-    return(afGetRate(audio_file->af, AF_DEFAULT_TRACK));
 }
 
 /*
@@ -157,25 +148,10 @@ open_audio_file(char *filename)
     audio_file.frames = info.frames;
     audio_file.channels = info.channels;
 
+    sample_rate = audio_file.samplerate;
+    audio_length = (double)audio_file.frames / sample_rate;
+
     return(&audio_file);
-}
-
-int
-audio_file_length_in_frames(audio_file_t *audio_file)
-{
-    return audio_file->frames;
-}
-
-int
-audio_file_channels(audio_file_t *audio_file)
-{
-    return(audio_file->channels);
-}
-
-double
-audio_file_sampling_rate(audio_file_t *audio_file)
-{
-    return audio_file->samplerate;
 }
 
 /*
