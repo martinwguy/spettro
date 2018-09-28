@@ -567,6 +567,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
 				   mouseDown, em);
     evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_UP,
 				   mouseUp, em);
+    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_MOVE,
+				   mouseMove, em);
 #endif
 
     init_audio(audio_file);

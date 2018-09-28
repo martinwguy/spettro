@@ -21,6 +21,13 @@
  * this is a pan command, by frequency and by time.
  */
 
+/* Remember where they clicked down and which modifier keys were held */
+static int mouse_down_x, mouse_down_y;
+static int mouse_down_shift = 0;;
+static int mouse_down_ctrl = 0;;
+static bool left_button_is_down = FALSE;
+static bool right_button_is_down = FALSE;
+
 #if ECORE_MAIN
 
 #include <Ecore.h>
@@ -50,6 +57,17 @@ mouseAnything(void *data, Evas *evas, Evas_Object *obj, void *einfo, bool down)
     Shift = evas_key_modifier_is_set(modifiers, "Shift");
     Control = evas_key_modifier_is_set(modifiers, "Control");
 
+    if (down) {
+	mouse_down_x = where->x;
+	mouse_down_y = where->y;
+	switch (ev->button) {
+	case 1: left_button_is_down = TRUE; break;
+	case 3: right_button_is_down = TRUE; break;
+	}
+    } else /* Up */
+	if (where->x != mouse_down_x || where->y != mouse_down_y)
+	    do_mouse_move(where->x, where->y);
+
     switch (ev->button) {
     case 1: do_mouse_button(where->x, where->y, LEFT_BUTTON, down); break;
     case 3: do_mouse_button(where->x, where->y, RIGHT_BUTTON, down); break;
@@ -59,26 +77,15 @@ mouseAnything(void *data, Evas *evas, Evas_Object *obj, void *einfo, bool down)
 void
 mouseMove(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 {
-#if 0
-Ecore_Event_Mouse_Wheel: unknown type, it says
-    Ecore_Event_Mouse_Wheel *ev = einfo;
+    Evas_Event_Mouse_Move *ev = einfo;
     Evas_Modifier *modifiers = ev->modifiers;
     Shift = evas_key_modifier_is_set(modifiers, "Shift");
     Control = evas_key_modifier_is_set(modifiers, "Control");
+fprintf(stderr, "Evas mouse move\n");
 
-fprintf(stderr, "Mouse Move x=%d y=%d z=%d direction=%d modifiers=0x%x\n",
-		ev->x, ev->y, ev->z, ev->direction, modifiers);
-    do_mouse_move(ev->x, ev->y);
-#endif
+    do_mouse_move(ev->cur.canvas.x, ev->cur.canvas.y);
 }
 #endif
-
-/* Remember where they clicked down and which modifier keys were held */
-static int mouse_down_x, mouse_down_y;
-static int mouse_down_shift = 0;;
-static int mouse_down_ctrl = 0;;
-static bool left_button_is_down = FALSE;
-static bool right_button_is_down = FALSE;
 
 /*
  * Process a mouse button click or release and mouse movements */
