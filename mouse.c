@@ -73,18 +73,18 @@ fprintf(stderr, "Mouse Move x=%d y=%d z=%d direction=%d modifiers=0x%x\n",
 }
 #endif
 
+/* Remember where they clicked down and which modifier keys were held */
+static int mouse_down_x, mouse_down_y;
+static int mouse_down_shift = 0;;
+static int mouse_down_ctrl = 0;;
+static bool left_button_is_down = FALSE;
+static bool right_button_is_down = FALSE;
+
 /*
  * Process a mouse button click or release and mouse movements */
 void
 do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, bool down)
 {
-    /* Remember where they clicked down and which modifier keys were held */
-    static int mouse_down_x, mouse_down_y;
-    static int mouse_down_shift = 0;;
-    static int mouse_down_ctrl = 0;;
-    static bool left_button_is_down = FALSE;
-    static bool right_button_is_down = FALSE;
-
     double when = disp_time + (screen_x - disp_offset) * step;
 
     if (down) {
@@ -101,6 +101,7 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
 	}
     }
 
+    /* Mouse up while setting bar line position: set it. */
     if (!down && Control) switch (button) {
     case LEFT_BUTTON:	set_bar_left_time(when);	break;
     case RIGHT_BUTTON:	set_bar_right_time(when);	break;
@@ -115,5 +116,9 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
 void
 do_mouse_move(unsigned screen_x, unsigned screen_y)
 {
-fprintf(stderr, "Mouse move %d %d\n", screen_x, screen_y);
+    double when = disp_time + (screen_x - disp_offset) * step;
+
+    /* Dragging the mouse while setting a bar line */
+    if (Control && left_button_is_down) set_bar_left_time(when);
+    if (Control && right_button_is_down) set_bar_right_time(when);
 }
