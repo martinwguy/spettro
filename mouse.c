@@ -8,7 +8,10 @@
 
 #include "key.h"	/* for Shift and Control */
 #include "overlay.h"	/* for set_bar_*_time() */
+#include "ui.h"	/* for various GUI variables */
 #include "main.h"	/* for various GUI variables */
+
+#include <math.h>
 
 /*
  * They can click and release the mouse of the same point.
@@ -88,7 +91,8 @@ fprintf(stderr, "Evas mouse move\n");
 #endif
 
 /*
- * Process a mouse button click or release and mouse movements */
+ * Process a mouse button click or release and mouse movements
+ */
 void
 do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, bool down)
 {
@@ -123,9 +127,23 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
 void
 do_mouse_move(unsigned screen_x, unsigned screen_y)
 {
-    double when = disp_time + (screen_x - disp_offset) * step;
+    /* Dragging the mouse left/right while setting a bar line */
+    if (Control) {
+	double when = disp_time + (screen_x - disp_offset) * step;
 
-    /* Dragging the mouse while setting a bar line */
-    if (Control && left_button_is_down) set_bar_left_time(when);
-    if (Control && right_button_is_down) set_bar_right_time(when);
+	if (left_button_is_down) set_bar_left_time(when);
+	if (right_button_is_down) set_bar_right_time(when);
+    }
+
+    /* Plain dragging while holding left button:
+     * pan the display by N pixels */
+    if (!Control && !Shift && left_button_is_down) {
+	if (screen_x != mouse_down_x) {
+	    time_pan_by((mouse_down_x - screen_x) * step);
+	}
+	if (screen_y != mouse_down_y) {
+	    double one_pixel = exp(log(max_freq/min_freq) / (disp_height-1));
+	    freq_pan_by(pow(one_pixel, (double)(mouse_down_y - screen_y)));
+	}
+    }
 }

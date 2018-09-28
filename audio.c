@@ -74,7 +74,7 @@ playback_finished_cb(void *data, Evas_Object *obj, void *ev)
 #endif
 
 void
-pause_playing()
+pause_audio()
 {
 #if EMOTION_AUDIO
     emotion_object_play_set(em, EINA_FALSE);

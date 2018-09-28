@@ -2,6 +2,8 @@
  * scheduler.h: Function call interface to scheduler.c
  */
 
+#include "calc.h"
+
 extern void start_scheduler(int nthreads);
 extern void stop_scheduler(void);
 extern void schedule(calc_t *calc);

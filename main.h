@@ -31,6 +31,8 @@ extern double disp_time; 	/* When in the audio file is the crosshair? */
 extern int disp_offset;  	/* Crosshair is in which display column? */
 extern double min_freq;		/* Range of frequencies to display: */
 extern double max_freq;
+extern double min_db;		/* Values below this are black */
+extern double ppsec;		/* pixel columns per second */
 extern double step;		/* time step per column = 1/ppsec */
 extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */

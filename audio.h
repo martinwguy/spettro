@@ -13,7 +13,7 @@ enum playing { STOPPED, PLAYING, PAUSED };
 extern enum playing playing;
 
 extern void init_audio(audio_file_t *audio_file);
-extern void pause_playing(void);
+extern void pause_audio(void);
 extern void start_playing(void);
 extern void stop_playing(void);
 extern void continue_playing(void);

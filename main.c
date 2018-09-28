@@ -68,6 +68,7 @@
 #include <malloc.h>
 #include <string.h>	/* for memset() */
 #include <errno.h>
+#include <math.h>
 
 /* Libraries' header files. See config.h for working combinations of defines */
 
@@ -109,6 +110,7 @@
 #include "scheduler.h"
 #include "speclen.h"
 #include "timer.h"
+#include "ui.h"
 #include "main.h"
 
 /*
@@ -128,13 +130,6 @@ static void	update_column(int pos_x);
 static void quitGUI(Ecore_Evas *ee);
 #endif
 
-/* Functions performing UI actions */
-static void time_pan_by(double by);	/* Left/Right */
-static void time_zoom_by(double by);	/* x/X */
-static void freq_pan_by(double by);	/* Up/Down */
-static void freq_zoom_by(double by);	/* y/Y */
-static void change_dyn_range(double by);/* * and / */
-
        void do_scroll(void);
 
 /*
@@ -148,8 +143,8 @@ static void change_dyn_range(double by);/* * and / */
        int disp_offset; 	/* Crosshair is in which display column? */
        double min_freq	= 27.5;		/* Range of frequencies to display: */
        double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
-static double min_db	= -100.0;	/* Values below this are black */
-static double ppsec	= 25.0;		/* pixel columns per second */
+       double min_db	= -100.0;	/* Values below this are black */
+       double ppsec	= 25.0;		/* pixel columns per second */
        double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static bool gray	= FALSE;	/* Display in shades of gray? */
@@ -789,7 +784,7 @@ do_key(enum key key)
     case KEY_SPACE:	/* Play/Pause/Rewind */
 	switch (playing) {
 	case PLAYING:
-	    pause_playing();
+	    pause_audio();
 	    break;
 
 	case STOPPED:
@@ -926,106 +921,6 @@ do_key(enum key key)
     default:
 	fprintf(stderr, "Bogus KEY_ number %d\n", key);
     }
-}
-
-/*
- * Jump forwards or backwards in time, scrolling the display accordingly.
- */
-static void
-time_pan_by(double by)
-{
-    double playing_time;
-
-    playing_time = disp_time + by;
-
-    if (playing_time < 0.0) playing_time = 0.0;
-
-    /* If we're at/after the end of the piece, stop */
-    if (playing_time > audio_length) playing_time = audio_length;
-    if (playing_time == audio_length) {
-	/* If playing, stop */
-	if (playing == PLAYING) {
-#if EMOTION_AUDIO
-            emotion_object_play_set(em, EINA_FALSE);
-#endif
-#if SDL_AUDIO
-	    SDL_PauseAudio(1);
-#endif
-	    playing = STOPPED;
-	}
-    }
-
-    set_playing_time(playing_time);
-
-    /* If moving left after it has come to the end and stopped,
-     * we want to go into pause state */
-    if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
-       playing = PAUSED;
-    }
-
-    /* The screen will be scrolled at the next timer event */
-}
-
-/* Zoom the time axis on disp_time.
- * Only ever done by 2.0 or 0.5 to improve result cache usefulness.
- * The recalculation of every other pixel column is triggered by
- * the call to repaint_display().
- */
-static void
-time_zoom_by(double by)
-{
-    ppsec *= by;
-    step = 1 / ppsec;
-
-    /* Change the screen-scrolling speed to match */
-    change_timer_interval(step);
-
-    /* Zooming by < 1.0 increases the step size */
-    if (by < 1.0) reschedule_for_bigger_step();
-
-    repaint_display();
-}
-
-/* Pan the display on the vertical axis by changing min_freq and max_freq
- * by a factor.
- */
-static void
-freq_pan_by(double by)
-{
-    min_freq *= by;
-    max_freq *= by;
-    repaint_display();
-}
-
-/* Zoom the frequency axis by a factor, staying centred on the centre.
- * Values > 1.0 zoom in; values < 1.0 zoom out.
- */
-static void
-freq_zoom_by(double by)
-{
-    double  centre = sqrt(min_freq * max_freq);
-    double   range = max_freq / centre;
-
-    range /= by;
-    min_freq = centre / range;
-    max_freq = centre * range;
-
-    repaint_display();
-}
-
-/* Change the color scale's dyna,ic range, thereby changing the brightness
- * of the darker areas.
- */
-static void
-change_dyn_range(double by)
-{
-    /* As min_db is negative, subtracting from it makes it bigger */
-    min_db -= by;
-
-    /* min_db should not go positive */
-    if (min_db > -6.0) min_db = -6.0;
-
-    repaint_display();
 }
 
 /*
