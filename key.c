@@ -57,6 +57,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_LEFT;
     else if (!strcmp(ev->key, "Right") || !strcmp(ev->key, "KP_Right"))
 	key = KEY_RIGHT;
+    else if (!strcmp(ev->key, "Home") || !strcmp(ev->key, "KP_Home"))
+	key = KEY_HOME;
+    else if (!strcmp(ev->key, "End") || !strcmp(ev->key, "KP_End"))
+	key = KEY_END;
     else if (!strcmp(ev->key, "Up") || !strcmp(ev->key, "KP_Up"))
 	key = KEY_UP;
     else if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down"))
@@ -73,10 +77,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_BAR_START;
     else if (!strcmp(ev->key, "bracketright"))
 	key = KEY_BAR_END;
-/*
     else
 	fprintf(stderr, "Key \"%s\" was pressed.\n", ev->key);
- */
 
     do_key(key);
 }
@@ -92,6 +94,8 @@ sdl_key_decode(SDL_Event *eventp)
     case SDLK_SPACE:	     key = KEY_SPACE;	break;
     case SDLK_LEFT:	     key = KEY_LEFT;	break;
     case SDLK_RIGHT:	     key = KEY_RIGHT;	break;
+    case SDLK_HOME:	     key = KEY_HOME;	break;
+    case SDLK_END:	     key = KEY_END;	break;
     case SDLK_UP:	     key = KEY_UP;	break;
     case SDLK_DOWN:	     key = KEY_DOWN;	break;
     case SDLK_x:	     key = KEY_X;	break;

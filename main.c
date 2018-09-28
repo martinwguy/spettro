@@ -806,6 +806,16 @@ do_key(enum key key)
 	break;
 
     /*
+     * Home and End: Go to start or end of piece
+     */
+    case KEY_HOME:
+	set_playing_time(0.0);
+	break;
+    case KEY_END:
+	set_playing_time(audio_length);
+	break;
+
+    /*
      * Arrow Up/Down: Pan the frequency axis by a tone.
      * With Shift: by an octave. With Control, by a pixel.
      * The argument to freq_pan_by() multiplies min_freq and max_freq.
