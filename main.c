@@ -324,9 +324,9 @@ main(int argc, char **argv)
 -e:    Exit when the audio file has played\n\
 -h n  Set spectrogram display height to n pixels\n\
 -w n  Set spectrogram display width to n pixels\n\
--f n  Set the FFT frequncy (default: %g)\n\
+-f n  Set the FFT frequency (default: %g Hz)\n\
 -j n  Set maximum number of threads to use (default: the number of CPUs)\n\
--p    Overlay black and white lines showing where 88-note piano keys are\n\
+-k    Overlay black and white lines showing frequencies of an 88-note keyboard\n\
 -s    Overlay conventional score notation pentagrams as white lines\n\
 -g    Overlay lines showing the positions of a classical guitar's strings\n\
 -v:   Print the version of spettro that you're using\n\
@@ -870,10 +870,10 @@ do_key(enum key key)
 	break;
 
     /* Toggle staff/piano line overlays */
-    case KEY_P:
+    case KEY_K:
     case KEY_S:
     case KEY_G:
-	if (key == KEY_P)
+	if (key == KEY_K)
 	    piano_lines = !piano_lines;
 	if (key == KEY_S) {
 	    staff_lines = !staff_lines;

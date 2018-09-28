@@ -27,7 +27,7 @@ enum key {
     KEY_MINUS,
     KEY_STAR,
     KEY_SLASH,
-    KEY_P,
+    KEY_K,
     KEY_S,
     KEY_G,
     KEY_T,
