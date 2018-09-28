@@ -219,9 +219,6 @@ main(int argc, char **argv)
 	if ((cp = getenv("PPSEC")) != NULL && (n = atof(cp)) > 0.0)
 	    ppsec = n;
 
-	if ((cp = getenv("FFTFREQ")) != NULL && (n = atof(cp)) > 0.0)
-	    fftfreq = n;
-
 	if ((cp = getenv("DYN_RANGE")) != NULL && (n = atof(cp)) > 0.0)
 	    min_db = -n;
 
@@ -239,7 +236,7 @@ main(int argc, char **argv)
 
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
-	case 'w': case 'h': case 'j': case 'l': case 'r': case 'p':
+	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 'p':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -287,21 +284,32 @@ main(int argc, char **argv)
 	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    break;
+	/*
+	 * Parameters that take a floating point argument
+	 */
 	case 'p':	/* Play starting from time t */
 	case 'l': case 'r':	/* Set bar line positions */
+	case 'f':	/* Set FFT frequency */
 	    errno = 0;
 	    {
 		char *endptr;
 		double arg = strtof(argv[0], &endptr);
 
 		if (arg < 0.0 || errno == ERANGE || endptr == argv[0]) {
-		    fprintf(stderr, "-%c seconds must be a positive floating point value\n", letter);
+		    fprintf(stderr, "-%c %s must be a positive floating point value\n", letter, letter == 'f' ? "Hz" : "seconds");
 		    exit(1);
 		}
 		switch (letter) {
 		case 'p': disp_time = arg; break;
 		case 'l': bar_left_time = arg; break;
 		case 'r': bar_right_time = arg; break;
+		case 'f':
+		    if (arg <= 0.0) {
+			fprintf(stderr, "-f FFT frequency must be > 0\n");
+			exit(1);
+		    }
+		    fftfreq = arg;
+		    break;
 		}
 		/* We can't call set_bar_*_time() until audio_length is known */
 	    }
@@ -316,6 +324,7 @@ main(int argc, char **argv)
 -e:    Exit when the audio file has played\n\
 -h n  Set spectrogram display height to n pixels\n\
 -w n  Set spectrogram display width to n pixels\n\
+-f n  Set the FFT frequncy (default: %g)\n\
 -j n  Set maximum number of threads to use (default: the number of CPUs)\n\
 -p    Overlay black and white lines showing where 88-note piano keys are\n\
 -s    Overlay conventional score notation pentagrams as white lines\n\
@@ -341,14 +350,13 @@ l/r        Set the left/right bar markers for an overlay of bar lines\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
-FFTFREQ    FFT audio window is 1/this, defaulting to 1/%g of a second\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, currently %g\n\
 MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
 Zooms on the time axis (X,x,+,-) change PPSEC\n\
 Frequency-axis zooms and pans (Up,Down,Y,y,+,-) change MIN_FREQ and MAX_FREQ\n\
 Brightness controls (*,/) change DYN_RANGE\n\
-", ppsec, fftfreq, -min_db, min_freq, max_freq);
+", fftfreq, ppsec, -min_db, min_freq, max_freq);
 	    exit(1);
 	}
     }

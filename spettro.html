@@ -57,6 +57,14 @@ and pressing Space again to start again from the beginning.
  <DT>+ -
   <DD>Either of the Plus keys zooms in on both axes, like X and Y
       simultaneously, and the Minus keys zoom out in both directions.
+ <DT>f F
+  <DD>Change the FFT size. 'f' halves the time of the sample taken
+      to generate each column ans 'F' doubles it.
+      The starting value is 1/5th of a second, resolving down to 5Hz
+      with a frequency resolution of 5Hz between pixel rows.
+      Larger values resolve better in frequency but worse in time,
+      while smaller values give better time definition at the price of
+      fuzzier frequency definition.
 </DL>
 <H3>Overlays</H3>
 Spettro can overlay the graphic with sets of horizontal and vertical lines,
@@ -124,6 +132,8 @@ audio file name:
   <DD>Autoplay the file when the program starts up
  <DT>-e
   <DD>Exit when the audio file has finished playing
+ <DT>-f
+  <DD>Set the FFT frequency in Hz. Default: 5 (one fifth of a second)
  <DT>-h n
   <DD>Set spectrogram display height to n pixels
  <DT>-w n
@@ -148,13 +158,11 @@ If no filename is supplied, it opens "audio.wav"
 You can also tune some of spettro's internal parameters by setting environment
 variables on the command line, for example
 <BLOCKQUOTE>
-PPSEC=100&nbsp; FFTFREQ=10 &nbsp;spettro"
+PPSEC=100&nbsp;&nbsp;spettro"
 </BLOCKQUOTE>
 <DL>
  <DT>PPSEC
   <DD>Pixel columns per second, default 25
- <DT>FFTFREQ
-  <DD>FFT audio window is 1/this, defaulting to 1/5 of a second
  <DT>DYN_RANGE
   <DD>Dynamic range of amplitude values in decibels, default=100
  <DT>MIN_FREQ
