@@ -22,63 +22,98 @@
  */
 
 #if ECORE_MAIN
+
+#include <Ecore.h>
+
+static void
+mouseAnything(void *data, Evas *evas, Evas_Object *obj, void *einfo, bool down);
+
 void
 mouseDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 {
-    Evas_Event_Mouse_Down *ev = einfo;
-    Evas_Coord_Point *where = &(ev->canvas);
-    Evas_Modifier *modifiers = ev->modifiers;
-    Shift = evas_key_modifier_is_set(modifiers, "Shift");
-    Control = evas_key_modifier_is_set(modifiers, "Control");
-
-    switch (ev->button) {
-    case 1: do_mouse(where->x, where->y, LEFT_BUTTON, MOUSE_DOWN); break;
-    case 3: do_mouse(where->x, where->y, RIGHT_BUTTON, MOUSE_DOWN); break;
-    }
+    mouseAnything(data, evas, obj, einfo, MOUSE_DOWN);
 }
 
 void
 mouseUp(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 {
+    mouseAnything(data, evas, obj, einfo, MOUSE_UP);
+}
+
+static void
+mouseAnything(void *data, Evas *evas, Evas_Object *obj, void *einfo, bool down)
+{
     Evas_Event_Mouse_Down *ev = einfo;
     Evas_Coord_Point *where = &(ev->canvas);
+    Evas_Modifier *modifiers = ev->modifiers;
+
+    Shift = evas_key_modifier_is_set(modifiers, "Shift");
+    Control = evas_key_modifier_is_set(modifiers, "Control");
+
+    switch (ev->button) {
+    case 1: do_mouse_button(where->x, where->y, LEFT_BUTTON, down); break;
+    case 3: do_mouse_button(where->x, where->y, RIGHT_BUTTON, down); break;
+    }
+}
+
+void
+mouseMove(void *data, Evas *evas, Evas_Object *obj, void *einfo)
+{
+#if 0
+Ecore_Event_Mouse_Wheel: unknown type, it says
+    Ecore_Event_Mouse_Wheel *ev = einfo;
     Evas_Modifier *modifiers = ev->modifiers;
     Shift = evas_key_modifier_is_set(modifiers, "Shift");
     Control = evas_key_modifier_is_set(modifiers, "Control");
 
-    /* Control left and right click: position bar lines */
-    if (Control) {
-	switch (ev->button) {
-	case 1: do_mouse(where->x, where->y, LEFT_BUTTON, MOUSE_UP); break;
-	case 3: do_mouse(where->x, where->y, RIGHT_BUTTON, MOUSE_UP); break;
-	}
-    }
+fprintf(stderr, "Mouse Move x=%d y=%d z=%d direction=%d modifiers=0x%x\n",
+		ev->x, ev->y, ev->z, ev->direction, modifiers);
+    do_mouse_move(ev->x, ev->y);
+#endif
 }
 #endif
 
 /*
- * Process a mouse button click or release */
+ * Process a mouse button click or release and mouse movements */
 void
-do_mouse(unsigned screen_x, unsigned screen_y, int button, bool down)
+do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, bool down)
 {
-    /* Remember where they clicked down */
+    /* Remember where they clicked down and which modifier keys were held */
     static int mouse_down_x, mouse_down_y;
-
-    /* What modifier keys were held when the mouse was clicked down? */
     static int mouse_down_shift = 0;;
     static int mouse_down_ctrl = 0;;
+    static bool left_button_is_down = FALSE;
+    static bool right_button_is_down = FALSE;
 
-    double when = (screen_x - disp_offset) * step;
+    double when = disp_time + (screen_x - disp_offset) * step;
 
     if (down) {
+	/* For mouse drag, Remember where it went down and what
+	 * key modifiers were held at the time */
 	mouse_down_x = screen_x;
 	mouse_down_y = screen_y;
 	mouse_down_shift = Shift;
 	mouse_down_ctrl = Control;
+
+	switch (button) {
+	    case LEFT_BUTTON:	left_button_is_down = TRUE;	break;
+	    case RIGHT_BUTTON:	right_button_is_down = TRUE;	break;
+	}
     }
 
     if (!down && Control) switch (button) {
     case LEFT_BUTTON:	set_bar_left_time(when);	break;
     case RIGHT_BUTTON:	set_bar_right_time(when);	break;
     }
+
+    if (!down) switch (button) {
+	case LEFT_BUTTON:	left_button_is_down = FALSE;	break;
+	case RIGHT_BUTTON:	right_button_is_down = FALSE;	break;
+    }
+}
+
+void
+do_mouse_move(unsigned screen_x, unsigned screen_y)
+{
+fprintf(stderr, "Mouse move %d %d\n", screen_x, screen_y);
 }

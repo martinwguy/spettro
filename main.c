@@ -600,13 +600,17 @@ Brightness controls (*,/) change DYN_RANGE\n\
 		switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
 		case SDL_BUTTON_RIGHT:
-		    do_mouse(event.button.x, event.button.y,
-			     event.button.button == SDL_BUTTON_LEFT
-				 ? LEFT_BUTTON : RIGHT_BUTTON,
-			     event.type == SDL_MOUSEBUTTONDOWN
-				? MOUSE_DOWN : MOUSE_UP);
+		    do_mouse_button(event.button.x, event.button.y,
+				    event.button.button == SDL_BUTTON_LEFT
+				    ? LEFT_BUTTON : RIGHT_BUTTON,
+				    event.type == SDL_MOUSEBUTTONDOWN
+				    ? MOUSE_DOWN : MOUSE_UP);
 		}
 	    }
+	    break;
+
+	case SDL_MOUSEMOTION:
+	    do_mouse_move(event.motion.x, event.motion.y);
 	    break;
 
 	case SDL_VIDEORESIZE:
