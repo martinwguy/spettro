@@ -22,3 +22,8 @@ same vertical stripes, other times not, or different.
 
 This may be due to doing too much in the timer interrupt routine.
 ------------------------------------------------------------------------
+SDL keys obtained with AltGr or Shift do not work.
+
+e.g. "Shift +/*" should give * but gives + instead
+e.g. "AltGr +/*" should give ] but gives + instead
+------------------------------------------------------------------------
