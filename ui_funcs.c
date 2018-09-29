@@ -1,7 +1,7 @@
-/* Functions performing UI actions */
+/* ui_funcs.c: Functions performing UI actions */
 
 #include "spettro.h"
-#include "ui.h"
+#include "ui_funcs.h"
 #include "audio.h"
 #include "scheduler.h"
 #include "timer.h"

@@ -8,8 +8,8 @@
 
 #include "key.h"	/* for Shift and Control */
 #include "overlay.h"	/* for set_bar_*_time() */
-#include "ui.h"	/* for various GUI variables */
-#include "main.h"	/* for various GUI variables */
+#include "ui_funcs.h"
+#include "main.h"
 
 #include <math.h>
 

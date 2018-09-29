@@ -110,7 +110,7 @@
 #include "scheduler.h"
 #include "speclen.h"
 #include "timer.h"
-#include "ui.h"
+#include "ui_funcs.h"
 #include "main.h"
 
 /*
