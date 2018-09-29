@@ -27,7 +27,8 @@ To use it, you launch it from the command line with the audio file name
 as its argument, press the space bar to start it playing, pause it,
 or carry on playing it. When it gets to the end of the piece it stops,
 and pressing Space again to start again from the beginning.
-<H3>Key strokes to position the graphic</H3>
+<H2>Keyboard comands</H2>
+<H3>Keys to position the graphic</H3>
 <DL>
  <DT>&larr; &rarr;
   <DD>Left arrow skips back one second in the audio file.
@@ -56,58 +57,106 @@ and pressing Space again to start again from the beginning.
  <DT>+ -
   <DD>Either of the Plus keys zooms in on both axes, like X and Y
       simultaneously, and the Minus keys zoom out in both directions.
- <DT>f F
-  <DD>Change the FFT size. 'f' halves the time of the sample taken
-      to generate each column ans 'F' doubles it.
-      The starting value is 1/5th of a second, resolving down to 5Hz
-      with a frequency resolution of 5Hz between pixel rows.
-      Larger values resolve better in frequency but worse in time,
-      while smaller values give better time definition at the price of
-      fuzzier frequency definition.
 </DL>
-<H3>Overlays</H3>
-Spettro can overlay the graphic with sets of horizontal and vertical lines,
-originally intended to help produce the musical score of a piece for which you
-only have the sound.
-<H4>Horizontal overlays: staff lines and piano keys</H4>
+
+<H3>Brightness, contrast and focus</H3>
+
+<DL>
+ <DT>* /
+  <DD>Star and slash adjust the dynamic range of the color values and act
+      like a contrast control.
+      The Star key increases the dynamic range by 6dB
+      brightening the darker areas to reveal detail,
+      and the Slash key decreases the dynamic range by 6dB,
+      darkening the graphic to hide noise and make the main events stand out.
+      <BR>
+      The loudest moments in any piece are always shown at maximum brightness
+      (white) and by changing the dynamic range, you change which sound energy
+      value is represented by the dimmest color.
+ <DT>f F
+  <DD>These keys change the FFT size to improve vertical or horizontal focus.
+      'f' halves it, improving time resolution, and 'F' doubles it, improving
+      frequency resolution.
+      <BR>
+      The FFT size determines the length of the audio sample used to
+      create each column of pixels.
+      The starting value is 1/5th of a second, which resolves frequencies
+      with a resolution of 5Hz and clearly shows about five musical events
+      per second.
+      <BR>
+      Larger values resolve frequencies more finely but time more coarsely,
+      improving the vertical "focus" but smearing it horizontally,
+      while smaller values give crisper time definition at the price of
+      fuzzier frequency definition.
+      <BR>You can also set the initial FFT frequency with the <B>-f</B> flag.
+ <DT>t
+  <DD>The 't' key show the current playing time on stdout.
+ <DT>r
+  <DD>The 'r' key redraws the display, in case it got confused.
+</DL>
+
+<H3>Frequency markers</H3>
+
+Spettro can overlay the graphic with various sets of horizontal lines:
+piano keys, staff lines and guitar strings.
+
 <DL>
  <DT>k
-  <DD>The 'k' key overlays the spectrogram with the frequencies
-      of the 88-note keyboard of a grand piano: the white notes are
-      shown as horizontal white lines and the black notes as black lines
-      from A0(27.5Hz) to C8(4186Hz).
+  <DD>The 'k' key (or the <B>-k</B> command-line flag)
+      overlays the spectrogram with 88 horizontal lines,
+      some black, some white, showing the frequencies of the keys
+      of a grand piano from A0(27.5Hz) to C8(4186Hz).
       <BR>Pressing 'k' again removes the keyboard overlay.
  <DT>s
-  <DD>The 's' key makes spettro overlay the graphic with two five-line
-      pentagrams used in manuscript score notation, making it look more
-      like a conventional musical score.
+  <DD>The 's' key (or the <B>-s</B> command-line flag)
+      overlays two five-line pentagrams, as used in
+      manuscript, making it look more like a conventional musical score.
       <BR>From top to bottom, the score lines are centred at:
       <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
       <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz) 
       <BR>Pressing 's' again removes the score lines.
  <DT>g
-  <DD>The 'g' key, instead, overlays the frequencies of the six strings
-      of a classical guitar, centred at:
+  <DD>The 'g' key (or the <B>-g</B> command-line flag)
+      overlays the frequencies of the six strings
+      of the classical guitar, centred at:
       <BR>E2(82.4Hz) A2(110Hz) D3(146.8Hz) G3(196.0Hz) B3(246.9Hz) E4 (329.6Hz)
-      <BR>Pressing 'g' again removes the piano lines.
- <DT>t
-  <DD>The 't' key show the current playing imte on stdout.
- <DT>r
-  <DD>The 'r' key redraws the display in synchrony with the current playing
-      position in the audio file; it can get out of sync if you run out of CPU.
+      <BR>Pressing 'g' again removes them.
 </DL>
-Staff lines and guitar lines are both three pixels thick, and
-if you select guitar lines while score lines are displayed, the score lines
-are removed and vice versa because they overlap and make a mess.
-However, you can display the piano lines together with either of them,
-for example to identify notes above the top score line or to see the positions
-of fretted strings on a guitar.
+While piano key lines are one pixel thick, staff lines and guitar lines
+are both three pixels thick.
+<P>
+Only one of Staff and Guitar lines displays at a time (because they overlap)
+but you can display the piano keys together with either of them
+to identify notes above the top score line or to see the fretted
+positions of the guitar strings.
 
-<H4>Vertical overlays: bar lines</H4>
+<H4>Bar line indicators</H4>
 
-To help score the rhythm, you can overlay vertical lines, evenly spaced in time.
-These might correspond to bar lines, or to regular beats in the music.
-<BR>To do this, you position the graphic so that the central green line
+To help you pick out the rhythm, you can overlay evenly-spaced vertical white
+lines on the graphic to show where each bar (or beat) begins.
+<P>
+To do this, you mark two pixel columns to say where some bar
+starts and ends.
+When you set the first of the two bar line markers, a single vertical
+line appears at that position you marked and when you set the other one,
+bar lines appear at that position and evenly throughout the piece.
+<P>
+There are three ways to mark the bar line positions:
+<UL>
+ <LI>The command-line flags <B>-l</B> and <B>-r</B> set the left and right
+     bar line position, measured in seconds from the start of the piece.
+ <LI>You can position the graphic so that the green line is at the start of a
+     bar, press 'l' or '[', move it to the end of the bar and press 'r' or ']'.
+     For more precise positioning, zoom in on the time axis with 'X' and use
+     Control-Leftarrow and Control-Rightarrow to shift the graphic by one pixel
+     at a time.
+ <LI>If you hold down Control, you can position the left bar line by clicking
+     the left mouse button and the right bar line by clicking the right button.
+</UL>
+You can also set the "left" marker to the right of the "right" marker
+and it still works.
+
+you position the graphic so that the central green line
 is at the start of one bar, and press '[', then move right until the
 green line is at the start of the following bar and press ']'. Evenly-spaced
 bar lines will appear throughout the piece.
