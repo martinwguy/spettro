@@ -583,7 +583,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	    Shift   = !!(event.key.keysym.mod & KMOD_SHIFT);
 	    Control = !!(event.key.keysym.mod & KMOD_CTRL);
 	    key = sdl_key_decode(&event);
-	    if (key != KEY_NONE) do_key(key);
+	    do_key(key);
 	    break;
 
 	case SDL_MOUSEBUTTONDOWN:
