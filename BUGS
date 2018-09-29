@@ -27,3 +27,7 @@ SDL keys obtained with AltGr or Shift do not work.
 e.g. "Shift +/*" should give * but gives + instead
 e.g. "AltGr +/*" should give ] but gives + instead
 ------------------------------------------------------------------------
+If you pause and move to the end of the piece, it takes two space
+presses to get it to play again from the start. The first one goes from
+PAUSED to STOPPED and the second from STOPPED (at end) to PLAYING (from start).
+------------------------------------------------------------------------
