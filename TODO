@@ -49,3 +49,7 @@ Key to display playing time = text overlays -> axis markers
 Add -m mute flag to be able to test emotion graphics.
 This needs scrolling by regular timer, not by audio position.
 ------------------------------------------------------------------------
+Try using libsox for sound file reading - zillions of formats!
+------------------------------------------------------------------------
+Try using sox's "play" command to play the audio (effect "trim" to seek)
+------------------------------------------------------------------------
