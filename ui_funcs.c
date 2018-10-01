@@ -22,7 +22,7 @@ time_pan_by(double by)
 {
     double playing_time;
 
-    playing_time = disp_time + by;
+    playing_time = get_playing_time() + by;
 
     if (playing_time < 0.0) playing_time = 0.0;
 

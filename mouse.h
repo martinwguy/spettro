@@ -14,7 +14,7 @@ extern void do_mouse_button(unsigned screen_x, unsigned screen_y,
 #define MOUSE_UP	FALSE
 #define MOUSE_DOWN	TRUE
 
-extern void do_mouse_move(unsigned screen_x, unsigned screen_y);
+extern void do_mouse_move(int screen_x, int screen_y);
 
 #if EVAS_VIDEO
 #include <Evas.h>
