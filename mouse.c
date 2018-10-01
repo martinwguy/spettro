@@ -145,5 +145,7 @@ do_mouse_move(unsigned screen_x, unsigned screen_y)
 	    double one_pixel = exp(log(max_freq/min_freq) / (disp_height-1));
 	    freq_pan_by(pow(one_pixel, (double)(mouse_down_y - screen_y)));
 	}
+	if (screen_x != mouse_down_x || screen_y != mouse_down_y)
+	    repaint_display();
     }
 }

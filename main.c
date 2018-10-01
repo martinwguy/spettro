@@ -822,30 +822,36 @@ do_key(enum key key)
     case KEY_UP:
 	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 2.0 : pow(2.0, 1/6.0));
+	repaint_display();
 	break;
     case KEY_DOWN:
 	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
+	repaint_display();
 	break;
 
     /* Zoom on the time axis */
     case KEY_X:
 	time_zoom_by(Shift ? 2.0 : 0.5);
+	repaint_display();
 	break;
 
     /* Zoom on the frequency axis */
     case KEY_Y:
 	freq_zoom_by(Shift ? 2.0 : 0.5);
+	repaint_display();
 	break;
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
     case KEY_PLUS:
 	freq_zoom_by(2.0);
 	time_zoom_by(2.0);
+	repaint_display();
 	break;
     case KEY_MINUS:
 	freq_zoom_by(0.5);
 	time_zoom_by(0.5);
+	repaint_display();
 	break;
 
     /* Change dynamic range of color spectrum, like a brightness control.
@@ -855,9 +861,11 @@ do_key(enum key key)
      */
     case KEY_STAR:
 	change_dyn_range(6.0);
+	repaint_display();
 	break;
     case KEY_SLASH:
 	change_dyn_range(-6.0);
+	repaint_display();
 	break;
 
     /* Toggle staff/piano line overlays */

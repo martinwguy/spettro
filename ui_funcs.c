@@ -1,4 +1,9 @@
-/* ui_funcs.c: Functions performing UI actions */
+/*
+ * ui_funcs.c: Functions performing UI actions.
+ *
+ * It's up to the caller to call repaint_display() to show any changes
+ * except for time pans, which are always updated when the timer ticks.
+ */
 
 #include "spettro.h"
 #include "ui_funcs.h"
@@ -58,8 +63,6 @@ time_zoom_by(double by)
 
     /* Zooming by < 1.0 increases the step size */
     if (by < 1.0) reschedule_for_bigger_step();
-
-    repaint_display();
 }
 
 /* Pan the display on the vertical axis by changing min_freq and max_freq
@@ -70,7 +73,6 @@ freq_pan_by(double by)
 {
     min_freq *= by;
     max_freq *= by;
-    repaint_display();
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
@@ -85,8 +87,6 @@ freq_zoom_by(double by)
     range /= by;
     min_freq = centre / range;
     max_freq = centre * range;
-
-    repaint_display();
 }
 
 /* Change the color scale's dyna,ic range, thereby changing the brightness
@@ -100,6 +100,4 @@ change_dyn_range(double by)
 
     /* min_db should not go positive */
     if (min_db > -6.0) min_db = -6.0;
-
-    repaint_display();
 }
