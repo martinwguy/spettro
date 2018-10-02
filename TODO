@@ -53,3 +53,11 @@ Try using libsox for sound file reading - zillions of formats!
 ------------------------------------------------------------------------
 Try using sox's "play" command to play the audio (effect "trim" to seek)
 ------------------------------------------------------------------------
+Try playing sound with SDL_Mixer (Ogg, MP3)
+Mix_RewindMusic(); Mix_SetMusicPosition(double position)
+(works with WAV and FLAC?)
+Mix_FadeInMusicos(Mix_Music *music, 1, fade_ms, double position)
+MIX_SetMusicCMD("mpg
+------------------------------------------------------------------------
+When max_amp changes, repaint all previously-painted columns.
+------------------------------------------------------------------------
