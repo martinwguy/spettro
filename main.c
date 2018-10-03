@@ -98,7 +98,6 @@
 static void	calc_columns(int from, int to);
 static void	repaint_column(int column);
 static void	green_line(void);
-/* Enlightenment's GUI callbacks */
 
        void do_scroll(void);
 
@@ -363,9 +362,6 @@ static void
 calc_columns(int from, int to)
 {
     calc_t *calc = malloc(sizeof(calc_t));
-#if ECORE_MAIN
-    Ecore_Thread *thread;
-#endif
 
     if (calc == NULL) {
 	fputs("Out of memory in calc_columns()\n", stderr);
@@ -737,6 +733,7 @@ paint_column(int pos_x, result_t *result)
     float *mag;
     int maglen;
     static float max = 1.0;	/* maximum magnitude value seen so far */
+    float old_max;		/* temp to detect when it changes */
     int y;
     unsigned int ov;		/* Overlay color temp; 0 = none */
 
@@ -754,8 +751,9 @@ paint_column(int pos_x, result_t *result)
        fprintf(stderr, "Out of memory in paint_column.\n");
        exit(1);
     }
+    old_max = max;
     max = interpolate(mag, maglen, result->spec, result->speclen,
-		     min_freq, max_freq, sample_rate);
+		      min_freq, max_freq, sample_rate);
     result->mag = mag;
     result->maglen = maglen;
 
@@ -767,7 +765,6 @@ paint_column(int pos_x, result_t *result)
 
 	/* Apply row overlay, if any, otherwise paint the pixel */
 	if ( (ov = get_row_overlay(y)) != 0) {
-/* Could do this better ... */
 	    unsigned char *color = (unsigned char *) &ov;
 	    gui_putpixel(pos_x, y, color);
 	} else {
@@ -777,6 +774,10 @@ paint_column(int pos_x, result_t *result)
 	}
     }
     gui_unlock();
+
+    /* and it the maximum amplitude changed, repaint the already-drawn
+     * columns at the new brightness. */
+    if (max != old_max) repaint_display();
 }
 
 /* Paint the green line.

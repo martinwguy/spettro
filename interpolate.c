@@ -100,7 +100,9 @@ interpolate(float* mag, int maglen, const float *spec, const int speclen,
 	    mag[k] = spec[(int) this] * (1.0 - (this - floor (this)))
 		   + spec[(int) this + 1] * (this - floor (this));
 	}
-	if (mag[k] > max) max = mag[k];
+	if (mag[k] > max) {
+	    max = mag[k];
+	}
     }
     return(max);
 }

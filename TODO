@@ -59,5 +59,3 @@ Mix_RewindMusic(); Mix_SetMusicPosition(double position)
 Mix_FadeInMusicos(Mix_Music *music, 1, fade_ms, double position)
 MIX_SetMusicCMD("mpg
 ------------------------------------------------------------------------
-When max_amp changes, repaint all previously-painted columns.
-------------------------------------------------------------------------
