@@ -34,7 +34,10 @@
 
 #include "config.h"
 #include "spettro.h"
+#include "audio.h"
+#include "cache.h"
 #include "calc.h"
+#include "gui.h"
 #include "lock.h"
 #include "main.h"
 #include "scheduler.h"
@@ -79,6 +82,14 @@ static Ecore_Thread **thread;	/* Array of threads */
 #elif SDL_MAIN
 static pthread_t *thread;	/* Array of threads */
 #endif
+
+#if ECORE_MAIN
+static void ecore_calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
+static void ecore_calc_heavy(void *data, Ecore_Thread *thread);
+#elif SDL_MAIN
+static void *sdl_calc_heavy(void *data);
+#endif
+
 void
 start_scheduler(int nthreads)
 {
@@ -94,8 +105,9 @@ start_scheduler(int nthreads)
     /* Start the FFT calculation threads, which ask get_work() for work. */
     /* try_no_queue==TRUE so that all threads run simultaneously. */
     for (threads=0; threads < nthreads; threads++) {
-	thread[threads] = ecore_thread_feedback_run(calc_heavy, calc_notify,
-				      NULL, NULL, NULL, EINA_TRUE);
+	thread[threads] = ecore_thread_feedback_run(
+				ecore_calc_heavy, ecore_calc_notify,
+				NULL, NULL, NULL, EINA_TRUE);
 	if (thread[threads] == NULL) {
 	    fprintf(stderr, "Can't start an FFT-calculating thread.\n");
 	    if (threads == 0) {
@@ -129,7 +141,7 @@ start_scheduler(int nthreads)
 
 	/* Start the FFT threads */
 	for (threads=0; threads < nthreads; threads++) {
-	    if (pthread_create(&thread[threads], &attr, calc_heavy, NULL) != 0) {
+	    if (pthread_create(&thread[threads], &attr, sdl_calc_heavy, NULL) != 0) {
 		fprintf(stderr, "Cannot create a calculation thread: %s\n",
 			strerror(errno));
 		return;
@@ -140,6 +152,54 @@ start_scheduler(int nthreads)
     }
 #endif
 }
+
+/* The function called as the body of the FFT-calculation threads.
+ *
+ * Get work from the scheduler, do it, call the result callback and repeat.
+ * If get_work() returns NULL, there is nothing to do, so sleep a little.
+ */
+#if ECORE_MAIN
+static void
+ecore_calc_heavy(void *data, Ecore_Thread *thread)
+{
+    /* Loop until this thread is scheduled to be cancelled */
+    while (ecore_thread_check(thread) == FALSE) {
+	calc_t *work = get_work();
+	if (work == NULL) {
+	    usleep((useconds_t)100000); /* Sleep for a tenth of a second */
+	} else {
+	    work->thread = thread;
+	    calc(work);
+	}
+    }
+}
+#elif SDL_MAIN
+static void *
+sdl_calc_heavy(void *data)
+{
+    int oldtype;
+    if (pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype)) {
+	fprintf(stderr, "calc_heavy cannot set thread cancel type.\n");
+    }
+    while (TRUE) {
+	calc_t *work = get_work();
+	if (work == NULL) {
+	    usleep((useconds_t)100000); /* Sleep for a tenth of a second */
+	} else {
+	    calc(work);
+	}
+    }
+}
+#endif
+
+#if ECORE_MAIN
+static void
+ecore_calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
+{
+    calc_notify((result_t *) msg_data);
+}
+#elif SDL_MAIN
+#endif
 
 void
 stop_scheduler(void)
@@ -389,4 +449,31 @@ DEBUG("List:");
 		cp->from, cp->to,
 		cp->next ? '>' : '.');
 DEBUG("\n");
+}
+
+void
+calc_notify(result_t *result)
+{
+    int pos_x;	/* Where would this column appear in the displayed region? */
+
+    /* What screen coordinate does this result correspond to? */
+    pos_x = lrint(disp_offset + (result->t - disp_time) * ppsec);
+
+    /* Update the display if the column is in the displayed region
+     * and isn't at the green line's position
+     */
+    if (pos_x >= 0 && pos_x < disp_width &&
+	pos_x != disp_offset) {
+	paint_column(pos_x, result);
+	gui_update_column(pos_x);
+    }
+
+    remember_result(result);
+
+    /* To avoid an embarassing pause at the start of the graphics, we wait
+     * until the FFT delivers its first result before starting the player.
+     */
+    if (autoplay && playing != PLAYING) {
+	start_playing();
+    }
 }

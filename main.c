@@ -70,30 +70,6 @@
 #include <errno.h>
 #include <math.h>
 
-/* Libraries' header files. See config.h for working combinations of defines */
-
-#if ECORE_TIMER || EVAS_VIDEO || ECORE_MAIN
-#include <Ecore.h>
-#include <Ecore_Evas.h>
-#endif
-
-#if EVAS_VIDEO
-#include <Evas.h>
-#endif
-
-#if EMOTION_AUDIO
-#include <Emotion.h>
-#endif
-
-#if SDL_AUDIO || SDL_TIMER || SDL_MAIN
-# include <SDL.h>
-#endif
-
-#if SDL_MAIN
-#include <X11/Xlib.h>	/* for XInitThreads() */
-#include <pthread.h>
-#endif
-
 /*
  * Local header files
  */
@@ -104,6 +80,7 @@
 #include "calc.h"
 #include "colormap.h"
 #include "interpolate.h"
+#include "gui.h"
 #include "key.h"
 #include "mouse.h"
 #include "overlay.h"
@@ -120,15 +97,8 @@
 /* Helper functions */
 static void	calc_columns(int from, int to);
 static void	repaint_column(int column);
-static void	paint_column(int column, result_t *result);
 static void	green_line(void);
-static void	update_display(void);
-static void	update_column(int pos_x);
-
 /* Enlightenment's GUI callbacks */
-#if EVAS_VIDEO
-static void quitGUI(Ecore_Evas *ee);
-#endif
 
        void do_scroll(void);
 
@@ -153,32 +123,9 @@ static bool gray	= FALSE;	/* Display in shades of gray? */
        bool guitar_lines= FALSE;	/* Draw guitar string lines? */
 
 /* Other option flags */
-static bool autoplay = FALSE;	/* -p  Start playing the file right away */
+       bool autoplay = FALSE;	/* -p  Start playing the file on startup */
        bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
-
-
-/* The color for uncalculated areas:  RGB gray */
-#if EVAS_VIDEO
-#define background 0xFF808080
-#elif SDL_VIDEO
-static Uint32 background;
-#endif
-
-/* Internal data used to write on the image buffer */
-#if EVAS_VIDEO
-static Evas_Object *image;
-static unsigned char *imagedata = NULL;
-static int imagestride;		/* How many bytes per screen line ?*/
-       Evas_Object *em = NULL;	/* The Emotion or Evas-Ecore object */
-#endif
-#if SDL_VIDEO
-static SDL_Surface *screen;
-#endif
-
-#if SDL_MAIN
-static int get_next_SDL_event(SDL_Event *event);
-#endif
 
 /* The currently opened audio file */
 static audio_file_t *	audio_file;
@@ -186,10 +133,6 @@ static audio_file_t *	audio_file;
 int
 main(int argc, char **argv)
 {
-#if EVAS_VIDEO
-    Ecore_Evas *ee;
-    Evas *canvas;
-#endif
     char *filename;
 
     /* Local versions to delay setting until audio_length is known */
@@ -365,158 +308,11 @@ Brightness controls (*,/) change DYN_RANGE\n\
     /* Make the row overlay mask, if any */
     make_row_overlay();
 
-    /*
-     * Initialise the various subsystems
-     */
-#if SDL_MAIN
-    /* Without this, you get:
-     * [xcb] Unknown request in queue while dequeuing
-     * [xcb] Most likely this is a multi-threaded client and XInitThreads has not been called
-     * [xcb] Aborting, sorry about that.
-     */
-    if (!XInitThreads()) {
-	fprintf(stderr, "XInitThreads failed.\n");
-	exit(1);
-    }
-#endif
-
-#if SDL_AUDIO || SDL_TIMER || SDL_VIDEO || SDL_MAIN
-    {	Uint32 flags = 0;
-# if SDL_AUDIO
-	flags |= SDL_INIT_AUDIO;
-# endif
-# if SDL_TIMER
-	flags |= SDL_INIT_TIMER;
-# endif
-# if SDL_VIDEO
-	flags |= SDL_INIT_VIDEO;
-# endif
-# if SDL_MAIN
-	/*
-	 * Maybe flags |= SDL_INIT_NOPARACHUTE to prevent it from installing
-	 * signal handlers for commonly ignored fatal signals like SIGSEGV.
-	 */
-	flags |= SDL_INIT_EVENTTHREAD;
-# endif
-	if (SDL_Init(flags) != 0) {
-	    fprintf(stderr, "Couldn't initialize SDL: %s.\n", SDL_GetError());
-	    exit(1);
-	}
-	atexit(SDL_Quit);
-
-	/* For some reason, key repeat gets disabled by default */
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
-			    SDL_DEFAULT_REPEAT_INTERVAL);
-    }
-#endif
-
-#if EVAS_VIDEO
-    /* Initialize the graphics subsystem */
-    if (!ecore_evas_init() ||
-        !(ee = ecore_evas_new(NULL, 0, 0, 1, 1, NULL))) {
-	fputs("Cannot initialize graphics subsystem.\n", stderr);
-	exit(1);
-    }
-    ecore_evas_callback_delete_request_set(ee, quitGUI);
-    ecore_evas_title_set(ee, "spettro");
-    ecore_evas_show(ee);
-
-    canvas = ecore_evas_get(ee);
-
-    /* Create the image and its memory buffer */
-    image = evas_object_image_add(canvas);
-    evas_object_image_colorspace_set(image, EVAS_COLORSPACE_ARGB8888);
-    evas_object_image_size_set(image, disp_width, disp_height);
-    imagestride = evas_object_image_stride_get(image);
-    imagedata = malloc(imagestride * disp_height);
-    if (imagedata == NULL) {
-	fprintf(stderr, "Out of memory allocating image data\n");
-	exit(1);
-    }
-    /* Clear the image buffer to the background color */
-    {	register int i;
-	register unsigned int *p = (unsigned int *)imagedata;
-
-	for (i=(imagestride * disp_height) / sizeof(*p);
-	     i > 0;
-	     i--) {
-	    *p++ = background;
-	}
-    }
-
-    evas_object_image_data_set(image, imagedata);
-
-    /* This gives an image that is automatically scaled with the window.
-     * If you resize the window, the underlying image remains of the same size
-     * and it is zoomed by the window system, giving a thick green line etc.
-     */
-    evas_object_image_filled_set(image, TRUE);
-    ecore_evas_object_associate(ee, image, 0);
-
-    evas_object_resize(image, disp_width, disp_height);
-    evas_object_focus_set(image, EINA_TRUE); /* Without this no keydown events*/
-
-    evas_object_show(image);
-#endif
-
-#if SDL_VIDEO
-    /* "Use SDL_SWSURFACE if you plan on doing per-pixel manipulations,
-     * or blit surfaces with alpha channels, and require a high framerate."
-     * "SDL_DOUBLEBUF is only valid when using HW_SURFACE."
-     *     -- http://sdl.beuc.net/sdl.wiki/SDL_SetVideoMode
-     * We could be more permissive about bpp, but 32 will do for a first hack.
-     */
-    screen = SDL_SetVideoMode(disp_width, disp_height, 32, SDL_SWSURFACE);
-	/* | SDL_RESIZEABLE one day */
-    if (screen == NULL) {
-        fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());
-        exit(1);
-    }
-
-    SDL_WM_SetCaption(filename, NULL);
-
-    background = SDL_MapRGB(screen->format, 0x80, 0x80, 0x80);
-
-    /* Clear the image buffer to the background color */
-    if (SDL_FillRect(screen, NULL, background) != 0) {
-        fprintf(stderr, "Couldn't fill screen with background color: %s\n",
-		SDL_GetError());
-        exit(1);
-    }
-#endif /* SDL_VIDEO */
+    gui_init(filename);
 
     green_line();
-    update_display();
 
-    /* Initialize the audio subsystem */
-
-#if EMOTION_AUDIO || EVAS_VIDEO
-# if EMOTION_AUDIO
-    em = emotion_object_add(canvas);
-# elif EVAS_VIDEO
-    em = evas_object_smart_add(canvas, NULL);
-# endif
-    if (!em) {
-# if EMOTION_AUDIO
-	fputs("Couldn't initialize Emotion audio.\n", stderr);
-# else
-	fputs("Couldn't initialize Evas graphics.\n", stderr);
-# endif
-	exit(1);
-    }
-#endif
-
-    /* Load the audio file for playing */
-
-#if EMOTION_AUDIO
-    emotion_object_init(em, NULL);
-    emotion_object_video_mute_set(em, EINA_TRUE);
-    if (emotion_object_file_set(em, filename) != EINA_TRUE) {
-	fputs("Couldn't load audio file. Try compiling with -DUSE_EMOTION_SDL in Makefile.am\n", stderr);
-	exit(1);
-    }
-    evas_object_show(em);
-#endif
+    gui_update_display();
 
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.
@@ -525,6 +321,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
      * so we use libsndfile or libaudiofile for that.
      */
     if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
+
+    init_audio(audio_file, filename);
 
     /* Apply the -p flag */
     if (disp_time != 0.0) set_playing_time(disp_time);
@@ -548,140 +346,15 @@ Brightness controls (*,/) change DYN_RANGE\n\
     /* From here on, do not goto quit. */
     calc_columns(0, disp_width - 1);
 
-#if EVAS_VIDEO
-    /* Set GUI callbacks */
-    evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN,
-				   keyDown, em);
-    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_DOWN,
-				   mouseDown, em);
-    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_UP,
-				   mouseUp, em);
-    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_MOVE,
-				   mouseMove, em);
-#endif
-
-    init_audio(audio_file);
-
     start_timer();
 
-#if ECORE_MAIN
-    /* Start main event loop */
-    ecore_main_loop_begin();
-#elif SDL_MAIN
-    {
-	SDL_Event event;
-	enum key key;
-
-	while (get_next_SDL_event(&event)) switch (event.type) {
-
-	case SDL_QUIT:
-	    stop_scheduler();
-	    stop_timer();
-	    exit(0);	/* atexit() calls SDL_Quit() */
-
-	case SDL_KEYDOWN:
-	    Shift   = !!(event.key.keysym.mod & KMOD_SHIFT);
-	    Control = !!(event.key.keysym.mod & KMOD_CTRL);
-	    key = sdl_key_decode(&event);
-	    do_key(key);
-	    break;
-
-	case SDL_MOUSEBUTTONDOWN:
-	case SDL_MOUSEBUTTONUP:
-	    {
-		/* To detect Shift and Control states, it looks like we have to
-		 * examine the keys ourselves */
-		Uint8 *keystate = SDL_GetKeyState(NULL);
-		Shift = keystate[SDLK_LSHIFT] || keystate[SDLK_RSHIFT];
-		Control = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
-
-		switch (event.button.button) {
-		case SDL_BUTTON_LEFT:
-		case SDL_BUTTON_RIGHT:
-		    do_mouse_button(event.button.x, event.button.y,
-				    event.button.button == SDL_BUTTON_LEFT
-				    ? LEFT_BUTTON : RIGHT_BUTTON,
-				    event.type == SDL_MOUSEBUTTONDOWN
-				    ? MOUSE_DOWN : MOUSE_UP);
-		}
-	    }
-	    break;
-
-	case SDL_MOUSEMOTION:
-	    do_mouse_move(event.motion.x, event.motion.y);
-	    break;
-
-	case SDL_VIDEORESIZE:
-	    /* One day */
-	    break;
-
-	case SDL_USEREVENT:
-	    switch (event.user.code) {
-	    case RESULT_EVENT:
-		/* Column result from a calculation thread */
-		calc_notify((result_t *) event.user.data1);
-		break;
-	    case SCROLL_EVENT:
-		do_scroll();
-		break;
-	    default:
-		fprintf(stderr, "Unknown SDL_USEREVENT code %d\n",
-			event.user.code);
-		break;
-	    }
-	    break;
-
-	default:
-	    break;
-	}
-    }
-#endif
+    gui_main();
 
 quit:
-    /* Tidy up and quit.
-     * You can only goto quit BEFORE starting the scheduler because
-     * to cancel threads, EFL requires the main loop to be running
-     */
-#if EVAS_VIDEO
-    ecore_evas_free(ee);
-#if 0
-    /* This makes it dump core or barf error messages about bad magic */
-    ecore_evas_shutdown();
-#endif
-#endif
-
-#if SDL_AUDIO || SDL_TIMER || SDL_VIDEO || SDL_MAIN
-    SDL_Quit();
-#endif
+    gui_deinit();
 
     return 0;
 }
-
-#if SDL_MAIN
-static int
-get_next_SDL_event(SDL_Event *eventp)
-{
-    /* Prioritise UI events over window refreshes, results and such */
-    /* First, see if there are any UI events to be had */
-    switch (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
-			  SDL_EVENTMASK(SDL_QUIT) |
-			  SDL_EVENTMASK(SDL_KEYDOWN) |
-			  SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN))) {
-    case -1:
-	fprintf(stderr, "Some error from SDL_PeepEvents().\n");
-	return 0;
-    case 0:
-	break;
-    case 1:
-	return 1;
-    default:
-	fprintf(stderr, "Wierd return from SDL_PeepEvents\n");
-    }
-
-    /* No UI events? Wait for all events */
-    return SDL_WaitEvent(eventp);
-}
-#endif
 
 /*
  * Schedule the FFT thread(s) to calculate the results for these display columns
@@ -741,19 +414,6 @@ calc_columns(int from, int to)
 }
 
 /*
- *	GUI callbacks
- */
-
-#if ECORE_MAIN
-/* Quit on window close or Control-Q */
-static void
-quitGUI(Ecore_Evas *ee EINA_UNUSED)
-{
-    ecore_main_loop_quit();
-}
-#endif
-
-/*
  * Process a keystroke.  Also inspects the variables Control and Shift.
  */
 void
@@ -768,11 +428,7 @@ do_key(enum key key)
 	if (playing == PLAYING) stop_playing();
 	stop_scheduler();
 	stop_timer();
-#if ECORE_MAIN
-	ecore_main_loop_quit();
-#elif SDL_MAIN
-	exit(0);	/* atexit() calls SDL_Quit() */
-#endif
+	gui_quit();
 	break;
 
     case KEY_SPACE:	/* Play/Pause/Rewind */
@@ -985,25 +641,7 @@ do_scroll()
 
 	    disp_time = new_disp_time;
 
-	    /* Usual case: scrolling the display left to advance in time */
-#if EVAS_VIDEO
-	    memmove(imagedata, imagedata + (4 * scroll_by),
-		    imagestride * disp_height - (4 * scroll_by));
-#elif SDL_VIDEO
-	    {
-		SDL_Rect from, to;
-		int err;
-
-		from.x = scroll_by; to.x = 0;
-		from.y = to.y = 0;
-		from.w = disp_width - scroll_by;    /* to.[wh] are ignored */
-		from.h = disp_height;
-
-		if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
-		    fprintf(stderr, "SDL Blit failed with value %d.\n", err);
-		}
-	    }
-#endif
+	    gui_scroll_by(scroll_by);
 
 	    /* Repaint the right edge */
 	    {   int x;
@@ -1023,25 +661,7 @@ do_scroll()
 
 	    disp_time = new_disp_time;
 
-#if EVAS_VIDEO
-	    /* Happens when they seek back in time */
-	    memmove(imagedata + (4 * -scroll_by), imagedata,
-		    imagestride * disp_height - (4 * -scroll_by));
-#elif SDL_VIDEO
-	    {
-		SDL_Rect from, to;
-		int err;
-
-		from.x = 0; to.x = -scroll_by;
-		from.y = to.y = 0;
-		from.w = disp_width - -scroll_by;    /* to.[wh] are ignored */
-		from.h = disp_height;
-
-		if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
-		    fprintf(stderr, "SDL Blit failed with value %d.\n", err);
-		}
-	    }
-#endif
+	    gui_scroll_by(scroll_by);
 
 	    /* Repaint the left edge */
 	    {   int x;
@@ -1055,7 +675,7 @@ do_scroll()
 	green_line();
 
 	/* The whole screen has changed (well, unless there's background) */
-	update_display();
+	gui_update_display();
     }
 }
 
@@ -1070,14 +690,8 @@ repaint_display(void)
     }
     green_line();
 
-    update_display();
+    gui_update_display();
 }
-
-#if SDL_VIDEO
-/* Macro derived from http://sdl.beuc.net/sdl.wiki/Pixel_Access's putpixel() */
-#define putpixel(surface, x, y, pixel) \
-	((Uint32 *)((Uint8 *)surface->pixels + (y) * surface->pitch))[x] = pixel
-#endif
 
 /* Repaint a column of the display from the result cache or paint it
  * with the background color if it hasn't been calculated yet.
@@ -1104,22 +718,7 @@ repaint_column(int column)
 	    paint_column(column, r);
     } else {
 	/* ...otherwise paint it with the background color */
-#if EVAS_VIDEO
-	int y;
-	unsigned int *p = (unsigned int *)imagedata + column;
-
-	for (y=disp_height - 1; y >= 0; y--) {
-            *p = background;
-	    p += imagestride / sizeof(*p);
-	}
-#elif SDL_VIDEO
-	SDL_Rect rect = {
-	    column, 0,
-	    1, disp_height
-	};
-
-	SDL_FillRect(screen, &rect, background);
-#endif
+	gui_background(column);
 
 	/* and if it was for a valid time, schedule its calculation */
 	if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
@@ -1132,7 +731,7 @@ repaint_column(int column)
  * pos_x is a screen coordinate.
  * The GUI screen-updating function is called by whoever called us.
  */
-static void
+void
 paint_column(int pos_x, result_t *result)
 {
     float *mag;
@@ -1145,23 +744,7 @@ paint_column(int pos_x, result_t *result)
      * Apply column overlay
      */
     if ((ov = get_col_overlay(pos_x)) != 0) {
-#if EVAS_VIDEO
-	unsigned char *p;	/* pointer to pixel to set */
-
-	for (y=disp_height-1,
-	     p = (unsigned char *)((unsigned int *)imagedata + pos_x);
-	     y >= 0;
-	     y--, p += imagestride) {
-		*(unsigned int *)p = ov;
-	}
-#elif SDL_VIDEO
-	SDL_Rect rect = {
-	    pos_x, 0,
-	    1, disp_height
-	};
-
-	SDL_FillRect(screen, &rect, ov);
-#endif
+	gui_paint_column(pos_x, ov);
 	return;
     }
 
@@ -1179,54 +762,21 @@ paint_column(int pos_x, result_t *result)
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
      */
-#if EVAS_VIDEO
+    gui_lock();
     for (y=maglen-1; y>=0; y--) {
-	unsigned int *pixelrow;
 
-	pixelrow = (unsigned int *)&imagedata[imagestride * ((disp_height - 1) - y)];
-
-	/*
-	 * Apply row overlay
-	 */
+	/* Apply row overlay, if any, otherwise paint the pixel */
 	if ( (ov = get_row_overlay(y)) != 0) {
-	    pixelrow[pos_x] = ov;
-	    continue;
+/* Could do this better ... */
+	    unsigned char *color = (unsigned char *) &ov;
+	    gui_putpixel(pos_x, y, color);
+	} else {
+	    unsigned char color[3];
+	    colormap(20.0 * log10(mag[y] / max), min_db, color, gray);
+	    gui_putpixel(pos_x, y, color);
 	}
-
-# if LITTLE_ENDIAN	/* Provided by stdlib.h on Linux-glibc */
-	/* Let colormap write directly to the pixel buffer */
-	colormap(20.0 * log10(mag[y] / max), min_db,
-		 (unsigned char *)(pixelrow + pos_x), gray);
-# else
-	/* colormap writes to color[] and we swap them to the pixel buffer */
-	{   unsigned char color[3];
-	    colormap(20.0 * log10(mag[i] / max), min_db, color, gray);
-	    pixelrow[pos_x] = (color[0]) | (color[1] << 8) |
--                             (color[2] << 16) | 0xFF000000;
-	}
-# endif
     }
-#elif SDL_VIDEO
-    if (SDL_MUSTLOCK(screen) && SDL_LockSurface(screen) != 0 ) {
-	fprintf(stderr, "Can't lock screen: %s\n", SDL_GetError());
-	return;
-    }
-    for (y=maglen-1; y>=0; y--) {
-	unsigned char color[3];
-
-	if ( (ov = get_row_overlay(y)) != 0) {
-	    /* SDL has y=0 at top */
-	    putpixel(screen, pos_x, (disp_height-1) - y, ov);
-	    continue;
-	}
-
-	colormap(20.0 * log10(mag[y] / max), min_db, color, gray);
-	/* SDL has y=0 at top, and colormap returns BGR */
-	putpixel(screen, pos_x, (disp_height-1) - y,
-		 SDL_MapRGB(screen->format, color[2], color[1], color[0]));
-    }
-    if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
-#endif
+    gui_unlock();
 }
 
 /* Paint the green line.
@@ -1234,148 +784,5 @@ paint_column(int pos_x, result_t *result)
 static void
 green_line()
 {
-#if EVAS_VIDEO
-    int y;
-    unsigned int *p = (unsigned int *)imagedata + disp_offset;
-
-    for (y=disp_height - 1; y >= 0; y--) {
-	*p = 0xFF00FF00;
-	p += imagestride / sizeof(*p);
-    }
-#elif SDL_VIDEO
-    SDL_Rect rect = {
-	disp_offset, 0,
-	1, disp_height
-    };
-
-    SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, 0, 0xFF, 0));
-#endif
-}
-
-/* Tell the video subsystem to update the display from the pixel data */
-static void
-update_display(void)
-{
-#if EVAS_VIDEO
-	evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
-#elif SDL_VIDEO
-	SDL_UpdateRect(screen, 0, 0, 0, 0);
-#endif
-}
-
-/* Tell the video subsystem to update one column of the display
- * from the pixel data
- */
-static void
-update_column(int pos_x)
-{
-#if EVAS_VIDEO
-    evas_object_image_data_update_add(image, pos_x, 0, 1, disp_height);
-#elif SDL_VIDEO
-    SDL_UpdateRect(screen, pos_x, 0, 1, disp_height);
-#endif
-}
-
-/*
- *	Interface to FFT calculator
- */
-
-/* The function called as the body of the FFT-calculation threads.
- *
- * Get work from the scheduler, do it, call the result callback and repeat.
- * If get_work() returns NULL, there is nothing to do, so sleep a little.
- */
-#if ECORE_MAIN
-void
-calc_heavy(void *data, Ecore_Thread *thread)
-#elif SDL_MAIN
-void *
-calc_heavy(void *data)
-#endif
-{
-    /* The main loop of each calculation thread */
-#if ECORE_MAIN
-    /* Loop until this thread is scheduled to be cancelled */
-    while (ecore_thread_check(thread) == FALSE) {
-#elif SDL_MAIN
-    int oldtype;
-    if (pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype)) {
-	fprintf(stderr, "calc_heavy cannot set thread cancel type.\n");
-    }
-    while (TRUE) {
-#endif
-	calc_t *work;
-
-	if ((work = get_work()) == NULL) {
-	    /* Sleep for a tenth of a second */
-	    usleep((useconds_t)100000);
-	} else {
-#if ECORE_MAIN
-	    work->thread = thread;
-#endif
-	    calc(work);
-	}
-    }
-}
-
-/* The callback called by calculation threads to report a result */
-void
-calc_result(result_t *result)
-{
-    /* Send result back to main loop */
-    if (result != NULL)
-#if ECORE_MAIN
-	ecore_thread_feedback(result->thread, result);
-#elif SDL_MAIN
-    {
-	SDL_Event event;
-	event.type = SDL_USEREVENT;
-	event.user.code = RESULT_EVENT;
-	event.user.data1 = result;
-	if (SDL_PushEvent(&event) != 0) {
-	    /* The Event queue is full. let it empty and try again. */
-	    usleep(100000);
-	    if (SDL_PushEvent(&event) != 0) {
-		fprintf(stderr, "Couldn't post a result event\n");
-		return;
-	    }
-	}
-    }
-#endif
-}
-
-void
-#if ECORE_MAIN
-calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
-#elif SDL_MAIN
-calc_notify(result_t *result)
-#endif
-{
-#if ECORE_MAIN
-    result_t *result = (result_t *)msg_data;
-#endif
-    int pos_x;	/* Where would this column appear in the displayed region? */
-
-    /* The Evas image that we need to write to */
-
-    /* What screen coordinate does this result correspond to? */
-    pos_x = lrint(disp_offset + (result->t - disp_time) * ppsec);
-
-    /* Update the display if the column is in the displayed region
-     * and isn't at the green line's position
-     */
-    if (pos_x >= 0 && pos_x < disp_width &&
-	pos_x != disp_offset) {
-	paint_column(pos_x, result);
-	update_column(pos_x);
-    }
-
-    remember_result(result);
-
-    /* To avoid an embarassing pause at the start of the graphics, we wait
-     * until the FFT delivers its first result before starting the player.
-     */
-    if (autoplay && playing != PLAYING) {
-	start_playing();
-    }
+    gui_paint_column(disp_offset, green);
 }

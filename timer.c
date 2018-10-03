@@ -5,6 +5,7 @@
 #include "spettro.h"
 #include "timer.h"
 #include "main.h"
+#include "gui.h"
 
 #include <math.h>
 

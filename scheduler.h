@@ -9,3 +9,4 @@ extern void stop_scheduler(void);
 extern void schedule(calc_t *calc);
 extern calc_t *get_work(void);
 extern void reschedule_for_bigger_step(void);
+extern void calc_notify(result_t *result);

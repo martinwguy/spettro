@@ -30,12 +30,21 @@ static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
 enum playing playing = PAUSED;
 
 void
-init_audio(audio_file_t *audio_file)
+init_audio(audio_file_t *audio_file, char *filename)
 {
 #if EMOTION_AUDIO
     /* Set audio player callbacks */
     evas_object_smart_callback_add(em, "playback_finished",
 				   playback_finished_cb, NULL);
+
+    /* Load the audio file for playing */
+    emotion_object_init(em, NULL);
+    emotion_object_video_mute_set(em, EINA_TRUE);
+    if (emotion_object_file_set(em, filename) != EINA_TRUE) {
+	fputs("Couldn't load audio file. Try compiling with -DUSE_EMOTION_SDL in Makefile.am\n", stderr);
+	exit(1);
+    }
+    evas_object_show(em);
 #elif SDL_AUDIO
     {
 	SDL_AudioSpec wavspec;
@@ -53,7 +62,7 @@ init_audio(audio_file_t *audio_file)
 	}
     }
 #else
-# error "Define one of EMOTION_AUDIO or SDL_AUDIO"
+# error "Define one of EMOTION_AUDIO and SDL_AUDIO"
 #endif
 }
 

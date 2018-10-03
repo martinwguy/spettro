@@ -11,19 +11,23 @@
  * so as not to have to recalculate the FFT for zooms, pans and recoloring.
  */
 
-#include "config.h"
+#include "spettro.h"
 
 #include <stdlib.h>
+#include <unistd.h>	/* for usleep() */
 #include <math.h>
 #include <fftw3.h>
 
 #if ECORE_MAIN
 #include <Ecore.h>
+#elif SDL_MAIN
+#include <SDL.h>
+#include <SDL_events.h>
 #endif
 
-#include "spettro.h"
 #include "audio_file.h"
 #include "calc.h"
+#include "gui.h"	/* For RESULT_EVENT */
 #include "lock.h"
 #include "spectrum.h"
 #include "main.h"	/* for calc_result() */
@@ -36,7 +40,8 @@
  * Passing a constant callback address down the call chain is just too awful.
  */
 
-/* Helper function */
+/* Helper functions */
+static void calc_result(result_t *result);
 static result_t *get_result(calc_t *calc, spectrum *spec, double t);
 
 void
@@ -86,6 +91,32 @@ calc(calc_t *calc)
     }
 
     destroy_spectrum(spec);
+}
+
+/* The function called by calculation threads to report a result */
+static void
+calc_result(result_t *result)
+{
+    /* Send result back to main loop */
+    if (result != NULL)
+#if ECORE_MAIN
+	ecore_thread_feedback(result->thread, result);
+#elif SDL_MAIN
+    {
+	SDL_Event event;
+	event.type = SDL_USEREVENT;
+	event.user.code = RESULT_EVENT;
+	event.user.data1 = result;
+	if (SDL_PushEvent(&event) != 0) {
+	    /* The Event queue is full. let it empty and try again. */
+	    usleep(100000);
+	    if (SDL_PushEvent(&event) != 0) {
+		fprintf(stderr, "Couldn't post a result event\n");
+		return;
+	    }
+	}
+    }
+#endif
 }
 
 /*
