@@ -80,8 +80,9 @@ colormap(double value, double min_db, unsigned char *color, bool gray_scale)
     indx = lrintf(floor(value));
 
     if (indx < 0) {
-	fprintf(stderr, "colormap: array index is %d\n", indx);
-	exit(1);
+	fprintf(stderr, "colormap: array index is %d.\n", indx);
+	/* Carry on with the show */
+	return;
     }
 
     if (indx >= sizeof(map)/sizeof(*map) - 1) {
