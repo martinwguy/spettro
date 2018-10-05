@@ -59,3 +59,15 @@ Mix_RewindMusic(); Mix_SetMusicPosition(double position)
 Mix_FadeInMusicos(Mix_Music *music, 1, fade_ms, double position)
 MIX_SetMusicCMD("mpg
 ------------------------------------------------------------------------
+Avoid many calls to fftfreq_to_speclen() by adding global speclen
+and mapping fftfreq to speclen when fftfreq changes.
+------------------------------------------------------------------------
+When getting work, discard all work that is for a different speclen.
+And/or drop all pending work when speclen changes and remember to
+check that speclen corresponds when receiving results that were already
+in flight.
+------------------------------------------------------------------------
+When adding score lines when there were none, just draw them on the display
+instead of redisplaying the columns' spectral data.
+When removing/changing such lines, repaint(all) is probably safest.
+------------------------------------------------------------------------

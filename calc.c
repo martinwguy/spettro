@@ -30,7 +30,6 @@
 #include "gui.h"	/* For RESULT_EVENT */
 #include "lock.h"
 #include "spectrum.h"
-#include "main.h"	/* for calc_result() */
 
 /*
  * The compute-FFTs function

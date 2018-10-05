@@ -20,7 +20,6 @@ extern void gui_deinit(void);
 extern void gui_update_display(void);
 extern void gui_update_column(int pos_x);
 extern void gui_scroll_by(int by);
-extern void gui_background(int column);
 extern void gui_paint_column(int column, unsigned int color);
 extern void gui_lock(void);
 extern void gui_unlock(void);

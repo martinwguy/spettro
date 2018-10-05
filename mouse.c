@@ -146,7 +146,7 @@ do_mouse_move(int screen_x, int screen_y)
 	    freq_pan_by(pow(one_pixel, (double)(screen_y - mouse_down_y)));
 	}
 	if (screen_x != mouse_down_x || screen_y != mouse_down_y)
-	    repaint_display();
+	    repaint_display(TRUE);
     }
     /* This isn't right, but works with the current logic */
     mouse_down_x = screen_x;

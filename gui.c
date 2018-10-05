@@ -434,14 +434,7 @@ gui_scroll_by(int scroll_by)
     }
 }
 
-/* Paint a column with the background color */
-void
-gui_background(int column)
-{
-    gui_paint_column(column, background);
-}
-
-/* Fill a pixel column with a single colour */
+/* Fill a pixel column with a single colour, probably "green" or "background" */
 void
 gui_paint_column(int pos_x, unsigned int color)
 {

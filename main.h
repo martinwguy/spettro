@@ -7,7 +7,7 @@
 #include "config.h"
 #include "calc.h"		/* for result_t */
 
-extern void repaint_display(void);
+extern void repaint_display(bool repaint_all);
 extern void do_scroll(void);
 extern void paint_column(int pos_x, result_t *result);
 

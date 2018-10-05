@@ -198,7 +198,6 @@ ecore_calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 {
     calc_notify((result_t *) msg_data);
 }
-#elif SDL_MAIN
 #endif
 
 void
