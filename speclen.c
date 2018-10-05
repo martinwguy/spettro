@@ -5,6 +5,9 @@
 #include "spettro.h"
 #include "speclen.h"
 
+int speclen;	/* Spectral data length. Usually set to the
+		 * result of fftfreq_to_speclen() */
+
 static bool is_good_speclen(int n);
 
 /* Choose a suitable value for speclen (== fftsize/2). */

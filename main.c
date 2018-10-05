@@ -116,7 +116,6 @@ static void	green_line(void);
        double ppsec	= 25.0;		/* pixel columns per second */
        double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
-static int    speclen;			/* Spectral data length (=fftsize/2) */
 static bool gray	= FALSE;	/* Display in shades of gray? */
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */

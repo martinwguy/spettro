@@ -39,6 +39,7 @@
 #include "calc.h"
 #include "gui.h"
 #include "lock.h"
+#include "speclen.h"
 #include "main.h"
 #include "scheduler.h"
 
@@ -367,20 +368,44 @@ DEBUG("List is empty after dropping after-screens\r");
 	return NULL;
     }
 
+    /* If speclen changes, there may be pending work for the old speclen.
+     * Check for and remove pending work for different speclen.
+     */
+    while (*cpp != NULL && (*cpp)->speclen != speclen) {
+	/* Remove cell from the list */
+	calc_t *cp = *cpp;
+/* TODO: maybe should reschedule this, as the column's probably still visible */
+	if (cp->next) cp->next->prev = cp->prev;
+	if (cp->prev) cp->prev->next = cp->next;
+	else {
+	    /* cp is the first cell in the list */
+	    cpp = &list;
+	}
+	free(cp);
+    }
+
     if (*cpp != NULL) {
 	/* We have a column after disp_time that's on-screen so
 	 * remove this calc_t from the list and hand it to the
 	 * hungry calculation thread. */
 	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
 
+	/* If speclen has changed since the work was scheduled,
+	 * the line is probably still visible so calculate for
+	 * the current parameters */
+	if (cp->speclen != speclen) {
+	    cp->speclen = speclen;
+	}
+
 DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
 
 	*cpp = cp->next;
 	if (cp->next) cp->next->prev = cp->prev;
+	if (cp->prev) cp->prev->next = cp->next;
 	cp->next = cp->prev = NULL; /* Not strictly necessary but */
 	print_list();
 	unlock_list();
-	return(cp);
+	return cp;
     }
 
     if (*cpp == NULL & cpp != &list) {
@@ -454,6 +479,18 @@ void
 calc_notify(result_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
+
+    if (result->speclen != speclen) {
+	/* This is the result from an old call to schedule() before
+	 * speclen changed.
+	 * Presumably that column is still visible so
+	 * - keep it in the ache in case they flip back to old speclen
+	 * - schedule it to be recalculated at the current speclen.
+	 *   How to reconstruct a calc_t from a result_t?
+	 */
+	remember_result(result);
+	return;
+    }
 
     /* What screen coordinate does this result correspond to? */
     pos_x = lrint(disp_offset + (result->t - disp_time) * ppsec);

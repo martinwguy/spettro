@@ -26,9 +26,11 @@
 #endif
 
 #include "audio_file.h"
+#include "cache.h"
 #include "calc.h"
 #include "gui.h"	/* For RESULT_EVENT */
 #include "lock.h"
+#include "speclen.h"
 #include "spectrum.h"
 
 /*
@@ -50,14 +52,18 @@ calc(calc_t *calc)
     double from   = calc->from;		/* centre of first FFT bucket */
     double to	  = calc->to;		/* centre of last FFT bucket;
 					 * If == 0.0, just do "from" */
-    int	   speclen= calc->speclen;	/* Max index into result->spec */
-
     /* Variables */
     double step	  = 1 / calc->ppsec;
     spectrum *spec;
     double  t;				/* Time from start of piece */
 
-    spec = create_spectrum(speclen, calc->window);
+    /* If speclen has changed, calculate for the new one.
+     * It does happen (checked with a printf) */
+    if (calc->speclen != speclen) {
+	 calc->speclen = speclen;
+    }
+
+    spec = create_spectrum(calc->speclen, calc->window);
     if (spec == NULL) {
 	fprintf(stderr, "Can't create spectrum.\n");
 	return;
@@ -96,12 +102,19 @@ calc(calc_t *calc)
 static void
 calc_result(result_t *result)
 {
-    /* Send result back to main loop */
-    if (result != NULL)
+
+    if (result != NULL) {
+	/* Don't display results from obsolete calculations */
+	if (result->speclen != speclen) {
+	    remember_result(result);
+	    return;
+	}
+
+	/* Send result back to main loop */
 #if ECORE_MAIN
 	ecore_thread_feedback(result->thread, result);
 #elif SDL_MAIN
-    {
+      {
 	SDL_Event event;
 	event.type = SDL_USEREVENT;
 	event.user.code = RESULT_EVENT;
@@ -114,8 +127,9 @@ calc_result(result_t *result)
 		return;
 	    }
 	}
-    }
+      }
 #endif
+    }
 }
 
 /*
