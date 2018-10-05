@@ -96,7 +96,7 @@
 
 /* Helper functions */
 static void	calc_columns(int from, int to);
-static void	repaint_column(int column);
+static void	repaint_column(int column, bool refresh_only);
 static void	green_line(void);
 
        void do_scroll(void);
@@ -116,6 +116,7 @@ static void	green_line(void);
        double ppsec	= 25.0;		/* pixel columns per second */
        double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
+static int    speclen;			/* Spectral data length (=fftsize/2) */
 static bool gray	= FALSE;	/* Display in shades of gray? */
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
@@ -321,6 +322,9 @@ Brightness controls (*,/) change DYN_RANGE\n\
      */
     if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
 
+    /* Now that we have sample_rate, we can convert fftfreq to speclen */
+    speclen = fftfreq_to_speclen(fftfreq, sample_rate);
+
     init_audio(audio_file, filename);
 
     /* Apply the -p flag */
@@ -385,7 +389,7 @@ calc_columns(int from, int to)
 	calc->to = floor(audio_length / step) * step;
 
     calc->ppsec  = ppsec;
-    calc->speclen= fftfreq_to_speclen(fftfreq, sample_rate);
+    calc->speclen= speclen;
     calc->window = KAISER;
 
     /* If for a single column, just schedule it */
@@ -435,7 +439,6 @@ do_key(enum key key)
 
 	case STOPPED:
 	    disp_time = 0.0;
-	    repaint_display();
 	    start_playing();
 	    break;
 
@@ -474,36 +477,36 @@ do_key(enum key key)
     case KEY_UP:
 	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 2.0 : pow(2.0, 1/6.0));
-	repaint_display();
+	repaint_display(FALSE);
 	break;
     case KEY_DOWN:
 	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
-	repaint_display();
+	repaint_display(FALSE);
 	break;
 
     /* Zoom on the time axis */
     case KEY_X:
 	time_zoom_by(Shift ? 2.0 : 0.5);
-	repaint_display();
+	repaint_display(TRUE);
 	break;
 
     /* Zoom on the frequency axis */
     case KEY_Y:
 	freq_zoom_by(Shift ? 2.0 : 0.5);
-	repaint_display();
+	repaint_display(TRUE);
 	break;
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
     case KEY_PLUS:
 	freq_zoom_by(2.0);
 	time_zoom_by(2.0);
-	repaint_display();
+	repaint_display(TRUE);
 	break;
     case KEY_MINUS:
 	freq_zoom_by(0.5);
 	time_zoom_by(0.5);
-	repaint_display();
+	repaint_display(TRUE);
 	break;
 
     /* Change dynamic range of color spectrum, like a brightness control.
@@ -513,11 +516,11 @@ do_key(enum key key)
      */
     case KEY_STAR:
 	change_dyn_range(6.0);
-	repaint_display();
+	repaint_display(FALSE);
 	break;
     case KEY_SLASH:
 	change_dyn_range(-6.0);
-	repaint_display();
+	repaint_display(FALSE);
 	break;
 
     /* Toggle staff/piano line overlays */
@@ -535,7 +538,7 @@ do_key(enum key key)
 	    if (guitar_lines) staff_lines = FALSE;
 	}
 	make_row_overlay();
-	repaint_display();
+	repaint_display(TRUE);
 	break;
 
     /* Display the current playing time */
@@ -553,7 +556,12 @@ do_key(enum key key)
 	   /* Decrease FFT size */
 	   fftfreq *= 2;
 	}
-	repaint_display();
+	speclen = fftfreq_to_speclen(fftfreq, sample_rate);
+
+	/* Any calcs that are currently being performed will deliver
+	 * a result for the old speclen and that calculation will need
+	 * rescheduling at the new speclen */
+	repaint_display(TRUE);
 	break;
 
     /* The display has got corrupted, so refresh it at the current
@@ -561,7 +569,7 @@ do_key(enum key key)
     case KEY_REDRAW:
 	disp_time = get_playing_time();
 	disp_time = lrint(disp_time / step) * step;
-	repaint_display();
+	repaint_display(TRUE);
 	break;
 
     /* Set left or right bar line position to current play position */
@@ -621,7 +629,7 @@ do_scroll()
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
 	calc_columns(0, disp_width - 1);
-	repaint_display();
+	repaint_display(TRUE);
     } else {
 	/* Otherwise, shift the overlapping region and calculate the new */
 	if (scroll_by > 0) {
@@ -633,7 +641,7 @@ do_scroll()
 	     * as it will need to be repainted when it has scrolled.
 	     */
 	    if (scroll_by <= disp_offset)
-		repaint_column(disp_offset);
+		repaint_column(disp_offset, FALSE);
 
 	    disp_time = new_disp_time;
 
@@ -642,7 +650,7 @@ do_scroll()
 	    /* Repaint the right edge */
 	    {   int x;
 		for (x = disp_width - scroll_by; x < disp_width; x++) {
-		    repaint_column(x);
+		    repaint_column(x, FALSE);
 		}
 	    }
 	}
@@ -653,7 +661,7 @@ do_scroll()
 	     * There are disp_width - disp_offset - 1 columns right of the line.
 	     */
 	    if (-scroll_by <= disp_width - disp_offset - 1)
-		repaint_column(disp_offset);
+		repaint_column(disp_offset, FALSE);
 
 	    disp_time = new_disp_time;
 
@@ -662,7 +670,7 @@ do_scroll()
 	    /* Repaint the left edge */
 	    {   int x;
 		for (x = -scroll_by - 1; x >= 0; x--) {
-		    repaint_column(x);
+		    repaint_column(x, FALSE);
 		}
 	    }
 	}
@@ -675,14 +683,41 @@ do_scroll()
     }
 }
 
-/* Repaint the whole display */
+/* Repaint the display.
+ *
+ * If "all" is TRUE, repaint every column of the display from the result cache
+ * or paint it with the background color if it hasn't been calculated yet (and
+ * ask for it to be calculated) or is before/after the start/end of the piece.
+ *
+ * If "all" if FALSE, repaint only the columns that are already displaying
+ * spectral data and don't ask for anything new to be calculated.
+ *   This is used when something changes that affects their appearance
+ * retrospectively, like "max" or "dyn_range" changing, or vertical scrolling,
+ * where there's no need to repaint background, bar lines or the green line.
+ *   Rather than remember what has been displayed, we repaint on-screen columns
+ * that are in the result cache and have had their magnitude spectrum calculated
+ * (the conversion from linear to log and the colour assignment happens when
+ * an incoming result is processed to be displayed).
+ *
+ * Returns TRUE if the result was found in the cache and repainted,
+ *	   FALSE if it painted the background color or was off-limits.
+ * The GUI screen-updating function is called by whoever called us.
+ */
 void
-repaint_display(void)
+repaint_display(bool all)
 {
-    int pos_x;
+    int x;
 
-    for (pos_x=disp_width - 1; pos_x >= 0; pos_x--) {
-	repaint_column(pos_x);
+    for (x=disp_width - 1; x >= 0; x--) {
+	if (all) {
+	    repaint_column(x, FALSE);
+	} else {
+	    /* Don't repaint bar lines or the green line */
+	    if (get_col_overlay(x) != 0 || x == disp_offset) continue;
+
+	    /* Only repaint the column if we have already displayed it */
+	    repaint_column(x, TRUE);
+	}
     }
     green_line();
 
@@ -690,13 +725,20 @@ repaint_display(void)
 }
 
 /* Repaint a column of the display from the result cache or paint it
- * with the background color if it hasn't been calculated yet.
- * Returns TRUE if the result was found in the cache and repainted,
- *	   FALSE if it painted the background color or was off-limits.
+ * with the background color if it hasn't been calculated yet or with the
+ * bar lines.
+ *
+ * if "refresh_only" is TRUE, we only repaint columns that are already
+ * displaying spectral data; we find out if a column is displaying spectral data
+ * by checking the result cache: if we have a result for that time/fftfreq,
+ *
+ * and we don't schedule the calculation of columns whose spectral data
+ * has not been displayed yet.
+ *
  * The GUI screen-updating function is called by whoever called us.
  */
 static void
-repaint_column(int column)
+repaint_column(int column, bool refresh_only)
 {
     /* What time does this column represent? */
     double t = disp_time + (column - disp_offset) * step;
@@ -709,12 +751,20 @@ repaint_column(int column)
 
     /* If it's a valid time and the column has already been calculated,
      * repaint it from the cache */
-    if (t >= 0.0 - DELTA && t <= audio_length + DELTA &&
-	(r = recall_result(t, fftfreq_to_speclen(fftfreq, sample_rate)))) {
-	    paint_column(column, r);
-    } else {
+
+    /* If the column is before/after the start/end of the piece,
+     * give it the background colour */
+    if (t < 0.0 - DELTA || t > audio_length + DELTA) {
+	if (!refresh_only)
+	    gui_paint_column(column, background);
+	return;
+    }
+
+    if ((r = recall_result(t, speclen)) != NULL) {
+	paint_column(column, r);
+    } else if (!refresh_only) {
 	/* ...otherwise paint it with the background color */
-	gui_background(column);
+	gui_paint_column(column, background);
 
 	/* and if it was for a valid time, schedule its calculation */
 	if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
@@ -760,9 +810,8 @@ paint_column(int pos_x, result_t *result)
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
      */
-    gui_lock();
+    gui_lock();		/* Allow pixel-writing access */
     for (y=maglen-1; y>=0; y--) {
-
 	/* Apply row overlay, if any, otherwise paint the pixel */
 	if ( (ov = get_row_overlay(y)) != 0) {
 	    unsigned char *color = (unsigned char *) &ov;
@@ -777,7 +826,7 @@ paint_column(int pos_x, result_t *result)
 
     /* and it the maximum amplitude changed, repaint the already-drawn
      * columns at the new brightness. */
-    if (max != old_max) repaint_display();
+    if (max != old_max) repaint_display(FALSE);
 }
 
 /* Paint the green line.
