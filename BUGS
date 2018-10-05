@@ -31,3 +31,7 @@ If you pause and move to the end of the piece, it takes two space
 presses to get it to play again from the start. The first one goes from
 PAUSED to STOPPED and the second from STOPPED (at end) to PLAYING (from start).
 ------------------------------------------------------------------------
+Changing FFT size leaves a dark area just after the green line.
+This is probably the same dark region that has appeared at the start
+of the piece.
+------------------------------------------------------------------------
