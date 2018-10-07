@@ -53,3 +53,6 @@ Try using libsox for sound file reading - zillions of formats!
 ------------------------------------------------------------------------
 Try using sox's "play" command to play the audio (effect "trim" to seek)
 ------------------------------------------------------------------------
+Crtl-l to redraw display from cache, Ctrl-R to junk the cache
+and recalculate all.
+------------------------------------------------------------------------
