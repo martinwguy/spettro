@@ -259,6 +259,7 @@ main(int argc, char **argv)
 -h n  Set spectrogram display height to n pixels\n\
 -w n  Set spectrogram display width to n pixels\n\
 -f n  Set the FFT frequency (default: %g Hz)\n\
+-p n  Set the initial playing time in seconds\n\
 -j n  Set maximum number of threads to use (default: the number of CPUs)\n\
 -k    Overlay black and white lines showing frequencies of an 88-note keyboard\n\
 -s    Overlay conventional score notation pentagrams as white lines\n\
@@ -275,9 +276,9 @@ X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
-p          Toggle overlay of piano key frequencies\n\
+k          Toggle overlay of 88 piano key frequencies\n\
 s          Toggle overlay of conventional staff lines\n\
-g          Toggle overlay of classical guitar string frequencies\n\
+g          Toggle overlay of classical guitar strings' frequencies\n\
 t          Show the current playing time on stdout\n\
 Crtl-R     Redraw the display, should it get out of sync with the audio\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
