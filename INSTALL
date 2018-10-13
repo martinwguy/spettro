@@ -39,11 +39,18 @@ COMPILATION
 	automake --add-missing
 	./configure
 	make
+or
+	sh build.sh
+
+
+INSTALLATION
+
+	sudo make install	# In /usr/local by default
 
 
 EXECUTION
 
-	./spettro whatever.wav
+	spettro whatever.wav
 
 
 ALTERNATIVE CONFIGURATIONS
@@ -55,4 +62,4 @@ or EFL for the graphics and SDL for the sound player.
 To read/decode the audio file, by default it uses libsndfile;
 an alternative is to use libaudiofile.
 
-See the Makefile for instructions on how to make these alternative selections.
+Modify Makefile.am to make these alternative selections.
