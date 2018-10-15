@@ -9,11 +9,14 @@
  * and those containing "audio_file" refer to this lib-independent layer.
  */
 
+#include "spettro.h"
+#include "audio_file.h"		/* Our header file */
+
+#include "lock.h"
+
 #include <stdlib.h>		/* for malloc() */
 #include <stdio.h>		/* for error messages */
 #include <string.h>		/* for memset() */
-
-#include "audio_file.h"		/* Our header file */
 
 /* Audio file info */
 double		audio_length = 0.0;	/* Length of the audio in seconds */
@@ -82,6 +85,11 @@ read_audio_file(audio_file_t *audio_file, char *data,
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
 		    * channels;
 
+    if (!lock_audiofile()) {
+	fprintf(stderr, "Cannot lock audio file\n");
+	exit(1);
+    }
+
     if (afSetVirtualSampleFormat(af, AF_DEFAULT_TRACK,
 	format == af_double ? AF_SAMPFMT_DOUBLE : AF_SAMPFMT_TWOSCOMP,
 	format == af_double ? sizeof(double) : sizeof(short)) ||
@@ -111,6 +119,11 @@ read_audio_file(audio_file_t *audio_file, char *data,
         }
     /* while we still need to read stuff and the last read didn't fail */
     } while (nframes > 0 && frames > 0);
+
+    if (!unlock_audiofile()) {
+	fprintf(stderr, "Cannot unlock audio file\n");
+	exit(1);
+    }
 
     /* If it stopped before reading all frames, fill the rest with silence */
     if (nframes > 0) {
@@ -177,6 +190,11 @@ read_audio_file(audio_file_t *audio_file, char *data,
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
 		    * channels;
 
+    if (!lock_audiofile()) {
+	fprintf(stderr, "Cannot lock audio file\n");
+	exit(1);
+    }
+
     if (start >= 0) {
         sf_seek(sndfile, start, SEEK_SET);
     } else {
@@ -204,6 +222,11 @@ read_audio_file(audio_file_t *audio_file, char *data,
         }
     /* while we still need to read stuff and the last read didn't fail */
     } while (nframes > 0 && frames > 0);
+
+    if (!unlock_audiofile()) {
+	fprintf(stderr, "Cannot unlock audio file\n");
+	exit(1);
+    }
 
     /* If it stopped before reading all frames, fill the rest with silence */
     if (nframes > 0) {

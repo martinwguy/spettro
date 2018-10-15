@@ -29,7 +29,6 @@
 #include "cache.h"
 #include "calc.h"
 #include "gui.h"	/* For RESULT_EVENT */
-#include "lock.h"
 #include "speclen.h"
 #include "spectrum.h"
 
@@ -155,17 +154,9 @@ get_result(calc_t *calc, spectrum *spec, double t)
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	if (!lock_audiofile()) {
-	    fprintf(stderr, "Cannot lock audio file\n");
-	    exit(1);
-	}
 	read_audio_file(calc->audio_file, (char *) spec->time_domain,
 			af_double, 1,
 			lrint(t * calc->sr) - fftsize/2, fftsize);
-	if (!unlock_audiofile()) {
-	    fprintf(stderr, "Cannot unlock audio file\n");
-	    exit(1);
-	}
 
 	calc_magnitude_spectrum(spec);
 
