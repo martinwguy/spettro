@@ -24,9 +24,7 @@ enum WINDOW_FUNCTION {
     HANN,
 };
 
-double *kaiser_window(int datalen, double beta);
-double *nuttall_window(int datalen);
-double *hann_window(int datalen);
+extern double *	get_window(enum WINDOW_FUNCTION wfunc, int datalen);
 
 #define WINDOW_H
 #endif

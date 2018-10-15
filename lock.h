@@ -8,3 +8,6 @@ bool unlock_audiofile(void);
 
 bool lock_list(void);
 bool unlock_list(void);
+
+bool lock_window(void);
+bool unlock_window(void);

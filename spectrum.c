@@ -61,23 +61,7 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
 	return(NULL);
     }
 
-    switch (spec->wfunc) {
-    case RECTANGULAR:
-	break;
-    case KAISER:
-	spec->window = kaiser_window(2 * speclen, 20.0);
-	break;
-    case NUTTALL:
-	spec->window = nuttall_window(2 * speclen);
-	break;
-    case HANN:
-	spec->window = hann_window(2 * speclen);
-	break;
-    default:
-	fprintf(stderr, "Internal error: Unknown window_function.\n");
-	destroy_spectrum(spec);
-	spec = NULL;
-    };
+    spec->window = get_window(spec->wfunc, 2 * speclen);
 
     return spec;
 }

@@ -22,19 +22,87 @@
 #include "spettro.h"
 #include "window.h"
 
+#include "lock.h"
+
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
+
+static void kaiser_window(double *data, int datalen);
+static void nuttall_window(double *data, int datalen);
+static void hann_window(double *data, int datalen);
 
 static double besseli0(double x);
 static double factorial(int k);
 
-static enum WINDOW_FUNCTION current_window_function = RECTANGULAR;
-static int current_datalen = 0;
-static double *current_window = NULL;
-static double current_beta = 0.0;
+typedef struct stored_window {
+    enum WINDOW_FUNCTION wfunc;
+    int datalen;
+    double *window;
+    struct stored_window *next;
+} stored_window_t;
+
+stored_window_t *stored_windows = NULL;
 
 double *
-kaiser_window(int datalen, double beta)
+get_window(enum WINDOW_FUNCTION wfunc, int datalen)
 {
+    double *window = NULL;	/* data to return */
+
+    lock_window();
+
+    /* See if it's already in the cache */
+    {	stored_window_t *w;
+	for (w = stored_windows; w != NULL; w=w->next) {
+	    if (w->wfunc = wfunc && w->datalen == datalen) {
+		unlock_window();
+		return(w->window);
+	    }
+	}
+    }
+
+    window = malloc(datalen * sizeof(double));
+    if (window == NULL) {
+	fprintf(stderr, "Out of memory in get_window()\n");
+	exit(1);
+    }
+
+    switch (wfunc) {
+    case RECTANGULAR: return NULL;
+    case KAISER:  kaiser_window(window, datalen);	break;
+    case NUTTALL: nuttall_window(window, datalen);	break;
+    case HANN:    hann_window(window, datalen);		break;
+    default:      fprintf(stderr, "Internal error: Unknown window_function.\n");
+		  exit(1);
+    };
+
+    if (window == NULL) {
+	fprintf(stderr, "Window creation failed.\n");
+	abort();
+    }
+
+    /* Remember this window for future use */
+    {
+	stored_window_t *new = malloc(sizeof(stored_window_t));
+	if (new == NULL) {
+	    fprintf(stderr, "Out of memory storing new window\n");
+	    exit(1);
+	}
+	new->wfunc = wfunc;
+	new->datalen = datalen;
+	new->window = window;
+	new->next = stored_windows;
+	stored_windows = new;
+    }
+
+    unlock_window();
+
+    return(window);
+}
+
+static void
+kaiser_window(double *data, int datalen)
+{
+    double beta = 20.0;
+
     /*
      *         besseli0(beta * sqrt(1 - (2*x/N).^2))
      * w(x) =  --------------------------------------,  -N/2 <= x <= N/2
@@ -42,28 +110,11 @@ kaiser_window(int datalen, double beta)
      */
 
     double two_n_on_N, denom;
-    double *data;
     int k;
-
-    if (current_window != NULL &&
-	current_window_function == KAISER &&
-	current_datalen == datalen &&
-	current_beta == beta) return(current_window);
-
-    /* Don't free old windows because a calc thread may still be using them */
-    current_window = malloc(datalen * sizeof(double));
-    if (current_window == NULL) {
-	fputs("Out of memory.\n", stderr);
-	exit(1);
-    }
-    data = current_window;
-    current_window_function = KAISER;
-    current_datalen = datalen;
-    current_beta = beta;
 
     denom = besseli0(beta);
 
-    if (!isfinite(denom)) {
+    if (!isfinite(denom) || isnan(denom)) {
 	printf("besseli0(%f) : %f\nExiting\n", beta, denom);
 	exit(1);
     }
@@ -74,28 +125,13 @@ kaiser_window(int datalen, double beta)
 	data[k] = besseli0(beta * sqrt(1.0 - two_n_on_N * two_n_on_N)) / denom;
     }
 
-    return(data);
 }
 
-double *
-nuttall_window(int datalen)
+static void
+nuttall_window(double *data, int datalen)
 {
     const double a[4] = { 0.355768, 0.487396, 0.144232, 0.012604 };
-    double *data;
     int k;
-
-    if (current_window_function == NUTTALL && current_datalen == datalen)
-	return(current_window);
-
-    /* Don't free old windows because a calc thread may still be using them */
-    current_window = malloc(datalen * sizeof(double));
-    if (current_window == NULL) {
-	fputs("Out of memory.\n", stderr);
-	exit(1);
-    }
-    data = current_window;
-    current_window_function = NUTTALL;
-    current_datalen = datalen;
 
     /*
      *	Nuttall window function from :
@@ -104,7 +140,7 @@ nuttall_window(int datalen)
      */
 
     for (k = 0; k < datalen ; k++) {
-    	double scale;
+	double scale;
 
 	scale = M_PI * k / (datalen - 1);
 
@@ -113,28 +149,12 @@ nuttall_window(int datalen)
 		+ a[2] * cos(4.0 * scale)
 		- a[3] * cos(6.0 * scale);
     }
-
-    return(data);
 }
 
-double *
-hann_window(int datalen)
+static void
+hann_window(double *data, int datalen)
 {
-    double *data;
     int k;
-
-    if (current_window_function == HANN && current_datalen == datalen)
-	return(current_window);
-
-    /* Don't free old windows because a calc thread may still be using them */
-    current_window = malloc(datalen * sizeof(double));
-    if (current_window == NULL) {
-	fputs("Out of memory.\n", stderr);
-	exit(1);
-    }
-    data = current_window;
-    current_window_function = HANN;
-    current_datalen = datalen;
 
     /*
      *	Hann window function from :
@@ -145,8 +165,6 @@ hann_window(int datalen)
     for (k = 0; k < datalen ; k++) {
 	data[k] = 0.5 * (1.0 - cos(2.0 * M_PI * k / (datalen - 1)));
     }
-
-    return(data);
 }
 
 static double
@@ -156,7 +174,7 @@ besseli0(double x)
     double result = 0.0;
 
     for (k = 1; k < 25; k++) {
-    	double temp;
+	double temp;
 
 	temp = pow(0.5 * x, k) / factorial(k);
 	result += temp * temp;
