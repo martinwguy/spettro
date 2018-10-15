@@ -56,11 +56,11 @@ open_audio_file(char *filename)
      * both native-endian. Don't care if it fails.
      */
     (void) afSetVirtualByteOrder(af, AF_DEFAULT_TRACK,
-#if LITTLE_ENDIAN
+# if LITTLE_ENDIAN
 			      AF_BYTEORDER_LITTLEENDIAN);
-#else
+# else
 			      AF_BYTEORDER_BIGENDIAN);
-#endif
+# endif
 
 #elif USE_LIBSNDFILE
 
@@ -83,6 +83,7 @@ open_audio_file(char *filename)
 
 #endif
 
+    /* Set the globals that everyone picks at */
     sample_rate = audio_file->samplerate;
     audio_length = (double)audio_file->frames / sample_rate;
 
@@ -97,23 +98,26 @@ open_audio_file(char *filename)
  * "format" is one of af_double or af_signed
  * "channels" is the number of desired channels, 1 to monoise or copied from
  *		the WAV file to play as-is.
- * "start" is the index of the first sample frame to read and may be negative.
- * "nframes" is the number of sample frames to read.
+ * "start" is the index of the first sample frame to read.
+ *	It may be negative if we are reading data for FFT transformation,
+ *	in which case we invent some 0 data for the leading silence.
+ * "frames_to_read" is the number of sample frames to fill the data buffer with.
  */
 int
 read_audio_file(audio_file_t *audio_file, char *data,
 		af_format format, int channels,
-		int start, int nframes)
+		int start, int frames_to_read)
 {
 #if USE_LIBAUDIOFILE
     AFfilehandle af = audio_file->af;
 #elif USE_LIBSNDFILE
     SNDFILE *sndfile = audio_file->sndfile;
 #endif
-    int frames;		/* How many did the last read() call return? */
-    int total_frames = 0;	/* How many frames have we read? */
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
 		    * channels;
+    int total_frames = 0;	/* How many frames have we filled? */
+    char *write_to = data;	/* Where to write next data */
+    int frames;		/* How many frames did the last read() call return? */
 
     if (!lock_audiofile()) {
 	fprintf(stderr, "Cannot lock audio file\n");
@@ -130,44 +134,46 @@ read_audio_file(audio_file_t *audio_file, char *data,
     }
 #endif
 
-    if (start >= 0) {
+    if (start < 0) {
+	if (format != af_double) {
+	    fprintf(stderr, "Internal error: Reading audio data for playing from before the start of the piece");
+	    exit(1);
+	}
+	/* Fill before time 0.0 with silence */
+        int silence = -start;	/* How many silent frames to fill */
+        memset(write_to, 0, silence * framesize);
+	total_frames += silence;
+        write_to += silence * framesize;
+        frames_to_read -= silence;
+	start = 0;	/* Read audio data from start of file */
+    }
+
 #if USE_LIBAUDIOFILE
         afSeekFrame(af, AF_DEFAULT_TRACK, start);
 #elif USE_LIBSNDFILE
         sf_seek(sndfile, start, SEEK_SET);
 #endif
-    } else {
-	/* Fill before time 0.0 with silence */
-        start = -start;
-#if USE_LIBAUDIOFILE
-        afSeekFrame(af, AF_DEFAULT_TRACK, 0);
-#elif USE_LIBSNDFILE
-        sf_seek(sndfile, 0, SEEK_SET);
-#endif
-        memset(data, 0, start * framesize);
-        data += start * framesize;
-        nframes -= start;
-    }
+
     do {
 #if USE_LIBAUDIOFILE
-        frames = afReadFrames(af, AF_DEFAULT_TRACK, (void *)data, nframes);
+        frames = afReadFrames(af, AF_DEFAULT_TRACK, (void *)write_to, frames_to_read);
 #elif USE_LIBSNDFILE
 	if (format == af_double) {
-            frames = sfx_mix_mono_read_doubles(sndfile, (double *)data, nframes);
+            frames = sfx_mix_mono_read_doubles(sndfile, (double *)write_to, frames_to_read);
 	} else {
 	    /* 16-bit native endian */
-	    frames = sf_readf_short(sndfile, (short *)data, nframes);
+	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
 	}
 #endif
         if (frames > 0) {
 	    total_frames += frames;
-            data += frames * framesize;
-            nframes -= frames;
+            write_to += frames * framesize;
+            frames_to_read -= frames;
         } else {
             /* We ask it to read past EOF so failure is normal */
         }
     /* while we still need to read stuff and the last read didn't fail */
-    } while (nframes > 0 && frames > 0);
+    } while (frames_to_read > 0 && frames > 0);
 
     if (!unlock_audiofile()) {
 	fprintf(stderr, "Cannot unlock audio file\n");
@@ -175,8 +181,10 @@ read_audio_file(audio_file_t *audio_file, char *data,
     }
 
     /* If it stopped before reading all frames, fill the rest with silence */
-    if (nframes > 0) {
-        memset(data + (total_frames * framesize), 0, nframes * framesize);
+    if (format == af_double && frames_to_read > 0) {
+        memset(data + (total_frames * framesize), 0, frames_to_read * framesize);
+	total_frames += frames_to_read;
+	frames_to_read = 0;
     }
 
     return total_frames;

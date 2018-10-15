@@ -1,26 +1,10 @@
 ------------------------------------------------------------------------
-When zoomed in on the X axis (i.e. when CPU is at 100%), USE_SDL (SDL_VIDEO)
-sometimes leaves fragments of the green line in the spectral columns and
-occasionally paints hugs squares of diagonal green-tinted garbage.
-It's done this since SDL_VIDEO was implemented in commit ec24.
-------------------------------------------------------------------------
 If the evas_close functions are called on exit, it dumps core.
 ------------------------------------------------------------------------
 With SDL_TIMER zoomed in on X, the CPU load makes it unable to
 signal results and the display gets screwed.
 ------------------------------------------------------------------------
 When zoomed into X axis, Left and Right should move less.
-------------------------------------------------------------------------
-If you X-zoom and X-zoom again before it's finished repainting, it dumps core.
-[Is this still true?)
-------------------------------------------------------------------------
-It sometimes gets column repaints wrong.
-
-Single-pixel-wide bright or dark stripes appear in the graphic when the
-display is scrolling. The bug is sporadic; sometimes two runs will give the
-same vertical stripes, other times not, or different.
-
-This may be due to doing too much in the timer interrupt routine.
 ------------------------------------------------------------------------
 SDL keys obtained with AltGr or Shift do not work.
 
@@ -30,9 +14,4 @@ e.g. "AltGr +/*" should give ] but gives + instead
 If you pause and move to the end of the piece, it takes two space
 presses to get it to play again from the start. The first one goes from
 PAUSED to STOPPED and the second from STOPPED (at end) to PLAYING (from start).
-------------------------------------------------------------------------
-Changing FFT size leaves a dark area just after the green line.
-This is probably the same dark region that has appeared at the start
-of the piece. What on earth could take a few dozen iterations to get its
-head sorted out and then work (almost) properly??!
 ------------------------------------------------------------------------
