@@ -18,15 +18,20 @@
 #include <stdio.h>		/* for error messages */
 #include <string.h>		/* for memset() */
 
+#if USE_LIBSNDFILE
+static sf_count_t sfx_mix_mono_read_doubles(SNDFILE *file, double *data,
+					    sf_count_t datalen);
+#endif
+
 /* Audio file info */
 double		audio_length = 0.0;	/* Length of the audio in seconds */
 double		sample_rate;		/* SR of the audio in Hertz */
 
-#if USE_LIBAUDIOFILE
-
 audio_file_t *
 open_audio_file(char *filename)
 {
+#if USE_LIBAUDIOFILE
+
     AFfilehandle af;
     audio_file_t *audio_file = malloc(sizeof(audio_file_t));
 
@@ -46,9 +51,6 @@ open_audio_file(char *filename)
     audio_file->frames = afGetFrameCount(af, AF_DEFAULT_TRACK);
     audio_file->channels = afGetChannels(af, AF_DEFAULT_TRACK);
 
-    sample_rate = audio_file->samplerate;
-    audio_length = (double)audio_file->frames / sample_rate;
-
     /*
      * We will be reading as mono doubles or as 16-bit native for soundcard,
      * both native-endian. Don't care if it fails.
@@ -59,6 +61,30 @@ open_audio_file(char *filename)
 #else
 			      AF_BYTEORDER_BIGENDIAN);
 #endif
+
+#elif USE_LIBSNDFILE
+
+    static audio_file_t our_audio_file;
+    audio_file_t *audio_file = &our_audio_file;
+    SF_INFO info;
+    SNDFILE *sndfile;
+
+    memset(&info, 0, sizeof(info));
+
+    if ((sndfile = sf_open(filename, SFM_READ, &info)) == NULL) {
+	fprintf(stderr, "libsndfile failed to open \"%s\": %s\n",
+		filename, sf_strerror(NULL));
+	return(NULL);
+    }
+    audio_file->sndfile = sndfile;
+    audio_file->samplerate = info.samplerate;
+    audio_file->frames = info.frames;
+    audio_file->channels = info.channels;
+
+#endif
+
+    sample_rate = audio_file->samplerate;
+    audio_length = (double)audio_file->frames / sample_rate;
 
     return(audio_file);
 }
@@ -79,7 +105,11 @@ read_audio_file(audio_file_t *audio_file, char *data,
 		af_format format, int channels,
 		int start, int nframes)
 {
+#if USE_LIBAUDIOFILE
     AFfilehandle af = audio_file->af;
+#elif USE_LIBSNDFILE
+    SNDFILE *sndfile = audio_file->sndfile;
+#endif
     int frames;		/* How many did the last read() call return? */
     int total_frames = 0;	/* How many frames have we read? */
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
@@ -90,6 +120,7 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	exit(1);
     }
 
+#if USE_LIBAUDIOFILE
     if (afSetVirtualSampleFormat(af, AF_DEFAULT_TRACK,
 	format == af_double ? AF_SAMPFMT_DOUBLE : AF_SAMPFMT_TWOSCOMP,
 	format == af_double ? sizeof(double) : sizeof(short)) ||
@@ -97,22 +128,40 @@ read_audio_file(audio_file_t *audio_file, char *data,
             fprintf(stderr, "Can't set virtual sample format.\n");
 	    return 0;
     }
+#endif
 
     if (start >= 0) {
+#if USE_LIBAUDIOFILE
         afSeekFrame(af, AF_DEFAULT_TRACK, start);
+#elif USE_LIBSNDFILE
+        sf_seek(sndfile, start, SEEK_SET);
+#endif
     } else {
 	/* Fill before time 0.0 with silence */
         start = -start;
+#if USE_LIBAUDIOFILE
         afSeekFrame(af, AF_DEFAULT_TRACK, 0);
+#elif USE_LIBSNDFILE
+        sf_seek(sndfile, 0, SEEK_SET);
+#endif
         memset(data, 0, start * framesize);
         data += start * framesize;
         nframes -= start;
     }
     do {
+#if USE_LIBAUDIOFILE
         frames = afReadFrames(af, AF_DEFAULT_TRACK, (void *)data, nframes);
+#elif USE_LIBSNDFILE
+	if (format == af_double) {
+            frames = sfx_mix_mono_read_doubles(sndfile, (double *)data, nframes);
+	} else {
+	    /* 16-bit native endian */
+	    frames = sf_readf_short(sndfile, (short *)data, nframes);
+	}
+#endif
         if (frames > 0) {
 	    total_frames += frames;
-            data += frames;
+            data += frames * framesize;
             nframes -= frames;
         } else {
             /* We ask it to read past EOF so failure is normal */
@@ -136,111 +185,14 @@ read_audio_file(audio_file_t *audio_file, char *data,
 void
 close_audio_file(audio_file_t *audio_file)
 {
+#if USE_LIBAUDIOFILE
     afCloseFile(audio_file->af);
-}
-
 #elif USE_LIBSNDFILE
-
-static sf_count_t sfx_mix_mono_read_doubles(SNDFILE *file, double *data,
-					    sf_count_t datalen);
-audio_file_t *
-open_audio_file(char *filename)
-{
-    static audio_file_t audio_file;
-    SF_INFO info;
-    SNDFILE *sndfile;
-
-    memset(&info, 0, sizeof(info));
-
-    if ((sndfile = sf_open(filename, SFM_READ, &info)) == NULL) {
-	fprintf(stderr, "libsndfile failed to open \"%s\": %s\n",
-		filename, sf_strerror(NULL));
-	return(NULL);
-    }
-    audio_file.sndfile = sndfile;
-    audio_file.samplerate = info.samplerate;
-    audio_file.frames = info.frames;
-    audio_file.channels = info.channels;
-
-    sample_rate = audio_file.samplerate;
-    audio_length = (double)audio_file.frames / sample_rate;
-
-    return(&audio_file);
-}
-
-/*
- * Read sample frames, returning them as mono doubles for the graphics or as
- * the original audio as 16-bit in system-native bytendianness for the sound.
- *
- * "data" is where to put the audio data.
- * "format" is one of af_double or af_signed
- * "channels" is the number of desired channels, 1 to monoise or copied from
- *		the WAV file to play as-is.
- * "start" is the index of the first sample frame to read and may be negative.
- * "nframes" is the number of sample frames to read.
- */
-int
-read_audio_file(audio_file_t *audio_file, char *data,
-		af_format format, int channels,
-		int start, int nframes)
-{
-    SNDFILE *sndfile = audio_file->sndfile;
-    int frames;		/* How many did the last read() call return? */
-    int total_frames = 0;
-    int framesize = (format == af_double ? sizeof(double) : sizeof(short))
-		    * channels;
-
-    if (!lock_audiofile()) {
-	fprintf(stderr, "Cannot lock audio file\n");
-	exit(1);
-    }
-
-    if (start >= 0) {
-        sf_seek(sndfile, start, SEEK_SET);
-    } else {
-	/* Fill before time 0.0 with silence */
-        start = -start;
-        sf_seek(sndfile, 0, SEEK_SET);
-        memset(data, 0, start * framesize);
-        data += start * framesize;
-        nframes -= start;
-    }
-
-    do {
-	if (format == af_double) {
-            frames = sfx_mix_mono_read_doubles(sndfile, (double *)data, nframes);
-	} else {
-	    /* 16-bit native endian */
-	    frames = sf_readf_short(sndfile, (short *)data, nframes);
-	}
-        if (frames > 0) {
-	    total_frames += frames;
-            data += frames * framesize;
-            nframes -= frames;
-        } else {
-            /* We ask it to read past EOF so failure is normal */
-        }
-    /* while we still need to read stuff and the last read didn't fail */
-    } while (nframes > 0 && frames > 0);
-
-    if (!unlock_audiofile()) {
-	fprintf(stderr, "Cannot unlock audio file\n");
-	exit(1);
-    }
-
-    /* If it stopped before reading all frames, fill the rest with silence */
-    if (nframes > 0) {
-        memset(data + (total_frames * framesize), 0, nframes * framesize);
-    }
-
-    return(total_frames);
-}
-
-void
-close_audio_file(audio_file_t *audio_file)
-{
     sf_close(audio_file->sndfile);
+#endif
 }
+
+#if USE_LIBSNDFILE
 
 /* This last function is from sndfile-tools */
 
