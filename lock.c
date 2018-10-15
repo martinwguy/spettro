@@ -55,19 +55,23 @@ static bool list_lock_is_initialized = FALSE;
 static lock_t window_lock;
 static bool window_lock_is_initialized = FALSE;
 
-bool
+void
 lock_fftw3()
 {
-    if (!initialize(&fftw3_lock, &fftw3_lock_is_initialized))
-	return FALSE;
-    else
-	return do_lock(&fftw3_lock);
+    if (!initialize(&fftw3_lock, &fftw3_lock_is_initialized) ||
+	!do_lock(&fftw3_lock)) {
+	fprintf(stderr, "Cannot lock FFTW3\n");
+	abort();
+    }
 }
 
-bool
+void
 unlock_fftw3()
 {
-    return do_unlock(&fftw3_lock);
+    if (!do_unlock(&fftw3_lock)) {
+	fprintf(stderr, "Cannot unlock FFTW3\n");
+	abort();
+    }
 }
 
 bool

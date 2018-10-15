@@ -32,8 +32,10 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
      * time_domain has an extra element to be able to interpolate between
      * samples for better time precision, hoping to eliminate artifacts.
      */
+    lock_fftw3();
     spec->time_domain	= fftw_alloc_real(2 * speclen + 1);
     spec->freq_domain	= fftw_alloc_real(2 * speclen);
+    unlock_fftw3();
     spec->mag_spec	= calloc(speclen + 1,	  sizeof(*spec->mag_spec));
     spec->plan = NULL;
     if (spec->time_domain == NULL ||
@@ -43,17 +45,11 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
 	    return(NULL);
     }
 
-    if (!lock_fftw3()) {
-	fprintf(stderr, "Cannot lock FFTW3.\n");
-	exit(1);
-    }
+    lock_fftw3();
     spec->plan = fftw_plan_r2r_1d(2 * speclen,
 			    spec->time_domain, spec->freq_domain,
 			    FFTW_R2HC, FFTW_ESTIMATE /*| FFTW_PRESERVE_INPUT*/);
-    if (!unlock_fftw3()) {
-	fprintf(stderr, "Cannot unlock FFTW3.\n");
-	exit(1);
-    }
+    unlock_fftw3();
 
     if (spec->plan == NULL) {
 	fprintf(stderr, "create_spectrum(): failed to create plan\n");
@@ -69,20 +65,14 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
 void
 destroy_spectrum(spectrum *spec)
 {
+    lock_fftw3();
     if (spec->plan) {
-	if (!lock_fftw3()) {
-	    fprintf(stderr, "Cannot lock FFTW3.\n");
-	    exit(1);
-	}
 	fftw_destroy_plan(spec->plan);
-	if (!unlock_fftw3()) {
-	    fprintf(stderr, "Cannot unlock FFTW3.\n");
-	    exit(1);
-	}
     }
     fftw_free(spec->time_domain);
-    /* free(spec->window);	window may be in use by another calc thread */
     fftw_free(spec->freq_domain);
+    unlock_fftw3();
+    /* free(spec->window);	window may be in use by another calc thread */
     free(spec->mag_spec);
     free(spec);
 }
