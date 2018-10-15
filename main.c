@@ -285,13 +285,13 @@ l/r        Set the left/right bar markers for an overlay of bar lines\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
-MIN_FREQ   The frequency centred on the bottom pixel row, currently %g\n\
-MAX_FREQ   The frequency centred on the top pixel row, currently %g\n\
-DYN_RANGE  Dynamic range of amplitude values in decibels, default=%g\n\
+MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
+MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
+DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 Zooms on the time axis (X,x,+,-) change PPSEC\n\
 Frequency-axis zooms and pans (Up,Down,Y,y,+,-) change MIN_FREQ and MAX_FREQ\n\
 Brightness controls (*,/) change DYN_RANGE\n\
-", fftfreq, ppsec, -min_db, min_freq, max_freq);
+", fftfreq, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	}
     }
