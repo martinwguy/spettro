@@ -32,8 +32,8 @@ create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
      * time_domain has an extra element to be able to interpolate between
      * samples for better time precision, hoping to eliminate artifacts.
      */
-    spec->time_domain	= calloc(2 * speclen + 1, sizeof(*spec->time_domain));
-    spec->freq_domain	= calloc(2 * speclen,	  sizeof(*spec->freq_domain));
+    spec->time_domain	= fftw_alloc_real(2 * speclen + 1);
+    spec->freq_domain	= fftw_alloc_real(2 * speclen);
     spec->mag_spec	= calloc(speclen + 1,	  sizeof(*spec->mag_spec));
     spec->plan = NULL;
     if (spec->time_domain == NULL ||
@@ -80,9 +80,9 @@ destroy_spectrum(spectrum *spec)
 	    exit(1);
 	}
     }
-    free(spec->time_domain);
+    fftw_free(spec->time_domain);
     /* free(spec->window);	window may be in use by another calc thread */
-    free(spec->freq_domain);
+    fftw_free(spec->freq_domain);
     free(spec->mag_spec);
     free(spec);
 }
