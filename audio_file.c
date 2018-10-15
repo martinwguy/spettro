@@ -78,7 +78,7 @@ read_audio_file(audio_file_t *audio_file, char *data,
 {
     AFfilehandle af = audio_file->af;
     int frames;		/* How many did the last read() call return? */
-    int total_frames = 0;
+    int total_frames = 0;	/* How many frames have we read? */
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
 		    * channels;
 
@@ -112,8 +112,9 @@ read_audio_file(audio_file_t *audio_file, char *data,
     /* while we still need to read stuff and the last read didn't fail */
     } while (nframes > 0 && frames > 0);
 
-    if (total_frames < nframes) {
-        memset(data, 0, (nframes - total_frames) * sizeof(data[0]));
+    /* If it stopped before reading all frames, fill the rest with silence */
+    if (nframes > 0) {
+        memset(data + (total_frames * framesize), 0, nframes * framesize);
     }
 
     return total_frames;
@@ -204,8 +205,9 @@ read_audio_file(audio_file_t *audio_file, char *data,
     /* while we still need to read stuff and the last read didn't fail */
     } while (nframes > 0 && frames > 0);
 
-    if (total_frames < nframes) {
-        memset(data, 0, (nframes - total_frames) * framesize);
+    /* If it stopped before reading all frames, fill the rest with silence */
+    if (nframes > 0) {
+        memset(data + (total_frames * framesize), 0, nframes * framesize);
     }
 
     return(total_frames);
