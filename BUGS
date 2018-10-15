@@ -33,5 +33,6 @@ PAUSED to STOPPED and the second from STOPPED (at end) to PLAYING (from start).
 ------------------------------------------------------------------------
 Changing FFT size leaves a dark area just after the green line.
 This is probably the same dark region that has appeared at the start
-of the piece.
+of the piece. What on earth could take a few dozen iterations to get its
+head sorted out and then work (almost) properly??!
 ------------------------------------------------------------------------
