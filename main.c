@@ -541,6 +541,12 @@ do_key(enum key key)
 	repaint_display(TRUE);
 	break;
 
+    /* Display the current UI parameters */
+    case KEY_P:
+	printf("time=%g step=%g min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g\n",
+		disp_time, step, min_freq, max_freq, fftfreq, -min_db);
+	break;
+
     /* Display the current playing time */
     case KEY_T:
 	printf("%02d:%02d (%g seconds)\n", (int) disp_time / 60,

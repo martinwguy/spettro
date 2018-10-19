@@ -30,6 +30,7 @@ enum key {
     KEY_K,
     KEY_S,
     KEY_G,
+    KEY_P,
     KEY_T,
     KEY_F,
     KEY_REDRAW,

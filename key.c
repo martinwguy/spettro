@@ -45,6 +45,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'k': key = KEY_K;			break;
 	case 's': key = KEY_S;			break;
 	case 'g': key = KEY_G;			break;
+	case 'p': key = KEY_P;			break;
 	case 't': key = KEY_T;			break;
 	case 'f': key = KEY_F;			break;
 	case 'l': key = KEY_BAR_START;		break;
@@ -107,6 +108,7 @@ sdl_key_decode(SDL_Event *eventp)
     case SDLK_k:	     key = KEY_K;	break;
     case SDLK_s:	     key = KEY_S;	break;
     case SDLK_g:	     key = KEY_G;	break;
+    case SDLK_p:	     key = KEY_P;	break;
     case SDLK_t:	     key = KEY_T;	break;
     case SDLK_f:	     key = KEY_F;	break;
     case SDLK_l:

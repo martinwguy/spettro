@@ -84,3 +84,5 @@ Check for conflict btw read_audio_file and destroy_spectrum
 Implement --smooth to synch scrolling to real time not playing-time.
 Synch is good if I remember, with the reposition-ELF-on-resume tweak,
 ------------------------------------------------------------------------
+Precalculate up to one screenful ahead in time
+------------------------------------------------------------------------
