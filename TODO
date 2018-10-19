@@ -9,9 +9,6 @@ line on the right edge.
 Be able to position the green line, disp_offset,
 and also move it with Alt-Left/Right arrow, Home, End?
 ------------------------------------------------------------------------
-Be able to cache results that have different calculation parameters.
-This needs doing before letting them change fftfreq from the GUI.
-------------------------------------------------------------------------
 Improve result cache so that we precalculate ahead of right screen edge
 and so that we can cancel scheduled calculations that are no longer in
 the time period we cache.
@@ -52,7 +49,7 @@ seek to any position in a click and see which parts have been calculated?
 ------------------------------------------------------------------------
 Let them change the FFT window function.
 ------------------------------------------------------------------------
-Key to display playing time = text overlays -> axis markers
+Implement text overlays for axis markers etc
 ------------------------------------------------------------------------
 Add -m mute flag to be able to test emotion graphics.
 This needs scrolling by regular timer, not by audio position.
