@@ -27,6 +27,7 @@
 
 #include "spettro.h"
 #include "overlay.h"
+#include "gui.h"
 #include "main.h"
 
 #include <math.h>	/* for pow() */
@@ -94,8 +95,7 @@ make_row_overlay()
 	    /* If in screen range, write it to the overlay */
 	    if (magindex >= 0 && magindex < len)
 		row_overlay[magindex] = (color[note % 12] == 0)
-				    ? 0xFFFFFFFF	/* 0=White */
-				    : 0xFF000000;	/* 1=Black */
+				    ? white : black;
 	}
     }
 
@@ -113,11 +113,11 @@ make_row_overlay()
 
 	    /* Staff lines are 3 pixels wide */
 	    if (magindex >= 0 && magindex < len)
-		row_overlay[magindex] = 0xFFFFFFFF;
+		row_overlay[magindex] = white;
 	    if (magindex-1 >= 0 && magindex-1 < len)
-		row_overlay[magindex-1] = 0xFFFFFFFF;
+		row_overlay[magindex-1] = white;
 	    if (magindex+1 >= 0 && magindex+1 < len)
-		row_overlay[magindex+1] = 0xFFFFFFFF;
+		row_overlay[magindex+1] = white;
         }
     }
 
@@ -134,11 +134,11 @@ make_row_overlay()
 
 	    /* Guitar lines are also 3 pixels wide */
 	    if (magindex >= 0 && magindex < len)
-		row_overlay[magindex] = 0xFFFFFFFF;
+		row_overlay[magindex] = white;
 	    if (magindex-1 >= 0 && magindex-1 < len)
-		row_overlay[magindex-1] = 0xFFFFFFFF;
+		row_overlay[magindex-1] = white;
 	    if (magindex+1 >= 0 && magindex+1 < len)
-		row_overlay[magindex+1] = 0xFFFFFFFF;
+		row_overlay[magindex+1] = white;
         }
     }
 }
@@ -214,14 +214,12 @@ set_bar_right_time(double when)
 
 /*
  * What colour overlays this screen column?
- *
- * 0x00000000 = Nothing
- * 0xFFrrggbb = this colour
+ * 0 = none
  */
 unsigned int
 get_col_overlay(int x)
 {
-    return is_bar_line(x) ? 0xFFFFFFFF : 0;
+    return is_bar_line(x) ? white : 0;
 }
 
 /* Does screen column x coincide with the position of a bar line? */

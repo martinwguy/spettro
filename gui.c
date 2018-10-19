@@ -48,8 +48,10 @@ static SDL_Surface *screen;
 #if EVAS_VIDEO
 const unsigned background = 0xFF808080;	/* 50% grey */
 const unsigned green	  = 0xFF00FF00;
+const unsigned white	  = 0xFFFFFFFF;
+const unsigned black	  = 0xFF000000;
 #elif SDL_VIDEO
-unsigned background, green;
+unsigned background, green, white, black;
 #endif
 
 #if SDL_MAIN
@@ -193,6 +195,8 @@ gui_init(char *filename)
 
     background	= SDL_MapRGB(screen->format, 0x80, 0x80, 0x80);
     green	= SDL_MapRGB(screen->format, 0x00, 0xFF, 0x00);
+    white	= SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF);
+    black	= SDL_MapRGB(screen->format, 0x00, 0x00, 0x01); /* 0 means "no overlay */
 
     /* Clear the image buffer to the background color */
     if (SDL_FillRect(screen, NULL, background) != 0) {

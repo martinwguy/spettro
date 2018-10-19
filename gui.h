@@ -2,10 +2,9 @@
 
 /* The color for uncalculated areas:  RGB gray */
 #if EVAS_VIDEO
-extern const unsigned background;	/* 50% grey */
-extern const unsigned green;
+extern const unsigned background, green, white, black;
 #elif SDL_VIDEO
-extern unsigned background, green;
+extern unsigned background, green, white, black;
 #endif
 
 #if SDL_MAIN
