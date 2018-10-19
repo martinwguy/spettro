@@ -11,6 +11,7 @@
 
 #include "spettro.h"
 #include "calc.h"	/* for result_t */
+#include "window.h"
 #include "main.h"
 
 #include <stdlib.h>	/* for free() */
@@ -24,8 +25,6 @@ static result_t *last_result = NULL; /* Last element in the linked list */
 void
 remember_result(result_t *result)
 {
-    int speclen = result->speclen;
-
     /* Drop any stored results more than half a screenful before the display */
     while (results != NULL && results->t < disp_time - (disp_offset + disp_width/2) * step - DELTA) {
 	result_t *r = results;
@@ -56,8 +55,10 @@ remember_result(result_t *result)
 		     r = r->next) {
 		    if (r->next->t <= result->t + DELTA &&
 			r->next->t >= result->t - DELTA &&
-			r->next->speclen == speclen) {
+			r->next->speclen == result->speclen &&
+			r->next->window == result->window) {
 			/* Same time, same size: forget it */
+fprintf(stderr, "Destroying duplicate result\n");
 			destroy_result(result);
 			r = NULL; break;
 		    }
@@ -72,12 +73,12 @@ remember_result(result_t *result)
     }
 }
 
-/* Return the result for time t at the current speclen
- * or NULL if it hasn't been calculated yet.
- * speclen==-1 means "I don't care".
+/* Return the result for time t at the current speclen and window function
+ * or NULL if it hasn't been calculated yet, in which case we schedule it.
+ * speclen==-1 or window==-1 means "I don't care for what speclen/window".
  */
 result_t *
-recall_result(double t, int speclen)
+recall_result(double t, int speclen, window_function_t window)
 {
     result_t *p;
 
@@ -91,7 +92,8 @@ recall_result(double t, int speclen)
 	/* If the time is the same and speclen is the same,
 	 * this is the result we want */
 	if (p->t >= t - DELTA && p->t <= t + DELTA &&
-	    (speclen == -1 || p->speclen == speclen)) {
+	    (speclen == -1 || p->speclen == speclen) &&
+	    (window == -1 || p->window == window)) {
 	    break;
 	}
 	/* If the stored time is greater, it isn't there. */

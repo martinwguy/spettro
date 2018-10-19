@@ -31,6 +31,7 @@
 #include "gui.h"	/* For RESULT_EVENT */
 #include "speclen.h"
 #include "spectrum.h"
+#include "main.h"	/* for window_function */
 
 /*
  * The compute-FFTs function
@@ -56,10 +57,12 @@ calc(calc_t *calc)
     spectrum *spec;
     double  t;				/* Time from start of piece */
 
-    /* If speclen has changed, calculate for the new one.
-     * It does happen (checked with a printf) */
+    /* If parameters have changed since the work was queued, use the new ones */
     if (calc->speclen != speclen) {
 	 calc->speclen = speclen;
+    }
+    if (calc->window != window_function) {
+	 calc->window = window_function;
     }
 
     spec = create_spectrum(calc->speclen, calc->window);
@@ -104,7 +107,7 @@ calc_result(result_t *result)
 
     if (result != NULL) {
 	/* Don't display results from obsolete calculations */
-	if (result->speclen != speclen) {
+	if (result->speclen != speclen || result->window != window_function) {
 	    remember_result(result);
 	    return;
 	}
@@ -148,6 +151,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 
 	result->t = t;
 	result->speclen = calc->speclen;
+	result->window = calc->window;
 #if ECORE_MAIN
 	result->thread = calc->thread;
 #endif

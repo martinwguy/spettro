@@ -47,6 +47,7 @@ gui.o: Makefile
 key.o: Makefile
 lock.o: Makefile
 mouse.o: Makefile
+overlay.o: Makefile
 timer.o: Makefile
 audio_file.o: Makefile
 scheduler.o: Makefile

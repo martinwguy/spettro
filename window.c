@@ -34,7 +34,7 @@ static double besseli0(double x);
 static double factorial(int k);
 
 typedef struct stored_window {
-    enum WINDOW_FUNCTION wfunc;
+    window_function_t wfunc;
     int datalen;
     double *window;
     struct stored_window *next;
@@ -43,38 +43,41 @@ typedef struct stored_window {
 stored_window_t *stored_windows = NULL;
 
 double *
-get_window(enum WINDOW_FUNCTION wfunc, int datalen)
+get_window(window_function_t wfunc, int datalen)
 {
-    double *window = NULL;	/* data to return */
+    double *new_window;	/* data to return */
 
-    lock_window();
+    if (wfunc == RECTANGULAR) return NULL;
+
 
     /* See if it's already in the cache */
     {	stored_window_t *w;
+	lock_window();
 	for (w = stored_windows; w != NULL; w=w->next) {
-	    if (w->wfunc = wfunc && w->datalen == datalen) {
+	    if (w->wfunc == wfunc && w->datalen == datalen) {
 		unlock_window();
 		return(w->window);
 	    }
 	}
+	unlock_window();
     }
 
-    window = malloc(datalen * sizeof(double));
-    if (window == NULL) {
+    /* If not, make a new one and fill it */
+    new_window = malloc(datalen * sizeof(double));
+    if (new_window == NULL) {
 	fprintf(stderr, "Out of memory in get_window()\n");
 	exit(1);
     }
 
     switch (wfunc) {
-    case RECTANGULAR: return NULL;
-    case KAISER:  kaiser_window(window, datalen);	break;
-    case NUTTALL: nuttall_window(window, datalen);	break;
-    case HANN:    hann_window(window, datalen);		break;
+    case KAISER:  kaiser_window(new_window, datalen);	break;
+    case NUTTALL: nuttall_window(new_window, datalen);	break;
+    case HANN:    hann_window(new_window, datalen);		break;
     default:      fprintf(stderr, "Internal error: Unknown window_function.\n");
 		  exit(1);
     };
 
-    if (window == NULL) {
+    if (new_window == NULL) {
 	fprintf(stderr, "Window creation failed.\n");
 	abort();
     }
@@ -86,16 +89,16 @@ get_window(enum WINDOW_FUNCTION wfunc, int datalen)
 	    fprintf(stderr, "Out of memory storing new window\n");
 	    exit(1);
 	}
+	lock_window();
 	new->wfunc = wfunc;
 	new->datalen = datalen;
-	new->window = window;
+	new->window = new_window;
 	new->next = stored_windows;
 	stored_windows = new;
+	unlock_window();
     }
 
-    unlock_window();
-
-    return(window);
+    return new_window;
 }
 
 static void

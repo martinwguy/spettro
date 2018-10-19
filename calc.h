@@ -27,7 +27,7 @@ typedef struct calc {
     double		to;	/* ...to when? =="from" means just "from" */
     double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
-    enum WINDOW_FUNCTION window;
+    window_function_t	window;
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif
@@ -50,6 +50,7 @@ typedef struct calc {
 typedef struct result {
     double t;		/* An FFT centred on what time through the piece? */
     int speclen;	/* The length of the linear spectrum */
+    window_function_t window;	/* This was calculated using which window? */
     float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
     int maglen;		/* Length of magnitude data on log axis */
     float *mag;		/* Magnitude data from [0..maglen-1] */

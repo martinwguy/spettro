@@ -69,6 +69,7 @@
 #include <string.h>	/* for memset() */
 #include <errno.h>
 #include <math.h>
+#include <ctype.h>	/* for tolower() */
 
 /*
  * Local header files
@@ -81,7 +82,6 @@
 #include "colormap.h"
 #include "interpolate.h"
 #include "gui.h"
-#include "key.h"
 #include "mouse.h"
 #include "overlay.h"
 #include "scheduler.h"
@@ -89,6 +89,7 @@
 #include "timer.h"
 #include "ui_funcs.h"
 #include "main.h"
+#include "key.h"
 
 /*
  * Function prototypes
@@ -112,6 +113,7 @@ static void	calc_columns(int from, int to);
        double ppsec	= 25.0;		/* pixel columns per second */
        double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
+       window_function_t window_function = KAISER;
 static bool gray	= FALSE;	/* Display in shades of gray? */
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
@@ -167,6 +169,7 @@ main(int argc, char **argv)
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 'p':
+	case 'W':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -214,6 +217,9 @@ main(int argc, char **argv)
 	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    break;
+	case 'v':
+	    printf("Version: %s\n", VERSION);
+	    exit(0);
 	/*
 	 * Parameters that take a floating point argument
 	 */
@@ -244,23 +250,37 @@ main(int argc, char **argv)
 		/* We can't call set_bar_*_time() until audio_length is known */
 	    }
 	    break;
-	case 'v':
-	    printf("Version: %s\n", VERSION);
-	    exit(0);
+	/*
+	 * Parameters that take a string argument
+	 */
+	case 'W':
+	    switch (tolower(argv[0][0])) {
+	    case 'r': window_function = RECTANGULAR; break;
+	    case 'k': window_function = KAISER; break;
+	    case 'h': window_function = HANN; break;
+	    case 'n': window_function = NUTTALL; break;
+	    default:
+		fprintf(stderr, "-W what (rectangular/kaiser/hann/nuttall)\n");
+		exit(1);
+	    }
+	    break;
+
 	default:
 	    fprintf(stderr,
 "Usage: spettro [-a] [-e] [-h n] [-w n] [-j n] [-p] [-s] [-g] [-v] [file.wav]\n\
 -a:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
--h n  Set spectrogram display height to n pixels\n\
--w n  Set spectrogram display width to n pixels\n\
--f n  Set the FFT frequency (default: %g Hz)\n\
--p n  Set the initial playing time in seconds\n\
--j n  Set maximum number of threads to use (default: the number of CPUs)\n\
--k    Overlay black and white lines showing frequencies of an 88-note keyboard\n\
--s    Overlay conventional score notation pentagrams as white lines\n\
--g    Overlay lines showing the positions of a classical guitar's strings\n\
--v:   Print the version of spettro that you're using\n\
+-h n   Set spectrogram display height to n pixels\n\
+-w n   Set spectrogram display width to n pixels\n\
+-f n   Set the FFT frequency (default: %g Hz)\n\
+-p n   Set the initial playing time in seconds\n\
+-j n   Set maximum number of threads to use (default: the number of CPUs)\n\
+-k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
+-s     Overlay conventional score notation pentagrams as white lines\n\
+-g     Overlay lines showing the positions of a classical guitar's strings\n\
+-v:    Print the version of spettro that you're using\n\
+-W win Use FFT window function.\n\
+       \"win\" is one \"rect\", \"kaiser\"(default), \"nuttall\", \"hann\"\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
@@ -280,6 +300,7 @@ g          Toggle overlay of classical guitar strings' frequencies\n\
 t          Show the current playing time on stdout\n\
 Crtl-R     Redraw the display, should it get out of sync with the audio\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
+Ww         Use window function R, K, N or H (Rectangular, Kaiser, Nuttall, Hann)\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
@@ -388,7 +409,7 @@ calc_columns(int from, int to)
 
     calc->ppsec  = ppsec;
     calc->speclen= speclen;
-    calc->window = KAISER;
+    calc->window = window_function;
 
     /* If for a single column, just schedule it */
     if (from == to) schedule(calc);
@@ -417,6 +438,26 @@ calc_columns(int from, int to)
 void
 do_key(enum key key)
 {
+    static bool waiting_for_window_function = FALSE;
+
+    if (waiting_for_window_function) {
+	window_function_t new_fn = -1;
+	switch (key) {
+	case KEY_R: new_fn = RECTANGULAR;	break;
+	case KEY_K: new_fn = KAISER;		break;
+	case KEY_H: new_fn = HANN;		break;
+	case KEY_N: new_fn = NUTTALL;		break;
+	default:    new_fn = window_function; /* defuse the if below */
+	}
+	if (new_fn != window_function) {
+	    window_function = new_fn;
+fprintf(stderr, "Repainting displayed columns for window function %d\n", window_function);
+	    repaint_display(TRUE);	/* Repaint already-displayed columns */
+	}
+	waiting_for_window_function = FALSE;
+	return;
+    }
+
     switch (key) {
 
     case KEY_NONE:	/* They pressed something else */
@@ -589,12 +630,20 @@ do_key(enum key key)
 	break;
 
     /* Set left or right bar line position to current play position */
-    case KEY_BAR_START:
+    case KEY_L:
 	set_bar_left_time(disp_time);
 	break;
-    case KEY_BAR_END:
+    case KEY_R:
 	set_bar_right_time(disp_time);
 	break;
+
+    case KEY_WINDOW_FUNCTION:
+	/* Next letter pressed determines choice of window function */
+	waiting_for_window_function = TRUE;
+	break;
+
+    /* Keys for window function that are not already claimed */
+    case KEY_H: case KEY_N: break;
 
     default:
 	fprintf(stderr, "Bogus KEY_ number %d\n", key);
@@ -789,13 +838,14 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 	 * We have no way of knowing what it is displaying so force its repaint
 	 * with the current parameters.
 	 */
-	if ((r = recall_result(t, -1)) != NULL) {
+	if ((r = recall_result(t, -1, -1)) != NULL) {
 	    /* There's data for this column. */
-	    if (r->speclen == speclen) {
+	    if (r->speclen == speclen && r->window == window_function) {
 		/* Bingo! It's the right result */
 		paint_column(column, min_y, max_y, r);
 	    } else {
 		/* Bummer! It's for something else. Repaint it. */
+fprintf(stderr, "Recursing!\n");
 		repaint_column(column, min_y, max_y, FALSE);
 	    }
 	} else {
@@ -804,7 +854,7 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 	}
     } else {
 	/* If we have the right spectral data for this column, repaint it */
-	if ((r = recall_result(t, speclen)) != NULL) {
+	if ((r = recall_result(t, speclen, window_function)) != NULL) {
 	    paint_column(column, min_y, max_y, r);
 	} else {
 	    /* ...otherwise paint it with the background color */

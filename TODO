@@ -47,8 +47,6 @@ giving the same dragging-the-graphic effect.
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
 ------------------------------------------------------------------------
-Let them change the FFT window function.
-------------------------------------------------------------------------
 Implement text overlays for axis markers etc
 ------------------------------------------------------------------------
 Add -m mute flag to be able to test emotion graphics.

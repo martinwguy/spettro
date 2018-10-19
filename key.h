@@ -1,6 +1,7 @@
 /* key.h: Declarations for key.c */
 
-#ifndef KEY_H
+
+#ifndef INCLUDED_KEY_H
 
 #if ECORE_MAIN
 #include <Evas.h>
@@ -36,8 +37,11 @@ enum key {
     KEY_T,
     KEY_F,
     KEY_REDRAW,
-    KEY_BAR_START,
-    KEY_BAR_END,
+    KEY_L,
+    KEY_R,
+    KEY_WINDOW_FUNCTION,
+    KEY_H,
+    KEY_N,
 };
 extern bool Shift, Control;
 
@@ -51,5 +55,5 @@ enum key sdl_key_decode(SDL_Event *eventp);
 /* Callback supplied by the caller */
 extern void do_key(enum key);
 
-#define KEY_H
+#define INCLUDED_KEY_H
 #endif

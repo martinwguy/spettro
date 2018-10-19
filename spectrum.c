@@ -17,7 +17,7 @@
 #include "lock.h"
 
 spectrum *
-create_spectrum (int speclen, enum WINDOW_FUNCTION window_function)
+create_spectrum (int speclen, window_function_t window_function)
 {
     spectrum *spec;
 

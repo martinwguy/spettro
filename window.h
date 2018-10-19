@@ -17,14 +17,14 @@
 
 #ifndef WINDOW_H
 
-enum WINDOW_FUNCTION {
+typedef enum {
     RECTANGULAR,
     KAISER,
     NUTTALL,
     HANN,
-};
+} window_function_t;
 
-extern double *	get_window(enum WINDOW_FUNCTION wfunc, int datalen);
+extern double *	get_window(window_function_t wfunc, int datalen);
 
 #define WINDOW_H
 #endif

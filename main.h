@@ -23,6 +23,7 @@ extern double max_freq;
 extern double min_db;		/* Values below this are black */
 extern double ppsec;		/* pixel columns per second */
 extern double step;		/* time step per column = 1/ppsec */
+extern window_function_t window_function;/* Current FFT windowing function */
 extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */
 extern bool guitar_lines;	/* Draw guitar string lines? */
