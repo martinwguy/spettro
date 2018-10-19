@@ -113,8 +113,10 @@ freq_zoom_by(double by)
     double   range = max_freq / centre;
 
     range /= by;
-    min_freq = centre / range;
-    max_freq = centre * range;
+    if (centre / range < centre * range) {
+	min_freq = centre / range;
+	max_freq = centre * range;
+    }
 }
 
 /* Change the color scale's dyna,ic range, thereby changing the brightness
