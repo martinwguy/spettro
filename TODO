@@ -83,3 +83,5 @@ Synch is good if I remember, with the reposition-ELF-on-resume tweak,
 ------------------------------------------------------------------------
 Precalculate up to one screenful ahead in time
 ------------------------------------------------------------------------
+Try FFTW3's parallel option instead of multiple calc threads.
+------------------------------------------------------------------------
