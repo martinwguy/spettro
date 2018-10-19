@@ -127,6 +127,7 @@ gui_init(char *filename)
     }
     ecore_evas_callback_delete_request_set(ee, ecore_quitGUI);
     ecore_evas_title_set(ee, "spettro");
+    if (fullscreen) ecore_evas_fullscreen_set(ee, TRUE);
     ecore_evas_show(ee);
 
     canvas = ecore_evas_get(ee);
@@ -184,7 +185,8 @@ gui_init(char *filename)
      *     -- http://sdl.beuc.net/sdl.wiki/SDL_SetVideoMode
      * We could be more permissive about bpp, but 32 will do for a first hack.
      */
-    screen = SDL_SetVideoMode(disp_width, disp_height, 32, SDL_SWSURFACE);
+    screen = SDL_SetVideoMode(disp_width, disp_height, 32,
+			      SDL_SWSURFACE | (fullscreen ? SDL_FULLSCREEN : 0));
 	/* | SDL_RESIZEABLE one day */
     if (screen == NULL) {
         fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());

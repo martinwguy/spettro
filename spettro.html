@@ -176,17 +176,17 @@ and use the Left and Right arrow keys to scroll the graphic by a single pixel.
       (or the start of the following bar, as you prefer to see it.)
 </DL>
 
-<H3>Command-line arguments</H3>
+<H3>Startup options</H3>
 
 On spettro's command line you can supply various option flags before the
 audio file name:
 <DL>
  <DT>-a
-  <DD>Autoplay the file when the program starts up
+  <DD>Autoplay: Start playing the audio file when the program starts up.
  <DT>-e
-  <DD>Exit when the audio file has finished playing
+  <DD>Exit when the audio file has finished playing.
  <DT>-f
-  <DD>Set the FFT frequency in Hz. Default: 5 (one fifth of a second)
+  <DD>Set the FFT frequency in Hz. Default: 5 (one fifth of a second.)
 
  <DT>-W[rkhn]
   <DD>Selects the pre-FFT window convolution function as
@@ -207,26 +207,30 @@ audio file name:
     <B>wr</B>, <B>wk</B>, <B>wh</B> and <B>wn</B>.
     For more info on the functions' peculiarities and merits, see
     <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
-    or experiment with spettro :)
+    or experiment with spettro and see for yourself :)
 
  <DT>-h n
-  <DD>Set spectrogram display height to n pixels
+  <DD>Set the spectrogram height to n pixels, with default of 480.
  <DT>-w n
-  <DD>Set spectrogram display width to n pixels
+  <DD>Set the spectrogram width to n pixels, with default of 640.
+ <DT>-F
+  <DD>Start in full-screen mode.
+      The spectrogram is calculated at the width and height given above,
+      then scaled to the size of the screen.
  <DT>-j n
-  <DD>Set maximum number of threads to use (default: the number of CPUs)
+  <DD>Set maximum number of threads to use (default: the number of CPUs.)
  <DT>-k
-  <DD>Overlay black and white lines showing where 88-note piano keys are
+  <DD>Overlay black and white lines showing where 88-note piano keys are.
  <DT>-s
-  <DD>Overlay the conventional score notation pentagrams
+  <DD>Overlay the conventional score notation pentagrams.
  <DT>-g
-  <DD>Overlay lines showing the positions of a classical guitar's strings
+  <DD>Overlay lines showing the positions of a classical guitar's strings.
  <DT>-v
-  <DD>Print the version of spettro that you're using
+  <DD>Print the version of spettro that you're using.
  <DT>--help
   <DD>Show a summary of all option flags, keys and environment variables.
 </DL>
-If no filename is supplied, it opens "audio.wav"
+If no filename is supplied, it opens "audio.wav".
 
 <H3>Environment variables</H3>
 

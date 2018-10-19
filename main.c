@@ -120,12 +120,16 @@ static bool gray	= FALSE;	/* Display in shades of gray? */
        bool guitar_lines= FALSE;	/* Draw guitar string lines? */
 
 /* Other option flags */
-       bool autoplay = FALSE;	/* -p  Start playing the file on startup */
+       bool autoplay = FALSE;		/* -p  Start playing on startup */
        bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
+       bool fullscreen = FALSE;		/* Start up in fullscreen mode? */
 
 /* The currently opened audio file */
 static audio_file_t *	audio_file;
+
+/* The maximum magnitude seen so far by interpolate() */
+static float max = 1.0;	/* maximum magnitude value seen so far */
 
 int
 main(int argc, char **argv)
@@ -199,6 +203,9 @@ main(int argc, char **argv)
 		fprintf(stderr, "-w height must be > 0\n");
 		exit(1);
 	    }
+	    break;
+	case 'F':
+	    fullscreen = TRUE;
 	    break;
 	case 'j':
 	    if ((max_threads = atoi(argv[0])) < 0) {
@@ -594,8 +601,8 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
 
     /* Display the current UI parameters */
     case KEY_P:
-	printf("time=%g step=%g min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g\n",
-		disp_time, step, min_freq, max_freq, fftfreq, -min_db);
+	printf("time=%g step=%g min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g max=%.4g\n",
+		disp_time, step, min_freq, max_freq, fftfreq, -min_db, max);
 	break;
 
     /* Display the current playing time */
@@ -874,7 +881,6 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
 {
     float *mag;
     int maglen;
-    static float max = 1.0;	/* maximum magnitude value seen so far */
     float old_max;		/* temp to detect when it changes */
     int y;
     unsigned int ov;		/* Overlay color temp; 0 = none */

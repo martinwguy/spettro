@@ -28,6 +28,7 @@ extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */
 extern bool guitar_lines;	/* Draw guitar string lines? */
 extern bool autoplay;		/* Start playing the file on startup? */
+extern bool fullscreen;		/* Start up in fullscreen mode? */
 
 /* Audio file info */
 extern double audio_length;	/* Length of the audio in seconds */
