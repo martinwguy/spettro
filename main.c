@@ -279,8 +279,8 @@ main(int argc, char **argv)
 -s     Overlay conventional score notation pentagrams as white lines\n\
 -g     Overlay lines showing the positions of a classical guitar's strings\n\
 -v:    Print the version of spettro that you're using\n\
--W win Use FFT window function.\n\
-       \"win\" is one \"rect\", \"kaiser\"(default), \"nuttall\", \"hann\"\n\
+-W x   Use FFT window function x where x is\n\
+       r for rectangular, k for Kaiser, n for Nuttall or h for Hann\"\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
@@ -300,7 +300,7 @@ g          Toggle overlay of classical guitar strings' frequencies\n\
 t          Show the current playing time on stdout\n\
 Crtl-R     Redraw the display, should it get out of sync with the audio\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
-Ww         Use window function R, K, N or H (Rectangular, Kaiser, Nuttall, Hann)\n\
+wx         Select window function x. x works same as for the -W flag\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\

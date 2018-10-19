@@ -20,7 +20,7 @@ information crushed into the bottom few lines.
 <P>
 Spettro is different. With its logarithmic frequency axis, every
 octave occupies the same amount of space, spreading the musical
-information out evenly in the same way as in conventional musical 
+information out evenly in the same way as in conventional musical
 score notation.
 <H2>Usage</H2>
 To use it, you launch it from the command line with the audio file name
@@ -60,7 +60,7 @@ and pressing Space again to start again from the beginning.
       simultaneously, and the Minus keys zoom out in both directions.
 </DL>
 
-<H3>Brightness, contrast and focus</H3>
+<H3>Brightness, contrast and image quality</H3>
 
 <DL>
  <DT>* /
@@ -90,6 +90,10 @@ and pressing Space again to start again from the beginning.
       while smaller values give crisper time definition at the price of
       fuzzier frequency definition.
       <BR>You can also set the initial FFT frequency with the <B>-f</B> flag.
+ <DT>w[rkhn]
+  <DD>The two-character sequence <B>w</B><I>x</I> selects a rectangular,
+      Kaiser, Hann or Nutall window as the pre-FFT convulution function.
+      There is a corresponding command-line option <B>-W</B>.
  <DT>t
   <DD>The 't' key show the current playing time on stdout.
  <DT>r
@@ -114,7 +118,7 @@ piano keys, staff lines and guitar strings.
       manuscript, making it look more like a conventional musical score.
       <BR>From top to bottom, the score lines are centred at:
       <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
-      <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz) 
+      <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz)
       <BR>Pressing 's' again removes the score lines.
  <DT>g
   <DD>The 'g' key (or the <B>-g</B> command-line flag)
@@ -183,6 +187,28 @@ audio file name:
   <DD>Exit when the audio file has finished playing
  <DT>-f
   <DD>Set the FFT frequency in Hz. Default: 5 (one fifth of a second)
+
+ <DT>-W[rkhn]
+  <DD>Selects the pre-FFT window convolution function as
+    <DL>
+     <DT>r
+       <DD>Rectangular. The sample's edges are not trimmed, resulting in
+	floral artifacts in the spectrogram, most easily seen at
+	high magnification., Kaiser, Hann or Nuttall.
+	It is the fastest of the window functions because it does nothing.
+     <DT>k
+      <DD>Kaiser window
+     <DT>h
+      <DD>Hann (a.k.a. "Hanning") window
+     <DT>n
+      <DD>Nuttall window
+    </DL>
+    There are corresponding two-keystroke commands
+    <B>wr</B>, <B>wk</B>, <B>wh</B> and <B>wn</B>.
+    For more info on the functions' peculiarities and merits, see
+    <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
+    or experiment with spettro :)
+
  <DT>-h n
   <DD>Set spectrogram display height to n pixels
  <DT>-w n
