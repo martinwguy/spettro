@@ -4,8 +4,6 @@ If the evas_close functions are called on exit, it dumps core.
 With SDL_TIMER zoomed in on X, the CPU load makes it unable to
 signal results and the display gets screwed.
 ------------------------------------------------------------------------
-When zoomed into X axis, Left and Right should move less.
-------------------------------------------------------------------------
 SDL keys obtained with AltGr or Shift do not work.
 
 e.g. "Shift +/*" should give * but gives + instead

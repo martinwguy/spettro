@@ -78,8 +78,6 @@ When removing/changing such lines, repaint(all) is probably safest.
 ------------------------------------------------------------------------
 Do vertical panning with a blit and a refresh of the border rows only
 ------------------------------------------------------------------------
-Shift-left-right: pan by a screenful. left-right: pan y 1-10th screenful.
-------------------------------------------------------------------------
 Crtl-l to redraw display from cache, Ctrl-R to junk the cache
 and recalculate all.
 ------------------------------------------------------------------------

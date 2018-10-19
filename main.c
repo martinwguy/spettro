@@ -268,8 +268,8 @@ main(int argc, char **argv)
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
-Left/Right Skip back/forward by one second\n\
-           (by 10 seconds if Shift is held; by one pixel if Control is held)\n\
+Left/Right Skip back/forward by a tenth of a screenful\n\
+           Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
 Up/Down    Pan up/down the frequency axis by a whole tone\n\
            (by an octave if Shift is held; by one pixel if Control is held)\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
@@ -449,14 +449,20 @@ do_key(enum key key)
 	break;
 
     /*
-     * Arrow <-/->: Jump back/forward a second.
-     * With Shift, 10 seconds. With Control one pixel.
+     * Arrow <-/->: Jump back/forward a tenth of a screenful
+     * With Shift, a whole screenful. With Control one pixel.
+     * With Control-Shift, one second.
      */
     case KEY_LEFT:
-	time_pan_by(-(Control ? step : Shift ? 10.0 : 1.0));
-	break;
     case KEY_RIGHT:
-	time_pan_by(Control ? step : Shift ? 10.0 : 1.0);
+	{
+	    double by;
+	    if (!Shift && !Control) by = disp_width * step / 10;
+	    if (Shift && !Control) by = disp_width * step;
+	    if (!Shift && Control) by = step;
+	    if (Shift && Control) by = 1.0;
+	    time_pan_by(key == KEY_LEFT ? -by : +by);
+	}
 	break;
 
     /*
