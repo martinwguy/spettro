@@ -51,6 +51,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'l': key = KEY_BAR_START;		break;
 	case 'r': if (Control) { key = KEY_REDRAW; break; }
 		  key = KEY_BAR_END;		break;
+	case 'b': key = KEY_STAR;		break;
+	case 'd': key = KEY_SLASH;		break;
     }
     else if (!strcmp(ev->key, "space"))
 	key = KEY_SPACE;
@@ -120,8 +122,10 @@ sdl_key_decode(SDL_Event *eventp)
     case SDLK_l:
     case SDLK_LEFTBRACKET:   key = KEY_BAR_START;break;
     case SDLK_r:
-	if (Control)	   { key = KEY_REDRAW; break; }
+	if (Control)	   { key = KEY_REDRAW;	break; }
     case SDLK_RIGHTBRACKET:  key = KEY_BAR_END; break;
+    case SDLK_b:	     key = KEY_STAR;	break;
+    case SDLK_d:	     key = KEY_SLASH;	break;
     default: break;
     }
     return key;

@@ -273,6 +273,7 @@ X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
+b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 k          Toggle overlay of 88 piano key frequencies\n\
 s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar strings' frequencies\n\
