@@ -13,14 +13,10 @@ bool Shift, Control;
  * Keypress events
  *
  * Other interesting key names are:
- *	"Prior"		PgUp
- *	"Next"		PgDn
  *	"XF86AudioPlay"	Media button >
  *	"XF86AudioStop"	Media button []
  *	"XF86AudioPrev"	Media button <<
  *	"XF86AudioNext"	Media button >>
- *
- * The SDL equivalent of this is in SDL's main lood at the end of main().
  */
 
 void
@@ -84,7 +80,7 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     else if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide"))
 	key = KEY_SLASH;
     else
-	fprintf(stderr, "Key \"%s\" was pressed.\n", ev->key);
+	fprintf(stderr, "Key \"%s\" doesn't do anything.\n", ev->key);
 
     do_key(key);
 }
