@@ -750,6 +750,7 @@ repaint_display(bool all)
  * if "refresh_only" is TRUE, we only repaint columns that are already
  * displaying spectral data; we find out if a column is displaying spectral data
  * by checking the result cache: if we have a result for that time/fftfreq,
+ * it's probably displaying something.
  *
  * and we don't schedule the calculation of columns whose spectral data
  * has not been displayed yet.
@@ -779,15 +780,40 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 	return;
     }
 
-    if ((r = recall_result(t, speclen)) != NULL) {
-	paint_column(column, min_y, max_y, r);
-    } else if (!refresh_only) {
-	/* ...otherwise paint it with the background color */
-	gui_paint_column(column, background);
+    if (refresh_only) {
+	/* If there's a bar line or green line here, nothing to do */
+	if (get_col_overlay(column)) return;
 
-	/* and if it was for a valid time, schedule its calculation */
-	if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
-	    calc_columns(column, column);
+	/* If there's any spectral data for this column, it's probably
+	 * displaying something but it might be for the wrong speclen/window.
+	 * We have no way of knowing what it is displaying so force its repaint
+	 * with the current parameters.
+	 */
+	if ((r = recall_result(t, -1)) != NULL) {
+	    /* There's data for this column. */
+	    if (r->speclen == speclen) {
+		/* Bingo! It's the right result */
+		paint_column(column, min_y, max_y, r);
+	    } else {
+		/* Bummer! It's for something else. Repaint it. */
+		repaint_column(column, min_y, max_y, FALSE);
+	    }
+	} else {
+	    /* There are no results in-cache for this column,
+	     * so it can't be displaying any spectral data */
+	}
+    } else {
+	/* If we have the right spectral data for this column, repaint it */
+	if ((r = recall_result(t, speclen)) != NULL) {
+	    paint_column(column, min_y, max_y, r);
+	} else {
+	    /* ...otherwise paint it with the background color */
+	    gui_paint_column(column, background);
+
+	    /* and if it was for a valid time, schedule its calculation */
+	    if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
+		calc_columns(column, column);
+	    }
 	}
     }
 }

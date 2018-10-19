@@ -73,7 +73,9 @@ remember_result(result_t *result)
 }
 
 /* Return the result for time t at the current speclen
- * or NULL if it hasn't been calculated yet */
+ * or NULL if it hasn't been calculated yet.
+ * speclen==-1 means "I don't care".
+ */
 result_t *
 recall_result(double t, int speclen)
 {
@@ -89,7 +91,7 @@ recall_result(double t, int speclen)
 	/* If the time is the same and speclen is the same,
 	 * this is the result we want */
 	if (p->t >= t - DELTA && p->t <= t + DELTA &&
-	    p->speclen == speclen) {
+	    (speclen == -1 || p->speclen == speclen)) {
 	    break;
 	}
 	/* If the stored time is greater, it isn't there. */
