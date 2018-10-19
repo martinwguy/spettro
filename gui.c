@@ -267,8 +267,10 @@ gui_main()
 	    exit(0);	/* atexit() calls SDL_Quit() */
 
 	case SDL_KEYDOWN:
-	    Shift   = !!(event.key.keysym.mod & KMOD_SHIFT);
-	    Control = !!(event.key.keysym.mod & KMOD_CTRL);
+	    /* SDL's event.key.keysym.mod reflects the state of the modifiers
+	     * at initial key-down. SDL_GetModState seems to reflect now. */
+	    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
+	    Control = !!(SDL_GetModState() & KMOD_CTRL);
 	    key = sdl_key_decode(&event);
 	    do_key(key);
 	    break;

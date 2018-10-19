@@ -15,6 +15,3 @@ PAUSED to STOPPED and the second from STOPPED (at end) to PLAYING (from start).
 ------------------------------------------------------------------------
 Very short WAV files play but don't scroll. e.g. spettro monkey.wav (0.2s)
 ------------------------------------------------------------------------
-Pressing shift or ctrl during key-repeated left or right arrow
-doesn't change the scrolling speed.
-------------------------------------------------------------------------
