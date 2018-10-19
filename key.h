@@ -21,6 +21,8 @@ enum key {
     KEY_END,
     KEY_UP,
     KEY_DOWN,
+    KEY_PGUP,
+    KEY_PGDN,
     KEY_X,
     KEY_Y,
     KEY_PLUS,

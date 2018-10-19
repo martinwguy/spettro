@@ -268,6 +268,7 @@ Left/Right Skip back/forward by a tenth of a screenful\n\
            Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
 Up/Down    Pan up/down the frequency axis by a whole tone\n\
            (by an octave if Shift is held; by one pixel if Control is held)\n\
+PgUp/PgDn  Pan up/down the frequency axis by a screenful\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
@@ -483,6 +484,14 @@ do_key(enum key key)
     case KEY_DOWN:
 	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
+	break;
+
+    /* Page Up/Down: Pan the frequency axis by a screenful */
+    case KEY_PGUP:
+	freq_pan_by(max_freq/min_freq);
+	break;
+    case KEY_PGDN:
+	freq_pan_by(min_freq/max_freq);
 	break;
 
     /* Zoom on the time axis */

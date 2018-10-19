@@ -21,7 +21,7 @@
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSNDFILE $(EMOTION_CFLAGS) $(SDL_CFLAGS) \
+AM_CFLAGS = -DUSE_EMOTION_SDL -DUSE_LIBSNDFILE $(EMOTION_CFLAGS) $(SDL_CFLAGS) \
 	    -march=native
 AM_LDFLAGS = -lsndfile $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
 

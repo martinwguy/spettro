@@ -66,6 +66,10 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	key = KEY_UP;
     else if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down"))
 	key = KEY_DOWN;
+    else if (!strcmp(ev->key, "Prior"))
+	key = KEY_PGUP;
+    else if (!strcmp(ev->key, "Next"))
+	key = KEY_PGDN;
     else if (!strcmp(ev->key, "plus") || !strcmp(ev->key, "KP_Add"))
 	key = KEY_PLUS;
     else if (!strcmp(ev->key, "minus") || !strcmp(ev->key, "KP_Subtract"))
@@ -99,6 +103,8 @@ sdl_key_decode(SDL_Event *eventp)
     case SDLK_END:	     key = KEY_END;	break;
     case SDLK_UP:	     key = KEY_UP;	break;
     case SDLK_DOWN:	     key = KEY_DOWN;	break;
+    case SDLK_PAGEUP:	     key = KEY_PGUP;	break;
+    case SDLK_PAGEDOWN:	     key = KEY_PGDN;	break;
     case SDLK_x:	     key = KEY_X;	break;
     case SDLK_y:	     key = KEY_Y;	break;
     case SDLK_PLUS:	     key = KEY_PLUS;	break;
