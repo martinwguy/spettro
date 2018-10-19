@@ -65,7 +65,7 @@ Try playing sound with SDL_Mixer (Ogg, MP3)
 Mix_RewindMusic(); Mix_SetMusicPosition(double position)
 (works with WAV and FLAC?)
 Mix_FadeInMusicos(Mix_Music *music, 1, fade_ms, double position)
-MIX_SetMusicCMD("mpg
+Mix_SetMusicCMD("mpg123")
 ------------------------------------------------------------------------
 When getting work, discard all pending work that is for a different speclen.
 And/or drop all pending work when speclen changes and remember to
@@ -75,8 +75,6 @@ in flight.
 When adding score lines when there were none, just draw them on the display
 instead of redisplaying the columns' spectral data.
 When removing/changing such lines, repaint(all) is probably safest.
-------------------------------------------------------------------------
-Do vertical panning with a blit and a refresh of the border rows only
 ------------------------------------------------------------------------
 Crtl-l to redraw display from cache, Ctrl-R to junk the cache
 and recalculate all.

@@ -8,8 +8,10 @@
 #include "calc.h"		/* for result_t */
 
 extern void repaint_display(bool repaint_all);
+extern void green_line(void);
 extern void do_scroll(void);
-extern void paint_column(int pos_x, result_t *result);
+extern void repaint_column(int column, int min_y, int max_y, bool refresh_only);
+extern void paint_column(int pos_x, int min_y, int max_y, result_t *result);
 
 /* GUI state variables */
 extern int disp_width;		/* Size of displayed drawing area in pixels */

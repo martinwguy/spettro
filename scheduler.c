@@ -381,7 +381,7 @@ DEBUG("List is empty after dropping after-screens\r");
 	    /* cp is the first cell in the list */
 	    cpp = &list;
 	}
-	free(cp);
+	free(cp);	/* Sometimes bombs "corruption or double free" */
     }
 
     if (*cpp != NULL) {
@@ -500,7 +500,7 @@ calc_notify(result_t *result)
      */
     if (pos_x >= 0 && pos_x < disp_width &&
 	pos_x != disp_offset) {
-	paint_column(pos_x, result);
+	paint_column(pos_x, 0, disp_height-1, result);
 	gui_update_column(pos_x);
     }
 

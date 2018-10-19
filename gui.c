@@ -385,10 +385,8 @@ gui_deinit()
 }
 
 void
-gui_scroll_by(int scroll_by)
+gui_h_scroll_by(int scroll_by)
 {
-    if (scroll_by == 0) return;
-
     if (scroll_by > 0) {
 	/* Usual case: scrolling the display left to advance in time */
 #if EVAS_VIDEO
@@ -425,6 +423,59 @@ gui_scroll_by(int scroll_by)
 	    from.y = to.y = 0;
 	    from.w = disp_width - -scroll_by;    /* to.[wh] are ignored */
 	    from.h = disp_height;
+
+	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
+		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
+	    }
+	}
+#endif
+    }
+}
+
+/* Scroll the screen vertically by a number of pixels.
+ * A positive value of scroll_by means to move to higher frequencies by
+ * moving the graphic data downwards; a negative value to lower frequencies
+ * by moving the displayed data upward.
+ */
+void
+gui_v_scroll_by(int scroll_by)
+{
+    if (scroll_by > 0) {
+	/* Move to higher frequencies by scrolling the graphic down */
+#if EVAS_VIDEO
+	memmove(imagedata + (imagestride * scroll_by), imagedata,
+		imagestride * (disp_height - scroll_by));
+#elif SDL_VIDEO
+	{
+	    SDL_Rect from, to;
+	    int err;
+
+	    from.x = 0; to.x = 0;
+	    from.y = 0; to.y = scroll_by;
+	    from.w = disp_width;    /* to.[wh] are ignored */
+	    from.h = disp_height - scroll_by;
+
+	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
+		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
+	    }
+	}
+#endif
+    }
+
+    if (scroll_by < 0) {
+	/* Move to lower frequencies by scrolling the graphic up */
+#if EVAS_VIDEO
+	memmove(imagedata, imagedata + (imagestride * -scroll_by),
+		imagestride * (disp_height - -scroll_by));
+#elif SDL_VIDEO
+	{
+	    SDL_Rect from, to;
+	    int err;
+
+	    from.x = 0; to.x = 0;
+	    from.y = -scroll_by; to.y = 0;
+	    from.w = disp_width;    /* to.[wh] are ignored */
+	    from.h = disp_height - -scroll_by;
 
 	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
 		fprintf(stderr, "SDL Blit failed with value %d.\n", err);

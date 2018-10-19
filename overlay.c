@@ -56,11 +56,7 @@ make_row_overlay()
 {
     int note;	/* Of 88-note piano: 0 = Bottom A, 87 = top C */
 #define NOTE_A440	48  /* A above middle C */
-    static double half_a_semitone = 0.0;
     int len = disp_height;
-
-    if (half_a_semitone == 0.0)
-	half_a_semitone = pow(2.0, 1/24.0);
 
     /* Check allocation of overlay array and zero it */
     if (row_overlay == NULL ) {

@@ -96,10 +96,6 @@
 
 /* Helper functions */
 static void	calc_columns(int from, int to);
-static void	repaint_column(int column, bool refresh_only);
-static void	green_line(void);
-
-       void do_scroll(void);
 
 /*
  * State variables
@@ -483,12 +479,10 @@ do_key(enum key key)
     case KEY_UP:
 	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 2.0 : pow(2.0, 1/6.0));
-	repaint_display(FALSE);
 	break;
     case KEY_DOWN:
 	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
-	repaint_display(FALSE);
 	break;
 
     /* Zoom on the time axis */
@@ -647,16 +641,16 @@ do_scroll()
 	     * as it will need to be repainted when it has scrolled.
 	     */
 	    if (scroll_by <= disp_offset)
-		repaint_column(disp_offset, FALSE);
+		repaint_column(disp_offset, 0, disp_height-1, FALSE);
 
 	    disp_time = new_disp_time;
 
-	    gui_scroll_by(scroll_by);
+	    gui_h_scroll_by(scroll_by);
 
 	    /* Repaint the right edge */
 	    {   int x;
 		for (x = disp_width - scroll_by; x < disp_width; x++) {
-		    repaint_column(x, FALSE);
+		    repaint_column(x, 0, disp_height-1, FALSE);
 		}
 	    }
 	}
@@ -667,16 +661,16 @@ do_scroll()
 	     * There are disp_width - disp_offset - 1 columns right of the line.
 	     */
 	    if (-scroll_by <= disp_width - disp_offset - 1)
-		repaint_column(disp_offset, FALSE);
+		repaint_column(disp_offset, 0, disp_height-1, FALSE);
 
 	    disp_time = new_disp_time;
 
-	    gui_scroll_by(scroll_by);
+	    gui_h_scroll_by(scroll_by);
 
 	    /* Repaint the left edge */
 	    {   int x;
 		for (x = -scroll_by - 1; x >= 0; x--) {
-		    repaint_column(x, FALSE);
+		    repaint_column(x, 0, disp_height-1, FALSE);
 		}
 	    }
 	}
@@ -716,13 +710,13 @@ repaint_display(bool all)
 
     for (x=disp_width - 1; x >= 0; x--) {
 	if (all) {
-	    repaint_column(x, FALSE);
+	    repaint_column(x, 0, disp_height-1, FALSE);
 	} else {
 	    /* Don't repaint bar lines or the green line */
 	    if (get_col_overlay(x) != 0 || x == disp_offset) continue;
 
 	    /* Only repaint the column if we have already displayed it */
-	    repaint_column(x, TRUE);
+	    repaint_column(x, 0, disp_height-1, TRUE);
 	}
     }
     green_line();
@@ -734,6 +728,9 @@ repaint_display(bool all)
  * with the background color if it hasn't been calculated yet or with the
  * bar lines.
  *
+ * min_y and max_y limit the repainting to just the specified rows
+ * (0 and disp_height-1 to paint the whole column).
+ *
  * if "refresh_only" is TRUE, we only repaint columns that are already
  * displaying spectral data; we find out if a column is displaying spectral data
  * by checking the result cache: if we have a result for that time/fftfreq,
@@ -743,8 +740,8 @@ repaint_display(bool all)
  *
  * The GUI screen-updating function is called by whoever called us.
  */
-static void
-repaint_column(int column, bool refresh_only)
+void
+repaint_column(int column, int min_y, int max_y, bool refresh_only)
 {
     /* What time does this column represent? */
     double t = disp_time + (column - disp_offset) * step;
@@ -767,7 +764,7 @@ repaint_column(int column, bool refresh_only)
     }
 
     if ((r = recall_result(t, speclen)) != NULL) {
-	paint_column(column, r);
+	paint_column(column, min_y, max_y, r);
     } else if (!refresh_only) {
 	/* ...otherwise paint it with the background color */
 	gui_paint_column(column, background);
@@ -781,10 +778,11 @@ repaint_column(int column, bool refresh_only)
 
 /* Paint a column for which we have result data.
  * pos_x is a screen coordinate.
+ * min_y and max_y limit the updating to those rows (0 at the bottom).
  * The GUI screen-updating function is called by whoever called us.
  */
 void
-paint_column(int pos_x, result_t *result)
+paint_column(int pos_x, int min_y, int max_y, result_t *result)
 {
     float *mag;
     int maglen;
@@ -809,7 +807,7 @@ paint_column(int pos_x, result_t *result)
     }
     old_max = max;
     max = interpolate(mag, maglen, result->spec, result->speclen,
-		      min_freq, max_freq, sample_rate);
+		      min_freq, max_freq, sample_rate, min_y, max_y);
     result->mag = mag;
     result->maglen = maglen;
 
@@ -817,7 +815,7 @@ paint_column(int pos_x, result_t *result)
      * Really we need to add max_db and have brightness/contast control.
      */
     gui_lock();		/* Allow pixel-writing access */
-    for (y=maglen-1; y>=0; y--) {
+    for (y=max_y; y>=min_y; y--) {
 	/* Apply row overlay, if any, otherwise paint the pixel */
 	if ( (ov = get_row_overlay(y)) != 0) {
 	    unsigned char *color = (unsigned char *) &ov;
@@ -837,7 +835,7 @@ paint_column(int pos_x, result_t *result)
 
 /* Paint the green line.
  * The GUI screen-update function is called by whoever called green_line() */
-static void
+void
 green_line()
 {
     gui_paint_column(disp_offset, green);

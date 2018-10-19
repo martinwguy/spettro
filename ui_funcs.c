@@ -11,6 +11,7 @@
 #include "scheduler.h"
 #include "timer.h"
 #include "main.h"
+#include "gui.h"
 
 #include <math.h>
 
@@ -67,12 +68,39 @@ time_zoom_by(double by)
 
 /* Pan the display on the vertical axis by changing min_freq and max_freq
  * by a factor.
+ * if "by" > 1.0, that moves up the frequency axis (moving the graphic down)
+ * if "by" < 1.0, that moves down the frequency axis (moving the graphic up)
  */
 void
 freq_pan_by(double by)
 {
+    double log_one_pixel = log(max_freq/min_freq) / (disp_height-1);
+    /* How many times do we have to multiply one_pixel by to get "by"?
+     * one_pixel ^ by_pixels == by
+     * exp(log(one_pixel) * by_pixels) == by
+     * log(one_pixel) * by_pixels == log(by)
+     * by_pixels == log(by) / log(one_pixel);
+     */
+    int by_pixels = lrint(log(by) / log_one_pixel);
+    register int x;
+
+    gui_v_scroll_by(by_pixels);
     min_freq *= by;
     max_freq *= by;
+
+    /* repaint the newly-exposed area */
+    for (x=0; x < disp_width; x++) {
+	if (by_pixels > 0) {
+	    /* Moving to higher frequencies: repaint the top rows */
+	    repaint_column(x, disp_height - by_pixels, disp_height-1, FALSE);
+	}
+	if (by_pixels < 0) {
+	    /* Moving to lower frequencies: repaint the bottom rows */
+	    repaint_column(x, 0, -by_pixels - 1, FALSE);
+	}
+    }
+    green_line();
+    gui_update_display();
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
