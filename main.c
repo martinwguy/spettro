@@ -452,7 +452,7 @@ do_key(enum key key)
 	if (new_fn != window_function) {
 	    window_function = new_fn;
 fprintf(stderr, "Repainting displayed columns for window function %d\n", window_function);
-	    repaint_display(TRUE);	/* Repaint already-displayed columns */
+	    repaint_display(FALSE);	/* Repaint already-displayed columns */
 	}
 	waiting_for_window_function = FALSE;
 	return;
@@ -539,25 +539,25 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
     /* Zoom on the time axis */
     case KEY_X:
 	time_zoom_by(Shift ? 2.0 : 0.5);
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* Zoom on the frequency axis */
     case KEY_Y:
 	freq_zoom_by(Shift ? 2.0 : 0.5);
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
     case KEY_PLUS:
 	freq_zoom_by(2.0);
 	time_zoom_by(2.0);
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
     case KEY_MINUS:
 	freq_zoom_by(0.5);
 	time_zoom_by(0.5);
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* Change dynamic range of color spectrum, like a brightness control.
@@ -567,11 +567,11 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
      */
     case KEY_STAR:
 	change_dyn_range(6.0);
-	repaint_display(FALSE);
+	repaint_display(TRUE);
 	break;
     case KEY_SLASH:
 	change_dyn_range(-6.0);
-	repaint_display(FALSE);
+	repaint_display(TRUE);
 	break;
 
     /* Toggle staff/piano line overlays */
@@ -589,7 +589,7 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
 	    if (guitar_lines) staff_lines = FALSE;
 	}
 	make_row_overlay();
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* Display the current UI parameters */
@@ -618,7 +618,7 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
 	/* Any calcs that are currently being performed will deliver
 	 * a result for the old speclen and that calculation will need
 	 * rescheduling at the new speclen */
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* The display has got corrupted, so refresh it at the current
@@ -626,7 +626,7 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
     case KEY_REDRAW:
 	disp_time = get_playing_time();
 	disp_time = lrint(disp_time / step) * step;
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* Set left or right bar line position to current play position */
@@ -694,7 +694,7 @@ do_scroll()
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
 	calc_columns(0, disp_width - 1);
-	repaint_display(TRUE);
+	repaint_display(FALSE);
     } else {
 	/* Otherwise, shift the overlapping region and calculate the new */
 	if (scroll_by > 0) {
@@ -769,20 +769,16 @@ do_scroll()
  * The GUI screen-updating function is called by whoever called us.
  */
 void
-repaint_display(bool all)
+repaint_display(bool refresh_only)
 {
     int x;
 
     for (x=disp_width - 1; x >= 0; x--) {
-	if (all) {
-	    repaint_column(x, 0, disp_height-1, FALSE);
-	} else {
+	if (refresh_only) {
 	    /* Don't repaint bar lines or the green line */
 	    if (get_col_overlay(x) != 0 || x == disp_offset) continue;
-
-	    /* Only repaint the column if we have already displayed it */
-	    repaint_column(x, 0, disp_height-1, TRUE);
 	}
+	repaint_column(x, 0, disp_height-1, refresh_only);
     }
     green_line();
 
@@ -922,7 +918,7 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
 
     /* and it the maximum amplitude changed, repaint the already-drawn
      * columns at the new brightness. */
-    if (max != old_max) repaint_display(FALSE);
+    if (max != old_max) repaint_display(TRUE);
 }
 
 /* Paint the green line.

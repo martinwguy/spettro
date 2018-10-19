@@ -199,7 +199,7 @@ set_bar_left_time(double when)
 {
     if (when >= 0.0 - DELTA && when <= audio_length + DELTA) {
 	bar_left_time = when;
-	repaint_display(TRUE);
+	repaint_display(FALSE);
     }
 }
 
@@ -208,7 +208,7 @@ set_bar_right_time(double when)
 {
     if (when >= 0.0 && when <= audio_length + DELTA) {
 	bar_right_time = when;
-	repaint_display(TRUE);
+	repaint_display(FALSE);
     }
 }
 
