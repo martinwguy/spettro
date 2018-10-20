@@ -26,8 +26,8 @@ static result_t *last_result = NULL; /* Last element in the linked list */
 void
 remember_result(result_t *result)
 {
-    /* Drop any stored results more than half a screenful before the display */
-    while (results != NULL && results->t < disp_time - (disp_offset + disp_width/2) * step - DELTA) {
+    /* Drop any stored results more than a screenful before the display */
+    while (results != NULL && results->t < disp_time - (disp_offset + disp_width) * step - DELTA) {
 	result_t *r = results;
 	results = results->next;
 	destroy_result(r);
