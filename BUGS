@@ -11,3 +11,7 @@ e.g. "AltGr +/*" should give ] but gives + instead
 ------------------------------------------------------------------------
 Very short WAV files play but don't scroll. e.g. spettro monkey.wav (0.2s)
 ------------------------------------------------------------------------
+Panning up and down the Y axis doesn't get it quite right.
+Most easily seen if you overlay the score lines and pan up/down while playing.
+It looks like the screen get scrolled slightly too little.
+------------------------------------------------------------------------

@@ -616,6 +616,7 @@ do_key(enum key key)
 	   fftfreq /= 2;
 	} else {
 	   /* Decrease FFT size */
+	   if (speclen > 1)
 	   fftfreq *= 2;
 	}
 	speclen = fftfreq_to_speclen(fftfreq, sample_rate);
