@@ -923,9 +923,14 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
     }
     gui_unlock();
 
-    /* and it the maximum amplitude changed, repaint the already-drawn
-     * columns at the new brightness. */
-    if (max != old_max) repaint_display(TRUE);
+    /* If the maximum amplitude changed, we should repaint the already-drawn
+     * columns at the new brightness. We tried this calling repaint_display here
+     * but, apart from causing a jumpy pause in the scrolling, there was worse:
+     * each time max increased it would schedule the same columns a dozen times,
+     * resulting in the same calculations being done several times and the
+     * duplicate results being thrown away. The old behaviour of reshading
+     * the individual columns as they pass the green line is less bad.
+     */
 }
 
 /* Paint the green line.
