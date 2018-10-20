@@ -376,7 +376,8 @@ DEBUG("List is empty after dropping after-screens\r");
     /* If speclen changes, there may be pending work for the old speclen.
      * Check for and remove pending work for different speclen.
      */
-    while (*cpp != NULL && (*cpp)->speclen != speclen) {
+    while (*cpp != NULL &&
+	   ((*cpp)->speclen != speclen || (*cpp)->window != window_function)) {
 	/* Remove cell from the list */
 	calc_t *cp = *cpp;
 /* TODO: maybe should reschedule this, as the column's probably still visible */
@@ -398,8 +399,10 @@ DEBUG("List is empty after dropping after-screens\r");
 	/* If speclen has changed since the work was scheduled,
 	 * the line is probably still visible so calculate for
 	 * the current parameters */
-	if (cp->speclen != speclen) {
+	if (cp->speclen != speclen || cp->window != window_function) {
+fprintf(stderr, "Retargeting work at %g to current parameters\n", cp->from);
 	    cp->speclen = speclen;
+	    cp->window = window_function;
 	}
 
 DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
