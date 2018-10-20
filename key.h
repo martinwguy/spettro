@@ -39,7 +39,6 @@ enum key {
     KEY_REDRAW,
     KEY_L,
     KEY_R,
-    KEY_WINDOW_FUNCTION,
     KEY_H,
     KEY_N,
 };

@@ -286,7 +286,7 @@ main(int argc, char **argv)
 -s     Overlay conventional score notation pentagrams as white lines\n\
 -g     Overlay lines showing the positions of a classical guitar's strings\n\
 -v:    Print the version of spettro that you're using\n\
--W x   Use FFT window function x where x is\n\
+-W x   Use FFT window function x where x starts with\n\
        r for rectangular, k for Kaiser, n for Nuttall or h for Hann\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
@@ -307,7 +307,7 @@ g          Toggle overlay of classical guitar strings' frequencies\n\
 t          Show the current playing time on stdout\n\
 Crtl-R     Redraw the display, should it get out of sync with the audio\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
-wx         Select window function x. x works as for the -W flag\n\
+R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
 Q/Ctrl-C   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
@@ -439,31 +439,22 @@ calc_columns(int from, int to)
     }
 }
 
+/* Utility function */
+static void
+set_window_function(window_function_t new_fn)
+{
+    if (new_fn != window_function) {
+	window_function = new_fn;
+	repaint_display(FALSE);	/* Repaint already-displayed columns */
+    }
+}
+
 /*
  * Process a keystroke.  Also inspects the variables Control and Shift.
  */
 void
 do_key(enum key key)
 {
-    static bool waiting_for_window_function = FALSE;
-
-    if (waiting_for_window_function) {
-	window_function_t new_fn = -1;
-	switch (key) {
-	case KEY_R: new_fn = RECTANGULAR;	break;
-	case KEY_K: new_fn = KAISER;		break;
-	case KEY_H: new_fn = HANN;		break;
-	case KEY_N: new_fn = NUTTALL;		break;
-	default:    new_fn = window_function; /* defuse the if below */
-	}
-	if (new_fn != window_function) {
-	    window_function = new_fn;
-	    repaint_display(FALSE);	/* Repaint already-displayed columns */
-	}
-	waiting_for_window_function = FALSE;
-	return;
-    }
-
     switch (key) {
 
     case KEY_NONE:	/* They pressed something else */
@@ -583,6 +574,10 @@ do_key(enum key key)
 
     /* Toggle staff/piano line overlays */
     case KEY_K:
+	if (Shift) {
+	    set_window_function(KAISER);
+	    break;
+	} /* else drop through */
     case KEY_S:
     case KEY_G:
 	if (key == KEY_K)
@@ -643,16 +638,17 @@ do_key(enum key key)
 	set_bar_left_time(disp_time);
 	break;
     case KEY_R:
-	set_bar_right_time(disp_time);
-	break;
-
-    case KEY_WINDOW_FUNCTION:
-	/* Next letter pressed determines choice of window function */
-	waiting_for_window_function = TRUE;
+	if (Shift) set_window_function(RECTANGULAR);
+	else set_bar_right_time(disp_time);
 	break;
 
     /* Keys for window function that are not already claimed */
-    case KEY_H: case KEY_N: break;
+    case KEY_H:
+	if (Shift) set_window_function(HANN);
+	break;
+    case KEY_N:
+	if (Shift) set_window_function(NUTTALL);
+	break;
 
     default:
 	fprintf(stderr, "Bogus KEY_ number %d\n", key);

@@ -48,7 +48,6 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'r': key = Control ? KEY_REDRAW : KEY_R; break;
 	case 'b': key = KEY_STAR;		break;
 	case 'd': key = KEY_SLASH;		break;
-	case 'w': key = KEY_WINDOW_FUNCTION;	break;
 	/* Other window function keys */
 	case 'h': key = KEY_H;			break;
 	case 'n': key = KEY_N;			break;
@@ -118,8 +117,7 @@ sdl_key_decode(SDL_Event *eventp)
     case SDLK_r: key = Control ? KEY_REDRAW : KEY_R; break;
     case SDLK_b:	     key = KEY_STAR;	break;
     case SDLK_d:	     key = KEY_SLASH;	break;
-    case SDLK_w:	     key = KEY_WINDOW_FUNCTION;	break;
-	/* Other window function keys */
+	/* Unclaimed window function keys */
     case SDLK_h:	     key = KEY_H;	break;
     case SDLK_n:	     key = KEY_N;	break;
     default: break;
