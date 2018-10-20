@@ -14,7 +14,8 @@ extern enum key sdl_key_decode(SDL_Event *eventp);
 /* Driver-independent keypress names and modifiers */
 enum key {
     KEY_NONE,
-    KEY_QUIT,
+    KEY_Q,
+    KEY_C,
     KEY_SPACE,
     KEY_LEFT,
     KEY_RIGHT,
@@ -36,9 +37,10 @@ enum key {
     KEY_P,
     KEY_T,
     KEY_F,
-    KEY_REDRAW,
     KEY_L,
     KEY_R,
+    KEY_B,
+    KEY_D,
     KEY_H,
     KEY_N,
 };

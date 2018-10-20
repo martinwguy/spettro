@@ -34,8 +34,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
      * due to glibc's stupid 17-line #define for strcmp().
      */
     if (ev->key[1] == '\0') switch (ev->key[0]) {
-	case 'q': key = KEY_QUIT;		break;
-	case 'c': if (Control) key = KEY_QUIT;	break;
+	case 'q': key = KEY_Q;			break;
+	case 'c': key = KEY_C;			break;
 	case 'x': case 'X': key = KEY_X;	break;
 	case 'y': case 'Y': key = KEY_Y;	break;
 	case 'k': key = KEY_K;			break;
@@ -45,9 +45,9 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 't': key = KEY_T;			break;
 	case 'f': key = KEY_F;			break;
 	case 'l': key = KEY_L;			break;
-	case 'r': key = Control ? KEY_REDRAW : KEY_R; break;
-	case 'b': key = KEY_STAR;		break;
-	case 'd': key = KEY_SLASH;		break;
+	case 'r': key = KEY_R;			break;
+	case 'b': key = KEY_B;			break;
+	case 'd': key = KEY_D;			break;
 	/* Other window function keys */
 	case 'h': key = KEY_H;			break;
 	case 'n': key = KEY_N;			break;
@@ -90,8 +90,8 @@ sdl_key_decode(SDL_Event *eventp)
 {
     enum key key     = KEY_NONE;
     switch (eventp->key.keysym.sym) {
-    case SDLK_q:	     key = KEY_QUIT;	break;
-    case SDLK_c:if (Control) key = KEY_QUIT;	break;
+    case SDLK_q:	     key = KEY_Q;	break;
+    case SDLK_c:	     key = KEY_C;	break;
     case SDLK_SPACE:	     key = KEY_SPACE;	break;
     case SDLK_LEFT:	     key = KEY_LEFT;	break;
     case SDLK_RIGHT:	     key = KEY_RIGHT;	break;
@@ -114,9 +114,9 @@ sdl_key_decode(SDL_Event *eventp)
     case SDLK_t:	     key = KEY_T;	break;
     case SDLK_f:	     key = KEY_F;	break;
     case SDLK_l:	     key = KEY_L;	break;
-    case SDLK_r: key = Control ? KEY_REDRAW : KEY_R; break;
-    case SDLK_b:	     key = KEY_STAR;	break;
-    case SDLK_d:	     key = KEY_SLASH;	break;
+    case SDLK_r:	     key = KEY_R;	break;
+    case SDLK_b:	     key = KEY_B;	break;
+    case SDLK_d:	     key = KEY_D;	break;
 	/* Unclaimed window function keys */
     case SDLK_h:	     key = KEY_H;	break;
     case SDLK_n:	     key = KEY_N;	break;

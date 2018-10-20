@@ -461,7 +461,10 @@ do_key(enum key key)
     case KEY_NONE:	/* They pressed something else */
 	break;
 
-    case KEY_QUIT:	/* Quit */
+    case KEY_C:
+	/* Only Control-C is an alias for all the Qs */
+	if (!Control) break;	
+    case KEY_Q:	/* Quit */
 	if (playing == PLAYING) stop_playing();
 	stop_scheduler();
 	stop_timer();
@@ -519,10 +522,12 @@ do_key(enum key key)
      * The argument to freq_pan_by() multiplies min_freq and max_freq.
      */
     case KEY_UP:
+	if (Shift && Control) break;
 	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 2.0 : pow(2.0, 1/6.0));
 	break;
     case KEY_DOWN:
+	if (Shift && Control) break;
 	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
 		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
 	break;
@@ -537,12 +542,14 @@ do_key(enum key key)
 
     /* Zoom on the time axis */
     case KEY_X:
+	if (Control) break;
 	time_zoom_by(Shift ? 2.0 : 0.5);
 	repaint_display(FALSE);
 	break;
 
     /* Zoom on the frequency axis */
     case KEY_Y:
+	if (Control) break;
 	freq_zoom_by(Shift ? 2.0 : 0.5);
 	repaint_display(FALSE);
 	break;
@@ -564,10 +571,14 @@ do_key(enum key key)
      * the dynrange;
      * Slash instead darkens them to reduce visibility of background noise.
      */
+    case KEY_B:
+	if (Shift || Control) break;
     case KEY_STAR:
 	change_dyn_range(6.0);
 	repaint_display(TRUE);
 	break;
+    case KEY_D:
+	if (Shift || Control) break;
     case KEY_SLASH:
 	change_dyn_range(-6.0);
 	repaint_display(TRUE);
@@ -581,6 +592,7 @@ do_key(enum key key)
 	} /* else drop through */
     case KEY_S:
     case KEY_G:
+	if (Shift || Control) break;
 	if (key == KEY_K)
 	    piano_lines = !piano_lines;
 	if (key == KEY_S) {
@@ -597,6 +609,7 @@ do_key(enum key key)
 
     /* Display the current UI parameters */
     case KEY_P:
+	if (Shift || Control) break;
 	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g\n",
 		min_freq,   max_freq,   fftfreq,   -min_db);
 	printf("disp_time=%g step=%g speclen=%d audio_length=%g max=%g\n",
@@ -605,12 +618,14 @@ do_key(enum key key)
 
     /* Display the current playing time */
     case KEY_T:
+	if (Shift || Control) break;
 	printf("%02d:%02d (%g seconds)\n", (int) disp_time / 60,
 					   (int) disp_time % 60,
 					   disp_time);
 	break;
 
     case KEY_F:
+	if (Control) break;
 	if (Shift) {
 	   /* Increase FFT size */
 	   fftfreq /= 2;
@@ -628,29 +643,28 @@ do_key(enum key key)
 	repaint_display(FALSE);
 	break;
 
-    /* The display has got corrupted, so refresh it at the current
-     * playing time. */
-    case KEY_REDRAW:
-	disp_time = get_playing_time();
-	disp_time = lrint(disp_time / step) * step;
-	repaint_display(FALSE);
-	break;
-
     /* Set left or right bar line position to current play position */
     case KEY_L:
-	set_bar_left_time(disp_time);
+	if (!Shift && !Control) set_bar_left_time(disp_time);
 	break;
     case KEY_R:
-	if (Shift) set_window_function(RECTANGULAR);
-	else set_bar_right_time(disp_time);
+	if (!Shift && !Control) set_bar_right_time(disp_time);
+	else if (Shift && !Control) set_window_function(RECTANGULAR);
+	else if (Control && !Shift) {
+	    /* The display has got corrupted, so refresh it at the current
+	     * playing time. */
+	    disp_time = get_playing_time();
+	    disp_time = lrint(disp_time / step) * step;
+	    repaint_display(FALSE);
+	}
 	break;
 
     /* Keys for window function that are not already claimed */
     case KEY_H:
-	if (Shift) set_window_function(HANN);
+	if (Shift && !Control) set_window_function(HANN);
 	break;
     case KEY_N:
-	if (Shift) set_window_function(NUTTALL);
+	if (Shift && !Control) set_window_function(NUTTALL);
 	break;
 
     default:
