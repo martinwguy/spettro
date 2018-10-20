@@ -598,9 +598,9 @@ do_key(enum key key)
     /* Display the current UI parameters */
     case KEY_P:
 	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g\n",
-		step, min_freq, max_freq, fftfreq, -min_db);
+		min_freq,   max_freq,   fftfreq,   -min_db);
 	printf("disp_time=%g step=%g speclen=%d audio_length=%g max=%g\n",
-		disp_time, step, speclen, audio_length, max);
+		disp_time,   step,   speclen,   audio_length,   max);
 	break;
 
     /* Display the current playing time */
