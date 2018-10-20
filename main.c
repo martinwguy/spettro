@@ -458,7 +458,6 @@ do_key(enum key key)
 	}
 	if (new_fn != window_function) {
 	    window_function = new_fn;
-fprintf(stderr, "Repainting displayed columns for window function %d\n", window_function);
 	    repaint_display(FALSE);	/* Repaint already-displayed columns */
 	}
 	waiting_for_window_function = FALSE;
@@ -602,8 +601,10 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
 
     /* Display the current UI parameters */
     case KEY_P:
-	printf("time=%g step=%g min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g max=%.4g\n",
-		disp_time, step, min_freq, max_freq, fftfreq, -min_db, max);
+	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g\n",
+		step, min_freq, max_freq, fftfreq, -min_db);
+	printf("disp_time=%g step=%g speclen=%d audio_length=%g max=%g\n",
+		disp_time, step, speclen, audio_length, max);
 	break;
 
     /* Display the current playing time */
@@ -849,7 +850,6 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 		paint_column(column, min_y, max_y, r);
 	    } else {
 		/* Bummer! It's for something else. Repaint it. */
-fprintf(stderr, "Recursing!\n");
 		repaint_column(column, min_y, max_y, FALSE);
 	    }
 	} else {
