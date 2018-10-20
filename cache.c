@@ -59,12 +59,10 @@ remember_result(result_t *result)
 			r->next->speclen == result->speclen &&
 			r->next->window == result->window) {
 			/* Same time, same size: forget it */
-fprintf(stderr, "Destroying duplicate result for time %g with %s spectral data\n",
-		result->t,
-		memcmp(r->next->spec, result->spec, result->speclen * sizeof(result->spec[0]))
-		    ? "different" : "the same");
+fprintf(stderr, "Discarding duplicate result for time %g speclen %d window %d\n", result->t, result->speclen, result->window);
 			destroy_result(result);
-			r = NULL; break;
+			r = NULL;
+			break;
 		    }
 		}
 		if (r) {
