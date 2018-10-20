@@ -431,6 +431,13 @@ DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
 	print_list();
 
 	unlock_list();
+
+	if (cp->speclen != speclen || cp->window != window_function) {
+fprintf(stderr, "Retargeting last work at %g to current parameters\n", cp->from);
+/* We should drop it and continue searching really */
+	    cp->speclen = speclen;
+	    cp->window = window_function;
+	}
 	return cp;
     }
 DEBUG("List is empty after all\r");
