@@ -25,16 +25,17 @@ time_pan_by(double by)
 
     playing_time = get_playing_time() + by;
 
-    if (playing_time < 0.0) playing_time = 0.0;
+    if (playing_time < 0.0 + DELTA) playing_time = 0.0;
 
     /* If we're at/after the end of the piece, stop */
-    if (playing_time > audio_length) playing_time = audio_length;
+    if (playing_time > audio_length - DELTA) playing_time = audio_length;
     if (playing_time == audio_length) {
 	/* If playing, stop */
 	if (playing == PLAYING) {
 	    pause_audio();
-	    playing = STOPPED;
 	}
+	playing = STOPPED;
+	playing_time = audio_length;
     }
 
     set_playing_time(playing_time);
