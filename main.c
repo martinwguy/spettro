@@ -308,7 +308,7 @@ t          Show the current playing time on stdout\n\
 Crtl-R     Redraw the display, should it get out of sync with the audio\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
-Q/Ctrl-C   Quit\n\
+q/Ctrl-C/Esc   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
@@ -462,9 +462,11 @@ do_key(enum key key)
 	break;
 
     case KEY_C:
-	/* Only Control-C is an alias for all the Qs */
+	/* Only Control-C is an alias for Quit */
 	if (!Control) break;	
-    case KEY_Q:	/* Quit */
+    case KEY_ESC:
+    case KEY_Q:
+	/* Quit */
 	if (playing == PLAYING) stop_playing();
 	stop_scheduler();
 	stop_timer();

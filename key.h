@@ -16,6 +16,7 @@ enum key {
     KEY_NONE,
     KEY_Q,
     KEY_C,
+    KEY_ESC,
     KEY_SPACE,
     KEY_LEFT,
     KEY_RIGHT,

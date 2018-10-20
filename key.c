@@ -52,6 +52,8 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	case 'h': key = KEY_H;			break;
 	case 'n': key = KEY_N;			break;
     }
+    else if (!strcmp(ev->key, "Escape"))
+	key = KEY_ESC;
     else if (!strcmp(ev->key, "space"))
 	key = KEY_SPACE;
     else if (!strcmp(ev->key, "Left") || !strcmp(ev->key, "KP_Left"))
@@ -92,6 +94,7 @@ sdl_key_decode(SDL_Event *eventp)
     switch (eventp->key.keysym.sym) {
     case SDLK_q:	     key = KEY_Q;	break;
     case SDLK_c:	     key = KEY_C;	break;
+    case SDLK_ESCAPE:	     key = KEY_ESC;	break;
     case SDLK_SPACE:	     key = KEY_SPACE;	break;
     case SDLK_LEFT:	     key = KEY_LEFT;	break;
     case SDLK_RIGHT:	     key = KEY_RIGHT;	break;
