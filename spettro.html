@@ -27,7 +27,9 @@ To use it, you launch it from the command line with the audio file name
 as its argument, press the space bar to start it playing, pause it,
 or carry on playing it. When it gets to the end of the piece it stops,
 and pressing Space again to start again from the beginning.
+
 <H2>Keyboard comands</H2>
+
 <H3>Keys to position the graphic</H3>
 <DL>
  <DT>&larr; &rarr;
@@ -135,7 +137,7 @@ but you can display the piano keys together with either of them
 to identify notes above the top score line or to see the fretted
 positions of the guitar strings.
 
-<H4>Bar line indicators</H4>
+<H3>Bar line indicators</H3>
 
 To help you pick out the rhythm, you can overlay evenly-spaced vertical white
 lines on the graphic to show where each bar (or beat) begins.
@@ -169,14 +171,26 @@ bar lines will appear throughout the piece.
 you can zoom in on the start of a bar using 'X', then hold down the 'Ctrl' key
 and use the Left and Right arrow keys to scroll the graphic by a single pixel.
 <DL>
- <DT>[
-  <DD>Open square bracket marks the start (left side) of a bar.
- <DT>]
-  <DD>Close square bracket marks the end (right side) of a bar
-      (or the start of the following bar, as you prefer to see it.)
+ <DT>l
+  <DD>Pressing L positions the left ber line at the green line.
+ <DT>r
+  <DD>Pressing R positions the right ber line at the green line.
 </DL>
 
-<H3>Startup options</H3>
+<H3>System control</H3>
+
+<DL>
+ <DT>Esc Ctrl-C Q
+  <DD>These all make spettro quit.
+ <DT>Ctrl-R
+  <DD>Control R redraws the graphic display from the results already
+      computed. This can be necessary if the display becomes garbled due to
+      CPU overload, refreshing the display from spettro's internal data.
+ <DT>t
+  <DD>Prints the current playing time on stdout.
+</DL>
+
+<H2>Startup options</H2>
 
 On spettro's command line you can supply various option flags before the
 audio file name:
@@ -250,7 +264,7 @@ PPSEC=100&nbsp;&nbsp;spettro"
   <DD>The frequency centred on the top pixel row, currently 14080 (A9)
 </DL>
 
-<H3>Bugs</H3>
+<H2>Bugs</H2>
 <OL>
 <LI>
 If you zoom in too much (about five 'Y's) the graphic turns upside down
