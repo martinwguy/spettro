@@ -15,6 +15,7 @@
 #include "main.h"
 
 #include <stdlib.h>	/* for free() */
+#include <string.h>	/* for memcmp() */
 
 static void destroy_result(result_t *r);
 
@@ -58,7 +59,10 @@ remember_result(result_t *result)
 			r->next->speclen == result->speclen &&
 			r->next->window == result->window) {
 			/* Same time, same size: forget it */
-fprintf(stderr, "Destroying duplicate result\n");
+fprintf(stderr, "Destroying duplicate result for time %g with %s spectral data\n",
+		result->t,
+		memcmp(r->next->spec, result->spec, result->speclen * sizeof(result->spec[0]))
+		    ? "different" : "the same");
 			destroy_result(result);
 			r = NULL; break;
 		    }

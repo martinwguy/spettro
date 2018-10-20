@@ -242,6 +242,11 @@ schedule(calc_t *calc)
     /* Add it to the list in time order */
     calc_t **cpp;	/* Pointer to the "next" field of the previous cell */
 
+    if (recall_result(calc->from, calc->speclen, calc->window)) {
+	fprintf(stderr, "scheduler drops result already in cache\n");
+	return;
+    }
+
     lock_list();
 
 DEBUG("Scheduling %g-%g... ", calc->from, calc->to);
