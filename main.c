@@ -445,6 +445,7 @@ set_window_function(window_function_t new_fn)
 {
     if (new_fn != window_function) {
 	window_function = new_fn;
+	drop_all_work();
 	repaint_display(FALSE);	/* Repaint already-displayed columns */
     }
 }
@@ -618,6 +619,7 @@ do_key(enum key key)
 	   fftfreq *= 2;
 	}
 	speclen = fftfreq_to_speclen(fftfreq, sample_rate);
+	drop_all_work();
 
 	/* Any calcs that are currently being performed will deliver
 	 * a result for the old speclen and that calculation will need

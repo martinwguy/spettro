@@ -11,7 +11,3 @@ e.g. "AltGr +/*" should give ] but gives + instead
 ------------------------------------------------------------------------
 Very short WAV files play but don't scroll. e.g. spettro monkey.wav (0.2s)
 ------------------------------------------------------------------------
-If you change window/speclen again before it's finished repainting,
-you get a double free or memory corruption at scheduler.c:390:
-"Check for and remove pending work for different speclen."'s final free().
-------------------------------------------------------------------------

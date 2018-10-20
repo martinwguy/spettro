@@ -20,16 +20,10 @@
  * single CPU would calculate the initial display instead of all of them.
  * The list is kept in time order since the beginning of the piece.
  *
- * If they, say, zoom in in the time direction, scheduling lots of requests,
- * or pan vigorously through the piece, how can we eliminate the
- * no-longer-required column refreshes from the list? Presumably, the
- * scheduler does it when it selects the next job from the list, filtering
- * the calculations according to the current disp_time, step time zoom and
- * window width.
- * If they do a lot of panning or zooming in and out, the list will fill
- * with column recalculations that are always rejected by the scheduler as
- * being out of range or not corresponding to a current pixel column.
- * We'll need to weed it periodically, or when a zoom-out or a pan happens.
+ * The list can contain work that is no longer relevant, either because the
+ * columns are no longer on-screen or because the calculation parameters
+ * (speclen, window_function) have changed since it was scheduled.
+ * We remove these while searching for new work in get_work().
  */
 
 #include "config.h"
@@ -302,6 +296,26 @@ DEBUG("Adding before later item\n");
     unlock_list();
 }
 
+/*
+ * When they change the FFT size or the window function, forget all work
+ * scheduled for the old ones.
+ */
+void
+drop_all_work()
+{
+    calc_t *cp;
+
+    lock_list();
+    cp = list;
+    while (cp != NULL) {
+	calc_t *new_cp = cp->next;
+	free(cp);
+	cp = new_cp;
+    }
+    list = NULL;
+    unlock_list();
+}
+
 /* The FFT threads ask here for the next FFT to perform
  *
  * Priority: 1. times corrisponding to columns visible in the display window:
@@ -373,23 +387,6 @@ DEBUG("List is empty after dropping after-screens\r");
 	return NULL;
     }
 
-    /* If speclen changes, there may be pending work for the old speclen.
-     * Check for and remove pending work for different speclen.
-     */
-    while (*cpp != NULL &&
-	   ((*cpp)->speclen != speclen || (*cpp)->window != window_function)) {
-	/* Remove cell from the list */
-	calc_t *cp = *cpp;
-/* TODO: maybe should reschedule this, as the column's probably still visible */
-	if (cp->next) cp->next->prev = cp->prev;
-	if (cp->prev) cp->prev->next = cp->next;
-	else {
-	    /* cp is the first cell in the list */
-	    cpp = &list;
-	}
-	free(cp);	/* Sometimes bombs "corruption or double free" */
-    }
-
     if (*cpp != NULL) {
 	/* We have a column after disp_time that's on-screen so
 	 * remove this calc_t from the list and hand it to the
@@ -401,6 +398,7 @@ DEBUG("List is empty after dropping after-screens\r");
 	 * the current parameters */
 	if (cp->speclen != speclen || cp->window != window_function) {
 fprintf(stderr, "Retargeting work at %g to current parameters\n", cp->from);
+/* We should drop it and continue searching really */
 	    cp->speclen = speclen;
 	    cp->window = window_function;
 	}

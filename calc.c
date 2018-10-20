@@ -104,19 +104,17 @@ calc(calc_t *calc)
 static void
 calc_result(result_t *result)
 {
+    /* Don't display results from obsolete calculations */
+    if (result->speclen != speclen || result->window != window_function) {
+	remember_result(result);
+	return;
+    }
 
-    if (result != NULL) {
-	/* Don't display results from obsolete calculations */
-	if (result->speclen != speclen || result->window != window_function) {
-	    remember_result(result);
-	    return;
-	}
-
-	/* Send result back to main loop */
+    /* Send result back to main loop */
 #if ECORE_MAIN
-	ecore_thread_feedback(result->thread, result);
+    ecore_thread_feedback(result->thread, result);
 #elif SDL_MAIN
-      {
+    {
 	SDL_Event event;
 	event.type = SDL_USEREVENT;
 	event.user.code = RESULT_EVENT;
@@ -129,9 +127,8 @@ calc_result(result_t *result)
 		return;
 	    }
 	}
-      }
-#endif
     }
+#endif
 }
 
 /*
