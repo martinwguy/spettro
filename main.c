@@ -834,7 +834,7 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
-	if (get_col_overlay(column)) return;
+	if (get_col_overlay(column) || column == disp_offset) return;
 
 	/* If there's any spectral data for this column, it's probably
 	 * displaying something but it might be for the wrong speclen/window.

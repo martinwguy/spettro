@@ -104,12 +104,6 @@ calc(calc_t *calc)
 static void
 calc_result(result_t *result)
 {
-    /* Don't display results from obsolete calculations */
-    if (result->speclen != speclen || result->window != window_function) {
-	remember_result(result);
-	return;
-    }
-
     /* Send result back to main loop */
 #if ECORE_MAIN
     ecore_thread_feedback(result->thread, result);

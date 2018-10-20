@@ -493,13 +493,10 @@ calc_notify(result_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
 
-    if (result->speclen != speclen) {
+    if (result->speclen != speclen || result->window != window_function) {
 	/* This is the result from an old call to schedule() before
-	 * speclen changed.
-	 * Presumably that column is still visible so
-	 * - keep it in the ache in case they flip back to old speclen
-	 * - schedule it to be recalculated at the current speclen.
-	 *   How to reconstruct a calc_t from a result_t?
+	 * the parameters changed.
+	 * Keep it in the cache in case they flip back to old parameters
 	 */
 	remember_result(result);
 	return;
