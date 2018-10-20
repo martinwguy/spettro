@@ -485,6 +485,7 @@ fprintf(stderr, "Repainting displayed columns for window function %d\n", window_
 
 	case STOPPED:
 	    disp_time = 0.0;
+	    repaint_display(FALSE);
 	    start_playing();
 	    break;
 
