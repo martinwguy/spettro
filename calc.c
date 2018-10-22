@@ -167,7 +167,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	}
 
 	/* Mark the converted data as not having been calculated yet */
-	result->mag = NULL;
+	result->logmag = NULL;
 
 	return(result);
 }

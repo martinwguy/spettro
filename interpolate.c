@@ -38,12 +38,13 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
  *
  * Returns the maximum value seen so far.
  */
+
 float
-interpolate(float* mag, int maglen, const float *spec, const int speclen,
+interpolate(float* logmag, int maglen, const float *spec, const int speclen,
 	    const double min_freq, const double max_freq,
 	    const double sample_rate, int min_y, int max_y)
 {
-    static float max = 1.0;	/* Highest value seen so far */
+    static float logmax = 0.0;	/* Highest value seen so far. 0 = log10(1.0) */
     int k;
 
     /* Map each output coordinate to where it depends on in the input array.
@@ -68,8 +69,8 @@ interpolate(float* mag, int maglen, const float *spec, const int speclen,
 
 	/* Range check: can happen if max_freq > sample_rate / 2 */
 	if (this > speclen) {
-	    mag [k] = 0.0;
-	    return max;
+	    logmag[k] = -INFINITY;
+	    continue;
 	}
 
 	if (next > this + 1) {
@@ -91,19 +92,19 @@ interpolate(float* mag, int maglen, const float *spec, const int speclen,
 		count += next - floor (next);
 	    }
 
-	    mag [k] = sum / count;
+	    logmag[k] = log10(sum / count);
 	} else {
 	    /* The output indices are more densely packed than the
 	     * input indices so interpolate between input values
 	     * to generate more output values.
 	     */
 	    /* Take a weighted average of the nearest values */
-	    mag[k] = spec[(int) this] * (1.0 - (this - floor (this)))
-		   + spec[(int) this + 1] * (this - floor (this));
+	    logmag[k] = log10(spec[(int) this] * (1.0 - (this - floor (this)))
+		              + spec[(int) this + 1] * (this - floor (this)));
 	}
-	if (mag[k] > max) {
-	    max = mag[k];
+	if (logmag[k] > logmax) {
+	    logmax = logmag[k];
 	}
     }
-    return(max);
+    return(logmax);
 }

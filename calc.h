@@ -53,7 +53,7 @@ typedef struct result {
     window_function_t window;	/* This was calculated using which window? */
     float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
     int maglen;		/* Length of magnitude data on log axis */
-    float *mag;		/* Magnitude data from [0..maglen-1] */
+    float *logmag;	/* log10 of magnitude data from [0..maglen-1] */
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif

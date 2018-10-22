@@ -112,6 +112,6 @@ static void
 destroy_result(result_t *r)
 {
     free(r->spec);
-    free(r->mag);
+    free(r->logmag);
     free(r);
 }

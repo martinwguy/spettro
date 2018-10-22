@@ -129,7 +129,7 @@ static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
 static audio_file_t *	audio_file;
 
 /* The maximum magnitude seen so far by interpolate() */
-static float max = 1.0;	/* maximum magnitude value seen so far */
+static float logmax = 1.0;	/* maximum magnitude value seen so far */
 
 int
 main(int argc, char **argv)
@@ -614,11 +614,11 @@ do_key(enum key key)
 	if (Shift || Control) break;
 	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g audio_length=%g\n",
 		min_freq,   max_freq,   fftfreq,   -min_db,   audio_length);
-	printf("playing %g disp_time=%g step=%g %g-%g speclen=%d max=%g\n",
+	printf("playing %g disp_time=%g step=%g %g-%g speclen=%d logmax=%g\n",
 		get_playing_time(), disp_time, step,
 		disp_time - disp_offset * step,
 		disp_time + (disp_width - disp_offset) * step,
-		speclen, max);
+		speclen, logmax);
 	break;
 
     /* Display the current playing time */
@@ -731,8 +731,8 @@ do_scroll()
 	     * There are disp_offset columns left of the line.
 	     * If there is no result for the line, schedule its calculation
 	     * as it will need to be repainted when it has scrolled.
-	     * If max has changed since the column was originally painted,
-	     * if gets repainted at a different brightness, so repaint
+	     * If logmax has changed since the column was originally painted,
+	     * it is repainted at a different brightness, so repaint
 	     */
 	    if (scroll_by <= disp_offset) {
 		int x;
@@ -789,7 +789,7 @@ do_scroll()
  * If "all" if FALSE, repaint only the columns that are already displaying
  * spectral data and don't ask for anything new to be calculated.
  *   This is used when something changes that affects their appearance
- * retrospectively, like "max" or "dyn_range" changing, or vertical scrolling,
+ * retrospectively, like logmax or dyn_range changing, or vertical scrolling,
  * where there's no need to repaint background, bar lines or the green line.
  *   Rather than remember what has been displayed, we repaint on-screen columns
  * that are in the result cache and have had their magnitude spectrum calculated
@@ -903,7 +903,7 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 void
 paint_column(int pos_x, int min_y, int max_y, result_t *result)
 {
-    float *mag;
+    float *logmag;
     int maglen;
     float old_max;		/* temp to detect when it changes */
     int y;
@@ -918,15 +918,15 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
     }
 
     maglen = disp_height;
-    mag = calloc(maglen, sizeof(*mag));
-    if (mag == NULL) {
+    logmag = calloc(maglen, sizeof(*logmag));
+    if (logmag == NULL) {
        fprintf(stderr, "Out of memory in paint_column.\n");
        exit(1);
     }
-    old_max = max;
-    max = interpolate(mag, maglen, result->spec, result->speclen,
-		      min_freq, max_freq, sample_rate, min_y, max_y);
-    result->mag = mag;
+    old_max = logmax;
+    logmax = interpolate(logmag, maglen, result->spec, result->speclen,
+			 min_freq, max_freq, sample_rate, min_y, max_y);
+    result->logmag = logmag;
     result->maglen = maglen;
 
     /* For now, we just normalize each column to the maximum seen so far.
@@ -940,7 +940,7 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
 	    gui_putpixel(pos_x, y, color);
 	} else {
 	    unsigned char color[3];
-	    colormap(20.0 * log10(mag[y] / max), min_db, color, gray);
+	    colormap(20.0 * (logmag[y] - logmax), min_db, color, gray);
 	    gui_putpixel(pos_x, y, color);
 	}
     }
@@ -949,9 +949,9 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
     /* If the maximum amplitude changed, we should repaint the already-drawn
      * columns at the new brightness. We tried this calling repaint_display here
      * but, apart from causing a jumpy pause in the scrolling, there was worse:
-     * each time max increased it would schedule the same columns a dozen times,
-     * resulting in the same calculations being done several times and the
-     * duplicate results being thrown away. The old behaviour of reshading
+     * each time logmax increased it would schedule the same columns a dozen
+     * times, resulting in the same calculations being done several times and
+     * the duplicate results being thrown away. The old behaviour of reshading
      * the individual columns as they pass the green line is less bad.
      */
 }

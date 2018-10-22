@@ -15,3 +15,6 @@ Panning up and down the Y axis doesn't get it quite right.
 Most easily seen if you overlay the score lines and pan up/down while playing.
 It looks like the screen get scrolled slightly too little.
 ------------------------------------------------------------------------
+Key-repeat forward scrolling in EMOTION is lumpy.
+Strangely, reverse key-repeat scrolling isn't!
+------------------------------------------------------------------------
