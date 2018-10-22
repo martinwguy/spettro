@@ -15,3 +15,11 @@ Panning up and down the Y axis doesn't get it quite right.
 Most easily seen if you overlay the score lines and pan up/down while playing.
 It looks like the screen get scrolled slightly too little.
 ------------------------------------------------------------------------
+When max increases, repainted lines are redrawn at new max value.
+If scroll_by > 1 this only refreshes every other column at the green line
+leaving a mess.  Possibile solutions:
+- either remember the max value that each column was interpolated/colored at,
+  or, indeed the interpolated/scaled data or color value for the column
+  so to that magnitude refresh waits until the column is recalculated
+- on scroll_by, repaint scroll_by lines at and to the left of the green line.
+------------------------------------------------------------------------
