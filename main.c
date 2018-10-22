@@ -731,9 +731,14 @@ do_scroll()
 	     * There are disp_offset columns left of the line.
 	     * If there is no result for the line, schedule its calculation
 	     * as it will need to be repainted when it has scrolled.
+	     * If max has changed since the column was originally painted,
+	     * if gets repainted at a different brightness, so repaint
 	     */
-	    if (scroll_by <= disp_offset)
-		repaint_column(disp_offset, 0, disp_height-1, FALSE);
+	    if (scroll_by <= disp_offset) {
+		int x;
+		for (x=disp_offset; x >= disp_offset - scroll_by; x--)
+		    repaint_column(x, 0, disp_height-1, FALSE);
+	    }
 
 	    disp_time = new_disp_time;
 
