@@ -612,10 +612,13 @@ do_key(enum key key)
     /* Display the current UI parameters */
     case KEY_P:
 	if (Shift || Control) break;
-	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g\n",
-		min_freq,   max_freq,   fftfreq,   -min_db);
-	printf("playing %g disp_time=%g step=%g speclen=%d audio_length=%g max=%g\n",
-		get_playing_time(), disp_time,   step,   speclen,   audio_length,   max);
+	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g audio_length=%g\n",
+		min_freq,   max_freq,   fftfreq,   -min_db,   audio_length);
+	printf("playing %g disp_time=%g step=%g %g-%g speclen=%d max=%g\n",
+		get_playing_time(), disp_time, step,
+		disp_time - disp_offset * step,
+		disp_time + (disp_width - disp_offset) * step,
+		speclen, max);
 	break;
 
     /* Display the current playing time */
