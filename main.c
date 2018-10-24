@@ -77,6 +77,7 @@
 
 #include "audio.h"
 #include "audio_file.h"
+#include "axes.h"
 #include "cache.h"
 #include "calc.h"
 #include "colormap.h"
@@ -131,6 +132,8 @@ static audio_file_t *	audio_file;
 
 /* The maximum magnitude seen so far by interpolate() */
 static float logmax = 1.0;	/* maximum magnitude value seen so far */
+
+       bool yflag = FALSE;
 
 int
 main(int argc, char **argv)
@@ -273,6 +276,10 @@ main(int argc, char **argv)
 	    }
 	    break;
 
+	case 'y':
+	    yflag = TRUE;
+	    break;
+
 	default:
 	    fprintf(stderr,
 "Usage: spettro [-a] [-e] [-h n] [-w n] [-j n] [-p] [-s] [-g] [-v] [file.wav]\n\
@@ -280,6 +287,7 @@ main(int argc, char **argv)
 -e:    Exit when the audio file has played\n\
 -h n   Set spectrogram display height to n pixels\n\
 -w n   Set spectrogram display width to n pixels\n\
+-y     Label the vertical frequency axis\n\
 -f n   Set the FFT frequency (default: %g Hz)\n\
 -p n   Set the initial playing time in seconds\n\
 -j n   Set maximum number of threads to use (default: the number of CPUs)\n\
@@ -334,6 +342,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	min_x = 1; max_x = disp_width - 2;
 	min_y = 1; max_y = disp_height - 2;
     }
+    if (yflag) min_x = 5 * 4 + 2;
+	/* five (digit + blank column), 2 pixels for tick */
 
     /* Set default values for unset parameters */
 
@@ -345,6 +355,8 @@ Brightness controls (*,/) change DYN_RANGE\n\
     gui_init(filename);
 
     green_line();
+
+    draw_frequency_axis();
 
     gui_update_display();
 

@@ -35,5 +35,7 @@ extern int min_x, max_x, min_y, max_y;	/* spectrogram region of the display */
 extern double audio_length;	/* Length of the audio in seconds */
 extern double sample_rate;	/* SR of the audio in Hertz */
 
+extern bool yflag;		/* display frequency axis? */
+
 #define MAIN_H
 #endif
