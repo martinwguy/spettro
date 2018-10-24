@@ -34,7 +34,7 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
  * Map values from the spectrogram onto an array of magnitudes for display.
  * Reads spec[0..speclen], representing linearly 0Hz tp sample_rate/2
  * Writes mag[0..maglen-1], representing min_freq to max_freq.
- * min_x and max_y limit the range of rows to fill (0 and maglen-1 for all)
+ * from_y and to_y limit the range of rows to fill (0 and maglen-1 for all)
  *
  * Returns the maximum value seen so far.
  */
@@ -42,7 +42,7 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
 float
 interpolate(float* logmag, int maglen, const float *spec, const int speclen,
 	    const double min_freq, const double max_freq,
-	    const double sample_rate, int min_y, int max_y)
+	    const double sample_rate, int from_y, int to_y)
 {
     static float logmax = 0.0;	/* Highest value seen so far. 0 = log10(1.0) */
     int k;
@@ -60,7 +60,7 @@ interpolate(float* logmag, int maglen, const float *spec, const int speclen,
      * in the output represent the energy in the sound at min_ and max_freq Hz.
      */
 
-    for (k = min_y; k <= max_y; k++) {
+    for (k = from_y; k <= to_y; k++) {
 	/* Average the pixels in the range it comes from */
 	double this = magindex_to_specindex(speclen, maglen, k,
 			min_freq, max_freq, sample_rate);
