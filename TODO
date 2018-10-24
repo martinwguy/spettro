@@ -22,13 +22,6 @@ Make playing multiple audio files work
 ------------------------------------------------------------------------
 Add sox's heatmap
 ------------------------------------------------------------------------
-Window/clip the spectrogram to leave space on left and right for legends
--> min_x max_x and display less of the spectrogram without moving/scaling
-in the X direction; in the Y direction we will need to rescale to respect
-max/min_freq; in this case the appearance of the time axis will affect the
-frequency axis if present.
-Similarly, min_y max_y to put time axes above/below.
-------------------------------------------------------------------------
 Add optional frequency scale in hertz on the left and as notes on the right
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
