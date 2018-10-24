@@ -509,30 +509,37 @@ gui_v_scroll_by(int scroll_by)
     }
 }
 
-/* Fill a pixel column with a single colour, probably "green" or "background" */
+/* Fill a rectangle with a single colour" */
 void
-gui_paint_column(int pos_x, int from_y, int to_y, unsigned int color)
+gui_paint_rect(int from_x, int from_y, int to_x, int to_y, unsigned int color)
 {
 #if EVAS_VIDEO
     unsigned char *p;	/* pointer to pixel to set */
-    int y;
+    int y, x;
 
     /* Paint top to bottom so that we move forward in the imagedata */
     for (y=to_y,
-	 p = (unsigned char *)((unsigned int *)imagedata + pos_x)
+	 p = (unsigned char *)((unsigned int *)imagedata)
 				+ (disp_height-1-to_y) * imagestride;
 	 y >= from_y;
-	 y--, p += imagestride) {
-	    *(unsigned int *)p = color;
-    }
+	 y--, p += imagestride)
+	    for (x=from_x; x <= to_x; x++)
+		((unsigned int *)p)[x] = color;
 #elif SDL_VIDEO
     SDL_Rect rect = {
-	pos_x, (disp_height-1)-to_y, /* SDL is 0-at-top, we are 0-at-bottom */
-	1, to_y - from_y + 1
+	from_x, (disp_height-1)-to_y, /* SDL is 0-at-top, we are 0-at-bottom */
+	to_x - from_x + 1, to_y - from_y + 1
     };
 
     SDL_FillRect(screen, &rect, color);
 #endif
+}
+
+/* Fill a pixel column with a single colour, probably "green" or "background" */
+void
+gui_paint_column(int pos_x, int from_y, int to_y, unsigned int color)
+{
+    gui_paint_rect(pos_x, from_y, pos_x, to_y, color);
 }
 
 void
