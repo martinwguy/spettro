@@ -3,11 +3,11 @@ Cache the decoded audio file in a disk file if it's compressed or if
 diplaying a live source, as WAV, continually rewriting the header
 as it grows so that on a crash recorded audio is autosaved.
 ------------------------------------------------------------------------
-Be able to display audio from a live source, presumably with the green
-line on the right edge.
-------------------------------------------------------------------------
 Be able to position the green line, disp_offset,
 and also move it with Alt-Left/Right arrow, Home, End?
+------------------------------------------------------------------------
+Be able to display audio from a live source, presumably with the green
+line on the right edge.
 ------------------------------------------------------------------------
 Improve result cache so that we precalculate ahead of right screen edge
 and so that we can cancel scheduled calculations that are no longer in
@@ -22,21 +22,20 @@ Make playing multiple audio files work
 ------------------------------------------------------------------------
 Add sox's heatmap
 ------------------------------------------------------------------------
+Window/clip the spectrogram to leave space on left and right for legends
+-> min_x max_x and display less of the spectrogram without moving/scaling
+in the X direction; in the Y direction we will need to rescale to respect
+max/min_freq; in this case the appearance of the time axis will affect the
+frequency axis if present.
+Similarly, min_y max_y to put time axes above/below.
+------------------------------------------------------------------------
 Add optional frequency scale in hertz on the left and as notes on the right
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
 ------------------------------------------------------------------------
-Fullscreen -f would be nice.
-------------------------------------------------------------------------
 Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
 ------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
-------------------------------------------------------------------------
-Add GUI keystrokes to:
-- change fftfreq (impacting the result cache)
-------------------------------------------------------------------------
-When enlarging and missing timer interrupts so it should scroll by >1,
-the visuals get out of sync with the audio.
 ------------------------------------------------------------------------
 When dragging the mouse left or right, change the playing position.
 Visual effect after redraw is to drag the graphic.
@@ -46,8 +45,6 @@ giving the same dragging-the-graphic effect.
 ------------------------------------------------------------------------
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
-------------------------------------------------------------------------
-Implement text overlays for axis markers etc
 ------------------------------------------------------------------------
 Add -m mute flag to be able to test emotion graphics.
 This needs scrolling by regular timer, not by audio position.
@@ -61,11 +58,6 @@ Mix_RewindMusic(); Mix_SetMusicPosition(double position)
 (works with WAV and FLAC?)
 Mix_FadeInMusicos(Mix_Music *music, 1, fade_ms, double position)
 Mix_SetMusicCMD("mpg123")
-------------------------------------------------------------------------
-When getting work, discard all pending work that is for a different speclen.
-And/or drop all pending work when speclen changes and remember to
-check that speclen corresponds when receiving results that were already
-in flight.
 ------------------------------------------------------------------------
 When adding score lines when there were none, just draw them on the display
 instead of redisplaying the columns' spectral data.
@@ -86,7 +78,4 @@ will be faster.
 Try FFTW3's parallel option instead of multiple calc threads.
 ------------------------------------------------------------------------
 Bar lines should overlay the green line.
-------------------------------------------------------------------------
-main.c:943:	colormap(20.0 * log10(mag[y] / max), min_db, color, gray);
-Move log10(...) into creation of mag[]-> recalculate mag[] on max change
 ------------------------------------------------------------------------
