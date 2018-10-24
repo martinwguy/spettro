@@ -114,13 +114,9 @@ calc_result(result_t *result)
 	event.user.code = RESULT_EVENT;
 	event.user.data1 = result;
 	if (SDL_PushEvent(&event) != 0) {
-	    /* The Event queue is full. let it empty and try again. */
-	    //usleep(100000);
-	    //if (SDL_PushEvent(&event) != 0) {
-		fprintf(stderr, "Couldn't post a result event\n");
-		return;
-	    }
-	//}
+	    fprintf(stderr, "Couldn't post a result event\n");
+	    return;
+	}
     }
 #endif
 }
