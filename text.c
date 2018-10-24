@@ -43,7 +43,7 @@ draw_text(char *text, int at_x, int at_y,
     switch (alignment_y) {
     case TOP:	 at_y = at_y;		break;
     case BOTTOM: at_y += height - 1;	break;
-    case CENTER: at_y -= height/2;	break;
+    case CENTER: at_y += height/2;	break;
     }
 
     /* Draw text at that position */
@@ -66,6 +66,10 @@ draw_text(char *text, int at_x, int at_y,
 	        for (row = 0; row<5; row++)
 		   gui_putpixel(at_x + 3, at_y - row, (char *)&black);
 	    at_x += 4;
+	} else if (c == '.') {
+	    gui_paint_rect(at_x, at_y - 4, at_x+1, at_y, black);
+	    gui_putpixel(at_x, at_y - 4, (char *)&green);
+	    at_x += 2;
 	}
     }
     gui_unlock();
