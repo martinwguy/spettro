@@ -8,6 +8,7 @@
 #include "spettro.h"
 #include "ui_funcs.h"
 #include "audio.h"
+#include "axes.h"
 #include "scheduler.h"
 #include "timer.h"
 #include "main.h"
@@ -75,19 +76,26 @@ time_zoom_by(double by)
 void
 freq_pan_by(double by)
 {
-    double log_one_pixel = log(max_freq/min_freq) / (disp_height-1);
+    double log_one_pixel = log(max_freq/min_freq) / (max_y - min_y);
     /* How many times do we have to multiply one_pixel by to get "by"?
      * one_pixel ^ by_pixels == by
      * exp(log(one_pixel) * by_pixels) == by
      * log(one_pixel) * by_pixels == log(by)
      * by_pixels == log(by) / log(one_pixel);
      */
-    int by_pixels = lrint(log(by) / log_one_pixel);
+    int by_pixels;
     register int x;
 
-    gui_v_scroll_by(by_pixels);
     min_freq *= by;
     max_freq *= by;
+    /* Limit frequency range */
+    if (max_freq > sample_rate / 2) {
+	min_freq /= max_freq / (sample_rate / 2);
+	by /= max_freq / (sample_rate / 2);
+	max_freq = sample_rate / 2;
+    }
+    by_pixels = lrint(log(by) / log_one_pixel);
+    gui_v_scroll_by(by_pixels);
 
     /* repaint the newly-exposed area */
     for (x=min_x; x <= max_x; x++) {
@@ -101,6 +109,7 @@ freq_pan_by(double by)
 	}
     }
     green_line();
+    draw_frequency_axis();
     gui_update_display();
 }
 
@@ -118,6 +127,9 @@ freq_zoom_by(double by)
 	min_freq = centre / range;
 	max_freq = centre * range;
     }
+    /* Limit frequency range */
+    if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
+    draw_frequency_axis();
 }
 
 /* Change the color scale's dyna,ic range, thereby changing the brightness
