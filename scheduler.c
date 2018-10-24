@@ -387,20 +387,24 @@ DEBUG("List is empty after dropping after-screens\r");
 	return NULL;
     }
 
-    if (*cpp != NULL) {
+    while (*cpp != NULL) {
 	/* We have a column after disp_time that's on-screen so
 	 * remove this calc_t from the list and hand it to the
 	 * hungry calculation thread. */
 	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
 
 	/* If speclen has changed since the work was scheduled,
-	 * the line is probably still visible so calculate for
-	 * the current parameters */
+	 * drop this calc and continue searching. This never happens,
+	 * I guess because of calls to drop_all_work() when the params change.
+	 */
 	if (cp->speclen != speclen || cp->window != window_function) {
-fprintf(stderr, "Retargeting work at %g to current parameters\n", cp->from);
-/* We should drop it and continue searching really */
-	    cp->speclen = speclen;
-	    cp->window = window_function;
+	    calc_t *cp = *cpp;
+	    if (cp->next) cp->next->prev = cp->prev;
+	    if (cp->prev) cp->prev->next = cp->next;
+	    else list = cp->next;
+	    free(cp);
+fprintf(stderr, "Avanti!\n");
+	    continue;
 	}
 
 DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
@@ -414,7 +418,7 @@ DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
 	return cp;
     }
 
-    if (*cpp == NULL & cpp != &list) {
+    if (*cpp == NULL && cpp != &list) {
 	/* We got to the end of the list and all work is <= disp_time */
 	calc_t *cp;
 	static calc_t calc;	/* Used for measuring the structure layout */
@@ -433,10 +437,13 @@ DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
 	unlock_list();
 
 	if (cp->speclen != speclen || cp->window != window_function) {
-fprintf(stderr, "Retargeting last work at %g to current parameters\n", cp->from);
-/* We should drop it and continue searching really */
-	    cp->speclen = speclen;
-	    cp->window = window_function;
+	    calc_t *cp = *cpp;
+fprintf(stderr, "Dropping work at %g for wrong parameters\n");
+	    if (cp->next) cp->next->prev = cp->prev;
+	    if (cp->prev) cp->prev->next = cp->next;
+	    else list = cp->next;
+	    free(cp);
+	    return NULL;	/* Should continue searching really */
 	}
 	return cp;
     }
