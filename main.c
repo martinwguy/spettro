@@ -370,10 +370,10 @@ Brightness controls (*,/) change DYN_RANGE\n\
 	} else set_bar_right_time(bar_right_time);
     }
 
-    /* ... and schedule the initial screen refresh */
+    /* Start the calculation threads: from here on, do not goto quit. */
     start_scheduler(max_threads);
-    /* From here on, do not goto quit. */
-    calc_columns(0, disp_width - 1);
+    /* Schedule the initial screen refresh */
+    repaint_display(FALSE);
 
     start_timer();
 
@@ -720,7 +720,7 @@ do_scroll()
     if (abs(scroll_by) >= disp_width) {
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
-	calc_columns(0, disp_width - 1);
+	//calc_columns(0, disp_width - 1);
 	repaint_display(FALSE);
     } else {
 	/* Otherwise, shift the overlapping region and calculate the new */
@@ -805,7 +805,7 @@ repaint_display(bool refresh_only)
 {
     int x;
 
-    for (x=disp_width - 1; x >= 0; x--) {
+    for (x=0; x < disp_width; x++) {
 	if (refresh_only) {
 	    /* Don't repaint bar lines or the green line */
 	    if (get_col_overlay(x) != 0 || x == disp_offset) continue;
