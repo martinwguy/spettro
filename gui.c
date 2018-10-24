@@ -554,6 +554,7 @@ gui_unlock()
 #endif
 }
 
+/* Calls to this should be bracketed by gui_lock() and gui_unlock(). */
 void
 gui_putpixel(int x, int y, unsigned char *color)
 {
