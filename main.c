@@ -124,6 +124,7 @@ static bool gray	= FALSE;	/* Display in shades of gray? */
        bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
        bool fullscreen = FALSE;		/* Start up in fullscreen mode? */
+       int min_x, max_x, min_y, max_y;
 
 /* The currently opened audio file */
 static audio_file_t *	audio_file;
@@ -326,6 +327,13 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
     disp_offset = disp_width / 2;
     step = 1 / ppsec;
+    if (fullscreen) {
+	min_x = 0; max_x = disp_width - 1;
+	min_y = 0; max_y = disp_height - 1;
+    } else {
+	min_x = 1; max_x = disp_width - 2;
+	min_y = 1; max_y = disp_height - 2;
+    }
 
     /* Set default values for unset parameters */
 
@@ -525,12 +533,12 @@ do_key(enum key key)
      */
     case KEY_UP:
 	if (Shift && Control) break;
-	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (disp_height-1))  :
+	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (max_y - min_y))  :
 		    Shift ? 2.0 : pow(2.0, 1/6.0));
 	break;
     case KEY_DOWN:
 	if (Shift && Control) break;
-	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (disp_height-1))  :
+	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (max_y - min_y))  :
 		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
 	break;
 
@@ -720,7 +728,6 @@ do_scroll()
     if (abs(scroll_by) >= disp_width) {
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
-	//calc_columns(0, disp_width - 1);
 	repaint_display(FALSE);
     } else {
 	/* Otherwise, shift the overlapping region and calculate the new */
@@ -734,10 +741,8 @@ do_scroll()
 	     * If logmax has changed since the column was originally painted,
 	     * it is repainted at a different brightness, so repaint
 	     */
-	    if (scroll_by <= disp_offset) {
-		int x;
-		for (x=disp_offset; x >= disp_offset - scroll_by; x--)
-		    repaint_column(x, 0, disp_height-1, FALSE);
+	    if (scroll_by <= disp_offset - min_x) {
+		repaint_column(disp_offset, min_y, max_y, FALSE);
 	    }
 
 	    disp_time = new_disp_time;
@@ -746,8 +751,8 @@ do_scroll()
 
 	    /* Repaint the right edge */
 	    {   int x;
-		for (x = disp_width - scroll_by; x < disp_width; x++) {
-		    repaint_column(x, 0, disp_height-1, FALSE);
+		for (x = max_x - scroll_by; x <= max_x; x++) {
+		    repaint_column(x, min_y, max_y, FALSE);
 		}
 	    }
 	}
@@ -755,10 +760,10 @@ do_scroll()
 	    /*
 	     * If the green line will remain on the screen,
 	     * replace it with spectrogram data.
-	     * There are disp_width - disp_offset - 1 columns right of the line.
+	     * There are max_x - disp_offset - 1 columns right of the line.
 	     */
-	    if (-scroll_by <= disp_width - disp_offset - 1)
-		repaint_column(disp_offset, 0, disp_height-1, FALSE);
+	    if (-scroll_by <= max_x - disp_offset - 1)
+		repaint_column(disp_offset, min_y, max_y, FALSE);
 
 	    disp_time = new_disp_time;
 
@@ -766,8 +771,8 @@ do_scroll()
 
 	    /* Repaint the left edge */
 	    {   int x;
-		for (x = -scroll_by - 1; x >= 0; x--) {
-		    repaint_column(x, 0, disp_height-1, FALSE);
+		for (x = min_x + -scroll_by - 1; x >= min_x; x--) {
+		    repaint_column(x, min_y, max_y, FALSE);
 		}
 	    }
 	}
@@ -805,12 +810,12 @@ repaint_display(bool refresh_only)
 {
     int x;
 
-    for (x=0; x < disp_width; x++) {
+    for (x=min_x; x <= max_x; x++) {
 	if (refresh_only) {
 	    /* Don't repaint bar lines or the green line */
 	    if (get_col_overlay(x) != 0 || x == disp_offset) continue;
 	}
-	repaint_column(x, 0, disp_height-1, refresh_only);
+	repaint_column(x, min_y, max_y, refresh_only);
     }
     green_line();
 
@@ -821,7 +826,7 @@ repaint_display(bool refresh_only)
  * with the background color if it hasn't been calculated yet or with the
  * bar lines.
  *
- * min_y and max_y limit the repainting to just the specified rows
+ * from_y and to_y limit the repainting to just the specified rows
  * (0 and disp_height-1 to paint the whole column).
  *
  * if "refresh_only" is TRUE, we only repaint columns that are already
@@ -835,7 +840,7 @@ repaint_display(bool refresh_only)
  * The GUI screen-updating function is called by whoever called us.
  */
 void
-repaint_column(int column, int min_y, int max_y, bool refresh_only)
+repaint_column(int column, int from_y, int to_y, bool refresh_only)
 {
     /* What time does this column represent? */
     double t = disp_time + (column - disp_offset) * step;
@@ -853,7 +858,7 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
      * give it the background colour */
     if (t < 0.0 - DELTA || t > audio_length + DELTA) {
 	if (!refresh_only)
-	    gui_paint_column(column, background);
+	    gui_paint_column(column, min_y, max_y, background);
 	return;
     }
 
@@ -870,10 +875,10 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
 	    /* There's data for this column. */
 	    if (r->speclen == speclen && r->window == window_function) {
 		/* Bingo! It's the right result */
-		paint_column(column, min_y, max_y, r);
+		paint_column(column, from_y, to_y, r);
 	    } else {
 		/* Bummer! It's for something else. Repaint it. */
-		repaint_column(column, min_y, max_y, FALSE);
+		repaint_column(column, from_y, to_y, FALSE);
 	    }
 	} else {
 	    /* There are no results in-cache for this column,
@@ -882,10 +887,10 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
     } else {
 	/* If we have the right spectral data for this column, repaint it */
 	if ((r = recall_result(t, speclen, window_function)) != NULL) {
-	    paint_column(column, min_y, max_y, r);
+	    paint_column(column, from_y, to_y, r);
 	} else {
 	    /* ...otherwise paint it with the background color */
-	    gui_paint_column(column, background);
+	    gui_paint_column(column, from_y, to_y, background);
 
 	    /* and if it was for a valid time, schedule its calculation */
 	    if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
@@ -901,7 +906,7 @@ repaint_column(int column, int min_y, int max_y, bool refresh_only)
  * The GUI screen-updating function is called by whoever called us.
  */
 void
-paint_column(int pos_x, int min_y, int max_y, result_t *result)
+paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
     float *logmag;
     int maglen;
@@ -913,7 +918,7 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
      * Apply column overlay
      */
     if ((ov = get_col_overlay(pos_x)) != 0) {
-	gui_paint_column(pos_x, ov);
+	gui_paint_column(pos_x, from_y, to_y, ov);
 	return;
     }
 
@@ -925,7 +930,7 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
     }
     old_max = logmax;
     logmax = interpolate(logmag, maglen, result->spec, result->speclen,
-			 min_freq, max_freq, sample_rate, min_y, max_y);
+			 min_freq, max_freq, sample_rate, from_y, to_y);
     result->logmag = logmag;
     result->maglen = maglen;
 
@@ -933,7 +938,7 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
      * Really we need to add max_db and have brightness/contast control.
      */
     gui_lock();		/* Allow pixel-writing access */
-    for (y=max_y; y>=min_y; y--) {
+    for (y=from_y; y <= to_y; y++) {
 	/* Apply row overlay, if any, otherwise paint the pixel */
 	if ( (ov = get_row_overlay(y)) != 0) {
 	    unsigned char *color = (unsigned char *) &ov;
@@ -961,5 +966,5 @@ paint_column(int pos_x, int min_y, int max_y, result_t *result)
 void
 green_line()
 {
-    gui_paint_column(disp_offset, green);
+    gui_paint_column(disp_offset, min_y, max_y, green);
 }

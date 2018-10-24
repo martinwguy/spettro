@@ -398,17 +398,21 @@ gui_h_scroll_by(int scroll_by)
     if (scroll_by > 0) {
 	/* Usual case: scrolling the display left to advance in time */
 #if EVAS_VIDEO
-	memmove(imagedata, imagedata + (4 * scroll_by),
-		imagestride * disp_height - (4 * scroll_by));
+	int y;
+	for (y=min_y; y <= max_y; y++) {
+	    memmove(imagedata+y*imagestride + (4 * min_x),
+		    imagedata+y*imagestride + (4 * min_x) + (4 * scroll_by),
+		    4 * (max_x - min_x + 1) - 4 * scroll_by);
+	}
 #elif SDL_VIDEO
 	{
 	    SDL_Rect from, to;
 	    int err;
 
-	    from.x = scroll_by; to.x = 0;
-	    from.y = to.y = 0;
-	    from.w = disp_width - scroll_by;    /* to.[wh] are ignored */
-	    from.h = disp_height;
+	    from.x = min_x + scroll_by; to.x = min_x;
+	    from.y = to.y = (disp_height-1-max_y);
+	    from.w = max_x - min_x + 1 - scroll_by;    /* to.[wh] are ignored */
+	    from.h = max_y - min_y + 1;
 
 	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
 		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
@@ -418,19 +422,22 @@ gui_h_scroll_by(int scroll_by)
     }
 
     if (scroll_by < 0) {
-#if EVAS_VIDEO
 	/* Happens when they seek back in time */
-	memmove(imagedata + (4 * -scroll_by), imagedata,
-		imagestride * disp_height - (4 * -scroll_by));
+#if EVAS_VIDEO
+	int y;
+	for (y=min_y; y <= max_y; y++)
+	    memmove(imagedata+y*imagestride + (4 * min_x) + (4 * -scroll_by),
+		    imagedata+y*imagestride + (4 * min_x),
+		    4 * (max_x - min_x + 1) - (4 * -scroll_by));
 #elif SDL_VIDEO
 	{
 	    SDL_Rect from, to;
 	    int err;
 
-	    from.x = 0; to.x = -scroll_by;
-	    from.y = to.y = 0;
-	    from.w = disp_width - -scroll_by;    /* to.[wh] are ignored */
-	    from.h = disp_height;
+	    from.x = min_x; to.x = min_x -scroll_by;
+	    from.y = to.y = (disp_height-1-max_y);
+	    from.w = max_x - min_x + 1 - -scroll_by;  /* to.[wh] are ignored */
+	    from.h = max_y - min_y + 1;
 
 	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
 		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
@@ -451,17 +458,22 @@ gui_v_scroll_by(int scroll_by)
     if (scroll_by > 0) {
 	/* Move to higher frequencies by scrolling the graphic down */
 #if EVAS_VIDEO
-	memmove(imagedata + (imagestride * scroll_by), imagedata,
-		imagestride * (disp_height - scroll_by));
+	int y;	/* destination y coordinate */
+	/* Copy lines downwards, i.e. forwards in memory and
+	 * start from the bottom and work upwards */
+	for (y=min_y; y <= max_y-scroll_by; y++)
+	    memmove(imagedata + 4*min_x + imagestride*(disp_height-1-y),
+		    imagedata + 4*min_x + imagestride*(disp_height-1-y-scroll_by),
+		    4 * (max_x - min_x + 1));
 #elif SDL_VIDEO
 	{
 	    SDL_Rect from, to;
 	    int err;
 
-	    from.x = 0; to.x = 0;
-	    from.y = 0; to.y = scroll_by;
-	    from.w = disp_width;    /* to.[wh] are ignored */
-	    from.h = disp_height - scroll_by;
+	    from.x = min_x; to.x = min_x;
+	    from.y = min_y; to.y = min_y + scroll_by;
+	    from.w = max_x - min_x + 1;    /* to.[wh] are ignored */
+	    from.h = max_y - min_y + 1 - scroll_by;
 
 	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
 		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
@@ -473,17 +485,21 @@ gui_v_scroll_by(int scroll_by)
     if (scroll_by < 0) {
 	/* Move to lower frequencies by scrolling the graphic up */
 #if EVAS_VIDEO
-	memmove(imagedata, imagedata + (imagestride * -scroll_by),
-		imagestride * (disp_height - -scroll_by));
+	int y;	/* destination y coordinate of the copy */
+	/* Copy lines upwards, i.e. to lower memory */
+	for (y=max_y; y >= min_y-scroll_by; y--)
+	    memmove(imagedata + 4*min_x + imagestride*(disp_height-1-y),
+		    imagedata + 4*min_x + imagestride*(disp_height-1-y-scroll_by),
+		    4 * (max_x - min_x + 1));
 #elif SDL_VIDEO
 	{
 	    SDL_Rect from, to;
 	    int err;
 
-	    from.x = 0; to.x = 0;
-	    from.y = -scroll_by; to.y = 0;
-	    from.w = disp_width;    /* to.[wh] are ignored */
-	    from.h = disp_height - -scroll_by;
+	    from.x = min_x; to.x = min_x;
+	    from.y = disp_height-1-max_y-scroll_by; to.y = disp_height-1-max_y;
+	    from.w = max_x - min_x + 1;    /* to.[wh] are ignored */
+	    from.h = max_y - min_y + 1 - -scroll_by;
 
 	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
 		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
@@ -495,22 +511,24 @@ gui_v_scroll_by(int scroll_by)
 
 /* Fill a pixel column with a single colour, probably "green" or "background" */
 void
-gui_paint_column(int pos_x, unsigned int color)
+gui_paint_column(int pos_x, int from_y, int to_y, unsigned int color)
 {
 #if EVAS_VIDEO
     unsigned char *p;	/* pointer to pixel to set */
     int y;
 
-    for (y=disp_height-1,
-	 p = (unsigned char *)((unsigned int *)imagedata + pos_x);
-	 y >= 0;
+    /* Paint top to bottom so that we move forward in the imagedata */
+    for (y=to_y,
+	 p = (unsigned char *)((unsigned int *)imagedata + pos_x)
+				+ (disp_height-1-to_y) * imagestride;
+	 y >= from_y;
 	 y--, p += imagestride) {
 	    *(unsigned int *)p = color;
     }
 #elif SDL_VIDEO
     SDL_Rect rect = {
-	pos_x, 0,
-	1, disp_height
+	pos_x, (disp_height-1)-to_y, /* SDL is 0-at-top, we are 0-at-bottom */
+	1, to_y - from_y + 1
     };
 
     SDL_FillRect(screen, &rect, color);

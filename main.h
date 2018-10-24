@@ -29,6 +29,7 @@ extern bool staff_lines;	/* Draw manuscript score staff lines? */
 extern bool guitar_lines;	/* Draw guitar string lines? */
 extern bool autoplay;		/* Start playing the file on startup? */
 extern bool fullscreen;		/* Start up in fullscreen mode? */
+extern int min_x, max_x, min_y, max_y;	/* spectrogram region of the display */
 
 /* Audio file info */
 extern double audio_length;	/* Length of the audio in seconds */

@@ -90,14 +90,14 @@ freq_pan_by(double by)
     max_freq *= by;
 
     /* repaint the newly-exposed area */
-    for (x=0; x < disp_width; x++) {
+    for (x=min_x; x <= max_x; x++) {
 	if (by_pixels > 0) {
 	    /* Moving to higher frequencies: repaint the top rows */
-	    repaint_column(x, disp_height - by_pixels, disp_height-1, FALSE);
+	    repaint_column(x, max_y - by_pixels, max_y, FALSE);
 	}
 	if (by_pixels < 0) {
 	    /* Moving to lower frequencies: repaint the bottom rows */
-	    repaint_column(x, 0, -by_pixels - 1, FALSE);
+	    repaint_column(x, min_y, min_y - by_pixels - 1, FALSE);
 	}
     }
     green_line();
