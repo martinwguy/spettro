@@ -294,7 +294,7 @@ main(int argc, char **argv)
 
 	default:
 	    fprintf(stderr,
-"Usage: spettro [-a] [-e] [-h n] [-w n] [-j n] [-p] [-s] [-g] [-v] [file.wav]\n\
+"Usage: spettro [options] [file.wav]\n\
 -a:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set spectrogram display height to n pixels\n\
@@ -338,9 +338,6 @@ PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
 MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-Zooms on the time axis (X,x,+,-) change PPSEC\n\
-Frequency-axis zooms and pans (Up,Down,Y,y,+,-) change MIN_FREQ and MAX_FREQ\n\
-Brightness controls (*,/) change DYN_RANGE\n\
 ", fftfreq, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	}
