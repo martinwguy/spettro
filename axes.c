@@ -230,10 +230,12 @@ calculate_log_ticks (double min, double max, double distance, TICKS * ticks)
 	/* If the range is greater than 1 to 1000000, it will generate more than
 	** 19 ticks.  Better to fail explicitly than to overflow.
 	*/
+#if 0
 	if (max / min > 1000000)
 	{	printf ("Error: Frequency range is too great for logarithmic scale.\n") ;
 		exit (1) ;
 		} ;
+#endif
 
 	/* First hack: label the powers of ten. */
 

@@ -39,7 +39,7 @@
  *   displays them.
  * - The calc thread performs FFTs and reports back when they're done.
  * - the timer thread is called periodically to scroll the display in sync
- *   with the audio playback. THe actual scrolling is done in the main loop
+ *   with the audio playback. The actual scrolling is done in the main loop
  *   in response to an event posted by the timer thread.
  *
  * == Mouse handling ==
@@ -115,7 +115,7 @@ static void	calc_columns(int from, int to);
        double min_db	= -100.0;	/* Values below this are black */
        double ppsec	= 25.0;		/* pixel columns per second */
        double step;			/* time step per column = 1/ppsec */
-static double fftfreq	= 5.0;		/* 1/fft size in seconds */
+       double fftfreq	= 5.0;		/* 1/fft size in seconds */
        window_function_t window_function = KAISER;
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */

@@ -88,12 +88,19 @@ freq_pan_by(double by)
 
     min_freq *= by;
     max_freq *= by;
-    /* Limit frequency range */
+    /* Limit top */
     if (max_freq > sample_rate / 2) {
 	min_freq /= max_freq / (sample_rate / 2);
 	by /= max_freq / (sample_rate / 2);
 	max_freq = sample_rate / 2;
     }
+    /* Limit bottom */
+    if (min_freq < fftfreq) {
+	max_freq *= fftfreq / min_freq;
+	by *= fftfreq / min_freq;
+	min_freq = fftfreq;
+    }
+
     by_pixels = lrint(log(by) / log_one_pixel);
     gui_v_scroll_by(by_pixels);
 
@@ -116,16 +123,14 @@ freq_pan_by(double by)
 void
 freq_zoom_by(double by)
 {
-    double  centre = sqrt(min_freq * max_freq);
-    double   range = max_freq / centre;
+    /* Don't let them turn the graphic upside-down! */
+    if (max_freq / by <= min_freq * by + DELTA) return;
 
-    range /= by;
-    if (centre / range < centre * range) {
-	min_freq = centre / range;
-	max_freq = centre * range;
-    }
     /* Limit frequency range */
+    max_freq /= by;
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
+    min_freq *= by;
+    if (min_freq < fftfreq) min_freq = fftfreq;
 
     if (yflag) draw_frequency_axis();
 }
