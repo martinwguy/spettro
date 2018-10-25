@@ -528,7 +528,8 @@ calc_notify(result_t *result)
     /* To avoid an embarassing pause at the start of the graphics, we wait
      * until the FFT delivers its first result before starting the player.
      */
-    if (autoplay && playing != PLAYING) {
+    if (autoplay) {
 	start_playing();
+	autoplay = FALSE;
     }
 }

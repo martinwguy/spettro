@@ -336,7 +336,8 @@ s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 t          Show the current playing time on stdout\n\
-Crtl-R     Redraw the display, should it get out of sync with the audio\n\
+Crtl-L     Redraw the display from cached FFT results\n\
+Crtl-R     Empty the result cache and redraw the display from the audio data\n\
 q/Ctrl-C/Esc   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
@@ -480,7 +481,7 @@ set_window_function(window_function_t new_fn)
     if (new_fn != window_function) {
 	window_function = new_fn;
 	drop_all_work();
-	repaint_display(FALSE);	/* Repaint already-displayed columns */
+	repaint_display(TRUE);	/* Repaint already-displayed columns */
     }
 }
 
@@ -519,8 +520,7 @@ do_key(enum key key)
 	    break;
 
 	case STOPPED:
-	    disp_time = 0.0;
-	    repaint_display(FALSE);
+	    set_playing_time(0.0);
 	    start_playing();
 	    break;
 
@@ -705,15 +705,14 @@ do_key(enum key key)
     /* Set left or right bar line position to current play position */
     case KEY_L:
 	if (!Shift && !Control) set_bar_left_time(disp_time);
+	if (Control && !Shift) repaint_display(FALSE);
 	break;
     case KEY_R:
 	if (!Shift && !Control) set_bar_right_time(disp_time);
-	else if (Shift && !Control) set_window_function(RECTANGULAR);
-	else if (Control && !Shift) {
-	    /* The display has got corrupted, so refresh it at the current
-	     * playing time. */
-	    disp_time = get_playing_time();
-	    disp_time = lrint(disp_time / step) * step;
+	if (Shift && !Control) set_window_function(RECTANGULAR);
+	if (Control && !Shift) {
+	    drop_all_work();
+	    drop_all_results();
 	    repaint_display(FALSE);
 	}
 	break;

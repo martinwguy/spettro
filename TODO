@@ -52,9 +52,6 @@ When adding score lines when there were none, just draw them on the display
 instead of redisplaying the columns' spectral data.
 When removing/changing such lines, repaint(all) is probably safest.
 ------------------------------------------------------------------------
-Crtl-l to redraw display from cache, Ctrl-R to junk the cache
-and recalculate all.
-------------------------------------------------------------------------
 Check for conflict btw read_audio_file and destroy_spectrum
 ------------------------------------------------------------------------
 Implement --smooth to synch scrolling to real time not playing-time.

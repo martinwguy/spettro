@@ -94,16 +94,14 @@ pause_audio()
     playing = PAUSED;
 }
 
-/* Start playing the audio from disp_time into the piece */
+/* Start playing the audio again from it's current position */
 void
 start_playing()
 {
 #if EMOTION_AUDIO
-    emotion_object_position_set(em, disp_time);
     emotion_object_play_set(em, EINA_TRUE);
 #endif
 #if SDL_AUDIO
-    sdl_start = lrint(disp_time * sample_rate);
     SDL_PauseAudio(0);
 #endif
     playing = PLAYING;

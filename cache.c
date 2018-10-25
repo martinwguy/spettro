@@ -107,6 +107,20 @@ recall_result(double t, int speclen, window_function_t window)
     return(p);	/* NULL if not found */
 }
 
+/* Forget the result cache */
+void
+drop_all_results(void)
+{
+    result_t *r;
+
+    for (r = results; r != NULL; /* see below */) {
+	result_t *next = r->next;
+	destroy_result(r);
+	r = next;
+    }
+    results = last_result = NULL;
+}
+
 /* Free the memory associated with a result structure */
 static void
 destroy_result(result_t *r)

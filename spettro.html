@@ -102,8 +102,11 @@ and pressing Space again to start again from the beginning.
       There is a corresponding command-line option <B>-W</B>.
  <DT>t
   <DD>The 't' key show the current playing time on stdout.
+ <DT>Ctrl-L
+  <DD>Control-L redraws the display from the FFT result cache.
  <DT>Ctrl-R
-  <DD>Control-R redraws the display, in case it got confused.
+  <DD>Control-R redraws the display, first throwing away all cached FFT results
+      so it is recalculated from the audio data.
 </DL>
 
 <H3>Frequency markers</H3>
