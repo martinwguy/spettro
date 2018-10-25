@@ -219,7 +219,9 @@ set_bar_right_time(double when)
 unsigned int
 get_col_overlay(int x)
 {
-    return is_bar_line(x) ? white : 0;
+    return is_bar_line(x) ? white :
+	   (x == disp_offset && !green_line_off) ? green :
+	   0;
 }
 
 /* Does screen column x coincide with the position of a bar line? */

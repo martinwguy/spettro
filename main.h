@@ -8,7 +8,6 @@
 #include "calc.h"		/* for result_t */
 
 extern void repaint_display(bool repaint_all);
-extern void green_line(void);
 extern void do_scroll(void);
 extern void repaint_column(int column, int min_y, int max_y, bool refresh_only);
 extern void paint_column(int pos_x, int min_y, int max_y, result_t *result);
@@ -30,6 +29,7 @@ extern bool guitar_lines;	/* Draw guitar string lines? */
 extern bool autoplay;		/* Start playing the file on startup? */
 extern bool fullscreen;		/* Start up in fullscreen mode? */
 extern int min_x, max_x, min_y, max_y;	/* spectrogram region of the display */
+extern bool green_line_off;	/* Also paint over the green line? */
 
 /* Audio file info */
 extern double audio_length;	/* Length of the audio in seconds */

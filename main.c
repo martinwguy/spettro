@@ -95,6 +95,8 @@
 /*
  * Function prototypes
  */
+static void
+repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only);
 
 /* Helper functions */
 static void	calc_columns(int from, int to);
@@ -125,6 +127,8 @@ static double fftfreq	= 5.0;		/* 1/fft size in seconds */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
        bool fullscreen = FALSE;		/* Start up in fullscreen mode? */
        int min_x, max_x, min_y, max_y;
+       bool green_line_off = FALSE;	/* Do we repaint the green line with
+					 * spectral data when refreshing? */
 
 /* The currently opened audio file */
 static audio_file_t *	audio_file;
@@ -326,6 +330,7 @@ Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
+Ctrl-Y     Toggle the frequency axis legend\n\
 k          Toggle overlay of 88 piano key frequencies\n\
 s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar strings' frequencies\n\
@@ -354,8 +359,7 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 	min_x = 1; max_x = disp_width - 2;
 	min_y = 1; max_y = disp_height - 2;
     }
-    if (yflag) min_x = 5 * 4 + 2;
-	/* five (digit + blank column), 2 pixels for tick */
+    if (yflag) min_x = FREQUENCY_AXIS_WIDTH;
 
     /* Set default values for unset parameters */
 
@@ -365,12 +369,6 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     make_row_overlay();
 
     gui_init(filename);
-
-    green_line();
-
-    if (yflag) draw_frequency_axis();
-
-    gui_update_display();
 
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.
@@ -404,8 +402,12 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 
     /* Start the calculation threads: from here on, do not goto quit. */
     start_scheduler(max_threads);
-    /* Schedule the initial screen refresh */
-    repaint_display(FALSE);
+
+    if (yflag) draw_frequency_axis();
+
+    repaint_display(FALSE); /* Schedules the initial screen refresh */
+
+    gui_update_display();
 
     start_timer();
 
@@ -590,9 +592,22 @@ do_key(enum key key)
 
     /* Zoom on the frequency axis */
     case KEY_Y:
-	if (Control) break;
-	freq_zoom_by(Shift ? 2.0 : 0.5);
-	repaint_display(FALSE);
+	if (Control) { /* Toggle frequency axis */
+	    if (yflag) {
+		/* Remove frequency axis */
+		min_x = 0;
+		repaint_columns(0, FREQUENCY_AXIS_WIDTH-1, min_y, max_y, FALSE);
+	    } else {
+		/* Add frequency axis */
+		min_x = FREQUENCY_AXIS_WIDTH;
+		draw_frequency_axis();
+	    }
+	    yflag = !yflag;
+	    gui_update_display();
+	} else {
+	    freq_zoom_by(Shift ? 2.0 : 0.5);
+	    repaint_display(TRUE);
+	}
 	break;
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
@@ -727,6 +742,7 @@ do_scroll()
 				 * +ve = move forward in time, move display left
 				 * +ve = move back in time, move display right
 				 */
+    bool scroll_forward;	/* Normal forward scroll, moving the graph left? */
 
     scroll_event_pending = FALSE;
 
@@ -755,65 +771,58 @@ do_scroll()
      * the next pixel row, and the final "- (4*scroll_by)" is so as
      * not to scroll garbage from past the end of the frame buffer.
      */
-    if (scroll_by != 0)
-    if (abs(scroll_by) >= disp_width) {
+    if (scroll_by == 0) return;
+
+    if (abs(scroll_by) >= max_x - min_x + 1) {
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
 	repaint_display(FALSE);
-    } else {
-	/* Otherwise, shift the overlapping region and calculate the new */
-	if (scroll_by > 0) {
-	    /*
-	     * If the green line will remain on the screen,
-	     * replace it with spectrogram data.
-	     * There are disp_offset columns left of the line.
-	     * If there is no result for the line, schedule its calculation
-	     * as it will need to be repainted when it has scrolled.
-	     * If logmax has changed since the column was originally painted,
-	     * it is repainted at a different brightness, so repaint
-	     */
-	    if (scroll_by <= disp_offset - min_x) {
-		repaint_column(disp_offset, min_y, max_y, FALSE);
-	    }
-
-	    disp_time = new_disp_time;
-
-	    gui_h_scroll_by(scroll_by);
-
-	    /* Repaint the right edge */
-	    {   int x;
-		for (x = max_x - scroll_by; x <= max_x; x++) {
-		    repaint_column(x, min_y, max_y, FALSE);
-		}
-	    }
-	}
-	if (scroll_by < 0) {
-	    /*
-	     * If the green line will remain on the screen,
-	     * replace it with spectrogram data.
-	     * There are max_x - disp_offset - 1 columns right of the line.
-	     */
-	    if (-scroll_by <= max_x - disp_offset - 1)
-		repaint_column(disp_offset, min_y, max_y, FALSE);
-
-	    disp_time = new_disp_time;
-
-	    gui_h_scroll_by(scroll_by);
-
-	    /* Repaint the left edge */
-	    {   int x;
-		for (x = min_x + -scroll_by - 1; x >= min_x; x--) {
-		    repaint_column(x, min_y, max_y, FALSE);
-		}
-	    }
-	}
-
-	/* Repaint the green line */
-	green_line();
-
-	/* The whole screen has changed (well, unless there's background) */
-	gui_update_display();
+	return;
     }
+
+    scroll_forward = (scroll_by > 0);
+    if (scroll_by < 0) scroll_by = -scroll_by;
+
+    /* Otherwise, shift the overlapping region and calculate the new */
+
+    /*
+     * If the green line will remain on the screen,
+     * replace it with spectrogram data.
+     * There are disp_offset columns left of the line.
+     * If there is no result for the line, schedule its calculation
+     * as it will need to be repainted when it has scrolled.
+     * If logmax has changed since the column was originally painted,
+     * it is repainted at a different brightness, so repaint
+     */
+    if (scroll_by <= scroll_forward ? (disp_offset - min_x)
+				    : (max_x - disp_offset - 1) ) {
+	green_line_off = TRUE;
+	repaint_column(disp_offset, min_y, max_y, FALSE);
+	green_line_off = FALSE;
+    }
+
+    disp_time = new_disp_time;
+
+    gui_h_scroll_by(scroll_forward ? scroll_by : -scroll_by);
+
+    repaint_column(disp_offset, min_y, max_y, FALSE);
+
+    if (scroll_forward) {
+	/* Repaint the right edge */
+	int x;
+	for (x = max_x - scroll_by; x <= max_x; x++) {
+	    repaint_column(x, min_y, max_y, FALSE);
+	}
+    } else {
+	/* Repaint the left edge */
+	int x;
+	for (x = min_x + scroll_by - 1; x >= min_x; x--) {
+	    repaint_column(x, min_y, max_y, FALSE);
+	}
+    }
+
+    /* The whole screen has changed (well, unless there's background) */
+    gui_update_display();
 }
 
 /* Repaint the display.
@@ -837,21 +846,27 @@ do_scroll()
  *	   FALSE if it painted the background color or was off-limits.
  * The GUI screen-updating function is called by whoever called us.
  */
+
 void
 repaint_display(bool refresh_only)
 {
+    repaint_columns(min_x, max_x, min_y, max_y, refresh_only);
+
+    gui_update_display();
+}
+
+static void
+repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
+{
     int x;
 
-    for (x=min_x; x <= max_x; x++) {
+    for (x=from_x; x <= to_x; x++) {
 	if (refresh_only) {
 	    /* Don't repaint bar lines or the green line */
-	    if (get_col_overlay(x) != 0 || x == disp_offset) continue;
+	    if (get_col_overlay(x) != 0) continue;
 	}
 	repaint_column(x, min_y, max_y, refresh_only);
     }
-    green_line();
-
-    gui_update_display();
 }
 
 /* Repaint a column of the display from the result cache or paint it
@@ -896,7 +911,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
-	if (get_col_overlay(column) || column == disp_offset) return;
+	if (get_col_overlay(column)) return;
 
 	/* If there's any spectral data for this column, it's probably
 	 * displaying something but it might be for the wrong speclen/window.
@@ -917,6 +932,10 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	     * so it can't be displaying any spectral data */
 	}
     } else {
+	unsigned int ov;
+	if ((ov = get_col_overlay(column)) != 0) {
+	    gui_paint_column(column, from_y, to_y, ov);
+	} else
 	/* If we have the right spectral data for this column, repaint it */
 	if ((r = recall_result(t, speclen, window_function)) != NULL) {
 	    paint_column(column, from_y, to_y, r);
@@ -991,12 +1010,4 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
      * the duplicate results being thrown away. The old behaviour of reshading
      * the individual columns as they pass the green line is less bad.
      */
-}
-
-/* Paint the green line.
- * The GUI screen-update function is called by whoever called green_line() */
-void
-green_line()
-{
-    gui_paint_column(disp_offset, min_y, max_y, green);
 }

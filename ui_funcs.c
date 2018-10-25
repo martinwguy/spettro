@@ -108,7 +108,6 @@ freq_pan_by(double by)
 	    repaint_column(x, min_y, min_y - by_pixels - 1, FALSE);
 	}
     }
-    green_line();
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
