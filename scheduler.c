@@ -503,7 +503,7 @@ calc_notify(result_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
 
-    remember_result(result);
+    result = remember_result(result);
 
     if (result->speclen != speclen || result->window != window_function) {
 	/* This is the result from an old call to schedule() before

@@ -23,7 +23,10 @@ static result_t *results = NULL; /* Linked list of result structures */
 static result_t *last_result = NULL; /* Last element in the linked list */
 
 /* "result" was obtained from malloc(); it is up to us to free it. */
-void
+/* We return the result because, if we find a duplicate in the cache, that
+ * becomes the active result.
+ */
+result_t *
 remember_result(result_t *result)
 {
     /* Drop any stored results more than a screenful before the display */
@@ -58,11 +61,10 @@ remember_result(result_t *result)
 			r->next->t >= result->t - DELTA &&
 			r->next->speclen == result->speclen &&
 			r->next->window == result->window) {
-			/* Same time, same size: forget it */
+			/* Same time, same size: forget new result */
 fprintf(stderr, "Discarding duplicate result for time %g speclen %d window %d\n", result->t, result->speclen, result->window);
 			destroy_result(result);
-			r = NULL;
-			break;
+			return(r);
 		    }
 		}
 		if (r) {
@@ -73,6 +75,7 @@ fprintf(stderr, "Discarding duplicate result for time %g speclen %d window %d\n"
 	    }
 	}
     }
+    return result;
 }
 
 /* Return the result for time t at the current speclen and window function
