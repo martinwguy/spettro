@@ -56,5 +56,3 @@ Precalculate up to one screenful ahead in time partly to avoid the
 flickering gray part on screen right, partly so that a forward time pan
 will be faster.
 ------------------------------------------------------------------------
-Try FFTW3's parallel option instead of multiple calc threads.
-------------------------------------------------------------------------

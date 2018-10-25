@@ -13,5 +13,3 @@ It looks like the screen get scrolled slightly too little.
 Key-repeat forward scrolling in EMOTION is lumpy.
 Strangely, reverse key-repeat scrolling isn't!
 ------------------------------------------------------------------------
-If you scroll down too far with the frequency axis on, it segfaults.
-------------------------------------------------------------------------
