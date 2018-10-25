@@ -23,6 +23,8 @@ Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
 ------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
+Do note lines and the 0 1 2 3 4 5 stuff to say how many beats per bar.
+------------------------------------------------------------------------
 When dragging the mouse left or right, change the playing position.
 Visual effect after redraw is to drag the graphic.
 ------------------------------------------------------------------------
