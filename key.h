@@ -44,6 +44,8 @@ enum key {
     KEY_D,
     KEY_H,
     KEY_N,
+    KEY_0,
+    KEY_9,
 };
 extern bool Shift, Control;
 

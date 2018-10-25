@@ -37,6 +37,7 @@ extern double audio_length;	/* Length of the audio in seconds */
 extern double sample_rate;	/* SR of the audio in Hertz */
 
 extern bool yflag;		/* display frequency axis? */
+extern double softvol;
 
 #define MAIN_H
 #endif

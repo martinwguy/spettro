@@ -198,6 +198,19 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     }
     sdl_start += frames_read;
 
+    /* Apply softvol */
+    {
+	int i;
+	for (i=0; i<frames_read * nchannels; i++) {
+	    double value = ((signed short *)stream)[i] * softvol;
+	    if (value < -32767) value = -32767;
+	    if (value >  32767) value =  32767;
+	    /* Assume 16-bit ints */
+	    /* Plus half a bit of ditering? */
+	    ((signed short *)stream)[i] = lrint(value);
+	}
+    }
+
     /* SDL has no "playback finished" callback, so spot it here */
     if (sdl_start >= audio_file_length_in_frames(audiofile)) {
 	stop_playing();

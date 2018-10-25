@@ -51,6 +51,9 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	/* Other window function keys */
 	case 'h': key = KEY_H;			break;
 	case 'n': key = KEY_N;			break;
+	/* Avanti! */
+	case '0': key = KEY_0;			break;
+	case '9': key = KEY_9;			break;
     }
     else if (!strcmp(ev->key, "Escape"))
 	key = KEY_ESC;
@@ -123,6 +126,8 @@ sdl_key_decode(SDL_Event *eventp)
 	/* Unclaimed window function keys */
     case SDLK_h:	     key = KEY_H;	break;
     case SDLK_n:	     key = KEY_N;	break;
+    case SDLK_0:	     key = KEY_0;	break;
+    case SDLK_9:	     key = KEY_9;	break;
     default: break;
     }
     return key;

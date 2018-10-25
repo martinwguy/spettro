@@ -129,6 +129,7 @@ static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
        int min_x, max_x, min_y, max_y;
        bool green_line_off = FALSE;	/* Do we repaint the green line with
 					 * spectral data when refreshing? */
+       double softvol = 1.0;
 
 /* The currently opened audio file */
 static audio_file_t *	audio_file;
@@ -335,6 +336,7 @@ k          Toggle overlay of 88 piano key frequencies\n\
 s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
+9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
 Crtl-L     Redraw the display from cached FFT results\n\
 Crtl-R     Empty the result cache and redraw the display from the audio data\n\
@@ -720,6 +722,17 @@ do_key(enum key key)
 	break;
     case KEY_N:
 	if (Shift && !Control) set_window_function(NUTTALL);
+	break;
+
+    /* softvol volume controls */
+    case KEY_9:
+	softvol *= 0.9;
+fprintf(stderr, "Soltvol = %g\n", softvol);
+	break;
+
+    case KEY_0:
+	softvol /= 0.9;
+fprintf(stderr, "Soltvol = %g\n", softvol);
 	break;
 
     default:
