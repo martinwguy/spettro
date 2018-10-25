@@ -192,22 +192,100 @@ static double bar_right_time = UNDEFINED;
 #define bar_left_ticks (lrint(bar_left_time / step))
 #define bar_right_ticks (lrint(bar_right_time / step))
 
-/* Set start and end of marked bar. */
+/* Set start and end of marked bar.
+ * If neither is defined, we display nothing.
+ * If only one is defined or they are the same, display a marker at that point.
+ * If both are defined, we display both and other barlines at the same interval.
+ *
+ * We used to repaint the whole display every time, slow slow. Now when
+ * bar line positions change, we wipe out the already-displayed ones and
+ * redraw the new ones, which is much faster.
+ */
 void
 set_bar_left_time(double when)
 {
-    if (when >= 0.0 - DELTA && when <= audio_length + DELTA) {
+    if (bar_right_time == UNDEFINED) {
+        int new_col;
+	/* Move the sole left marker */
+	if (bar_left_time != UNDEFINED) {
+	    int old_col = disp_offset + floor((bar_left_time - disp_time) / step);
+	    if (old_col >= min_x && old_col <= max_x) {
+		repaint_column(old_col, min_y, max_y, FALSE);
+		gui_update_column(old_col);
+	    }
+	}
 	bar_left_time = when;
-	repaint_display(FALSE);
+	new_col = disp_offset + floor((when - disp_time) / step);
+	repaint_column(new_col, min_y, max_y, FALSE);
+	gui_update_column(new_col);
+    } else {
+	if (bar_left_time != UNDEFINED) {
+	    double old_bar_left_time = bar_left_time;
+	    int col;
+	    /* Both left and right were already defined so clear existing bar lines */
+	    for (col=min_x; col <= max_x; col++) {
+		if (is_bar_line(col)) {	
+		    bar_left_time = when;
+		    repaint_column(col, min_y, max_y, FALSE);
+		    gui_update_column(col);
+		    bar_left_time = old_bar_left_time;
+		}
+	    }
+	}
+	/* and paint the new bar lines */
+    	bar_left_time = when;
+	{   int col;
+	    for (col=min_x; col <= max_x; col++) {
+		if (is_bar_line(col)) {
+		    repaint_column(col, min_y, max_y, FALSE);
+		    gui_update_column(col);
+		}
+	    }
+	}
     }
 }
 
 void
 set_bar_right_time(double when)
 {
-    if (when >= 0.0 && when <= audio_length + DELTA) {
+    if (bar_left_time == UNDEFINED) {
+        int new_col;
+	/* Move the sole right marker */
+	if (bar_right_time != UNDEFINED) {
+	    int old_col = disp_offset + floor((bar_right_time - disp_time)/step);
+	    if (old_col >= min_x && old_col <= max_x) {
+		repaint_column(old_col, min_y, max_y, FALSE);
+		gui_update_column(old_col);
+	    }
+	}
 	bar_right_time = when;
-	repaint_display(FALSE);
+	new_col = disp_offset + floor((when - disp_time) / step);
+	repaint_column(new_col, min_y, max_y, FALSE);
+	gui_update_column(new_col);
+    } else {
+	if (bar_right_time != UNDEFINED) {
+	    double old_bar_right_time = bar_right_time;
+	    int col;
+	    /* Both left and right were already defined so clear existing bar lines */
+	    for (col=min_x; col <= max_x; col++) {
+		if (is_bar_line(col)) {	
+		    bar_right_time = when;
+		    repaint_column(col, min_y, max_y, FALSE);
+		    gui_update_column(col);
+		    bar_right_time = old_bar_right_time;
+		}
+	    }
+	}
+	/* and paint the new bar lines */
+    	bar_right_time = when;
+	{   int col;
+	    for (col=min_x; col <= max_x; col++) {
+		if (is_bar_line(col)) {
+		    repaint_column(col, min_y, max_y, FALSE);
+		    gui_update_column(col);
+		}
+	    }
+	}
     }
 }
 

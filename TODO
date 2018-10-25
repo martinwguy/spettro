@@ -15,9 +15,6 @@ the time period we cache.
 -> Keep track of scheduled calculations (in a double linked list in time
 order with associated calc structure.
 ------------------------------------------------------------------------
-When changing bar line positions, repaint just the old bar lines and the
-new, not the whole display.
-------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
