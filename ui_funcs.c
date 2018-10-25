@@ -109,8 +109,6 @@ freq_pan_by(double by)
 	}
     }
     green_line();
-    draw_frequency_axis();
-    gui_update_display();
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
@@ -129,7 +127,6 @@ freq_zoom_by(double by)
     }
     /* Limit frequency range */
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
-    draw_frequency_axis();
 }
 
 /* Change the color scale's dyna,ic range, thereby changing the brightness

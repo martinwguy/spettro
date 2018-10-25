@@ -20,10 +20,6 @@ new, not the whole display.
 ------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
-Add sox's heatmap
-------------------------------------------------------------------------
-Add optional frequency scale in hertz on the left and as notes on the right
-------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
 ------------------------------------------------------------------------
 Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h

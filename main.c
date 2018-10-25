@@ -308,15 +308,17 @@ PgUp/PgDn  Pan up/down the frequency axis by a screenful\n\
 X/x        Zoom in/out on the time axis by a factor of 2\n\
 Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
 Plus/Minus Zoom in/out on both axes\n\
+c          Flip between color maps: sox - sndfile-spectrogram\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
+f/F        Halve/double the length of the sample taken to calculate each column\n\
+R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
 k          Toggle overlay of 88 piano key frequencies\n\
 s          Toggle overlay of conventional staff lines\n\
 g          Toggle overlay of classical guitar strings' frequencies\n\
+l/r        Set the left/right bar markers for an overlay of bar lines\n\
 t          Show the current playing time on stdout\n\
 Crtl-R     Redraw the display, should it get out of sync with the audio\n\
-l/r        Set the left/right bar markers for an overlay of bar lines\n\
-R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
 q/Ctrl-C/Esc   Quit\n\
 == Environment variables ==\n\
 PPSEC      Pixel columns per second, default %g\n\
@@ -356,7 +358,7 @@ Brightness controls (*,/) change DYN_RANGE\n\
 
     green_line();
 
-    draw_frequency_axis();
+    if (yflag) draw_frequency_axis();
 
     gui_update_display();
 
@@ -482,6 +484,11 @@ do_key(enum key key)
 	break;
 
     case KEY_C:
+	if (!Control && !Shift) {
+	    change_colormap();
+	    repaint_display(TRUE);
+	    break;
+	}
 	/* Only Control-C is an alias for Quit */
 	if (!Control) break;	
     case KEY_ESC:
@@ -544,14 +551,16 @@ do_key(enum key key)
      * The argument to freq_pan_by() multiplies min_freq and max_freq.
      */
     case KEY_UP:
-	if (Shift && Control) break;
-	freq_pan_by(Control ? exp(log(max_freq/min_freq) / (max_y - min_y))  :
-		    Shift ? 2.0 : pow(2.0, 1/6.0));
-	break;
     case KEY_DOWN:
 	if (Shift && Control) break;
-	freq_pan_by(Control ? 1/exp(log(max_freq/min_freq) / (max_y - min_y))  :
-		    Shift ? 1/2.0 : pow(2.0, -1/6.0));
+	if (key == KEY_UP)
+	    freq_pan_by(Control ? exp(log(max_freq/min_freq)/(max_y-min_y)) :
+		        Shift ? 2.0 : pow(2.0, 1/6.0));
+	else
+	    freq_pan_by(Control ? 1/exp(log(max_freq/min_freq)/(max_y-min_y)) :
+		        Shift ? 1/2.0 : pow(2.0, -1/6.0));
+	if (yflag) draw_frequency_axis();
+	gui_update_display();
 	break;
 
     /* Page Up/Down: Pan the frequency axis by a screenful */
@@ -799,12 +808,13 @@ do_scroll()
 
 /* Repaint the display.
  *
- * If "all" is TRUE, repaint every column of the display from the result cache
- * or paint it with the background color if it hasn't been calculated yet (and
- * ask for it to be calculated) or is before/after the start/end of the piece.
+ * If "refresh_only" is FALSE, repaint every column of the display
+ * from the result cache or paint it with the background color
+ * if it hasn't been calculated yet (and ask for it to be calculated)
+ * or is before/after the start/end of the piece.
  *
- * If "all" if FALSE, repaint only the columns that are already displaying
- * spectral data and don't ask for anything new to be calculated.
+ * If "refresh_only" if TRUE, repaint only the columns that are already
+ * displaying spectral data.
  *   This is used when something changes that affects their appearance
  * retrospectively, like logmax or dyn_range changing, or vertical scrolling,
  * where there's no need to repaint background, bar lines or the green line.
