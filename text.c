@@ -29,9 +29,17 @@ void
 draw_text(char *text, int at_x, int at_y,
 		      alignment_t alignment_x, alignment_t alignment_y)
 {
-    int width = strlen(text) * 4 - 1;
+    int width;
     int height = 5;
     int x;	/* index into the string */
+
+    /* Calculate the width of the typeset string in pixels */
+    width = 0;
+    for (x = 0; text[x] != '\0'; x++) {
+	if (isdigit(text[x])) width += 4;
+	else if (text[x] == '.') width += 2;
+    }
+    if (width > 0) width--; /* Not including the trailing blank column */
 
     /* Make at_x and at_y the position of the top left pixel of the text */
     switch (alignment_x) {
