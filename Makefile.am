@@ -66,3 +66,9 @@ mrproper: clean
 		config.status configure depcomp install-sh missing \
 		configure.h*
 	rm -rf .deps autom4te.cache
+	rm -f swoop.wav
+
+# Some test files
+swoop.wav:
+	sox -n $@ synth 10 sine 27.5-14080
+
