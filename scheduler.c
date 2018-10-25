@@ -237,7 +237,8 @@ schedule(calc_t *calc)
     calc_t **cpp;	/* Pointer to the "next" field of the previous cell */
 
     if (recall_result(calc->from, calc->speclen, calc->window)) {
-	fprintf(stderr, "scheduler drops calculation already in cache\n");
+	fprintf(stderr, "scheduler drops calculation already in cache for time %g\n",
+		calc->from);
 	return;
     }
 
