@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <unistd.h>	/* for usleep() */
 #include <math.h>
-#include <fftw3.h>
 
 #if ECORE_MAIN
 #include <Ecore.h>

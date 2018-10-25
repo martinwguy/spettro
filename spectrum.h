@@ -2,6 +2,8 @@
 
 #ifndef SPECTRUM_H
 
+#include <fftw3.h>	/* for fftw_plan */
+
 typedef struct
 {	int speclen;
 	window_function_t wfunc;
