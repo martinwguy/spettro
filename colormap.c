@@ -152,7 +152,8 @@ colormap(double value, double min_db, unsigned char *color)
     rem = fmod(findx, 1.0);
 
     if (indx < 0) {
-	fprintf(stderr, "colormap: array index is %d.\n", indx);
+	fprintf(stderr, "colormap: array index is %d because value is %g.\n",
+		indx, value);
 	/* Carry on with the show */
 	return;
     }
