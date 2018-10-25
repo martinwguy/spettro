@@ -495,17 +495,21 @@ DEBUG("List:");
 DEBUG("\n");
 }
 
+/*
+ * The main loop has been notified of the arrival of a result. Process it.
+ */
 void
 calc_notify(result_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
+
+    remember_result(result);
 
     if (result->speclen != speclen || result->window != window_function) {
 	/* This is the result from an old call to schedule() before
 	 * the parameters changed.
 	 * Keep it in the cache in case they flip back to old parameters
 	 */
-	remember_result(result);
 	return;
     }
 
@@ -520,8 +524,6 @@ calc_notify(result_t *result)
 	paint_column(pos_x, min_y, max_y, result);
 	gui_update_column(pos_x);
     }
-
-    remember_result(result);
 
     /* To avoid an embarassing pause at the start of the graphics, we wait
      * until the FFT delivers its first result before starting the player.
