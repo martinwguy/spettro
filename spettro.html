@@ -66,7 +66,9 @@ and pressing Space again to start again from the beginning.
 
 <DL>
  <DT>c
-  <DD>Cycle through alternate color maps: sox, sndfile-spectrogram.
+  <DD>Cycle through alternate color maps: sox, sndfile-spectrogram,
+      gray (white on black), print (grayscale, black on white).
+      You can also select an initial color map with the <B>-c<b> option.
  <DT>* /
   <DD>Star and slash adjust the dynamic range of the color values and act
       like a contrast control.
@@ -201,6 +203,18 @@ audio file name:
   <DD>Autoplay: Start playing the audio file when the program starts up.
  <DT>-e
   <DD>Exit when the audio file has finished playing.
+ <DT>-c <I>which</I>
+  <DD>Select an initial color map to use. <I>which</I> can be:
+   <DL>
+    <DT>sox
+     <DD>The color heat map from "sox spectrogram" (the default)
+    <DT>sndfile
+     <DD>The color heat map from "sndfile-spectrogram"
+    <DT>gray
+     <DD>Shades of gray from black up to white
+    <DT>print
+     <DD>Shades of gray from white u pto black (to save ink)
+   </DL>
  <DT>-f
   <DD>Set the FFT frequency in Hz. Default: 5 (one fifth of a second.)
  <DT>-y

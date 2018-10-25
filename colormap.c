@@ -81,24 +81,41 @@ static unsigned char sox_map[][3] = {
 };
 #define sox_map_len (sizeof(sox_map) / sizeof(sox_map[0]))
 
-static int map_len = sox_map_len;
+/* White marks on a black background */
+static unsigned char gray_map[][3] = {
+    { 255, 255, 255 },	/* -0dB */
+    {   0,   0,   0 },  /* min_db */
+};
+#define gray_map_len (sizeof(gray_map) / sizeof(gray_map[0]))
+
+/* Black marks on a white background */
+static unsigned char print_map[][3] = {
+    {   0,   0,   0 },	/* -0dB */
+    { 255, 255, 255 },  /* min_db */
+};
+#define print_map_len (sizeof(print_map) / sizeof(print_map[0]))
+
 static unsigned char (*map)[3] = sox_map;
+static int map_len = sox_map_len;
+
+/* Which color map do they want? */
+static int which = 0;
+
+void
+set_colormap(int w)
+{
+    switch (which = w) {
+    case 0: map = sox_map;	map_len = sox_map_len;		break;
+    case 1: map = sndfile_map;	map_len = sndfile_map_len; 	break;
+    case 2: map = gray_map;	map_len = gray_map_len;		break;
+    case 3: map = print_map;	map_len = print_map_len;	break;
+    }
+}
 
 void
 change_colormap()
 {
-    static bool which = FALSE;
-
-    if (!which) {
-fprintf(stderr, "Using sndfile\n");
-	map = sndfile_map;
-	map_len = sndfile_map_len;
-    } else {
-fprintf(stderr, "Using sox\n");
-	map = sox_map;
-	map_len = sox_map_len;
-    }
-    which = !which;
+    set_colormap((which + 1) % NMAPS);
 }
 
 /*
@@ -109,40 +126,23 @@ fprintf(stderr, "Using sox\n");
  * The resulting color is deposited in color[B,G,R].
  */
 void
-colormap(double value, double min_db, unsigned char *color, bool gray_scale)
+colormap(double value, double min_db, unsigned char *color)
 {
     double rem;
     double findx;
     int indx;
 
-    if (gray_scale) {
-    	int gray; /* The pixel value */
-
-    	if (value <= min_db) {
-	    gray = 0;
-    	} else {
-	    /* "value" is a negative value in decibels.
-	     * black (0,0,0) is for <= min_db, and the other 255 values
-	     * should cover the range from min_db to 0 evenly.
-	     * (value/min_db) is >=0.0  and <1.0
-	     * because both value and min_db are negative.
-	     * (v/s) * 255.0 goes from 0.0 to 254.9999999 and
-	     * floor((v/s) * 255) gives us 0 to 254
-	     * converted to 255 to 1 by subtracting it from 255.
-	     */
-	    gray = 255 - lrint(floor((value / min_db) * 255.0));
-	}
-    	color[0] = color[1] = color[2] = gray;
-    	return;
-    }
-
     if (value >= 0.0) {
-	color[0] = color[1] = color[2] = 255;
+	color[0] = map[0][0];
+	color[1] = map[0][1];
+	color[2] = map[0][2];
 	return;
     }
 
     if (value <= min_db) {
-	color[0] = color[1] = color[2] = 0;
+	color[0] = map[map_len-1][0];
+	color[1] = map[map_len-1][1];
+	color[2] = map[map_len-1][2];
 	return;
     }
     

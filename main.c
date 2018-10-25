@@ -115,7 +115,6 @@ static void	calc_columns(int from, int to);
        double step;			/* time step per column = 1/ppsec */
 static double fftfreq	= 5.0;		/* 1/fft size in seconds */
        window_function_t window_function = KAISER;
-static bool gray	= FALSE;	/* Display in shades of gray? */
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
        bool guitar_lines= FALSE;	/* Draw guitar string lines? */
@@ -177,7 +176,7 @@ main(int argc, char **argv)
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 'p':
-	case 'W':
+	case 'W': case 'c':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -271,10 +270,23 @@ main(int argc, char **argv)
 	    case 'h': window_function = HANN; break;
 	    case 'n': window_function = NUTTALL; break;
 	    default:
-		fprintf(stderr, "-W what (rectangular/kaiser/hann/nuttall)\n");
+		fprintf(stderr, "-W which? (rectangular/kaiser/hann/nuttall)\n");
 		exit(1);
 	    }
 	    break;
+
+	case 'c':
+	    if (!strcmp(argv[0], "sox")) set_colormap(SOX_MAP);
+	    else if (!strcmp(argv[0], "sndfile")) set_colormap(SNDFILE_MAP);
+	    else if (!strcmp(argv[0], "gray")) set_colormap(GRAY_MAP);
+	    else if (!strcmp(argv[0], "grey")) set_colormap(GRAY_MAP);
+	    else if (!strcmp(argv[0], "print")) set_colormap(PRINT_MAP);
+	    else {
+		fprintf(stderr, "-c which? (sox/sndfile/gray/print)\n");
+		exit(1);
+	    }
+	    break;
+
 
 	case 'y':
 	    yflag = TRUE;
@@ -297,6 +309,7 @@ main(int argc, char **argv)
 -v:    Print the version of spettro that you're using\n\
 -W x   Use FFT window function x where x starts with\n\
        r for rectangular, k for Kaiser, n for Nuttall or h for Hann\n\
+-c map Select a color map from sox, sndfile, gray, print\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
@@ -967,7 +980,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 	    gui_putpixel(pos_x, y, color);
 	} else {
 	    unsigned char color[3];
-	    colormap(20.0 * (logmag[y] - logmax), min_db, color, gray);
+	    colormap(20.0 * (logmag[y] - logmax), min_db, color);
 	    gui_putpixel(pos_x, y, color);
 	}
     }
