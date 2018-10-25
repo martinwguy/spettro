@@ -64,6 +64,7 @@ draw_frequency_axis(void)
 		      RIGHT, CENTER);
 	}
     }
+    gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 }
 
 /* Decide where to put ticks and numbers on an axis.

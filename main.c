@@ -353,13 +353,8 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 
     disp_offset = disp_width / 2;
     step = 1 / ppsec;
-    if (fullscreen) {
-	min_x = 0; max_x = disp_width - 1;
-	min_y = 0; max_y = disp_height - 1;
-    } else {
-	min_x = 1; max_x = disp_width - 2;
-	min_y = 1; max_y = disp_height - 2;
-    }
+    min_x = 0; max_x = disp_width - 1;
+    min_y = 0; max_y = disp_height - 1;
     if (yflag) min_x = FREQUENCY_AXIS_WIDTH;
 
     /* Set default values for unset parameters */
@@ -603,7 +598,7 @@ do_key(enum key key)
 		draw_frequency_axis();
 	    }
 	    yflag = !yflag;
-	    gui_update_display();
+	    gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 	} else {
 	    freq_zoom_by(Shift ? 2.0 : 0.5);
 	    repaint_display(TRUE);

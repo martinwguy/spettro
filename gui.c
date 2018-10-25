@@ -237,6 +237,22 @@ gui_update_display()
 #endif
 }
 
+/* Tell the video subsystem to update a rectangle from the pixel data
+ * The parameters are in our 0-at-bottom coordinates;
+ * evas and SDL both have 0-at-top.
+ */
+void
+gui_update_rect(int pos_x, int pos_y, int width, int height)
+{
+#if EVAS_VIDEO
+    evas_object_image_data_update_add(image, pos_x,
+	(disp_height-1)-(pos_y+height-1), width, height);
+#elif SDL_VIDEO
+    SDL_UpdateRect(screen, pos_x,
+	(disp_height-1)-(pos_y+height-1), width, height);
+#endif
+}
+
 /* Tell the video subsystem to update one column of the display
  * from the pixel data
  */
@@ -244,9 +260,10 @@ void
 gui_update_column(int pos_x)
 {
 #if EVAS_VIDEO
-    evas_object_image_data_update_add(image, pos_x, 0, 1, disp_height);
+    evas_object_image_data_update_add(image, pos_x,
+	(disp_height-1)-max_y, 1, max_y - min_y + 1);
 #elif SDL_VIDEO
-    SDL_UpdateRect(screen, pos_x, 0, 1, disp_height);
+    SDL_UpdateRect(screen, pos_x, (disp_height-1)-max_y, 1, max_y - min_y + 1);
 #endif
 }
 
