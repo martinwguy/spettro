@@ -692,9 +692,9 @@ do_key(enum key key)
 	drop_all_work();
 
 	/* Any calcs that are currently being performed will deliver
-	 * a result for the old speclen and that calculation will need
-	 * rescheduling at the new speclen */
-	repaint_display(FALSE);
+	 * a result for the old speclen, which will be ignored (or cached)
+	 */
+	repaint_display(TRUE);
 	break;
 
     /* Set left or right bar line position to current play position */
