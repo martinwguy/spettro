@@ -18,6 +18,16 @@ static char *digits[] = {
     "0 0", " 0 ", "0  ", "  0", "  0", "  0", "0 0", "0  ", "0 0", "  0",
     "000", "000", "000", "000", "  0", "00 ", "000", "0  ", "000", "000",
 };
+static const int digit_stride = 10;
+
+static char *letters[] = {
+    "000", "00 ", "000", "00 ", "000", "000", " 00",
+    "0 0", "0 0", "0  ", "0 0", "0  ", "0  ", "0  ",
+    "0 0", "00 ", "0  ", "0 0", "000", "000", "0 0",
+    "000", "0 0", "0  ", "0 0", "0  ", "0  ", "0 0",
+    "0 0", "00 ", "000", "00 ", "000", "0  ", " 0 ",
+};
+static const int letter_stride = 7;
 
 /*
  * Draw the given text at the given coordinates.
@@ -36,7 +46,7 @@ draw_text(char *text, int at_x, int at_y,
     /* Calculate the width of the typeset string in pixels */
     width = 0;
     for (x = 0; text[x] != '\0'; x++) {
-	if (isdigit(text[x])) width += 4;
+	if (isdigit(text[x]) || isupper(text[x])) width += 4;
 	else if (text[x] == '.') width += 2;
     }
     if (width > 0) width--; /* Not including the trailing blank column */
@@ -58,14 +68,19 @@ draw_text(char *text, int at_x, int at_y,
     gui_lock();
     for (x=0; text[x]; x++) {
 	char c = text[x];
-	if (isdigit(c)) {
+	if (isdigit(c) || isupper(c)) {
+	    char **glyphs;
+	    int stride;
 	    int row, col;
 	    int digit = c - '0';
+
+	    glyphs = isdigit(text[x]) ? digits : letters;
+	    stride = isdigit(text[x]) ? digit_stride : letter_stride;
 	    /* Paint the character */
 	    for (col = 0; col<3; col++) {
 	        for (row = 0; row<5; row++) {
 		   gui_putpixel(at_x + col, at_y - row,
-				(char *)(digits[10*row + digit][col] == '0'
+				(char *)(glyphs[stride*row + digit][col] == '0'
 					 ? &green : &black));
 		}
 	    }
