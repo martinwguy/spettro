@@ -562,10 +562,12 @@ do_key(enum key key)
 	if (Shift && Control) break;
 	if (key == KEY_UP)
 	    freq_pan_by(Control ? exp(log(max_freq/min_freq)/(max_y-min_y)) :
-		        Shift ? 2.0 : pow(2.0, 1/6.0));
+		        Shift ? 2.0 :
+			pow(2.0, 1/6.0));
 	else
 	    freq_pan_by(Control ? 1/exp(log(max_freq/min_freq)/(max_y-min_y)) :
-		        Shift ? 1/2.0 : pow(2.0, -1/6.0));
+		        Shift ? 1/2.0 :
+			pow(2.0, -1/6.0));
 	if (yflag) draw_frequency_axis();
 	gui_update_display();
 	break;
