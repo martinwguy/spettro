@@ -108,11 +108,11 @@ freq_pan_by(double by)
     for (x=min_x; x <= max_x; x++) {
 	if (by_pixels > 0) {
 	    /* Moving to higher frequencies: repaint the top rows */
-	    repaint_column(x, max_y - by_pixels + 1, max_y, FALSE);
+	    repaint_column(x, max_y - by_pixels + 1, max_y, TRUE);
 	}
 	if (by_pixels < 0) {
 	    /* Moving to lower frequencies: repaint the bottom rows */
-	    repaint_column(x, min_y, min_y - by_pixels - 1, FALSE);
+	    repaint_column(x, min_y, min_y - by_pixels - 1, TRUE);
 	}
     }
 }
