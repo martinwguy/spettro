@@ -123,7 +123,6 @@ stop_playing()
 
     /* These settings indicate that the player has stopped at end of track */
     playing = STOPPED;
-    disp_time = floor(audio_length / step + DELTA) * step;
 
     if (exit_when_played) {
 #if ECORE_MAIN
@@ -169,6 +168,7 @@ set_playing_time(double when)
 double
 get_playing_time(void)
 {
+    if (playing == STOPPED) return audio_length;
 #if EMOTION_AUDIO
     return emotion_object_position_get(em);
 #elif SDL_AUDIO
