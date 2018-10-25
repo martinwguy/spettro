@@ -108,7 +108,7 @@ freq_pan_by(double by)
     for (x=min_x; x <= max_x; x++) {
 	if (by_pixels > 0) {
 	    /* Moving to higher frequencies: repaint the top rows */
-	    repaint_column(x, max_y - by_pixels, max_y, FALSE);
+	    repaint_column(x, max_y - by_pixels + 1, max_y, FALSE);
 	}
 	if (by_pixels < 0) {
 	    /* Moving to lower frequencies: repaint the bottom rows */
