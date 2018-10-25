@@ -77,24 +77,14 @@ calc(calc_t *calc)
     if (to == 0.0 || from <= to + DELTA) {
 	t = from; 
 	do {
-	    result_t *result = get_result(calc, spec, t);
-#if ECORE_MAIN
-	    /* Don't return a result if our thread has a cancel request */
-	    if (ecore_thread_check(result->thread) == FALSE)
-#endif
-	    calc_result(result);
+	    calc_result(get_result(calc, spec, t));
 	} while ((t += step) <= to + DELTA);
     }
 
     /* Descending ranges */
     if (to != 0.0 && from > to + DELTA)
 	for (t = from; t >= to - DELTA; t -= step) {
-	    result_t *result = get_result(calc, spec, t);
-#if ECORE_MAIN
-	    /* Don't return a result if our thread has a cancel request */
-	    if (ecore_thread_check(result->thread) == FALSE)
-#endif
-	    calc_result(result);
+	    calc_result(get_result(calc, spec, t));
     }
 
     destroy_spectrum(spec);
@@ -106,18 +96,18 @@ calc_result(result_t *result)
 {
     /* Send result back to main loop */
 #if ECORE_MAIN
-    ecore_thread_feedback(result->thread, result);
+    /* Don't return a result if our thread has a cancel request */
+    if (ecore_thread_check(result->thread) == FALSE)
+	ecore_thread_feedback(result->thread, result);
 #elif SDL_MAIN
-    {
-	SDL_Event event;
-	event.type = SDL_USEREVENT;
-	event.user.code = RESULT_EVENT;
-	event.user.data1 = result;
-	while (SDL_PushEvent(&event) != 0) {
-	    /* The SDL1.2 queue length is 127, and all 127 events are
-	     * for our user event number 24 */
-	    usleep(10000); /* Sleep for a 1/100th of a second and retry */
-	}
+    SDL_Event event;
+    event.type = SDL_USEREVENT;
+    event.user.code = RESULT_EVENT;
+    event.user.data1 = result;
+    while (SDL_PushEvent(&event) != 0) {
+	/* The SDL1.2 queue length is 127, and all 127 events are
+	 * for our user event number 24 */
+	usleep(10000); /* Sleep for a 1/100th of a second and retry */
     }
 #endif
 }
