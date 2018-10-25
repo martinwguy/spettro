@@ -556,28 +556,28 @@ do_key(enum key key)
      * Arrow Up/Down: Pan the frequency axis by a tone.
      * With Shift: by an octave. With Control, by a pixel.
      * The argument to freq_pan_by() multiplies min_freq and max_freq.
+     * Page Up/Down: Pan the frequency axis by (up to) a screenful
      */
     case KEY_UP:
     case KEY_DOWN:
 	if (Shift && Control) break;
+    case KEY_PGUP:
+    case KEY_PGDN:
 	if (key == KEY_UP)
 	    freq_pan_by(Control ? exp(log(max_freq/min_freq)/(max_y-min_y)) :
 		        Shift ? 2.0 :
 			pow(2.0, 1/6.0));
-	else
+	else if (key == KEY_DOWN)
 	    freq_pan_by(Control ? 1/exp(log(max_freq/min_freq)/(max_y-min_y)) :
 		        Shift ? 1/2.0 :
 			pow(2.0, -1/6.0));
+	else if (key == KEY_PGUP)
+	    freq_pan_by(max_freq/min_freq);
+	else if (key == KEY_PGDN)
+	    freq_pan_by(min_freq/max_freq);
+
 	if (yflag) draw_frequency_axis();
 	gui_update_display();
-	break;
-
-    /* Page Up/Down: Pan the frequency axis by a screenful */
-    case KEY_PGUP:
-	freq_pan_by(max_freq/min_freq);
-	break;
-    case KEY_PGDN:
-	freq_pan_by(min_freq/max_freq);
 	break;
 
     /* Zoom on the time axis */
