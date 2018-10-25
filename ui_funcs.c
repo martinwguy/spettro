@@ -126,6 +126,8 @@ freq_zoom_by(double by)
     }
     /* Limit frequency range */
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
+
+    if (yflag) draw_frequency_axis();
 }
 
 /* Change the color scale's dyna,ic range, thereby changing the brightness
