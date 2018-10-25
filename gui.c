@@ -584,7 +584,12 @@ gui_putpixel(int x, int y, unsigned char *color)
 {
 #if EVAS_VIDEO
     unsigned int *row;	/* of pixels */
+# endif
 
+    if (x < 0 || x >= disp_width ||
+	y < 0 || y >= disp_height) return;
+
+#if EVAS_VIDEO
     row = (unsigned int *)&imagedata[imagestride * ((disp_height-1) - y)];
     row[x] = (color[0]) | (color[1] << 8) | (color[2] << 16) | 0xFF000000;
 #elif SDL_VIDEO
