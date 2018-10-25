@@ -4,7 +4,6 @@
  *
  * - horizontal lines showing the frequencies of piano keys and/or
  *   of the conventional score notation pentagram lines or guitar strings.
-
  * - vertical lines to mark the bars and beats, user-adjustable
  *
  * == Row overlay ==
@@ -237,8 +236,8 @@ is_bar_line(int x)
     if (bar_left_time == UNDEFINED &&
 	bar_right_time == UNDEFINED) return FALSE;
 
-    /* They can set the "left" and "right" bar lines the other way round too */
     bar_width = bar_right_ticks - bar_left_ticks;
+    /* They can set the "left" and "right" bar lines the other way round too */
     if (bar_width < 0) bar_width = -bar_width;
 
     /* If only one of the bar positions is defined, only that one is displayed.
