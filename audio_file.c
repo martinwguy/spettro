@@ -99,7 +99,7 @@ open_audio_file(char *filename)
  * "start" is the index of the first sample frame to read.
  *	It may be negative if we are reading data for FFT transformation,
  *	in which case we invent some 0 data for the leading silence.
- * "frames_to_read" is the number of sample frames to fill the data buffer with.
+ * "frames_to_read" is the number of multi-sample frames to fill "data" with.
  */
 int
 read_audio_file(audio_file_t *audio_file, char *data,
@@ -111,13 +111,14 @@ read_audio_file(audio_file_t *audio_file, char *data,
 #elif USE_LIBSNDFILE
     SNDFILE *sndfile = audio_file->sndfile;
 #endif
+    /* size of one frame of output data in bytes */
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
 		    * channels;
     int total_frames = 0;	/* How many frames have we filled? */
     char *write_to = data;	/* Where to write next data */
     int frames;		/* How many frames did the last read() call return? */
 
-    if (!lock_audiofile()) {
+    if (!lock_audio_file()) {
 	fprintf(stderr, "Cannot lock audio file\n");
 	exit(1);
     }
@@ -146,11 +147,16 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	start = 0;	/* Read audio data from start of file */
     }
 
+    if (
 #if USE_LIBAUDIOFILE
-        afSeekFrame(af, AF_DEFAULT_TRACK, start);
+        afSeekFrame(af, AF_DEFAULT_TRACK, start)
 #elif USE_LIBSNDFILE
-        sf_seek(sndfile, start, SEEK_SET);
+        sf_seek(sndfile, start, SEEK_SET)
 #endif
+	!= start) {
+	fprintf(stderr, "Failed to seek in audio file.\n");
+	return 0;
+    }
 
     do {
 #if USE_LIBAUDIOFILE
@@ -173,7 +179,7 @@ read_audio_file(audio_file_t *audio_file, char *data,
     /* while we still need to read stuff and the last read didn't fail */
     } while (frames_to_read > 0 && frames > 0);
 
-    if (!unlock_audiofile()) {
+    if (!unlock_audio_file()) {
 	fprintf(stderr, "Cannot unlock audio file\n");
 	exit(1);
     }

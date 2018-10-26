@@ -5,6 +5,7 @@
 #include "spettro.h"
 #include "audio.h"
 #include "audio_file.h"
+#include "lock.h"
 
 #include "main.h"
 extern bool exit_when_played;
@@ -190,13 +191,23 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     int frames_to_read = len / (sizeof(short) * nchannels);
     int frames_read;	/* How many were read from the file */
 
-    if ((frames_read = read_audio_file(audiofile, (char *)stream,
-				       af_signed, nchannels,
-				       sdl_start, frames_to_read)) <= 0) {
+    if (!lock_audio_file()) {
+	fprintf(stderr, "Cannot lock audio file\n");
+	exit(1);
+    }
+    frames_read = read_audio_file(audiofile, (char *)stream,
+				  af_signed, nchannels,
+				  sdl_start, frames_to_read);
+    if (!unlock_audio_file()) {
+	fprintf(stderr, "Cannot unlock audio file\n");
+	exit(1);
+    }
+    if (frames_read <= 0) {
 	/* End of file or read error. Treat as end of file */
 	SDL_PauseAudio(1);
+	stop_playing();
+	return;
     }
-    sdl_start += frames_read;
 
     /* Apply softvol */
     {
@@ -210,6 +221,8 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	    ((signed short *)stream)[i] = lrint(value);
 	}
     }
+
+    sdl_start += frames_read;
 
     /* SDL has no "playback finished" callback, so spot it here */
     if (sdl_start >= audio_file_length_in_frames(audiofile)) {

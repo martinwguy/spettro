@@ -75,7 +75,7 @@ unlock_fftw3()
 }
 
 bool
-lock_audiofile()
+lock_audio_file()
 {
     if (!initialize(&audiofile_lock, &audiofile_lock_is_initialized))
 	return FALSE;
@@ -84,7 +84,7 @@ lock_audiofile()
 }
 
 bool
-unlock_audiofile()
+unlock_audio_file()
 {
     return do_unlock(&audiofile_lock);
 }
