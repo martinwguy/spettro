@@ -14,7 +14,6 @@
 #include "window.h"
 #include "main.h"
 
-#include <stdlib.h>	/* for free() */
 #include <string.h>	/* for memcmp() */
 
 static void destroy_result(result_t *r);

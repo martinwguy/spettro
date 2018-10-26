@@ -45,7 +45,6 @@
 
 #include <malloc.h>		/* for free(!) */
 #include <math.h>		/* for floor() */
-#include <stdlib.h>		/* for exit() */
 
 #if ECORE_MAIN
 #include <unistd.h>		/* for usleep() */

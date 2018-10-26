@@ -13,7 +13,6 @@
 
 #include "spettro.h"
 
-#include <stdlib.h>
 #include <unistd.h>	/* for usleep() */
 #include <math.h>
 

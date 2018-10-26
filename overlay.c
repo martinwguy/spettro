@@ -30,7 +30,6 @@
 #include "main.h"
 
 #include <math.h>	/* for pow() */
-#include <stdlib.h>	/* for malloc() */
 #include <string.h>	/* for memset() */
 
 static bool is_bar_line(int x);

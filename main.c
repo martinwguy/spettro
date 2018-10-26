@@ -62,7 +62,6 @@
 
 /* System header files */
 
-#include <stdlib.h>
 #include <unistd.h>	/* for sleep() */
 #include <math.h>	/* for lrint() */
 #include <malloc.h>

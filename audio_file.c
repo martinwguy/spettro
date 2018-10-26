@@ -14,8 +14,6 @@
 
 #include "lock.h"
 
-#include <stdlib.h>		/* for malloc() */
-#include <stdio.h>		/* for error messages */
 #include <string.h>		/* for memset() */
 
 #if USE_LIBSNDFILE

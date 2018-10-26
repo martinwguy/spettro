@@ -15,14 +15,12 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
 #include "spettro.h"
 #include "window.h"
 
 #include "lock.h"
+
+#include <math.h>
 
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
 

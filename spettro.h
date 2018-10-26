@@ -7,6 +7,9 @@
 #include "configure.h"
 #include "config.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+
 typedef int bool;
 
 #ifndef FALSE

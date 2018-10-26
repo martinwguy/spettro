@@ -9,7 +9,6 @@
 
 #include <math.h>
 #include <string.h>
-#include <stdlib.h>
 
 /* The greatest number of linear ticks seems to occurs from 0-14000 (15 ticks).
 ** The greatest number of log ticks occurs 10-99999 or 11-100000 (35 ticks).

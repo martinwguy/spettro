@@ -2,12 +2,10 @@
  * colormap.c - Everything to do with mapping magnitude values to colors.
  */
 
-#include <stdlib.h>	/* for exit() */
-#include <stdio.h>	/* for fprintf(stderr, ...) */
-#include <math.h>
-
 #include "spettro.h"
 #include "colormap.h"
+
+#include <math.h>
 
 /* Heat map from sndfile-spectrogram */
 /* These values were originally calculated for a dynamic range of 180dB. */
