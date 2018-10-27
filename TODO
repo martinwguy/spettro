@@ -56,3 +56,5 @@ will be faster.
 ------------------------------------------------------------------------
 Coalesce the two monoisers in audio_file.c, linsndfile's and libsox's
 ------------------------------------------------------------------------
+Try the AFsp and sndlib audio file reading libraries
+------------------------------------------------------------------------
