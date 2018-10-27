@@ -6,11 +6,11 @@
 # define USE_EMOTION, USE_SDL or USE_EMOTION_SDL in AM_CFLAGS.
 # USE_EMOTION uses only Enlightenment and works best
 #	but the audio player doesn't work on 64-bit Ubuntu 16.04.
+#	Add $(EMOTION_CFLAGS) to AM_CFLAGS and EMOTION_LIBS to AM_LDFLAGS.
 # USE_EMOTION_SDL gives the best version if Emotion's audio is broken.
 #	For this, add -lSDL to AM_LDFLAGS.
 # USE_SDL uses SDL for everything but works worse.
-#	For this, add -pthread to AM_CFLAGS, -lSDL -lX11 to AM_LDFLAGS
-#	and remove EMOTION_CFLAGS and EMOTION_LIBS from both.
+#	For this, add $(SD_CFLAGS) to AM_CFLAGS and $(SD_LIBS) to AM_LDFLAGS
 #
 # To choose the audio file-reading/decoding library, use
 # USE_LIBSNDFILE in AM_CFLAGS and -lsndfile in AM_LDFLAGS
@@ -22,9 +22,14 @@
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(EMOTION_CFLAGS) $(SDL_CFLAGS) \
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(SDL_CFLAGS) \
 	    -march=native
-AM_LDFLAGS = -lsox $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
+AM_LDFLAGS = -lsox $(SDL_LIBS) -lfftw3 -lm
+
+SDL_CFLAGS=`sdl-config --cflags` -pthread
+SDL_LIBS=  `sdl-config --libs` -lX11 -pthread
+EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas`
+EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas`
 
 bin_PROGRAMS = spettro
 
@@ -52,11 +57,6 @@ overlay.o: Makefile
 timer.o: Makefile
 audio_file.o: Makefile
 scheduler.o: Makefile
-
-EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas`
-EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas`
-SDL_CFLAGS=`sdl-config --cflags` -pthread
-SDL_LIBS=  `sdl-config --libs` -lX11 -pthread
 
 tags:
 	ctags $(spettro_SOURCES)
