@@ -5,65 +5,20 @@ here is a program to show a window onto the spectrogram with a
 vertical green one-pixel-wide line half way across the window to
 show the current playing position.
 
+There is also:
+- Pan and zoom in time and in frequency range
+- A brightness control, made by changing the dynamic range of the colors
+- Four FFT window functions: rectanular, Kaiser, Hann and Nuttall
+- A variable FFT sample size, changing the relative frequency/time resolution
+- Various color maps: heat map, grayscale for screen, grayscale for printer
+- Overlays of score staves, open guitar strings or 88-note piano keys
+- An overlay of bar lines repeated regularly in time
+- An optional frequency axis label in Hertz
+- A "soft volume" control to raise the volume above 100%
+
 There is an screencast of it at https://youtu.be/fGRsLX0Ec1E
 
-What follows is a very early design document, aimed at the tablet/phone
-version. What is implemented already is described at the top of emotion.c
+Planned features are listed in TODO
+Known bugs are listed in BUGS
 
-User interface
---------------
-For the touch-screen version, we want pinch to zoom, drag to pan with
-buttons for FFT size etc.
-For the mouse version, click and drag (also arrow keys) pans the time
-and the frequency axes with buttons to zoom the time axis, frequency axis,
-FFT size and brightness/contrast (a.k.a. maximum value and dynamic range).
-
-Tap or click the screen or hit space to start/pause/resume/restart playback.
-
-Panning left and right skips the song to the new position.
-Panning up and down moves the view on the frequency axis.
-
-You can set bar lines by Control-clicking the left and right mouse buttons
-at the starts of two consecutive bars: it shows a grid of bar lines by
-extending them at regular intervals left and right of the marked positions.
-
-PLANNED:
-Pressing 2, 3, 4, 5, 6 etc sets the number of beats per bar to N.
-1 gives you just the bar lines, 0 turns bar lines off.
-
-
-A time grid would be nice too, with a button to turn it on/off and, when on,
-with a setting for the number of beats per bar giving more a luminous line
-every N "beats". Users can drag a bar line to align it to a feature.
-The first time they do this, the position (phase) of the time scale shifts.
-When you drag a different bar line, the one you just dropped stays where it is
-and the time scale stretches. Move a different bar line and, again,
-the last one you clicked stays still and the time scale stretches.
-
-FFT sizes are powers of 2 by default; that way we can use some super-fast
-alternative FFT routines. If you have a keyboard, you should be able to
-set the FFT size (or FFT frequency) in a box. Alternatively, a slider that
-clicks to the next power of 2 if you click its <| |> endcaps or you can
-move the slider smoothly to choose an intermediate size.
-
-Program structure
------------------
-- A calc thread doing one FFT each receiving requests for an FFT around a
-  particular moment and returning the result of same.
-  Allow multiple threads to exploit multiple processors?
-- A GUI thread doing UI handling, scrolling of the display, starting/stopping
-  music etc.
-
-GUI->calc: "Send me the FFT for this time region"
-calc->GUI: "Here's the result for audio around time T"
-
-When calc delivers a result, it then starts calculating at a new point in the
-outstanding region, if any, according to the real time elapsed since T.
-If their CPU is slow, the results won't necessarily be evenly-spaced in time.
-How do you map from a pixmap with unevenly-spaced columns to a fixed-pitch
-display? Cosine mapping between pairs of points?
-
-Add to that the reverse mapping to apply the logarithmic frequency axis and
-the color map and hey presto.
-
-    Martin Guy <martinwguy@gmail.com>, December 2016 - June 2017.
+    Martin Guy <martinwguy@gmail.com>, December 2016 - October 2018.
