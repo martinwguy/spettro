@@ -48,8 +48,8 @@ initialize(lock_t *lockp, bool *initp)
 
 static lock_t fftw3_lock;
 static bool fftw3_lock_is_initialized = FALSE;
-static lock_t audiofile_lock;
-static bool audiofile_lock_is_initialized = FALSE;
+static lock_t audio_file_lock;
+static bool audio_file_lock_is_initialized = FALSE;
 static lock_t list_lock;
 static bool list_lock_is_initialized = FALSE;
 static lock_t window_lock;
@@ -77,16 +77,16 @@ unlock_fftw3()
 bool
 lock_audio_file()
 {
-    if (!initialize(&audiofile_lock, &audiofile_lock_is_initialized))
+    if (!initialize(&audio_file_lock, &audio_file_lock_is_initialized))
 	return FALSE;
     else
-	return do_lock(&audiofile_lock);
+	return do_lock(&audio_file_lock);
 }
 
 bool
 unlock_audio_file()
 {
-    return do_unlock(&audiofile_lock);
+    return do_unlock(&audio_file_lock);
 }
 
 bool
