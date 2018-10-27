@@ -13,3 +13,7 @@ It looks like the screen get scrolled slightly too little.
 Key-repeat forward scrolling in EMOTION is lumpy.
 Strangely, reverse key-repeat scrolling isn't!
 ------------------------------------------------------------------------
+libaudiofile returns us half the audio data we asked for followed by half
+silence, and the audio fragments it gives us is the requested sample
+halved in time and doubled in frequency.
+------------------------------------------------------------------------
