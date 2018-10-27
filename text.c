@@ -53,13 +53,13 @@ draw_text(char *text, int at_x, int at_y,
 
     /* Make at_x and at_y the position of the top left pixel of the text */
     switch (alignment_x) {
-    case LEFT:	at_x = at_x;		break;
+    case LEFT:	/* at_x = at_x;	*/	break;
     case RIGHT: at_x -= width - 1;	break;
     case CENTER: at_x -= width/2;	break;
     }
 
     switch (alignment_y) {
-    case TOP:	 at_y = at_y;		break;
+    case TOP:	 /* at_y = at_y; */	break;
     case BOTTOM: at_y += height - 1;	break;
     case CENTER: at_y += height/2;	break;
     }
@@ -80,18 +80,19 @@ draw_text(char *text, int at_x, int at_y,
 	    for (col = 0; col<3; col++) {
 	        for (row = 0; row<5; row++) {
 		   gui_putpixel(at_x + col, at_y - row,
-				(char *)(glyphs[stride*row + digit][col] == '0'
-					 ? &green : &black));
+				(unsigned char *)(glyphs[stride*row + digit][col] == '0'
+				? &green : &black));
 		}
 	    }
 	    /* Paint the inter-character gap if there's another character */
 	    if (text[x+1])
 	        for (row = 0; row<5; row++)
-		   gui_putpixel(at_x + 3, at_y - row, (char *)&black);
+		   gui_putpixel(at_x + 3, at_y - row,
+				(unsigned char *)&black);
 	    at_x += 4;
 	} else if (c == '.') {
 	    gui_paint_rect(at_x, at_y - 4, at_x+1, at_y, black);
-	    gui_putpixel(at_x, at_y - 4, (char *)&green);
+	    gui_putpixel(at_x, at_y - 4, (unsigned char *)&green);
 	    at_x += 2;
 	}
     }

@@ -183,6 +183,7 @@ sdl_calc_heavy(void *data)
 	    calc(work);
 	}
     }
+    return NULL;	/* Make GCC -Wall happy */
 }
 #endif
 
@@ -438,7 +439,7 @@ DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
 
 	if (cp->speclen != speclen || cp->window != window_function) {
 	    calc_t *cp = *cpp;
-fprintf(stderr, "Dropping work at %g for wrong parameters\n");
+fprintf(stderr, "Dropping work at %g for wrong parameters\n", cp->from);
 	    if (cp->next) cp->next->prev = cp->prev;
 	    if (cp->prev) cp->prev->next = cp->next;
 	    else list = cp->next;

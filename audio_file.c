@@ -16,7 +16,9 @@
 
 #include <string.h>		/* for memset() */
 
+#if USE_LIBSNDFILE
 static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read);
+#endif
 
 /* Audio file info */
 double		audio_length = 0.0;	/* Length of the audio in seconds */
@@ -284,7 +286,7 @@ read_audio_file(audio_file_t *audio_file, char *data,
 		for (i=0; i<samples; i++) {
 		    sox_sample_t sox_macro_temp_sample;
 		    double sox_macro_temp_double;
-		    int clips;
+		    int clips = 0;
 		    *sp++ = SOX_SAMPLE_TO_SIGNED(16,*bp++,clips);
 		}
 	    }
@@ -327,6 +329,7 @@ close_audio_file(audio_file_t *audio_file)
 #endif
 }
 
+#if USE_LIBSNDFILE
 /* This last function is from sndfile-tools */
 
 /*
@@ -405,3 +408,4 @@ mix_mono_read_doubles(audio_file_t *audio_file, double *data, int frames_to_read
 	return dataout;
   }
 } /* mix_mono_read_double */
+#endif

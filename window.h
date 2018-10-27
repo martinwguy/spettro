@@ -18,6 +18,7 @@
 #ifndef WINDOW_H
 
 typedef enum {
+    ANY = -1,
     RECTANGULAR,
     KAISER,
     NUTTALL,
