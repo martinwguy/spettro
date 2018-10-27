@@ -5,30 +5,28 @@
 #ifndef AUDIO_FILE_H
 
 #if USE_LIBAUDIOFILE
-
-#include <audiofile.h>
+# include <audiofile.h>
+#elif USE_LIBSNDFILE
+# include <sndfile.h>
+#elif USE_LIBSOX
+# include <sox.h>
+#else
+# error "Define USE_LIBAUDIOFILE or USE_LIBSNDFILE or USE_LIBSOX"
+#endif
 
 typedef struct audio_file {
+	char *filename;
+#if USE_LIBAUDIOFILE
 	AFfilehandle af;
+#elif USE_LIBSNDFILE
+ 	SNDFILE *sndfile;
+#elif USE_LIBSOX
+	sox_format_t *sf;
+#endif
 	unsigned long samplerate;
 	unsigned long frames;	/* The file has (frames*channels) samples */
 	unsigned channels;
 } audio_file_t;
-
-#elif USE_LIBSNDFILE
-
-#include <sndfile.h>
-
-typedef struct audio_file {
-	SNDFILE *sndfile;
-	unsigned long samplerate;
-	unsigned long frames;
-	unsigned channels;
-} audio_file_t;
-
-#else
-#error "Define USE_LIBAUDIOFILE or USE_LIBSNDFILE"
-#endif
 
 typedef enum {
 	af_double,

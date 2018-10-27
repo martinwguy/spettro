@@ -13,17 +13,18 @@
 #	and remove EMOTION_CFLAGS and EMOTION_LIBS from both.
 #
 # To choose the audio file-reading/decoding library, use
-# USE_LIBSNDFILE in AM_CFLAGS and use -lsndfile in AM_LDFLAGS
-# USE_LIBAUDIOFILE in AM_CFLAGS and use -laudiofile in AM_LDFLAGS
-# The main difference is that libaudiofile can't read Ogg files.
-# If -DUSE_LIBAUDIOFILE, change -lsndfile to -laudiofile in AM_LDFLAGS
+# USE_LIBSNDFILE in AM_CFLAGS and -lsndfile in AM_LDFLAGS
+# USE_LIBAUDIOFILE in AM_CFLAGS and -laudiofile in AM_LDFLAGS
+# USE_LIBSOX in AM_CFLAGS and -lsox in AM_LDFLAGS
+# The main difference btw sndfile and audiofile is that libaudiofile can't read
+# Ogg files. Libsox reads *everything*.
 #
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSNDFILE $(EMOTION_CFLAGS) $(SDL_CFLAGS) \
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(EMOTION_CFLAGS) $(SDL_CFLAGS) \
 	    -march=native
-AM_LDFLAGS = -lsndfile $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
+AM_LDFLAGS = -lsox $(EMOTION_LIBS) $(SDL_LIBS) -lfftw3 -lm
 
 bin_PROGRAMS = spettro
 

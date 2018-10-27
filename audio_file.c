@@ -65,7 +65,26 @@ open_audio_file(char *filename)
     audio_file->frames = info.frames;
     audio_file->channels = info.channels;
 
+#elif USE_LIBSOX
+
+    static audio_file_t our_audio_file;
+    audio_file_t *audio_file = &our_audio_file;
+    sox_format_t *sf;
+
+    sox_init();
+    sox_format_init();
+    sf = sox_open_read(filename, NULL, NULL, NULL);
+    if (sf == NULL) {
+	fprintf(stderr, "libsox failed to open \"%s\"\n", filename);
+	return(NULL);
+    }
+    audio_file->sf = sf;
+    audio_file->samplerate = sf->signal.rate;
+    audio_file->channels = sf->signal.channels;
+    audio_file->frames = sf->signal.length / audio_file->channels;
+
 #endif
+    audio_file->filename = filename;
 
     /* Set the globals that everyone picks at */
     sample_rate = audio_file->samplerate;
@@ -96,18 +115,20 @@ read_audio_file(audio_file_t *audio_file, char *data,
     AFfilehandle af = audio_file->af;
 #elif USE_LIBSNDFILE
     SNDFILE *sndfile = audio_file->sndfile;
+#elif USE_LIBSOX
+    sox_format_t *sf = audio_file->sf;
+    /* Sox gives us the samples as 32-bit signed integers so
+     * accept them that way into a private buffer and then convert them */
+    static sox_sample_t *sox_buf = NULL;
+    static size_t sox_buf_size = 0;	/* Size of sox_buf in samples */
+    int samples_to_read, samples;
 #endif
+
     /* size of one frame of output data in bytes */
     int framesize = (format == af_double ? sizeof(double) : sizeof(short))
 		    * channels;
     int total_frames = 0;	/* How many frames have we filled? */
     char *write_to = data;	/* Where to write next data */
-    int frames;		/* How many frames did the last read() call return? */
-
-    if (!lock_audio_file()) {
-	fprintf(stderr, "Cannot lock audio file\n");
-	exit(1);
-    }
 
 #if USE_LIBAUDIOFILE
     if (afSetVirtualSampleFormat(af, AF_DEFAULT_TRACK,
@@ -127,31 +148,71 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	/* Fill before time 0.0 with silence */
         int silence = -start;	/* How many silent frames to fill */
         memset(write_to, 0, silence * framesize);
-	total_frames += silence;
         write_to += silence * framesize;
+	total_frames += silence;
         frames_to_read -= silence;
 	start = 0;	/* Read audio data from start of file */
     }
 
+#if USE_LIBSOX
+    /* sox_seek() is broken: if you seek to an earlier position it does nothing
+     * and just returns the data linearly to end of file.
+     * Work round this by closing and reopening the file.
+     */
+    sox_close(sf);
+    sf = sox_open_read(audio_file->filename, NULL, NULL, NULL);
+    if (sf == NULL) {
+	fprintf(stderr, "libsox failed to reopen \"%s\"\n", audio_file->filename);
+	return 0;
+    }
+    audio_file->sf = sf;
+#endif
+
     if (
 #if USE_LIBAUDIOFILE
-        afSeekFrame(af, AF_DEFAULT_TRACK, start)
+        afSeekFrame(af, AF_DEFAULT_TRACK, start) != start
 #elif USE_LIBSNDFILE
-        sf_seek(sndfile, start, SEEK_SET)
+        sf_seek(sndfile, start, SEEK_SET) != start
+#elif USE_LIBSOX
+	/* sox seeks in samples, not frames */
+	sox_seek(sf, start * audio_file->channels, SOX_SEEK_SET) != 0
 #endif
-	!= start) {
+	) {
 	fprintf(stderr, "Failed to seek in audio file.\n");
 	return 0;
     }
 
-    do {
+#if USE_LIBSOX
+    /* sox reads a number of samples, not frames */
+    samples_to_read = frames_to_read * audio_file->channels;
+
+    /* Adjust size of 32-bit-sample buffer for the raw data from sox_read() */
+    if (sox_buf_size < samples_to_read) {
+	sox_buf = realloc(sox_buf, samples_to_read * sizeof(sox_sample_t));
+	if (sox_buf == NULL) {
+	    fprintf(stderr, "Out of memory.\n");
+	    exit(1);
+	}
+	sox_buf_size = samples_to_read;
+    }
+#endif
+
+    /* Read from the file until we have read all requested samples */
+    while (frames_to_read > 0) {
+        int frames;	/* How many frames did the last read() call return? */
+
 	/* libaudio and libsndfile's sample frames are a sample for each channel */
 #if USE_LIBAUDIOFILE
+
 	/* libaudiofile does the mixing down to one channel for doubles */
         frames = afReadFrames(af, AF_DEFAULT_TRACK, write_to, frames_to_read);
+	if (frames == 0) break;
+
 #elif USE_LIBSNDFILE
+
 	if (format == af_double) {
-            frames = mix_mono_read_doubles(audio_file, (double *)write_to, frames_to_read);
+            frames = mix_mono_read_doubles(audio_file,
+					   (double *)write_to, frames_to_read);
 	} else {
 	    if (channels != audio_file->channels) {
 		fprintf(stderr, "Wrong number of channels in signed audio read!\n");
@@ -159,25 +220,94 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	    }
 	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
 	}
+	if (frames == 0) break;
+
+#elif USE_LIBSOX
+	/* Shadows of write_to with an appropriate type */
+    	double *dp;
+    	signed short *sp;
+
+	samples_to_read = frames_to_read * audio_file->channels;
+	samples = sox_read(sf, sox_buf, samples_to_read);
+	if (samples == SOX_EOF)  {
+	    frames = 0;
+	}
+	frames = samples / audio_file->channels;
+	if (frames == 0) break;
+
+	/* Convert to desired format */
+	switch (format) {
+	case af_double:	/* Mono doubles for FFT */
+	    if (channels != 1) {
+		fprintf(stderr, "Asking for double audio with %d channels",
+			channels);
+		return 0;
+	    }
+
+    	    dp = (double *) write_to;
+	    /* Convert mono values to double */
+	    if (audio_file->channels == 1) {
+		/* Convert mono samples to doubles */
+		sox_sample_t *bp = sox_buf;	/* Where to read from */
+		int clips = 0;
+		int i;
+
+		for (i=0; i<samples; i++) {
+		    *dp++ = SOX_SAMPLE_TO_FLOAT_64BIT(*bp++,clips);
+		}
+	    } else {
+		/* Convert multi-sample frames to doubles */
+		sox_sample_t *bp = sox_buf;
+		int i;
+
+		for (i=0; i<frames; i++) {
+		    int channel;
+		    int clips = 0;
+		    *dp = 0.0;
+		    for (channel=0; channel < audio_file->channels; channel++)
+			*dp += SOX_SAMPLE_TO_FLOAT_64BIT(*bp++,clips);
+		    *dp++ /= audio_file->channels;
+		}
+	    }
+	    break;
+	case af_signed:	/* As-is for playing */
+	    if (audio_file->channels != channels) {
+		fprintf(stderr, "Asking for signed audio with %d channels",
+			channels);
+		return 0;
+	    }
+	    {
+		sox_sample_t *bp = sox_buf;
+		int i;
+
+    	        sp = (signed short *) write_to;
+		for (i=0; i<samples; i++) {
+		    sox_sample_t sox_macro_temp_sample;
+		    double sox_macro_temp_double;
+		    int clips;
+		    *sp++ = SOX_SAMPLE_TO_SIGNED(16,*bp++,clips);
+		}
+	    }
+	    break;
+	default:
+	   fprintf(stderr, "Internal error: Unknown sample format.\n");
+	   abort();
+	}
 #endif
+
         if (frames > 0) {
 	    total_frames += frames;
             write_to += frames * framesize;
             frames_to_read -= frames;
         } else {
             /* We ask it to read past EOF so failure is normal */
+	    break;
         }
-    /* while we still need to read stuff and the last read didn't fail */
-    } while (frames_to_read > 0 && frames > 0);
-
-    if (!unlock_audio_file()) {
-	fprintf(stderr, "Cannot unlock audio file\n");
-	exit(1);
     }
 
     /* If it stopped before reading all frames, fill the rest with silence */
     if (format == af_double && frames_to_read > 0) {
-        memset(data + (total_frames * framesize), 0, frames_to_read * framesize);
+        memset(write_to, 0, frames_to_read * framesize);
 	total_frames += frames_to_read;
 	frames_to_read = 0;
     }
@@ -192,6 +322,8 @@ close_audio_file(audio_file_t *audio_file)
     afCloseFile(audio_file->af);
 #elif USE_LIBSNDFILE
     sf_close(audio_file->sndfile);
+#elif USE_LIBSOX
+    sox_close(audio_file->sf);
 #endif
 }
 

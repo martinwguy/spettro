@@ -37,10 +37,6 @@ seek to any position in a click and see which parts have been calculated?
 Add -m mute flag to be able to test emotion graphics.
 This needs scrolling by regular timer, not by audio position.
 ------------------------------------------------------------------------
-Try using libsox for sound file reading - zillions of formats!
-------------------------------------------------------------------------
-Try using sox's "play" command to play the audio (effect "trim" to seek)
-------------------------------------------------------------------------
 Try playing sound with SDL_Mixer (Ogg, MP3)
 Mix_RewindMusic(); Mix_SetMusicPosition(double position)
 (works with WAV and FLAC?)
