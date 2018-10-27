@@ -16,10 +16,7 @@
 
 #include <string.h>		/* for memset() */
 
-#if USE_LIBSNDFILE
-static sf_count_t sfx_mix_mono_read_doubles(SNDFILE *file, double *data,
-					    sf_count_t datalen);
-#endif
+static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read);
 
 /* Audio file info */
 double		audio_length = 0.0;	/* Length of the audio in seconds */
@@ -48,17 +45,6 @@ open_audio_file(char *filename)
     audio_file->samplerate = afGetRate(af, AF_DEFAULT_TRACK);
     audio_file->frames = afGetFrameCount(af, AF_DEFAULT_TRACK);
     audio_file->channels = afGetChannels(af, AF_DEFAULT_TRACK);
-
-    /*
-     * We will be reading as mono doubles or as 16-bit native for soundcard,
-     * both native-endian. Don't care if it fails.
-     */
-    (void) afSetVirtualByteOrder(af, AF_DEFAULT_TRACK,
-# if LITTLE_ENDIAN
-			      AF_BYTEORDER_LITTLEENDIAN);
-# else
-			      AF_BYTEORDER_BIGENDIAN);
-# endif
 
 #elif USE_LIBSNDFILE
 
@@ -159,13 +145,18 @@ read_audio_file(audio_file_t *audio_file, char *data,
     }
 
     do {
+	/* libaudio and libsndfile's sample frames are a sample for each channel */
 #if USE_LIBAUDIOFILE
-        frames = afReadFrames(af, AF_DEFAULT_TRACK, (void *)write_to, frames_to_read);
+	/* libaudiofile does the mixing down to one channel for doubles */
+        frames = afReadFrames(af, AF_DEFAULT_TRACK, write_to, frames_to_read);
 #elif USE_LIBSNDFILE
 	if (format == af_double) {
-            frames = sfx_mix_mono_read_doubles(sndfile, (double *)write_to, frames_to_read);
+            frames = mix_mono_read_doubles(audio_file, (double *)write_to, frames_to_read);
 	} else {
-	    /* 16-bit native endian */
+	    if (channels != audio_file->channels) {
+		fprintf(stderr, "Wrong number of channels in signed audio read!\n");
+		return 0;
+	    }
 	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
 	}
 #endif
@@ -204,8 +195,6 @@ close_audio_file(audio_file_t *audio_file)
 #endif
 }
 
-#if USE_LIBSNDFILE
-
 /* This last function is from sndfile-tools */
 
 /*
@@ -230,42 +219,57 @@ close_audio_file(audio_file_t *audio_file)
 #define MAX(x, y)		((x) > (y) ? (x) : (y))
 #define MIN(x, y)		((x) < (y) ? (x) : (y))
 
-static sf_count_t
-sfx_mix_mono_read_doubles (SNDFILE * file, double * data, sf_count_t datalen)
+static int
+mix_mono_read_doubles(audio_file_t *audio_file, double *data, int frames_to_read)
 {
-	SF_INFO info ;
+    if (audio_file->channels == 1)
+#if USE_LIBAUDIOFILE
+	return afReadFrames(audio_file->af, AF_DEFAULT_TRACK, data, frames_to_read);
+#elif USE_LIBSNDFILE
+	return sf_read_double(audio_file->sndfile, data, frames_to_read);
+#endif
 
-	sf_command (file, SFC_GET_CURRENT_SF_INFO, &info, sizeof (info)) ;
+    /* Read multi-channel data and mix it down to a single channel of doubles */
+    {
+	static double *multi_data = NULL;   /* buffer for incomig samples */
+	static int multi_data_samples = 0;  /* length of buffer in samples */
+	int k, ch, frames_read;
+	int dataout = 0;		    /* No of samples written so far */
 
-	if (info.channels == 1)
-		return sf_read_double (file, data, datalen) ;
-      {
-	static double multi_data [2048] ;
-	int k, ch, frames_read ;
-	sf_count_t dataout = 0 ;
+	if (multi_data_samples < frames_to_read * audio_file->channels) {
+	    multi_data = realloc(multi_data, frames_to_read * audio_file->channels * sizeof(*multi_data));
+	    if (multi_data == NULL) {
+		fprintf(stderr, "Out of memory in mix_mono_doubles\n");
+		exit(1);
+	    }
+	    multi_data_samples = frames_to_read * audio_file->channels;
+	}
 
-	while (dataout < datalen)
-	{	int this_read ;
+	while (dataout < frames_to_read) {
+	    /* Number of frames to read from file */
+	    int this_read = frames_to_read - dataout;
 
-		this_read = MIN (ARRAY_LEN (multi_data) / info.channels, datalen - dataout) ;
+#if USE_LIBAUDIOFILE
+	    /* A libaudiofile frame is a sample for each channel */
+	    frames_read = afReadFrames(audio_file->af, AF_DEFAULT_TRACK, multi_data, this_read);
+#elif USE_LIBSNDFILE
+	    /* A sf_readf_double frame is a sample for each channel */
+	    frames_read = sf_readf_double(audio_file->sndfile, multi_data, this_read);
+#endif
+	    if (frames_read <= 0)
+		break;
 
-		frames_read = sf_readf_double (file, multi_data, this_read) ;
-		if (frames_read == 0)
-			break ;
+	    for (k = 0; k < frames_read; k++) {
+		double mix = 0.0;
 
-		for (k = 0 ; k < frames_read ; k++)
-		{	double mix = 0.0 ;
+		for (ch = 0; ch < audio_file->channels; ch++)
+		    mix += multi_data[k * audio_file->channels + ch];
+		data[dataout + k] = mix / audio_file->channels;
+	    }
 
-			for (ch = 0 ; ch < info.channels ; ch++)
-				mix += multi_data [k * info.channels + ch] ;
-			data [dataout + k] = mix / info.channels ;
-			} ;
+	    dataout += frames_read;
+	}
 
-		dataout += frames_read ;
-		} ;
-
-	return dataout ;
-      }
-} /* sfx_mix_mono_read_double */
-
-#endif /* USE_LIBSNDFILE */
+	return dataout;
+  }
+} /* mix_mono_read_double */

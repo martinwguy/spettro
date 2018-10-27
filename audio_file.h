@@ -11,7 +11,7 @@
 typedef struct audio_file {
 	AFfilehandle af;
 	unsigned long samplerate;
-	unsigned long frames;
+	unsigned long frames;	/* The file has (frames*channels) samples */
 	unsigned channels;
 } audio_file_t;
 
