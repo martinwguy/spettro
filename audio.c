@@ -181,7 +181,7 @@ get_playing_time(void)
 #if SDL_AUDIO
 /*
  * SDL audio callback function to fill the buffer at "stream" with
- * "len" bytes of audio data.
+ * "len" bytes of audio data. We assume they want 16-bit ints.
  */
 static void
 sdl_fill_audio(void *userdata, Uint8 *stream, int len)
@@ -211,14 +211,15 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 
     /* Apply softvol */
     if (softvol != 1.0) {
-	int i;
-	for (i=0; i < frames_read * nchannels; i++) {
-	    double value = ((signed short *)stream)[i] * softvol;
+	int i; short *sp;
+	for (i=0, sp=(short *)stream;
+	     i < frames_read * nchannels;
+	     i++, sp++) {
+	    double value = *sp * softvol;
 	    if (value < -32767) value = -32767;
 	    if (value >  32767) value =  32767;
-	    /* Assume 16-bit ints */
 	    /* Plus half a bit of dither? */
-	    ((signed short *)stream)[i] = lrint(value);
+	    *sp = lrint(value);
 	}
     }
 
