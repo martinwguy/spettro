@@ -54,3 +54,5 @@ Precalculate up to one screenful ahead in time partly to avoid the
 flickering gray part on screen right, partly so that a forward time pan
 will be faster.
 ------------------------------------------------------------------------
+Coalesce the two monoisers in audio_file.c, linsndfile's and libsox's
+------------------------------------------------------------------------
