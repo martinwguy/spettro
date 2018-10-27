@@ -1,0 +1,17 @@
+Source: spettro
+Section: audio
+Priority: optional
+Maintainer: Martin Guy <martinwguy@gmai.com>
+Build-Depends: debhelper (>= 4.0.0), libfftw3-dev, pkg-config, libsdl-dev, libsox-dev
+Standards-Version: 3.6.2
+
+Package: spettro
+Section: audio
+Priority: optional
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Scrolling log-frequency-axis spectrogram of an audio file
+ spettro displays a scrolling spectrogram with a log frequency axis in an
+ X window while playing the audio file in question.
+ .
+ http://github.com/martinwguy/spettro

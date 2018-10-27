@@ -1,0 +1,2 @@
+?package(spettro):needs="text" section="Apps/Audio"\
+  title="spettro" command="/usr/bin/spettro"
