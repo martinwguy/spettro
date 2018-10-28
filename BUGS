@@ -15,3 +15,6 @@ libaudiofile returns us half the audio data we asked for followed by half
 silence, and the audio fragments it gives us is the requested sample
 halved in time and doubled in frequency.
 ------------------------------------------------------------------------
+When changing FFT size, it sometimes paints a few random columns
+with the wrong data (i.e. that from a different FFT size, I think).
+------------------------------------------------------------------------
