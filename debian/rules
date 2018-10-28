@@ -22,17 +22,17 @@ endif
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-
+	aclocal
+	autoconf
+	autoheader
+	automake --add-missing
 	touch configure-stamp
 
-
 build: build-stamp
-
 build-stamp: configure-stamp 
 	dh_testdir
-
+	./configure
 	$(MAKE) OPTFLAG="$(CFLAGS)"
-
 	touch build-stamp
 
 clean:

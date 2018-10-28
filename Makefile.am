@@ -67,6 +67,7 @@ mrproper: clean
 		config.status configure depcomp install-sh missing \
 		configure.h*
 	rm -rf .deps autom4te.cache
+	rm -f build-stamp configure-stamp	# Debian stuff
 	rm -f swoop.wav
 
 # Some test files
