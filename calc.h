@@ -19,7 +19,7 @@
 /* The parameters to calc(), saying what it should FFT.
  * Also, an element of the list of FFTs to perform used by the scheduler.
  */
-typedef struct calc {
+typedef struct calc_t {
     audio_file_t *	audio_file; /* Our audio file handle */
     double		length;	/* Length of piece in seconds */
     double		sr;	/* Sample rate of the piece */
@@ -31,8 +31,8 @@ typedef struct calc {
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif
-    struct calc *	next;	/* List of calcs to perform, in time order */
-    struct calc *	prev;	/* Reverse pointer of doubly-linked list */
+    struct calc_t *	next;	/* List of calcs to perform, in time order */
+    struct calc_t *	prev;	/* Reverse pointer of doubly-linked list */
 } calc_t;
 
 /*
