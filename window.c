@@ -47,17 +47,16 @@ get_window(window_function_t wfunc, int datalen)
 
     if (wfunc == RECTANGULAR) return NULL;
 
+    lock_window();
 
     /* See if it's already in the cache */
     {	stored_window_t *w;
-	lock_window();
 	for (w = stored_windows; w != NULL; w=w->next) {
 	    if (w->wfunc == wfunc && w->datalen == datalen) {
 		unlock_window();
 		return(w->window);
 	    }
 	}
-	unlock_window();
     }
 
     /* If not, make a new one and fill it */
@@ -87,15 +86,14 @@ get_window(window_function_t wfunc, int datalen)
 	    fprintf(stderr, "Out of memory storing new window\n");
 	    exit(1);
 	}
-	lock_window();
 	new->wfunc = wfunc;
 	new->datalen = datalen;
 	new->window = new_window;
 	new->next = stored_windows;
 	stored_windows = new;
-	unlock_window();
     }
 
+    unlock_window();
     return new_window;
 }
 
