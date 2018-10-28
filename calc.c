@@ -57,11 +57,9 @@ calc(calc_t *calc)
     double  t;				/* Time from start of piece */
 
     /* If parameters have changed since the work was queued, use the new ones */
-    if (calc->speclen != speclen) {
-	 calc->speclen = speclen;
-    }
-    if (calc->window != window_function) {
-	 calc->window = window_function;
+    if (calc->speclen != speclen || calc->window != window_function) {
+	free(calc);
+	return;
     }
 
     spec = create_spectrum(calc->speclen, calc->window);
