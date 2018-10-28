@@ -207,7 +207,8 @@ set_bar_left_time(double when)
         int new_col;
 	/* Move the sole left marker */
 	if (bar_left_time != UNDEFINED) {
-	    int old_col = disp_offset + floor((bar_left_time - disp_time) / step);
+	    int old_col = disp_offset + lrint((bar_left_time - disp_time) / step);
+	    bar_left_time = when;
 	    if (old_col >= min_x && old_col <= max_x) {
 		repaint_column(old_col, min_y, max_y, FALSE);
 		gui_update_column(old_col);
@@ -251,7 +252,8 @@ set_bar_right_time(double when)
         int new_col;
 	/* Move the sole right marker */
 	if (bar_right_time != UNDEFINED) {
-	    int old_col = disp_offset + floor((bar_right_time - disp_time)/step);
+	    int old_col = disp_offset + lrint((bar_right_time - disp_time)/step);
+	    bar_right_time = when;
 	    if (old_col >= min_x && old_col <= max_x) {
 		repaint_column(old_col, min_y, max_y, FALSE);
 		gui_update_column(old_col);
