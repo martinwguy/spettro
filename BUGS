@@ -1,6 +1,4 @@
 ------------------------------------------------------------------------
-If the evas_close functions are called on exit, it dumps core.
-------------------------------------------------------------------------
 SDL keys obtained with AltGr or Shift do not work.
 
 e.g. "Shift +/*" should give * but gives + instead

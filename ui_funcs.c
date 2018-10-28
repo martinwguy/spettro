@@ -32,10 +32,7 @@ time_pan_by(double by)
     if (playing_time > audio_length - DELTA) playing_time = audio_length;
     if (playing_time == audio_length) {
 	/* If playing, stop */
-	if (playing == PLAYING) {
-	    pause_audio();
-	}
-	playing = STOPPED;
+	stop_playing();
 	playing_time = audio_length;
     }
 

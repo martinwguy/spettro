@@ -4,6 +4,8 @@
 
 #include "spettro.h"
 #include "gui.h"
+
+#include "audio.h"
 #include "key.h"
 #include "mouse.h"
 #include "scheduler.h"
@@ -281,9 +283,7 @@ gui_main()
 	while (get_next_SDL_event(&event)) switch (event.type) {
 
 	case SDL_QUIT:
-	    stop_scheduler();
-	    stop_timer();
-	    exit(0);	/* atexit() calls SDL_Quit() */
+	    return;
 
 	case SDL_KEYDOWN:
 	    /* SDL's event.key.keysym.mod reflects the state of the modifiers
@@ -332,6 +332,7 @@ gui_main()
 	    case SCROLL_EVENT:
 		do_scroll();
 		break;
+
 	    default:
 		fprintf(stderr, "Unknown SDL_USEREVENT code %d\n",
 			event.user.code);
@@ -350,20 +351,28 @@ gui_main()
 static int
 get_next_SDL_event(SDL_Event *eventp)
 {
+    int nevents;
+
     /* Prioritise UI events over window refreshes, results and such */
     /* First, see if there are any UI events to be had */
-    switch (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
-			  SDL_EVENTMASK(SDL_QUIT) |
-			  SDL_EVENTMASK(SDL_KEYDOWN) |
-			  SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN))) {
-    case -1:
-	fprintf(stderr, "Some error from SDL_PeepEvents().\n");
+    SDL_PumpEvents();
+    /* First priority: Quit */
+    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_QUIT)) == 1)
+        return 1;
+
+    /* Second priority: UI events */
+    nevents = SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
+			     SDL_EVENTMASK(SDL_KEYDOWN) |
+			     SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN) |
+			     SDL_EVENTMASK(SDL_MOUSEBUTTONUP) |
+			     SDL_EVENTMASK(SDL_MOUSEMOTION));
+    if (nevents < 0) {
+	fprintf(stderr, "Some error from SDL_PeepEvents(): %s.\n",
+		SDL_GetError());
 	return 0;
-    case 0:
-	break;
-    case 1:
-	return 1;
-    default:
+    }
+    if (nevents == 1) return 1;
+    if (nevents != 0) {
 	fprintf(stderr, "Wierd return from SDL_PeepEvents\n");
     }
 
@@ -372,15 +381,15 @@ get_next_SDL_event(SDL_Event *eventp)
 }
 #endif
 
-/* Stop the GUI main loop so that the program quits */
+/* Stop everything befre we exit */
 void
 gui_quit()
 {
-#if ECORE_MAIN
-	ecore_main_loop_quit();
-#elif SDL_MAIN
-	exit(0);	/* atexit() calls SDL_Quit() */
-#endif
+    if (playing == PLAYING) {
+	stop_playing();
+    }
+    stop_scheduler();
+    stop_timer();
 }
 
 #if ECORE_MAIN
@@ -388,9 +397,27 @@ gui_quit()
 static void
 ecore_quitGUI(Ecore_Evas *ee EINA_UNUSED)
 {
-    gui_quit();
+    gui_quit_main_loop();
 }
 #endif
+
+void
+gui_quit_main_loop(void)
+{
+#if ECORE_MAIN
+    ecore_main_loop_quit();
+#elif SDL_MAIN
+    SDL_Event event;
+    event.type = SDL_QUIT;
+    switch(SDL_PushEvent(&event)) {
+    case 0: /* OK */
+    	break;
+    default: /* failed */
+	fprintf(stderr, "sdl_main_loop_quit event push failed: %s\n", SDL_GetError());
+	exit(1);
+    }
+#endif
+}
 
 /* Tidy up ready for exit */
 void
@@ -398,14 +425,12 @@ gui_deinit()
 {
 #if EVAS_VIDEO
     ecore_evas_free(ee);
-#if 0
     /* This makes it dump core or barf error messages about bad magic */
     ecore_evas_shutdown();
 #endif
-#endif
 
 #if SDL_AUDIO || SDL_TIMER || SDL_VIDEO || SDL_MAIN
-    SDL_Quit();
+    /* SDL_Quit(); is called by atexit() */
 #endif
 }
 

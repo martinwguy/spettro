@@ -373,7 +373,10 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
      * and doesn't know the file length until the "open_done" event arrives
      * so we use libsndfile or libaudiofile for that.
      */
-    if ((audio_file = open_audio_file(filename)) == NULL) goto quit;
+    if ((audio_file = open_audio_file(filename)) == NULL) {
+    	gui_quit();
+	exit(1);
+    }
 
     /* Now that we have sample_rate, we can convert fftfreq to speclen */
     speclen = fftfreq_to_speclen(fftfreq, sample_rate);
@@ -410,8 +413,7 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 
     gui_main();
 
-quit:
-    gui_deinit();
+    gui_quit();
 
     return 0;
 }
@@ -502,11 +504,7 @@ do_key(enum key key)
 	if (!Control) break;	
     case KEY_ESC:
     case KEY_Q:
-	/* Quit */
-	if (playing == PLAYING) stop_playing();
-	stop_scheduler();
-	stop_timer();
-	gui_quit();
+	gui_quit_main_loop();
 	break;
 
     case KEY_SPACE:	/* Play/Pause/Rewind */

@@ -58,7 +58,6 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
 	    mtoscache_min_freq = min_freq;
 	    mtoscache_max_freq = max_freq;
 	    mtoscache_sample_rate = sample_rate;
-fprintf(stderr, "done.\n");
 	}
 
 	if (magindex < 0 || magindex > maglen) {

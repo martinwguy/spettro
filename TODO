@@ -58,3 +58,5 @@ Coalesce the two monoisers in audio_file.c, linsndfile's and libsox's
 ------------------------------------------------------------------------
 Try the AFsp and sndlib audio file reading libraries
 ------------------------------------------------------------------------
+See about gui_quit() being called from threads and after gui_main() returns
+------------------------------------------------------------------------

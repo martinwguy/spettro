@@ -26,8 +26,9 @@
  * We remove these while searching for new work in get_work().
  */
 
-#include "config.h"
 #include "spettro.h"
+#include "scheduler.h"
+
 #include "audio.h"
 #include "cache.h"
 #include "calc.h"
@@ -35,12 +36,15 @@
 #include "lock.h"
 #include "speclen.h"
 #include "main.h"
-#include "scheduler.h"
 
 #if 0
 #define DEBUG(...) fprintf(stderr, __VA_ARGS__)
 #else
 #define DEBUG(...) do{}while(0)
+#endif
+
+#if SDL_MAIN
+#include <SDL.h>
 #endif
 
 #include <malloc.h>		/* for free(!) */
@@ -54,6 +58,10 @@
 #include <errno.h>
 #include <string.h>		/* for strerror() */
 #include <pthread.h>
+#endif
+
+#if SDL_MAIN
+bool sdl_quit_threads = FALSE;	/* When true, calc threads should return */
 #endif
 
 static void print_list(void);
@@ -74,14 +82,14 @@ static int threads = 0;		/* The number of threads we have started */
 #if ECORE_MAIN
 static Ecore_Thread **thread;	/* Array of threads */
 #elif SDL_MAIN
-static pthread_t *thread;	/* Array of threads */
+static SDL_Thread **thread;	/* Array of threads */
 #endif
 
 #if ECORE_MAIN
 static void ecore_calc_notify(void *data, Ecore_Thread *thread, void *msg_data);
 static void ecore_calc_heavy(void *data, Ecore_Thread *thread);
 #elif SDL_MAIN
-static void *sdl_calc_heavy(void *data);
+static int sdl_calc_heavy(void *data);
 #endif
 
 void
@@ -112,22 +120,13 @@ start_scheduler(int nthreads)
 		threads++;
 		break;
 	    }
-	} else {
 	}
     }
 #elif SDL_MAIN
     {
-	pthread_attr_t attr;
-
-	if (pthread_attr_init(&attr) != 0 ||
-	    pthread_attr_setdetachstate(&attr,
-					PTHREAD_CREATE_DETACHED) != 0) {
-	    fprintf(stderr, "Cannot set pthread attributes. Continuing anyway...\n");
-	}
-
 	if (nthreads == 0) nthreads = sysconf(_SC_NPROCESSORS_ONLN);
 
-	thread = (pthread_t *) malloc(nthreads * sizeof(pthread_t));
+	thread = (SDL_Thread **) malloc(nthreads * sizeof(SDL_Thread *));
 	if (thread == NULL) {
 	    fprintf(stderr, "Out of memory allocating %d threads\n", nthreads);
 	    exit(1);
@@ -135,14 +134,19 @@ start_scheduler(int nthreads)
 
 	/* Start the FFT threads */
 	for (threads=0; threads < nthreads; threads++) {
-	    if (pthread_create(&thread[threads], &attr, sdl_calc_heavy, NULL) != 0) {
+	    char name[16];
+	    sprintf(name, "calc%d", threads);
+	    thread[threads] = SDL_CreateThread(sdl_calc_heavy, NULL);
+	    if (thread[threads] == NULL) {
 		fprintf(stderr, "Cannot create a calculation thread: %s\n",
-			strerror(errno));
+			SDL_GetError());
+		if (threads == 0) {
+		    /* Can't start the first thread: fatal */
+		    exit(1);
+		}
 		return;
 	    }
 	}
-
-	pthread_attr_destroy(&attr);
     }
 #endif
 }
@@ -168,22 +172,22 @@ ecore_calc_heavy(void *data, Ecore_Thread *thread)
     }
 }
 #elif SDL_MAIN
-static void *
+static int
 sdl_calc_heavy(void *data)
 {
     int oldtype;
-    if (pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype)) {
-	fprintf(stderr, "calc_heavy cannot set thread cancel type.\n");
-    }
-    while (TRUE) {
-	calc_t *work = get_work();
+    calc_t *work;
+
+    work = get_work();
+    while (!sdl_quit_threads) {
 	if (work == NULL) {
-	    usleep((useconds_t)100000); /* Sleep for a tenth of a second */
+	    usleep((useconds_t)100000); /* No work: sleep for a tenth of a second */
 	} else {
 	    calc(work);
 	}
+        work = get_work();
     }
-    return NULL;	/* Make GCC -Wall happy */
+    return 0;	/* Make GCC -Wall happy */
 }
 #endif
 
@@ -219,14 +223,14 @@ stop_scheduler(void)
 
 #elif SDL_MAIN
 
+    sdl_quit_threads = TRUE;
     for (n=0; n < threads; n++) {
-	if (pthread_cancel(thread[n]) != 0) {
-	    fprintf(stderr, "Failed to cancel thread %d\n", n);
-	}
+fprintf(stderr, "Waiting for thread %d...\n", n);
+    	SDL_WaitThread(thread[n], NULL);
     }
-    /* SDL threads are set to die immediately */
 
 #endif
+    threads = 0;
 }
 
 /* Ask for a range of FFTs to be queued for execution */

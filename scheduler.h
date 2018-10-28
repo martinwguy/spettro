@@ -11,3 +11,7 @@ extern void drop_all_work(void);
 extern calc_t *get_work(void);
 extern void reschedule_for_bigger_step(void);
 extern void calc_notify(result_t *result);
+
+#if SDL_MAIN
+extern bool sdl_quit_threads;
+#endif

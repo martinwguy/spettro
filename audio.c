@@ -4,12 +4,11 @@
 
 #include "spettro.h"
 #include "audio.h"
-#include "audio_file.h"
-#include "lock.h"
 
+#include "audio_file.h"
+#include "gui.h"
+#include "lock.h"
 #include "main.h"
-extern bool exit_when_played;
-extern audio_file_t *audio_file;
 
 #include <math.h>
 
@@ -116,19 +115,14 @@ stop_playing()
     emotion_object_play_set(em, EINA_FALSE);
 #endif
 #if SDL_AUDIO
-    /* Let SDL play last buffer of piece and pause on its own */
-    /* SDL_PauseAudio(1); */
+    SDL_PauseAudio(1);
 #endif
 
     /* These settings indicate that the player has stopped at end of track */
     playing = STOPPED;
 
     if (exit_when_played) {
-#if ECORE_MAIN
-	ecore_main_loop_quit();
-#elif SDL_MAIN
-	SDL_Quit();
-#endif
+    	gui_quit_main_loop();
     }
 }
 
@@ -186,16 +180,25 @@ get_playing_time(void)
 static void
 sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 {
-    audio_file_t *audiofile = (audio_file_t *)userdata;
-    int nchannels = audio_file_channels(audiofile);
+    audio_file_t *audio_file = (audio_file_t *)userdata;
+    int nchannels = audio_file_channels(audio_file);
     int frames_to_read = len / (sizeof(short) * nchannels);
     int frames_read;	/* How many were read from the file */
+
+    /* SDL has no "playback finished" callback, so spot it here */
+    if (sdl_start >= audio_file_length_in_frames(audio_file)) {
+        stop_playing();
+	/* This may be called by the audio-fill thread,
+	 * so don't quit here; tell the main event loop to do so */
+	if (exit_when_played) gui_quit_main_loop();
+	return;
+    }
 
     if (!lock_audio_file()) {
 	fprintf(stderr, "Cannot lock audio file\n");
 	exit(1);
     }
-    frames_read = read_audio_file(audiofile, (char *)stream,
+    frames_read = read_audio_file(audio_file, (char *)stream,
 				  af_signed, nchannels,
 				  sdl_start, frames_to_read);
     if (!unlock_audio_file()) {
@@ -204,7 +207,6 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     }
     if (frames_read <= 0) {
 	/* End of file or read error. Treat as end of file */
-	SDL_PauseAudio(1);
 	stop_playing();
 	return;
     }
@@ -224,10 +226,5 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     }
 
     sdl_start += frames_read;
-
-    /* SDL has no "playback finished" callback, so spot it here */
-    if (sdl_start >= audio_file_length_in_frames(audiofile)) {
-	stop_playing();
-    }
 }
 #endif
