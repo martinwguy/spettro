@@ -10,12 +10,27 @@
 /* Helper function:
  * Map the index for an output pixel in a column to an index into the
  * FFT result representing the same frequency.
- * magindex is from 0 to maglen-1, representing min_freq to max_freq Hz.
+ * magindex is from 0 to maglen-1, representing min_freq to max_freq Hz,
+ * with an extra guard element for the maglenth element.
  * Return values from are from 0 to speclen representing frequencies from
  * 0 to the Nyquist frequency.
  * The result is a floating point number as it may fall between elements,
- * allowing the caller to interpolate onto the input array.
+ * allowing the caller to interpolate between adjacent elements
+ * of the input array.
  */
+
+/*
+ * This is called so often with the same values, and pow() is so expensive,
+ * that it's better to precalculate the mappings and return them from an array.
+ */
+static double *mtoscache = NULL;
+static int mtoscache_size = 0;
+static int mtoscache_speclen = 0;
+static int mtoscache_maglen = 0;
+static double mtoscache_min_freq = 0.0;
+static double mtoscache_max_freq = 0.0;
+static double mtoscache_sample_rate = 0.0;
+
 static double
 magindex_to_specindex(int speclen, int maglen, int magindex,
 		      double min_freq, double max_freq,
@@ -23,9 +38,35 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
 {
 	double freq; /* The frequency that this output value represents */
 
-	freq = min_freq * pow(max_freq/min_freq, (double) magindex/(maglen-1));
+	/* Recalculate the array of values if any of the parameters changed */
+	if (speclen != mtoscache_speclen
+	 || maglen != mtoscache_maglen
+	 || min_freq != mtoscache_min_freq
+	 || max_freq != mtoscache_max_freq
+	 || sample_rate != mtoscache_sample_rate) {
+	    int i;
+	    if (mtoscache != NULL) free(mtoscache);
+	    mtoscache = malloc((maglen+1) * sizeof(double));
+	
+	    for (i=0; i <= maglen; i++) {
+		double freq = min_freq * pow(max_freq/min_freq, (double)i/(maglen-1));
+		mtoscache[i] = freq * speclen / (sample_rate/2);
+	    }
 
-	return (freq * speclen / (sample_rate/2));
+	    mtoscache_speclen = speclen;
+	    mtoscache_maglen = maglen;
+	    mtoscache_min_freq = min_freq;
+	    mtoscache_max_freq = max_freq;
+	    mtoscache_sample_rate = sample_rate;
+fprintf(stderr, "done.\n");
+	}
+
+	if (magindex < 0 || magindex > maglen) {
+		fprintf(stderr, "Funny magindex of %d\n", magindex);
+		abort();
+	}
+
+	return mtoscache[magindex];
 }
 
 /*
@@ -42,7 +83,7 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
 float
 interpolate(float* logmag, int maglen, const float *spec, const int speclen,
 	    const double min_freq, const double max_freq,
-	    const double sample_rate, int from_y, int to_y)
+	    const double sample_rate, const int from_y, const int to_y)
 {
     static float logmax = 0.0;	/* Highest value seen so far. 0 = log10(1.0) */
     int k;
@@ -63,9 +104,9 @@ interpolate(float* logmag, int maglen, const float *spec, const int speclen,
     for (k = from_y; k <= to_y; k++) {
 	/* Average the pixels in the range it comes from */
 	double this = magindex_to_specindex(speclen, maglen, k,
-			min_freq, max_freq, sample_rate);
+					    min_freq, max_freq, sample_rate);
 	double next = magindex_to_specindex(speclen, maglen, k+1,
-			min_freq, max_freq, sample_rate);
+					    min_freq, max_freq, sample_rate);
 
 	/* Range check: can happen if max_freq > sample_rate / 2 */
 	if (this > speclen) {
