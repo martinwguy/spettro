@@ -17,5 +17,3 @@ libaudiofile returns us half the audio data we asked for followed by half
 silence, and the audio fragments it gives us is the requested sample
 halved in time and doubled in frequency.
 ------------------------------------------------------------------------
-SDL2 doesn't refresh the window if you move some other window over it.
-------------------------------------------------------------------------

@@ -326,6 +326,10 @@ gui_main()
 	enum key key;
 
 	while (get_next_SDL_event(&event)) switch (event.type) {
+	case SDL_WINDOWEVENT:
+	    if (event.window.event == SDL_WINDOWEVENT_EXPOSED)
+		gui_update_display();
+	    break;
 
 	case SDL_QUIT:
 	    return;
