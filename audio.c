@@ -6,6 +6,7 @@
 #include "audio.h"
 
 #include "audio_file.h"
+#include "audio_cache.h"
 #include "gui.h"
 #include "lock.h"
 #include "main.h"
@@ -198,9 +199,9 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	fprintf(stderr, "Cannot lock audio file\n");
 	exit(1);
     }
-    frames_read = read_audio_file(audio_file, (char *)stream,
-				  af_signed, nchannels,
-				  sdl_start, frames_to_read);
+    frames_read = read_cached_audio(audio_file, (char *)stream,
+				    af_signed, nchannels,
+				    sdl_start, frames_to_read);
     if (!unlock_audio_file()) {
 	fprintf(stderr, "Cannot unlock audio file\n");
 	exit(1);

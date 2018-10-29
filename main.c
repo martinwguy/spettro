@@ -76,6 +76,7 @@
 
 #include "audio.h"
 #include "audio_file.h"
+#include "audio_cache.h"
 #include "axes.h"
 #include "cache.h"
 #include "calc.h"
@@ -414,6 +415,11 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     gui_main();
 
     gui_quit();
+
+    /* Free memory to make valgrind happier */
+    drop_all_work();
+    drop_all_results();
+    no_audio_cache();
 
     return 0;
 }

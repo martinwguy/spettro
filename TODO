@@ -1,8 +1,4 @@
 ------------------------------------------------------------------------
-Cache the decoded audio file in a disk file if it's compressed or if
-diplaying a live source, as WAV, continually rewriting the header
-as it grows so that on a crash recorded audio is autosaved.
-------------------------------------------------------------------------
 Be able to position the green line, disp_offset,
 and also move it with Alt-Left/Right arrow, Home, End?
 ------------------------------------------------------------------------
@@ -17,6 +13,8 @@ order with associated calc structure.
 ------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
+Add note names as frequency axis on RHS
+------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
 ------------------------------------------------------------------------
 Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
@@ -24,12 +22,6 @@ Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
 Do note lines and the 0 1 2 3 4 5 stuff to say how many beats per bar.
-------------------------------------------------------------------------
-When dragging the mouse left or right, change the playing position.
-Visual effect after redraw is to drag the graphic.
-------------------------------------------------------------------------
-When dragging the mouse up or down, pan the frequency axis
-giving the same dragging-the-graphic effect.
 ------------------------------------------------------------------------
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
@@ -54,9 +46,7 @@ Precalculate up to one screenful ahead in time partly to avoid the
 flickering gray part on screen right, partly so that a forward time pan
 will be faster.
 ------------------------------------------------------------------------
-Coalesce the two monoisers in audio_file.c, linsndfile's and libsox's
-------------------------------------------------------------------------
 Try the AFsp and sndlib audio file reading libraries
 ------------------------------------------------------------------------
-See about gui_quit() being called from threads and after gui_main() returns
+Don't cache the silent data after the end of the audio file.
 ------------------------------------------------------------------------

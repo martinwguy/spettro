@@ -24,6 +24,7 @@
 #endif
 
 #include "audio_file.h"
+#include "audio_cache.h"
 #include "cache.h"
 #include "calc.h"
 #include "gui.h"	/* For RESULT_EVENT */
@@ -137,9 +138,9 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	    fprintf(stderr, "Cannot lock audio file\n");
 	    exit(1);
 	}
-	read_audio_file(calc->audio_file, (char *) spec->time_domain,
-			af_double, 1,
-			lrint(t * calc->sr) - fftsize/2, fftsize);
+	read_cached_audio(calc->audio_file, (char *) spec->time_domain,
+			  af_double, 1,
+			  lrint(t * calc->sr) - fftsize/2, fftsize);
 	if (!unlock_audio_file()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");
 	    exit(1);

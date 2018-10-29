@@ -12,6 +12,7 @@
 #include "spettro.h"
 #include "audio_file.h"		/* Our header file */
 
+#include "audio_cache.h"
 #include "lock.h"
 
 #include <string.h>		/* for memset() */
@@ -31,6 +32,7 @@ open_audio_file(char *filename)
 
     AFfilehandle af;
     audio_file_t *audio_file = malloc(sizeof(audio_file_t));
+    int comptype;	/* Compression type */
 
     if (audio_file == NULL) {
 	fprintf(stderr, "Out of memory in open_audio_file()\n");
@@ -47,6 +49,21 @@ open_audio_file(char *filename)
     audio_file->samplerate = afGetRate(af, AF_DEFAULT_TRACK);
     audio_file->frames = afGetFrameCount(af, AF_DEFAULT_TRACK);
     audio_file->channels = afGetChannels(af, AF_DEFAULT_TRACK);
+    comptype = afGetCompression(af, AF_DEFAULT_TRACK);
+    switch(comptype) {
+    char *compression;
+    case AF_COMPRESSION_NONE:
+	no_audio_cache();
+	break;
+    default:
+	compression = afQueryPointer(AF_QUERYTYPE_COMPRESSION, AF_QUERY_NAME,
+				     comptype, 0, 0);
+	if (!strcmp(compression, "FLAC")) {
+	    fprintf(stderr, "Unknown compression type \"%s\"\n", compression);
+	}
+	create_audio_cache();
+	break;
+    }
 
 #elif USE_LIBSNDFILE
 
@@ -66,6 +83,16 @@ open_audio_file(char *filename)
     audio_file->samplerate = info.samplerate;
     audio_file->frames = info.frames;
     audio_file->channels = info.channels;
+    /* Switch on major format type */
+    switch (info.format & 0xFFFF0000) {
+    case SF_FORMAT_FLAC:
+    case SF_FORMAT_OGG:
+	create_audio_cache();
+	break;
+    default:	/* All other formats are uncompressed */
+	no_audio_cache();
+	break;
+    }
 
 #elif USE_LIBSOX
 
@@ -84,8 +111,19 @@ open_audio_file(char *filename)
     audio_file->samplerate = sf->signal.rate;
     audio_file->channels = sf->signal.channels;
     audio_file->frames = sf->signal.length / audio_file->channels;
+    switch (sf->encoding.encoding) {	/* See sox.h */
+    case SOX_ENCODING_FLAC:
+    case SOX_ENCODING_MP3:       /**< MP3 compression */
+    case SOX_ENCODING_VORBIS:    /**< Vorbis compression */
+	create_audio_cache();
+	break;
+    default:	/* linear type - do not cache */
+	no_audio_cache();
+	break;
+    }
 
 #endif
+
     audio_file->filename = filename;
 
     /* Set the globals that everyone picks at */
@@ -96,8 +134,9 @@ open_audio_file(char *filename)
 }
 
 /*
- * Read sample frames, returning them as mono doubles for the graphics or as
- * the original audio as 16-bit in system-native bytendianness for the sound.
+ * Read sample frames from the audio file, returning them as mono doubles
+ * for the graphics or as the original audio as 16-bit in system-native
+ * bytendianness for the sound.
  *
  * "data" is where to put the audio data.
  * "format" is one of af_double or af_signed
@@ -157,7 +196,8 @@ read_audio_file(audio_file_t *audio_file, char *data,
     }
 
 #if USE_LIBSOX
-    /* sox_seek() is broken: if you seek to an earlier position it does nothing
+    /* sox_seek() (in libsox-14.4.1) is broken:
+     * if you seek to an earlier position it does nothing
      * and just returns the data linearly to end of file.
      * Work round this by closing and reopening the file.
      */
