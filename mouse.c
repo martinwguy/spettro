@@ -84,7 +84,6 @@ mouseMove(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Evas_Modifier *modifiers = ev->modifiers;
     Shift = evas_key_modifier_is_set(modifiers, "Shift");
     Control = evas_key_modifier_is_set(modifiers, "Control");
-fprintf(stderr, "Evas mouse move\n");
 
     do_mouse_move(ev->cur.canvas.x, ev->cur.canvas.y);
 }
