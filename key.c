@@ -6,38 +6,56 @@
 #include "spettro.h"
 #include "key.h"
 
+static void map_to_lower_case(char *s);
+
 bool Shift, Control;
 
-#if ECORE_MAIN
 /*
  * Keypress events
  *
- * Other interesting key names are:
+ * Other interesting ecore key names are:
  *	"XF86AudioPlay"	Media button >
  *	"XF86AudioStop"	Media button []
  *	"XF86AudioPrev"	Media button <<
  *	"XF86AudioNext"	Media button >>
  */
 
+#if ECORE_MAIN
 void
 keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
+#elif SDL_MAIN
+void
+sdl_keydown(SDL_Event *eventp)
+#endif
 {
+#if ECORE_MAIN
     Evas_Event_Key_Down *ev = einfo;
     const Evas_Modifier *mods = evas_key_modifier_get(evas);
+    char *name = strdup(ev->key);	/* Copy because we'll lower-case it */
+#elif SDL_MAIN
+    char *name = strdup(SDL_GetKeyName(eventp->key.keysym.sym));
+#endif
+
     enum key key = KEY_NONE;
 
+#if ECORE_MAIN
     Shift = evas_key_modifier_is_set(mods, "Shift");
     Control = evas_key_modifier_is_set(mods, "Control");
+#elif SDL_MAIN
+    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
+    Control = !!(SDL_GetModState() & KMOD_CTRL);
+#endif
 
     /* Handle single-character strings separately, not for speed but to avoid
      * tons of compiler warnings "array index 2 is past the end of the array"
      * due to glibc's stupid 17-line #define for strcmp().
      */
-    if (ev->key[1] == '\0') switch (ev->key[0]) {
+    map_to_lower_case(name);
+    if (name[1] == '\0') switch (name[0]) {
 	case 'q': key = KEY_Q;			break;
 	case 'c': key = KEY_C;			break;
-	case 'x': case 'X': key = KEY_X;	break;
-	case 'y': case 'Y': key = KEY_Y;	break;
+	case 'x': key = KEY_X;			break;
+	case 'y': key = KEY_Y;			break;
 	case 'k': key = KEY_K;			break;
 	case 's': key = KEY_S;			break;
 	case 'g': key = KEY_G;			break;
@@ -54,82 +72,92 @@ keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 	/* Avanti! */
 	case '0': key = KEY_0;			break;
 	case '9': key = KEY_9;			break;
+        case '+': key = KEY_PLUS;		break;
+        case '-': key = KEY_MINUS;		break;
+        case '*': key = KEY_STAR;		break;
+        case '/': key = KEY_SLASH;		break;
+	default:
+	    goto moan;
     }
-    else if (!strcmp(ev->key, "Escape"))
-	key = KEY_ESC;
-    else if (!strcmp(ev->key, "space"))
-	key = KEY_SPACE;
-    else if (!strcmp(ev->key, "Left") || !strcmp(ev->key, "KP_Left"))
-	key = KEY_LEFT;
-    else if (!strcmp(ev->key, "Right") || !strcmp(ev->key, "KP_Right"))
-	key = KEY_RIGHT;
-    else if (!strcmp(ev->key, "Home") || !strcmp(ev->key, "KP_Home"))
-	key = KEY_HOME;
-    else if (!strcmp(ev->key, "End") || !strcmp(ev->key, "KP_End"))
-	key = KEY_END;
-    else if (!strcmp(ev->key, "Up") || !strcmp(ev->key, "KP_Up"))
-	key = KEY_UP;
-    else if (!strcmp(ev->key, "Down") || !strcmp(ev->key, "KP_Down"))
-	key = KEY_DOWN;
-    else if (!strcmp(ev->key, "Prior"))
-	key = KEY_PGUP;
-    else if (!strcmp(ev->key, "Next"))
-	key = KEY_PGDN;
-    else if (!strcmp(ev->key, "plus") || !strcmp(ev->key, "KP_Add"))
-	key = KEY_PLUS;
-    else if (!strcmp(ev->key, "minus") || !strcmp(ev->key, "KP_Subtract"))
-	key = KEY_MINUS;
-    else if (!strcmp(ev->key, "asterisk") || !strcmp(ev->key, "KP_Multiply"))
-	key = KEY_STAR;
-    else if (!strcmp(ev->key, "slash") || !strcmp(ev->key, "KP_Divide"))
-	key = KEY_SLASH;
+    /* names common to several toolkits */
+    else if (!strcmp(name, "escape"))			key = KEY_ESC;
+    else if (!strcmp(name, "space"))			key = KEY_SPACE;
+    else if (!strcmp(name, "left"))			key = KEY_LEFT;
+    else if (!strcmp(name, "right"))			key = KEY_RIGHT;
+    else if (!strcmp(name, "home"))			key = KEY_HOME;
+    else if (!strcmp(name, "end"))			key = KEY_END;
+    else if (!strcmp(name, "up"))			key = KEY_UP;
+    else if (!strcmp(name, "down"))			key = KEY_DOWN;
+#if ECORE_MAIN
+    else if (!strcmp(name, "prior"))			key = KEY_PGUP;
+    else if (!strcmp(name, "next"))			key = KEY_PGDN;
+    else if (!strcmp(name, "kp_end"))			key = KEY_END;
+    else if (!strcmp(name, "kp_down"))			key = KEY_DOWN;
+    else if (!strcmp(name, "kp_next"))			key = KEY_PGDN;
+    else if (!strcmp(name, "kp_left"))			key = KEY_LEFT;
+    else if (!strcmp(name, "kp_right"))			key = KEY_RIGHT;
+    else if (!strcmp(name, "kp_home"))			key = KEY_HOME;
+    else if (!strcmp(name, "kp_up"))			key = KEY_UP;
+    else if (!strcmp(name, "kp_prior"))			key = KEY_PGUP;
+    else if (!strcmp(name, "kp_add"))			key = KEY_PLUS;
+    else if (!strcmp(name, "kp_subtract"))		key = KEY_MINUS;
+    else if (!strcmp(name, "kp_multiply"))		key = KEY_STAR;
+    else if (!strcmp(name, "kp_divide"))		key = KEY_SLASH;
+    else if (!strcmp(name, "asterisk"))			key = KEY_STAR;
+    else if (!strcmp(name, "slash"))			key = KEY_SLASH;
+#elif SDL_MAIN
+# if SDL1
+    else if (!strcmp(name, "page up"))			key = KEY_PGUP;
+    else if (!strcmp(name, "page down"))		key = KEY_PGDN;
+    else if (!strcmp(name, "[1]"))			key = KEY_END;
+    else if (!strcmp(name, "[2]"))			key = KEY_DOWN;
+    else if (!strcmp(name, "[3]"))			key = KEY_PGDN;
+    else if (!strcmp(name, "[4]"))			key = KEY_LEFT;
+    else if (!strcmp(name, "[6]"))			key = KEY_RIGHT;
+    else if (!strcmp(name, "[7]"))			key = KEY_HOME;
+    else if (!strcmp(name, "[8]"))			key = KEY_UP;
+    else if (!strcmp(name, "[9]"))			key = KEY_PGUP;
+    else if (!strcmp(name, "[+]"))			key = KEY_PLUS;
+    else if (!strcmp(name, "[-]"))			key = KEY_MINUS;
+    else if (!strcmp(name, "[*]"))			key = KEY_STAR;
+    else if (!strcmp(name, "[/]"))			key = KEY_SLASH;
+# elif SDL2
+    else if (!strcmp(name, "pageup"))			key = KEY_PGUP;
+    else if (!strcmp(name, "pagedown"))			key = KEY_PGDN;
+    else if (!strcmp(name, "keypad 1"))			key = KEY_END;
+    else if (!strcmp(name, "keypad 2"))			key = KEY_DOWN;
+    else if (!strcmp(name, "keypad 3"))			key = KEY_PGDN;
+    else if (!strcmp(name, "keypad 4"))			key = KEY_LEFT;
+    else if (!strcmp(name, "keypad 6"))			key = KEY_RIGHT;
+    else if (!strcmp(name, "keypad 7"))			key = KEY_HOME;
+    else if (!strcmp(name, "keypad 8"))			key = KEY_UP;
+    else if (!strcmp(name, "keypad 9"))			key = KEY_PGUP;
+    else if (!strcmp(name, "keypad +"))			key = KEY_PLUS;
+    else if (!strcmp(name, "keypad -"))			key = KEY_MINUS;
+    else if (!strcmp(name, "keypad *"))			key = KEY_STAR;
+    else if (!strcmp(name, "keypad /"))			key = KEY_SLASH;
+# endif
+#endif
+    /* Don't report shift/ctrl presses. "left shift" is SDL[12] */
+#if ECORE_MAIN
+    else if (!strcmp(name, "shift_l"))			key = KEY_NONE;
+    else if (!strcmp(name, "shift_r"))			key = KEY_NONE;
+    else if (!strcmp(name, "control_l"))		key = KEY_NONE;
+    else if (!strcmp(name, "control_r"))		key = KEY_NONE;
+#elif SDL_MAIN
+    else if (!strcmp(name, "left shift"))		key = KEY_NONE;
+    else if (!strcmp(name, "right shift"))		key = KEY_NONE;
+    else if (!strcmp(name, "left ctrl"))		key = KEY_NONE;
+    else if (!strcmp(name, "right ctrl"))		key = KEY_NONE;
+#endif
     else
-	fprintf(stderr, "Key \"%s\" doesn't do anything.\n", ev->key);
+moan:	fprintf(stderr, "Key \"%s\" doesn't do anything.\n", name);
 
     do_key(key);
 }
-#elif SDL_MAIN
 
-enum key
-sdl_key_decode(SDL_Event *eventp)
+static void
+map_to_lower_case(char *s)
 {
-    enum key key     = KEY_NONE;
-    switch (eventp->key.keysym.sym) {
-    case SDLK_q:	     key = KEY_Q;	break;
-    case SDLK_c:	     key = KEY_C;	break;
-    case SDLK_ESCAPE:	     key = KEY_ESC;	break;
-    case SDLK_SPACE:	     key = KEY_SPACE;	break;
-    case SDLK_LEFT:	     key = KEY_LEFT;	break;
-    case SDLK_RIGHT:	     key = KEY_RIGHT;	break;
-    case SDLK_HOME:	     key = KEY_HOME;	break;
-    case SDLK_END:	     key = KEY_END;	break;
-    case SDLK_UP:	     key = KEY_UP;	break;
-    case SDLK_DOWN:	     key = KEY_DOWN;	break;
-    case SDLK_PAGEUP:	     key = KEY_PGUP;	break;
-    case SDLK_PAGEDOWN:	     key = KEY_PGDN;	break;
-    case SDLK_x:	     key = KEY_X;	break;
-    case SDLK_y:	     key = KEY_Y;	break;
-    case SDLK_PLUS:	     key = KEY_PLUS;	break;
-    case SDLK_MINUS:	     key = KEY_MINUS;	break;
-    case SDLK_ASTERISK:	     key = KEY_STAR;	break;
-    case SDLK_SLASH:	     key = KEY_SLASH;	break;
-    case SDLK_k:	     key = KEY_K;	break;
-    case SDLK_s:	     key = KEY_S;	break;
-    case SDLK_g:	     key = KEY_G;	break;
-    case SDLK_p:	     key = KEY_P;	break;
-    case SDLK_t:	     key = KEY_T;	break;
-    case SDLK_f:	     key = KEY_F;	break;
-    case SDLK_l:	     key = KEY_L;	break;
-    case SDLK_r:	     key = KEY_R;	break;
-    case SDLK_b:	     key = KEY_B;	break;
-    case SDLK_d:	     key = KEY_D;	break;
-	/* Unclaimed window function keys */
-    case SDLK_h:	     key = KEY_H;	break;
-    case SDLK_n:	     key = KEY_N;	break;
-    case SDLK_0:	     key = KEY_0;	break;
-    case SDLK_9:	     key = KEY_9;	break;
-    default: break;
-    }
-    return key;
+    while (*s != '\0') { *s = tolower(*s); s++; }
 }
-#endif

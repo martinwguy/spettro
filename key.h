@@ -8,7 +8,7 @@
 extern void keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo);
 #elif SDL_MAIN
 #include <SDL.h>
-extern enum key sdl_key_decode(SDL_Event *eventp);
+extern void sdl_keydown(SDL_Event *eventp);
 #endif
 
 /* Driver-independent keypress names and modifiers */

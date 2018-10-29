@@ -326,10 +326,12 @@ gui_main()
 	enum key key;
 
 	while (get_next_SDL_event(&event)) switch (event.type) {
+#if SDL2
 	case SDL_WINDOWEVENT:
 	    if (event.window.event == SDL_WINDOWEVENT_EXPOSED)
 		gui_update_display();
 	    break;
+#endif
 
 	case SDL_QUIT:
 	    return;
@@ -339,8 +341,7 @@ gui_main()
 	     * at initial key-down. SDL_GetModState seems to reflect now. */
 	    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
 	    Control = !!(SDL_GetModState() & KMOD_CTRL);
-	    key = sdl_key_decode(&event);
-	    do_key(key);
+	    sdl_keydown(&event);
 	    break;
 
 	case SDL_MOUSEBUTTONDOWN:
