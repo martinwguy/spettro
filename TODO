@@ -48,5 +48,5 @@ will be faster.
 ------------------------------------------------------------------------
 Try the AFsp and sndlib audio file reading libraries
 ------------------------------------------------------------------------
-Don't cache the silent data after the end of the audio file.
+Stop it from calculating duplicate results.
 ------------------------------------------------------------------------

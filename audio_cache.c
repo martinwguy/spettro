@@ -189,7 +189,7 @@ read_cached_audio(audio_file_t *audio_file, char *data,
 }
 
 /* Fill a hole in our buffer with data from the audio file,
- * in our funny 16-bit format
+ * in our funny 16-bit format and save the new data in the cache file.
  */
 static void
 fill_hole(audio_file_t *audio_file,
@@ -200,11 +200,20 @@ fill_hole(audio_file_t *audio_file,
     long hole_frames = hole_samples / audio_file->channels;
     long offset;
     int frames_read;
+    int frames_to_read = hole_frames;
 
-    frames_read = read_audio_file(audio_file, (char *)hole_start, af_signed,
-    				  audio_file->channels,
-    			start, hole_frames);
-    if (frames_read != hole_frames) {
+    if (start + frames_to_read > audio_file->frames) {
+    	frames_to_read = audio_file->frames - start;
+    }
+
+    if (frames_to_read <= 0)
+    	frames_read = 0;
+    else
+        frames_read = read_audio_file(audio_file, (char *)hole_start,
+				      af_signed, audio_file->channels,
+				      start, frames_to_read);
+
+    if (frames_read < hole_frames) {
         int i; short *sp;
 
 	/* Fill the missing data with silence */
@@ -224,8 +233,9 @@ fill_hole(audio_file_t *audio_file,
     if (lseek(cache, offset, SEEK_SET) != offset) {
 	fprintf(stderr, "Warning: Failed to seek to update cache file\n");
     } else {
-	if (write(cache, (char *)hole_start, hole_samples * sizeof(short))
-				   != hole_samples * sizeof(short)) {
+    	size_t size = frames_read * audio_file->channels * sizeof(short);
+
+	if (write(cache, (char *)hole_start, size) != size) {
 	    fprintf(stderr, "Warning: Failed to update cache file\n");
 	    /* Mostly harmless */
 	}
