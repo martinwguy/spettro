@@ -14,6 +14,7 @@
 
 #include <Ecore.h>
 #include <Evas.h>
+#define NO_TIMER NULL
 extern Evas_Object *em;	/* From main.c */
 static Ecore_Timer *timer = NULL;
 static Eina_Bool timer_cb(void *data);	/* The timer callback function */
