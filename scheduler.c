@@ -217,7 +217,6 @@ stop_scheduler(void)
     }
     /* Wait for the threads to die */
     while ((active = ecore_thread_active_get()) > 0) {
-	fprintf(stderr, "Waiting for %d threads to die.\n", active);
 	usleep(100000);
     }
 
@@ -225,7 +224,6 @@ stop_scheduler(void)
 
     sdl_quit_threads = TRUE;
     for (n=0; n < threads; n++) {
-fprintf(stderr, "Waiting for thread %d...\n", n);
     	SDL_WaitThread(thread[n], NULL);
     }
 
