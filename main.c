@@ -351,35 +351,33 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 	}
     }
 
-    /* Set variables with derived values */
-
-    disp_offset = disp_width / 2;
-    step = 1 / ppsec;
-    min_x = 0; max_x = disp_width - 1;
-    min_y = 0; max_y = disp_height - 1;
-    if (yflag) min_x = FREQUENCY_AXIS_WIDTH;
-
     /* Set default values for unset parameters */
-
     filename = (argc > 0) ? argv[0] : "audio.wav";
-
-    /* Make the row overlay mask, if any */
-    make_row_overlay();
-
-    gui_init(filename);
 
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.
      * Emotion seems not to let us get the raw sample data or sampling rate
      * and doesn't know the file length until the "open_done" event arrives
-     * so we use libsndfile or libaudiofile for that.
+     * so we use libsndfile, libaudiofile or libsox for that.
      */
     if ((audio_file = open_audio_file(filename)) == NULL) {
     	gui_quit();
 	exit(1);
     }
 
-    /* Now that we have sample_rate, we can convert fftfreq to speclen */
+    /* Initialise the graphics subsystem. */
+    /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
+    gui_init(filename);
+
+    /* Set variables with derived values */
+    disp_offset = disp_width / 2;
+    step = 1 / ppsec;
+    min_x = 0; max_x = disp_width - 1;
+    min_y = 0; max_y = disp_height - 1;
+    if (yflag) min_x = FREQUENCY_AXIS_WIDTH;
+
+    make_row_overlay();
+
     speclen = fftfreq_to_speclen(fftfreq, sample_rate);
 
     init_audio(audio_file, filename);
@@ -387,7 +385,6 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     /* Apply the -p flag */
     if (disp_time != 0.0) set_playing_time(disp_time);
 
-    /* Now we have audio_length, we can set the bar times if given... */
     if (bar_left_time != UNDEFINED) {
 	if (bar_left_time > audio_length + DELTA) {
 	    fprintf(stderr, "-l time is after the end of the audio\n");
@@ -401,7 +398,6 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 	} else set_bar_right_time(bar_right_time);
     }
 
-    /* Start the calculation threads: from here on, do not goto quit. */
     start_scheduler(max_threads);
 
     if (yflag) draw_frequency_axis();

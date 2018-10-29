@@ -27,5 +27,16 @@
 # error "Define one of USE_EMOTION USE_SDL and USE_EMOTION_SDL in Makefile.am"
 #endif
 
+#if USE_SDL || USE_EMOTION_SDL
+# include <SDL.h>
+# if SDL_MAJOR_VERSION == 1
+#  define SDL1 1
+#  define SDL_PUSHEVENT_SUCCESS 0
+# else
+#  define SDL2 1
+#  define SDL_PUSHEVENT_SUCCESS 1
+# endif
+#endif
+
 #define CONFIG_H
 #endif

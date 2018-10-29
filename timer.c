@@ -22,8 +22,13 @@ static Eina_Bool scroll_cb(void *data, int type, void *event);
 
 #elif SDL_TIMER
 
-#include <SDL.h>
-static SDL_TimerID timer = NULL;
+# include <SDL.h>
+# if SDL1
+#  define NO_TIMER NULL
+# elif SDL2
+#  define NO_TIMER 0
+# endif
+static SDL_TimerID timer = NO_TIMER;
 static Uint32 timer_cb(Uint32 interval, void *data);
 
 #else
@@ -44,7 +49,7 @@ start_timer()
 #elif SDL_TIMER
     timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)NULL);
 #endif
-    if (timer == NULL) {
+    if (timer == NO_TIMER) {
 	fprintf(stderr, "Couldn't initialize scrolling timer for step of %g secs.\n", step);
 	exit(1);
     }
@@ -68,7 +73,7 @@ change_timer_interval(double interval)
 	(timer = ecore_timer_add(interval, timer_cb, (void *)em)) == NULL) {
 #elif SDL_TIMER
     if (!SDL_RemoveTimer(timer) ||
-	(timer = SDL_AddTimer((Uint32)lrint(interval * 1000), timer_cb, NULL)) == NULL) {
+	(timer = SDL_AddTimer((Uint32)lrint(interval * 1000), timer_cb, NULL)) == NO_TIMER) {
 #endif
 	fprintf(stderr, "Couldn't change rate of scrolling timer.\n");
 	exit(1);
@@ -124,7 +129,7 @@ timer_cb(Uint32 interval, void *data)
 
 	event.type = SDL_USEREVENT;
 	event.user.code = SCROLL_EVENT;
-	if (SDL_PushEvent(&event) != 0) {
+	if (SDL_PushEvent(&event) != SDL_PUSHEVENT_SUCCESS) {
 	    fprintf(stderr, "Couldn't push an SDL scroll event\n");
 	} else {
 	    scroll_event_pending = TRUE;

@@ -102,7 +102,7 @@ calc_result(result_t *result)
     event.type = SDL_USEREVENT;
     event.user.code = RESULT_EVENT;
     event.user.data1 = result;
-    while (SDL_PushEvent(&event) != 0) {
+    while (SDL_PushEvent(&event) != SDL_PUSHEVENT_SUCCESS) {
 	/* The SDL1.2 queue length is 127, and all 127 events are
 	 * for our user event number 24 */
 	usleep(10000); /* Sleep for a 1/100th of a second and retry */

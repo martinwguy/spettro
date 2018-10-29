@@ -136,7 +136,11 @@ start_scheduler(int nthreads)
 	for (threads=0; threads < nthreads; threads++) {
 	    char name[16];
 	    sprintf(name, "calc%d", threads);
-	    thread[threads] = SDL_CreateThread(sdl_calc_heavy, NULL);
+	    thread[threads] = SDL_CreateThread(sdl_calc_heavy, NULL
+#if SDL2
+								   , NULL
+#endif
+									 );
 	    if (thread[threads] == NULL) {
 		fprintf(stderr, "Cannot create a calculation thread: %s\n",
 			SDL_GetError());

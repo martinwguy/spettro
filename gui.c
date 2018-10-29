@@ -44,7 +44,13 @@ static unsigned char *imagedata = NULL;
 static int imagestride;		/* How many bytes per screen line ?*/
        Evas_Object *em = NULL;	/* The Emotion or Evas-Ecore object */
 #elif SDL_VIDEO
+# if SDL1
 static SDL_Surface *screen;
+# elif SDL2
+static SDL_Window *window;
+static SDL_Renderer *renderer;
+static SDL_Surface *screen;
+# endif
 #endif
 
 #if EVAS_VIDEO
@@ -102,11 +108,11 @@ gui_init(char *filename)
 	flags |= SDL_INIT_VIDEO;
 # endif
 # if SDL_MAIN
-	/*
-	 * Maybe flags |= SDL_INIT_NOPARACHUTE to prevent it from installing
-	 * signal handlers for commonly ignored fatal signals like SIGSEGV.
-	 */
+#  if SDL1
 	flags |= SDL_INIT_EVENTTHREAD;
+#  elif SDL2
+	flags |= SDL_INIT_EVENTS;  /* Also comes free with SDL_INIT_VIDEO */
+#  endif
 # endif
 	if (SDL_Init(flags) != 0) {
 	    fprintf(stderr, "Couldn't initialize SDL: %s.\n", SDL_GetError());
@@ -114,9 +120,11 @@ gui_init(char *filename)
 	}
 	atexit(SDL_Quit);
 
-	/* For some reason, key repeat gets disabled by default */
+	/* For some reason, SDL1.2 disables key repeat */
+# if SDL1
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
 			    SDL_DEFAULT_REPEAT_INTERVAL);
+# endif
     }
 #endif
 
@@ -181,8 +189,9 @@ gui_init(char *filename)
 #endif
 
 #if SDL_VIDEO
+# if SDL1
     /* "Use SDL_SWSURFACE if you plan on doing per-pixel manipulations,
-     * or blit surfaces with alpha channels, and require a high framerate."
+     * or blit screens with alpha channels, and require a high framerate."
      * "SDL_DOUBLEBUF is only valid when using HW_SURFACE."
      *     -- http://sdl.beuc.net/sdl.wiki/SDL_SetVideoMode
      * We could be more permissive about bpp, but 32 will do for a first hack.
@@ -196,6 +205,28 @@ gui_init(char *filename)
     }
 
     SDL_WM_SetCaption(filename, NULL);
+# elif SDL2
+    window = SDL_CreateWindow(filename,
+    			      SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			      disp_width, disp_height,
+			      fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+				 /* | SDL_WINDOW_RESIZABLE */
+    if (window == NULL) {
+        fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());
+        exit(1);
+    }
+    if (fullscreen)
+	SDL_GetWindowSize(window, &disp_width, &disp_height);
+
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    	/* maybe SDL_RENDERER_PRESENTVSYNC */
+    if (renderer == NULL) {
+        fprintf(stderr, "Couldn't create renderer: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    screen = SDL_GetWindowSurface(window);
+# endif
 
     background	= SDL_MapRGB(screen->format, 0x80, 0x80, 0x80);
     green	= SDL_MapRGB(screen->format, 0x00, 0xFF, 0x00);
@@ -235,7 +266,11 @@ gui_update_display()
 #if EVAS_VIDEO
     evas_object_image_data_update_add(image, 0, 0, disp_width, disp_height);
 #elif SDL_VIDEO
+# if SDL1
     SDL_UpdateRect(screen, 0, 0, 0, 0);
+# elif SDL2
+    SDL_UpdateWindowSurface(window);
+# endif
 #endif
 }
 
@@ -248,10 +283,25 @@ gui_update_rect(int pos_x, int pos_y, int width, int height)
 {
 #if EVAS_VIDEO
     evas_object_image_data_update_add(image, pos_x,
-	(disp_height-1)-(pos_y+height-1), width, height);
+	(disp_height - 1) - (pos_y + height - 1), width, height);
 #elif SDL_VIDEO
+# if SDL1
     SDL_UpdateRect(screen, pos_x,
-	(disp_height-1)-(pos_y+height-1), width, height);
+	(disp_height - 1) - (pos_y + height - 1), width, height);
+# elif SDL2
+    {
+    	SDL_Rect rect;
+	rect.x = pos_x;
+	/* Our Y coordinates have their origin at the bottom, SDL at the top */
+	rect.y = (disp_height - 1) - (pos_y + height - 1);
+	rect.w = width;
+	rect.h = height;
+	if (SDL_UpdateWindowSurfaceRects(window, &rect, 1) != 0) {
+	    fprintf(stderr, "SDL_UpdateWindowSUrfaceRects failed: %s\n",
+		    SDL_GetError());
+	}
+    }
+# endif
 #endif
 }
 
@@ -261,12 +311,7 @@ gui_update_rect(int pos_x, int pos_y, int width, int height)
 void
 gui_update_column(int pos_x)
 {
-#if EVAS_VIDEO
-    evas_object_image_data_update_add(image, pos_x,
-	(disp_height-1)-max_y, 1, max_y - min_y + 1);
-#elif SDL_VIDEO
-    SDL_UpdateRect(screen, pos_x, (disp_height-1)-max_y, 1, max_y - min_y + 1);
-#endif
+    gui_update_rect(pos_x, min_y, 1, max_y - min_y + 1);
 }
 
 void
@@ -299,9 +344,14 @@ gui_main()
 	    {
 		/* To detect Shift and Control states, it looks like we have to
 		 * examine the keys ourselves */
-		Uint8 *keystate = SDL_GetKeyState(NULL);
-		Shift = keystate[SDLK_LSHIFT] || keystate[SDLK_RSHIFT];
-		Control = keystate[SDLK_LCTRL] || keystate[SDLK_RCTRL];
+# if SDL1
+		SDLMod
+# elif SDL2
+		SDL_Keymod
+# endif
+			   state = SDL_GetModState();
+		Shift = !!(state & KMOD_SHIFT);
+		Control = !!(state & KMOD_CTRL);
 
 		switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
@@ -319,9 +369,11 @@ gui_main()
 	    do_mouse_move(event.motion.x, event.motion.y);
 	    break;
 
+#if SDL1
 	case SDL_VIDEORESIZE:
 	    /* One day */
 	    break;
+#endif
 
 	case SDL_USEREVENT:
 	    switch (event.user.code) {
@@ -356,25 +408,32 @@ get_next_SDL_event(SDL_Event *eventp)
     /* Prioritise UI events over window refreshes, results and such */
     /* First, see if there are any UI events to be had */
     SDL_PumpEvents();
+#if SDL1
     /* First priority: Quit */
     if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_QUIT)) == 1)
         return 1;
 
     /* Second priority: UI events */
-    nevents = SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
+    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
 			     SDL_EVENTMASK(SDL_KEYDOWN) |
 			     SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN) |
 			     SDL_EVENTMASK(SDL_MOUSEBUTTONUP) |
-			     SDL_EVENTMASK(SDL_MOUSEMOTION));
-    if (nevents < 0) {
-	fprintf(stderr, "Some error from SDL_PeepEvents(): %s.\n",
-		SDL_GetError());
-	return 0;
+			     SDL_EVENTMASK(SDL_MOUSEMOTION)) == 1) return 1;
+#elif SDL2
+    {	static const SDL_EventType events[] = {
+	    SDL_QUIT,
+	    SDL_KEYDOWN,
+	    SDL_MOUSEBUTTONDOWN,
+	    SDL_MOUSEBUTTONUP,
+	    SDL_MOUSEMOTION,
+	    0	/* Terminator */
+	};
+	int i;
+	for (i=0; events[i]; i++)
+	    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, events[i], events[i]) == 1)
+	    	return 1;
     }
-    if (nevents == 1) return 1;
-    if (nevents != 0) {
-	fprintf(stderr, "Wierd return from SDL_PeepEvents\n");
-    }
+#endif
 
     /* No UI events? Wait for all events */
     return SDL_WaitEvent(eventp);
@@ -409,10 +468,7 @@ gui_quit_main_loop(void)
 #elif SDL_MAIN
     SDL_Event event;
     event.type = SDL_QUIT;
-    switch(SDL_PushEvent(&event)) {
-    case 0: /* OK */
-    	break;
-    default: /* failed */
+    if (SDL_PushEvent(&event) != SDL_PUSHEVENT_SUCCESS) {
 	fprintf(stderr, "sdl_main_loop_quit event push failed: %s\n", SDL_GetError());
 	exit(1);
     }
