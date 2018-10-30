@@ -46,7 +46,9 @@ Precalculate up to one screenful ahead in time partly to avoid the
 flickering gray part on screen right, partly so that a forward time pan
 will be faster.
 ------------------------------------------------------------------------
-Try the AFsp and sndlib audio file reading libraries
+Try the AFsp (no mp3,ogg,flac,speex) and sndlib audio file reading libraries
 ------------------------------------------------------------------------
 Stop it from calculating duplicate results.
+------------------------------------------------------------------------
+Try scaling magnitudes with frequency to unweight its bottom-heaviness
 ------------------------------------------------------------------------
