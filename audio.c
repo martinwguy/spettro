@@ -53,7 +53,11 @@ init_audio(audio_file_t *audio_file, char *filename)
 	wavspec.freq = lrint(sample_rate);
 	wavspec.format = AUDIO_S16SYS;
 	wavspec.channels = audio_file->channels;
-	wavspec.samples = 4096;
+	/* 4096 makes for a visible lag between audio and video, as the video
+	 * follows the next audio_file-reading position, which is 0-4096 samples
+	 * ahead of what's playing now.
+	 * Set it to a 100th of a second, for which stereo@44100 is 882 */
+	wavspec.samples = lrint(0.01 * sample_rate * audio_file->channels);
 	wavspec.callback = sdl_fill_audio;
 	wavspec.userdata = audio_file;
 
