@@ -418,6 +418,7 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     drop_all_work();
     drop_all_results();
     no_audio_cache();
+    close_audio_file(audio_file);
 
     return 0;
 }
