@@ -1,11 +1,4 @@
 ------------------------------------------------------------------------
-SDL keys obtained with AltGr or Shift do not work.
-
-e.g. "Shift +/*" should give * but gives + instead
-e.g. "AltGr +/*" should give ] but gives + instead
-
-This is by design as it is better for games. Try SDL2's TEXTINPUT events.
-------------------------------------------------------------------------
 Panning up and down the Y axis doesn't get it quite right.
 Most easily seen if you overlay the score lines and pan up/down while playing.
 It looks like the screen get scrolled slightly too little.
@@ -19,4 +12,7 @@ halved in time and doubled in frequency.
 ------------------------------------------------------------------------
 SDL2: If you zoom in enough, it quits, saying:
 Couldn't change rate of scrolling
+------------------------------------------------------------------------
+SDL2: SDL always turns numlock off on startup but if it was on, the light
+      remains on so its action appears inverted.
 ------------------------------------------------------------------------

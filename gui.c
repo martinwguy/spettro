@@ -325,16 +325,28 @@ gui_main()
 	SDL_Event event;
 	enum key key;
 
+# if SDL2
+	/* Use SDL2's TEXTINPUT mode so that keyboard mapping with Shift and
+	 * AltGr works */
+	SDL_StartTextInput();
+# endif
 	while (get_next_SDL_event(&event)) switch (event.type) {
-#if SDL2
+# if SDL2
 	case SDL_WINDOWEVENT:
 	    if (event.window.event == SDL_WINDOWEVENT_EXPOSED)
 		gui_update_display();
 	    break;
-#endif
+# endif
 
 	case SDL_QUIT:
 	    return;
+
+	/* For SDL2, we enable both KEYDOWN and TEXTINPUT because
+	 * TEXTINPUT handles Shift and AltGr to get difficult chars on
+	 * international keyboards, but ignores arrow keys and the keypad.
+	 * in key.c, if SDL2, we process most keys with TEXTINPUT and only
+	 * the ones TEXTINPUT ignores in response to KEYDOWN.
+	 */
 
 	case SDL_KEYDOWN:
 	    /* SDL's event.key.keysym.mod reflects the state of the modifiers
@@ -343,6 +355,13 @@ gui_main()
 	    Control = !!(SDL_GetModState() & KMOD_CTRL);
 	    sdl_keydown(&event);
 	    break;
+# if SDL2
+	case SDL_TEXTINPUT:
+	    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
+	    Control = !!(SDL_GetModState() & KMOD_CTRL);
+	    sdl_keydown(&event);
+	    break;
+# endif
 
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
@@ -374,11 +393,11 @@ gui_main()
 	    do_mouse_move(event.motion.x, event.motion.y);
 	    break;
 
-#if SDL1
+# if SDL1
 	case SDL_VIDEORESIZE:
 	    /* One day */
 	    break;
-#endif
+# endif
 
 	case SDL_USEREVENT:
 	    switch (event.user.code) {
