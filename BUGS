@@ -18,3 +18,7 @@ SDL2: SDL always turns numlock off on startup but if it was on, the light
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy
 ------------------------------------------------------------------------
+The display sometimes freezes though the music keeps playing.
+In one case, the scrolling timer had stopped running and
+scroll_event_pending was FALSE.
+------------------------------------------------------------------------

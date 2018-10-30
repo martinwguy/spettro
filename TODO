@@ -42,13 +42,20 @@ When removing/changing such lines, repaint(all) is probably safest.
 Implement --smooth to synch scrolling to real time not playing-time.
 Synch is good if I remember, with the reposition-ELF-on-resume tweak,
 ------------------------------------------------------------------------
-Precalculate up to one screenful ahead in time partly to avoid the
-flickering gray part on screen right, partly so that a forward time pan
-will be faster.
-------------------------------------------------------------------------
-Try the AFsp (no mp3,ogg,flac,speex) and sndlib audio file reading libraries
+Precalculate ahead in time to eliminate the flickering grey right hand
+side.  The calc needs to be scheduled far enough ahead that the calc
+threads have the time necessary to have it ready before that column
+appears in the display area.
 ------------------------------------------------------------------------
 Stop it from calculating duplicate results.
+They seem mostly to be columns near the right hand side.
+Hypothesis: a calc thread takes a pending column to calculate, removes
+the work from the queue, a scroll happens and the same columns
+results unrefreshable because there is no work item for it, but there
+is no result in the result cache either.
+Solution: Keep track of which results are being calculated.
 ------------------------------------------------------------------------
-Try scaling magnitudes with frequency to unweight its bottom-heaviness
+Try scaling magnitudes with frequency to unweight its bottom-heaviness.
+------------------------------------------------------------------------
+Try ffmpeg for audio file decoding.
 ------------------------------------------------------------------------
