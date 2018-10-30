@@ -15,3 +15,6 @@ SDL2: SDL always turns numlock off on startup but if it was on, the light
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy
 ------------------------------------------------------------------------
+SDL2: SDL always turns numlock off on startup but if it was on, the light
+      remains on so its action appears inverted.
+------------------------------------------------------------------------
