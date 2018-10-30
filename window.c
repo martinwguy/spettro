@@ -29,7 +29,6 @@ static void nuttall_window(double *data, int datalen);
 static void hann_window(double *data, int datalen);
 
 static double besseli0(double x);
-static double factorial(int k);
 
 typedef struct stored_window {
     window_function_t wfunc;
@@ -169,44 +168,20 @@ hann_window(double *data, int datalen)
 static double
 besseli0(double x)
 {
-    int k;
+    int k = 1;
+    double half_x = 0.5 * x;
+    double pow_half_x_k = half_x;	/* Always == pow(0.5*x, k) */
+    double factorial_k = 1.0;
     double result = 0.0;
 
-    for (k = 1; k < 25; k++) {
+    while (k < 25) {
 	double temp;
 
-	temp = pow(0.5 * x, k) / factorial(k);
+	temp = pow_half_x_k / factorial_k;
 	result += temp * temp;
+
+	k++; pow_half_x_k *= half_x; factorial_k *= k;
     }
 
     return 1.0 + result;
-}
-
-static double
-factorial(int val)
-{
-    static double memory[64] = { 1.0 };
-    static int have_entry = 0;
-
-    int k;
-
-    if (val < 0) {
-	printf("Oops : val < 0.\n");
-	exit(1);
-    }
-
-    if (val > ARRAY_LEN(memory)) {
-	printf("Oops : val > ARRAY_LEN(memory).\n");
-	    exit(1);
-    }
-
-    if (val < have_entry)
-	    return memory[val];
-
-    for (k = have_entry + 1; k <= val ; k++)
-	    memory[k] = k * memory[k - 1];
-
-    have_entry = val;
-
-    return memory[val];
 }
