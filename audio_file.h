@@ -43,10 +43,7 @@ extern int read_audio_file(audio_file_t *audio_file, char *data,
 
 extern void close_audio_file(audio_file_t *audio_file);
 
-#define audio_file_length_in_frames(audio_file) ((int)(audio_file)->frames)
-#define audio_file_channels(audio_file) ((int)(audio_file)->channels)
-
-/* Audio file info */
+/* Audio file info for everybody */
 extern double		audio_length;	/* Length of the audio in seconds */
 extern double		sample_rate;	/* SR of the audio in Hertz */
 

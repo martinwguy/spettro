@@ -52,7 +52,7 @@ init_audio(audio_file_t *audio_file, char *filename)
 
 	wavspec.freq = lrint(sample_rate);
 	wavspec.format = AUDIO_S16SYS;
-	wavspec.channels = audio_file_channels(audio_file);
+	wavspec.channels = audio_file->channels;
 	wavspec.samples = 4096;
 	wavspec.callback = sdl_fill_audio;
 	wavspec.userdata = audio_file;
@@ -182,12 +182,12 @@ static void
 sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 {
     audio_file_t *audio_file = (audio_file_t *)userdata;
-    int nchannels = audio_file_channels(audio_file);
-    int frames_to_read = len / (sizeof(short) * nchannels);
+    int channels = audio_file->channels;
+    int frames_to_read = len / (sizeof(short) * channels);
     int frames_read;	/* How many were read from the file */
 
     /* SDL has no "playback finished" callback, so spot it here */
-    if (sdl_start >= audio_file_length_in_frames(audio_file)) {
+    if (sdl_start >= audio_file->frames) {
         stop_playing();
 	/* This may be called by the audio-fill thread,
 	 * so don't quit here; tell the main event loop to do so */
@@ -200,7 +200,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	exit(1);
     }
     frames_read = read_cached_audio(audio_file, (char *)stream,
-				    af_signed, nchannels,
+				    af_signed, channels,
 				    sdl_start, frames_to_read);
     if (!unlock_audio_file()) {
 	fprintf(stderr, "Cannot unlock audio file\n");
@@ -216,7 +216,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     if (softvol != 1.0) {
 	int i; short *sp;
 	for (i=0, sp=(short *)stream;
-	     i < frames_read * nchannels;
+	     i < frames_read * channels;
 	     i++, sp++) {
 	    double value = *sp * softvol;
 	    if (value < -32767) value = -32767;
