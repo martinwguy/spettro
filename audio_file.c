@@ -3,7 +3,9 @@
  *
  * Implemented using one of:
  * - libaudiofile, which can only read a few formats, and not ogg or mp3,
- * - linsndfile, which can read ogg but not mp3.
+ * - libsndfile, which can read ogg but not mp3.
+ * - libsox, with more formats but sox_seek() is broken for
+ *	linear audio formats and mp3 gets corrupt data if you seek.
  *
  * Identifier names containing "audiofile" are libaudiofile library functions,
  * and those containing "audio_file" refer to this lib-independent layer.
@@ -23,7 +25,9 @@ static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_r
 
 /* Audio file info */
 double		audio_length = 0.0;	/* Length of the audio in seconds */
-double		sample_rate;		/* SR of the audio in Hertz */
+double		sample_rate = 0.0;	/* SR of the audio in Hertz.
+					 * 0.0 is a booby trap so no one
+					 * uses it unititialized. */
 
 audio_file_t *
 open_audio_file(char *filename)

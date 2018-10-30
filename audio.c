@@ -56,8 +56,18 @@ init_audio(audio_file_t *audio_file, char *filename)
 	/* 4096 makes for a visible lag between audio and video, as the video
 	 * follows the next audio_file-reading position, which is 0-4096 samples
 	 * ahead of what's playing now.
-	 * Set it to a 100th of a second, for which stereo@44100 is 882 */
-	wavspec.samples = lrint(0.01 * sample_rate * audio_file->channels);
+	 * Set it to "step" so that we should never get more than one column
+	 * behind.
+	 */
+	if (step == 0.0) {
+	    fprintf(stderr, "Internal error: init_audio() was called before \"step\" was initialized.\n");
+	    exit(1);
+	}
+	if (sample_rate == 0.0) {
+	    fprintf(stderr, "Internal error: init_audio() was called before \"sample_rate\" was initialized.\n");
+	    exit(1);
+	}
+	wavspec.samples = lrint(step * sample_rate * audio_file->channels);
 	wavspec.callback = sdl_fill_audio;
 	wavspec.userdata = audio_file;
 

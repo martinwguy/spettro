@@ -70,13 +70,19 @@ void
 change_timer_interval(double interval)
 {
 #if ECORE_TIMER
-    if (ecore_timer_del(timer) == NULL ||
-	(timer = ecore_timer_add(interval, timer_cb, (void *)em)) == NULL) {
+    if (ecore_timer_del(timer) == NULL) {
 #elif SDL_TIMER
-    if (!SDL_RemoveTimer(timer) ||
-	(timer = SDL_AddTimer((Uint32)lrint(interval * 1000), timer_cb, NULL)) == NO_TIMER) {
+    if (!SDL_RemoveTimer(timer)) {
 #endif
-	fprintf(stderr, "Couldn't change rate of scrolling timer.\n");
+	fprintf(stderr, "Couldn't delete old scrolling timer when changing rate.\n");
+	exit(1);
+    }
+#if ECORE_TIMER
+    if ((timer = ecore_timer_add(interval, timer_cb, (void *)em)) == NULL) {
+#elif SDL_TIMER
+    if ((timer = SDL_AddTimer((Uint32)lrint(interval * 1000), timer_cb, NULL)) == NO_TIMER) {
+	fprintf(stderr, "Couldn't create new scrolling timer when changing rate.\n");
+#endif
 	exit(1);
     }
 }

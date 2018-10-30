@@ -114,7 +114,9 @@ static void	calc_columns(int from, int to);
        double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
        double min_db	= -100.0;	/* Values below this are black */
        double ppsec	= 25.0;		/* pixel columns per second */
-       double step;			/* time step per column = 1/ppsec */
+       double step = 0.0;		/* time step per column = 1/ppsec
+					 * 0.0 means "not set yet" as a
+					 * booby trap. */
        double fftfreq	= 5.0;		/* 1/fft size in seconds */
        window_function_t window_function = KAISER;
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
