@@ -15,6 +15,7 @@
 #include "main.h"
 
 #include <string.h>	/* for memcmp() */
+#include <assert.h>
 
 static void destroy_result(result_t *r);
 
@@ -34,44 +35,49 @@ remember_result(result_t *result)
 	results = results->next;
 	destroy_result(r);
     }
-    if (results == NULL) last_result = NULL;
 
-    result->next = NULL;
-
-    if (last_result == NULL) {
+    /* Now find where to add the result to the time-ordered list */
+    if (results == NULL) {
+	assert(last_result == NULL);
+        result->next = NULL;
 	results = last_result = result;
     } else {
-        /* If after the last one, add at tail of list */
+        /* If it's after the last one (the most common case),
+	 * add it at the tail of the list
+	 */
 	if (result->t > last_result->t + DELTA) {
+            result->next = NULL;
 	    last_result->next = result;
 	    last_result = result;
 	} else {
-	    /* If it's before the first one, tack it onto head of list */
-	    if (result->t < results->t - DELTA) {
-		result->next = results;
-		results = result;
-	    } else {
-		/* Otherwise find which element to place it after */
-		result_t *r;	/* The result after which we will place it */
-		for (r=results;
-		     r && r->next && r->next->t <= result->t + DELTA;
-		     r = r->next) {
-		    if (r->next->t <= result->t + DELTA &&
-			r->next->t >= result->t - DELTA &&
-			r->next->speclen == result->speclen &&
-			r->next->window == result->window) {
-			/* Same time, same size: forget new result */
+	    /* If it's before the first one, tack it onto head of list,
+	     * otherwise find which element to place it after
+	     */
+	    result_t **rp;	/* Pointer to "next" field of previous result
+			     * or to "results": the pointer we'll have
+			     * to update when we've found the right place.
+			     */
+	    result_t *r;	/* Handy pointer to the result to examine */
+
+	    for (rp=&results;
+		 (r = *rp) != NULL && r->t <= result->t + DELTA;
+		 rp = &((*rp)->next)) {
+		/* Check for duplicates */
+		if (r->t <= result->t + DELTA &&
+		    r->t >= result->t - DELTA &&
+		    r->speclen == result->speclen &&
+		    r->window == result->window) {
+		    /* Same params: forget the new result and return the old */
 fprintf(stderr, "Discarding duplicate result for time %g speclen %d window %d\n", result->t, result->speclen, result->window);
-			destroy_result(result);
-			return(r);
-		    }
+		    destroy_result(result);
+		    return(r);
 		}
-		if (r) {
-		    result->next = r->next;
-		    r->next = result;
-		    if (last_result == r) last_result = result;
-	        }
 	    }
+	    /* rp points to the "next" field of the cell after which we
+	     * should place it (or to the head pointer "results") */
+	    result->next = *rp;
+	    *rp = result;
+	    if (r == NULL) last_result = result;
 	}
     }
     return result;
