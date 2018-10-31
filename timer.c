@@ -14,9 +14,11 @@
 
 #include <Ecore.h>
 #include <Evas.h>
+typedef Ecore_Timer * timer_type;
 #define NO_TIMER NULL
+
 extern Evas_Object *em;	/* From main.c */
-static Ecore_Timer *timer = NULL;
+
 static Eina_Bool timer_cb(void *data);	/* The timer callback function */
 static int scroll_event;   /* Our user-defined event to activate scrolling */
 static Eina_Bool scroll_cb(void *data, int type, void *event);
@@ -24,40 +26,72 @@ static Eina_Bool scroll_cb(void *data, int type, void *event);
 #elif SDL_TIMER
 
 # include <SDL.h>
+
 # if SDL1
+typedef SDL_TimerID timer_type;
 #  define NO_TIMER NULL
 # elif SDL2
+typedef Uint32 timer_type;
 #  define NO_TIMER 0
 # endif
-static SDL_TimerID timer = NO_TIMER;
 static Uint32 timer_cb(Uint32 interval, void *data);
 
 #else
 # error "Define ECORE_TIMER or SDL_TIMER"
 #endif
 
-void
-start_timer()
+#if EVAS_VIDEO
+# include <Ecore_X.h>
+#endif
+
+static timer_type timer = NO_TIMER;
+
+/* Implementation-specific code used by the public functions */
+
+static void
+add_timer(double interval)
 {
-    /* Start screen-updating and scrolling timer */
+    /* We limit the scrolling rate to some minimum to avoid GUI death
+     * at microscopic intervals */
+    double minimum_interval = 1/50.0;	/* typical CRT frame rate */
+
+    /* If we can find out the monitor's refresh rate, use that instead */
+#if EVAS_VIDEO
+    /* How do you ask Ecore whether it's running on X or not?
+     * If you call ecore_x_window_focus_get() without X, Ecore segfaults.
+     */
+    if (getenv("DISPLAY") != NULL) {
+	Ecore_X_Randr_Refresh_Rate X_refresh_rate;	/* == short */
+	Ecore_X_Window X = ecore_x_window_focus_get();	/* == uint */
+
+	/* Ecore_X_Randr_Refresh_Rate==short */
+	X_refresh_rate =
+	    ecore_x_randr_screen_primary_output_current_refresh_rate_get(X);
+
+        minimum_interval = 1.0 / X_refresh_rate;
+    }
+#endif
+
+    if (interval < minimum_interval) interval = minimum_interval;
+
 #if ECORE_TIMER
     /* The timer callback just generates an event, which is processed in
      * the main ecore event loop to do the scrolling in the main loop
      */
     scroll_event = ecore_event_type_new();
     ecore_event_handler_add(scroll_event, scroll_cb, NULL);
-    timer = ecore_timer_add(step, timer_cb, (void *)em);
+    timer = ecore_timer_add(interval, timer_cb, (void *)em);
 #elif SDL_TIMER
-    timer = SDL_AddTimer((Uint32)lrint(step * 1000), timer_cb, (void *)NULL);
+    timer = SDL_AddTimer((Uint32)lrint(interval * 1000), timer_cb, (void *)NULL);
 #endif
     if (timer == NO_TIMER) {
-	fprintf(stderr, "Couldn't initialize scrolling timer for step of %g secs.\n", step);
+	fprintf(stderr, "Couldn't add a timer for an interval of %g secs.\n", interval);
 	exit(1);
     }
 }
 
-void
-stop_timer()
+static void
+delete_timer()
 {
 #if ECORE_MAIN
     (void) ecore_timer_del(timer);
@@ -66,25 +100,26 @@ stop_timer()
 #endif
 }
 
+/* Public functions */
+
+void
+start_timer()
+{
+    /* Start screen-updating and scrolling timer */
+    add_timer(step);
+}
+
+void
+stop_timer()
+{
+    delete_timer();
+}
+
 void
 change_timer_interval(double interval)
 {
-#if ECORE_TIMER
-    if (ecore_timer_del(timer) == NULL) {
-#elif SDL_TIMER
-    if (!SDL_RemoveTimer(timer)) {
-#endif
-	fprintf(stderr, "Couldn't delete old scrolling timer when changing rate.\n");
-	exit(1);
-    }
-#if ECORE_TIMER
-    if ((timer = ecore_timer_add(interval, timer_cb, (void *)em)) == NULL) {
-#elif SDL_TIMER
-    if ((timer = SDL_AddTimer((Uint32)lrint(interval * 1000), timer_cb, NULL)) == NO_TIMER) {
-	fprintf(stderr, "Couldn't create new scrolling timer when changing rate.\n");
-#endif
-	exit(1);
-    }
+    delete_timer();
+    add_timer(interval);
 }
 
 /*
@@ -99,6 +134,8 @@ change_timer_interval(double interval)
  * unprocessed scroll events and other events (keypresses, results) are lost.
  */
 bool scroll_event_pending = FALSE;
+
+/* Implementation-specific code to handle the timer callback */
 
 #if ECORE_TIMER
 
