@@ -516,7 +516,7 @@ set_window_function(window_function_t new_fn)
     if (new_fn != window_function) {
 	window_function = new_fn;
 	drop_all_work();
-	repaint_display(TRUE);	/* Repaint already-displayed columns */
+	repaint_display(FALSE);
     }
 }
 
@@ -732,7 +732,7 @@ do_key(enum key key)
 	/* Any calcs that are currently being performed will deliver
 	 * a result for the old speclen, which will be ignored (or cached)
 	 */
-	repaint_display(TRUE);
+	repaint_display(FALSE);
 	break;
 
     /* Set left or right bar line position to current play position */
