@@ -423,13 +423,19 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     return 0;
 }
 
+#define max(a, b) ((a)>(b) ? (a) : (b))
+#define min(a, b) ((a)<(b) ? (a) : (b))
+
 /*
  * Schedule the FFT thread(s) to calculate the results for these display columns
  */
 static void
-calc_columns(int from, int to)
+calc_columns(int from_col, int to_col)
 {
     calc_t *calc = malloc(sizeof(calc_t));
+    /* The times represented by from_col and to_col */
+    double from = disp_time + (from_col - disp_offset) * step;
+    double to   = disp_time + (to_col - disp_offset) * step;;
 
     if (calc == NULL) {
 	fputs("Out of memory in calc_columns()\n", stderr);
@@ -438,41 +444,67 @@ calc_columns(int from, int to)
     calc->audio_file = audio_file;
     calc->length = audio_length;
     calc->sr	= sample_rate;
-    calc->from	= disp_time + (from - disp_offset) * step;
-    calc->to	= disp_time + (to - disp_offset) * step;
-
-    /*
-     * Limit start and end times to size of audio file
-     */
-    if (calc->from <= DELTA) calc->from = 0.0;
-    if (calc->to <= DELTA) calc->to = 0.0;
-    /* Last moment as a multiple of step */
-    if (calc->from >= floor(audio_length / step) * step - DELTA)
-	calc->from = floor(audio_length / step) * step;
-    if (calc->to >= floor(audio_length / step) * step - DELTA)
-	calc->to = floor(audio_length / step) * step;
-
     calc->ppsec  = ppsec;
     calc->speclen= speclen;
     calc->window = window_function;
 
-    /* If for a single column, just schedule it */
-    if (from == to) schedule(calc);
-    else { /* otherwise, schedule each column individually */
-	double t;
-	/* Handle descending ranges */
-	if (calc->from > calc->to) {
-	    double tmp = calc->from;
-	    calc->from = calc->to;
-	    calc->to = tmp;
+    /*
+     * Limit the range to the start and end of the audio file.
+     */
+    if (from <= DELTA) from = 0.0;
+    if (to <= DELTA) to = 0.0;
+    {
+	/* End of audio file as a multiple of step */
+	double last_time= floor(audio_length / step) * step;
+
+	if (from >= last_time - DELTA)	from = last_time;
+	if (to >= last_time - DELTA)	to = last_time;
+    }
+
+    /* If it's for a single column, just schedule it... */
+    if (from_col == to_col) {
+	calc->t = from;
+	schedule(calc);
+    } else {
+	/* ...otherwise, schedule each column from "from" to "to" individually
+	 * in the same order as get_work() will choose them to be calculated.
+	 * If we were to schedule them in time order, and some of them are
+	 * left of disp_time, then a thread calling get_work() before we have
+	 * finished scheduling them would calculate and display a lone column
+	 * in the left pane.
+	 */
+
+	/* Allow for descending ranges by putting "from" and "to"
+	 * into ascending order */
+	if (to < from) {
+	    double tmp = from;
+	    from = to;
+	    to = tmp;
 	}
-	/* Schedule each column as a separate calculation */
-	for (t=calc->from; t <= calc->to + DELTA; t+=step) {
-	    calc_t *new = malloc(sizeof(calc_t));
-	    memcpy(new, calc, sizeof(calc_t));
-	    new->from = new->to = t;
-	    schedule(new);
+	/* get_work() does first disp_time to right edge,
+	 * then disp_time-1 to left edge.
+	 */
+	/* Columns >= disp_time */
+	if (to >= disp_time - DELTA) {
+	    double t;
+	    for (t = max(from, disp_time); t <= to + DELTA; t += step) {
+		calc_t *new = malloc(sizeof(calc_t));
+		memcpy(new, calc, sizeof(calc_t));
+		new->t = t;
+		schedule(new);
+	    }
 	}
+	/* Do any columns that are < disp_time in reverse order */
+	if (from < disp_time - DELTA) {
+	    double t;
+	    for (t=max(disp_time - step, t); t >= from - DELTA; t -= step) {
+		calc_t *new = malloc(sizeof(calc_t));
+		memcpy(new, calc, sizeof(calc_t));
+		new->t = t;
+		schedule(new);
+	    }
+	}
+	/* For ranges, all calc_t's we scheduled were copies of calc */
 	free(calc);
     }
 }
@@ -924,8 +956,8 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	/* If there's a bar line or green line here, nothing to do */
 	if (get_col_overlay(column)) return;
 
-	/* If there's any spectral data for this column, it's probably
-	 * displaying something but it might be for the wrong speclen/window.
+	/* If there's any result for this column in the cache, it should be
+	 * displaying something, but it might be for the wrong speclen/window.
 	 * We have no way of knowing what it is displaying so force its repaint
 	 * with the current parameters.
 	 */

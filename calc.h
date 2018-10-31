@@ -23,8 +23,7 @@ typedef struct calc_t {
     audio_file_t *	audio_file; /* Our audio file handle */
     double		length;	/* Length of piece in seconds */
     double		sr;	/* Sample rate of the piece */
-    double		from;	/* From how far into the piece... */
-    double		to;	/* ...to when? =="from" means just "from" */
+    double		t;	/* FFT centred on  when? */
     double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
     window_function_t	window;

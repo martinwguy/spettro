@@ -43,19 +43,12 @@
 
 /* Helper functions */
 static void calc_result(result_t *result);
-static result_t *get_result(calc_t *calc, spectrum *spec, double t);
+static result_t *get_result(calc_t *calc, spectrum *spec);
 
 void
 calc(calc_t *calc)
 {
-    /* The real function parameters */
-    double from   = calc->from;		/* centre of first FFT bucket */
-    double to	  = calc->to;		/* centre of last FFT bucket;
-					 * If == 0.0, just do "from" */
-    /* Variables */
-    double step	  = 1 / calc->ppsec;
     spectrum *spec;
-    double  t;				/* Time from start of piece */
 
     /* If parameters have changed since the work was queued, use the new ones */
     if (calc->speclen != speclen || calc->window != window_function) {
@@ -69,21 +62,7 @@ calc(calc_t *calc)
 	return;
     }
 
-    /* Ascending ranges or a single point.
-     * Also handles to == 0.0, which is just "from".
-     */
-    if (to == 0.0 || from <= to + DELTA) {
-	t = from; 
-	do {
-	    calc_result(get_result(calc, spec, t));
-	} while ((t += step) <= to + DELTA);
-    }
-
-    /* Descending ranges */
-    if (to != 0.0 && from > to + DELTA)
-	for (t = from; t >= to - DELTA; t -= step) {
-	    calc_result(get_result(calc, spec, t));
-    }
+    calc_result(get_result(calc, spec));
 
     destroy_spectrum(spec);
 }
@@ -114,7 +93,7 @@ calc_result(result_t *result)
  * Calculate the magnitude spectrum for a column
  */
 static result_t *
-get_result(calc_t *calc, spectrum *spec, double t)
+get_result(calc_t *calc, spectrum *spec)
 {
         result_t *result;	/* The result structure */
 	int fftsize = calc->speclen * 2;
@@ -125,7 +104,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	    return NULL;
 	}
 
-	result->t = t;
+	result->t = calc->t;
 	result->speclen = calc->speclen;
 	result->window = calc->window;
 #if ECORE_MAIN
@@ -140,7 +119,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	}
 	read_cached_audio(calc->audio_file, (char *) spec->time_domain,
 			  af_double, 1,
-			  lrint(t * calc->sr) - fftsize/2, fftsize);
+			  lrint(calc->t * calc->sr) - fftsize/2, fftsize);
 	if (!unlock_audio_file()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");
 	    exit(1);
@@ -159,7 +138,7 @@ get_result(calc_t *calc, spectrum *spec, double t)
 	    return NULL;
 	}
 
-	/* Mark the converted data as not having been calculated yet */
+	/* Mark the converted data as not having been allocated yet */
 	result->logmag = NULL;
 
 	return(result);

@@ -235,22 +235,22 @@ stop_scheduler(void)
     threads = 0;
 }
 
-/* Ask for a range of FFTs to be queued for execution */
+/* Ask for an FFT to be queued for execution */
 void
 schedule(calc_t *calc)
 {
     /* Add it to the list in time order */
     calc_t **cpp;	/* Pointer to the "next" field of the previous cell */
 
-    if (recall_result(calc->from, calc->speclen, calc->window)) {
+    if (recall_result(calc->t, calc->speclen, calc->window)) {
 	fprintf(stderr, "scheduler drops calculation already in cache for time %g\n",
-		calc->from);
+		calc->t);
 	return;
     }
 
     lock_list();
 
-DEBUG("Scheduling %g-%g... ", calc->from, calc->to);
+DEBUG("Scheduling %g... ", calc->t);
     if (list == NULL) {
 DEBUG("Adding to empty list:\n");
 	list = calc;
@@ -261,7 +261,7 @@ DEBUG("Adding to empty list:\n");
     }
 
     for (cpp = &list;
-	 *cpp != NULL && (*cpp)->from < calc->from - DELTA;
+	 *cpp != NULL && (*cpp)->t < calc->t - DELTA;
 	 cpp = &((*cpp)->next))
 	;
 
@@ -277,8 +277,8 @@ DEBUG("Adding at end of list\n");
 	calc->prev = (calc_t *)((char *)cpp - ((char *)&(calc->next)-(char *)calc));
 	*cpp = calc;
     } else /* If a duplicate in time, replace the existing one */
-    if ((*cpp)->from > calc->from - DELTA &&
-        (*cpp)->from < calc->from + DELTA) {
+    if ((*cpp)->t > calc->t - DELTA &&
+        (*cpp)->t < calc->t + DELTA) {
 DEBUG("Replacing existing item\n");
 	    calc_t *old = *cpp;
 	    calc->next = old->next;
@@ -350,7 +350,7 @@ DEBUG("List is empty\r");
     }
 
     /* First, drop any list items that are off the left side of the screen */
-    while (list != NULL && list->to < disp_time - disp_offset*step - DELTA) {
+    while (list != NULL && list->t < disp_time - disp_offset*step - DELTA) {
 	calc_t *old_cp = list;
 	old_cp = list;	/* Remember cell to free */
 	list = list->next;
@@ -370,7 +370,7 @@ DEBUG("List is empty after dropping before-screens\r");
      * as soon as the next scroll happens, so having it ready is preferable.
      */
     for (cpp = &list; (*cpp) != NULL; cpp = &((*cpp)->next)) {
-	if ((*cpp)->from >= disp_time - DELTA) {
+	if ((*cpp)->t >= disp_time - DELTA) {
 	    /* Found the first time >= disp_time */
 	    break;
 	}
@@ -378,7 +378,7 @@ DEBUG("List is empty after dropping before-screens\r");
     /* If the first one >= disp_time is off the right side of the screen,
      * remove it and anything after it */
     if (*cpp != NULL &&
-	(*cpp)->from > disp_time + (disp_width-1-disp_offset)*step + DELTA) {
+	(*cpp)->t > disp_time + (disp_width-1-disp_offset)*step + DELTA) {
 	calc_t *cp = *cpp;	/* List pointer to free unwanted cells */
 	while (cp != NULL) {
 	    calc_t *old_cp = cp;
@@ -414,7 +414,7 @@ fprintf(stderr, "Avanti!\n");
 	    continue;
 	}
 
-DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
+DEBUG("Picked %g from list\n", cp->t);
 
 	*cpp = cp->next;
 	if (cp->next) cp->next->prev = cp->prev;
@@ -433,7 +433,7 @@ DEBUG("Picked from %g to %g from list\n", cp->from, cp->to);
 	/* Get address of last cell in the list */
 	cp = (calc_t *)((char *)cpp - (((char *)&calc.next - (char *)&calc)));
 
-DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
+DEBUG("Last cell is at time %g\n", cp->t);
 
 	/* Remove the last element and tell FFT to calculate it */
 	if (cp->prev == NULL) list = NULL;
@@ -445,7 +445,7 @@ DEBUG("Last cell is from %g to %g\n", cp->from, cp->to);
 
 	if (cp->speclen != speclen || cp->window != window_function) {
 	    calc_t *cp = *cpp;
-fprintf(stderr, "Dropping work at %g for wrong parameters\n", cp->from);
+fprintf(stderr, "Dropping work at %g for wrong parameters\n", cp->t);
 	    if (cp->next) cp->next->prev = cp->prev;
 	    if (cp->prev) cp->prev->next = cp->next;
 	    else list = cp->next;
@@ -472,7 +472,7 @@ reschedule_for_bigger_step()
 
     for (cpp = &list; *cpp != NULL; /* see below */) {
 	/* If its time is no longer a multiple of the step, drop it */
-	if ((*cpp)->from > floor((*cpp)->from / step) * step + DELTA) {
+	if ((*cpp)->t > floor((*cpp)->t / step) * step + DELTA) {
 	    calc_t *cp = *cpp;	/* Old cell to free */
 	    /* Rewrite "next" field of previous cell or the "list" pointer */
 	    *cpp = cp->next;
@@ -495,9 +495,9 @@ print_list()
 
 DEBUG("List:");
     for (cp = list; cp != NULL; cp=cp->next)
-	DEBUG(" %c%g-%g%c", 
+	DEBUG(" %c%g%c", 
 		cp->prev ? (cp->prev == &list ? 'L' : '<') : '.',
-		cp->from, cp->to,
+		cp->t,
 		cp->next ? '>' : '.');
 DEBUG("\n");
 }
