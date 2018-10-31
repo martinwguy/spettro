@@ -25,7 +25,8 @@ typedef enum {
     HANN,
 } window_function_t;
 
-extern double *	get_window(window_function_t wfunc, int datalen);
+extern double *get_window(window_function_t wfunc, int datalen);
+extern const char *window_name(window_function_t wfunc);
 
 #define WINDOW_H
 #endif

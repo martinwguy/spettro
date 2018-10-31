@@ -250,7 +250,8 @@ schedule(calc_t *calc)
 
     lock_list();
 
-DEBUG("Scheduling %g... ", calc->t);
+DEBUG("Scheduling %g/%d/%c... ", calc->t, calc->speclen,
+      window_name(calc->window)[0]);
     if (list == NULL) {
 DEBUG("Adding to empty list:\n");
 	list = calc;
@@ -279,7 +280,9 @@ DEBUG("Adding at end of list\n");
     } else /* If a duplicate in time, replace the existing one */
     if ((*cpp)->t > calc->t - DELTA &&
         (*cpp)->t < calc->t + DELTA) {
-DEBUG("Replacing existing item\n");
+DEBUG("Replacing existing item/%d/%c at %g with new/%d/%c\n",
+      (*cpp)->speclen, (*cpp)->t, window_name((*cpp)->window)[0],
+      calc->speclen, window_name((*cpp)->window)[0]);
 	    calc_t *old = *cpp;
 	    calc->next = old->next;
 	    calc->prev = old->prev;
@@ -306,6 +309,8 @@ DEBUG("Adding before later item\n");
 /*
  * When they change the FFT size or the window function, forget all work
  * scheduled for the old ones.
+ * Any results from running FFT threads for the old size will be filtered
+ * by calc_notify().
  */
 void
 drop_all_work()
@@ -414,7 +419,8 @@ fprintf(stderr, "Avanti!\n");
 	    continue;
 	}
 
-DEBUG("Picked %g from list\n", cp->t);
+DEBUG("Picked %g/%d/%c from list\n", cp->t, cp->speclen,
+      window_name(cp->window)[0]);
 
 	*cpp = cp->next;
 	if (cp->next) cp->next->prev = cp->prev;
@@ -430,7 +436,7 @@ DEBUG("Picked %g from list\n", cp->t);
 	calc_t *cp;
 	static calc_t calc;	/* Used for measuring the structure layout */
 
-	/* Get address of last cell in the list */
+	/* Get address of pointer to last cell in the list */
 	cp = (calc_t *)((char *)cpp - (((char *)&calc.next - (char *)&calc)));
 
 DEBUG("Last cell is at time %g\n", cp->t);
@@ -445,7 +451,8 @@ DEBUG("Last cell is at time %g\n", cp->t);
 
 	if (cp->speclen != speclen || cp->window != window_function) {
 	    calc_t *cp = *cpp;
-fprintf(stderr, "Dropping work at %g for wrong parameters\n", cp->t);
+fprintf(stderr, "Dropping work at %g/%d/%c for wrong parameters\n", 
+	cp->t, cp->speclen, window_name(cp->window)[0]);
 	    if (cp->next) cp->next->prev = cp->prev;
 	    if (cp->prev) cp->prev->next = cp->next;
 	    else list = cp->next;
@@ -494,11 +501,11 @@ print_list()
     calc_t *cp;
 
 DEBUG("List:");
-    for (cp = list; cp != NULL; cp=cp->next)
-	DEBUG(" %c%g%c", 
-		cp->prev ? (cp->prev == &list ? 'L' : '<') : '.',
-		cp->t,
-		cp->next ? '>' : '.');
+    for (cp = list; cp != NULL; cp=cp->next) {
+	DEBUG(" %g/%d", cp->t, cp->speclen);
+	if (cp->window != window_function)
+	    DEBUG("/%c", window_name(cp->window)[0]);
+    }
 DEBUG("\n");
 }
 

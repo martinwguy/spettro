@@ -39,6 +39,19 @@ typedef struct stored_window {
 
 stored_window_t *stored_windows = NULL;
 
+const char *
+window_name(window_function_t w)
+{
+    switch (w) {
+    case ANY:	 return "Any";
+    RECTANGULAR: return "Rectangular";
+    KAISER:	 return "Kaiser";
+    NUTTALL:	 return "Nuttall";
+    HANN:	 return "Hann";
+    default:	 return "Invalid";
+    }
+}
+
 double *
 get_window(window_function_t wfunc, int datalen)
 {
