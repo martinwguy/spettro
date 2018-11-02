@@ -6,22 +6,12 @@ It looks like the screen get scrolled slightly too little.
 Key-repeat forward scrolling in EMOTION is lumpy.
 Strangely, reverse key-repeat scrolling isn't!
 ------------------------------------------------------------------------
-libaudiofile returns us half the audio data we asked for followed by half
+libaudiofile returns half the audio data we asked for followed by half
 silence, and the audio fragments it gives us is the requested sample
 halved in time and doubled in frequency.
-------------------------------------------------------------------------
-SDL2: If you zoom in enough, it quits, saying:
-Couldn't change rate of scrolling
 ------------------------------------------------------------------------
 SDL2: SDL always turns numlock off on startup but if it was on, the light
       remains on so its action appears inverted.
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy
 ------------------------------------------------------------------------
-If you are at the start of the piece and zoom in on the time axis 17
-times, the display moves left by two pixels and progressively more if
-you continue zooming.
-It may have to do with time being granularized to a multiple of step,
-but disp_time and playing_time are still both 0.
-------------------------------------------------------------------------
-

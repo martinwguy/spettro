@@ -51,10 +51,16 @@ time_pan_by(double by)
  * Only ever done by 2.0 or 0.5 to improve result cache usefulness.
  * The recalculation of every other pixel column is triggered by
  * the call to repaint_display().
+ *
+ * We limit the zoom to one sample difference per pixel.
  */
 void
 time_zoom_by(double by)
 {
+    if (ppsec * by > sample_rate) {
+    	fprintf(stderr, "Limiting time zoom to one sample per column\n");
+	return;
+    }
     ppsec *= by;
     step = 1 / ppsec;
 
