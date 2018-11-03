@@ -15,3 +15,7 @@ SDL2: SDL always turns numlock off on startup but if it was on, the light
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy
 ------------------------------------------------------------------------
+Check fftfreq problems
+spettro -f 50		you can move the graphic up but not down again
+spettro -f 22050	Funny magindex of -33; Aborted
+------------------------------------------------------------------------
