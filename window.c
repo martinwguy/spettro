@@ -72,11 +72,7 @@ get_window(window_function_t wfunc, int datalen)
     }
 
     /* If not, make a new one and fill it */
-    new_window = malloc(datalen * sizeof(double));
-    if (new_window == NULL) {
-	fprintf(stderr, "Out of memory in get_window()\n");
-	exit(1);
-    }
+    new_window = Malloc(datalen * sizeof(*new_window));
 
     switch (wfunc) {
     case KAISER:  kaiser_window(new_window, datalen);	break;
@@ -93,7 +89,7 @@ get_window(window_function_t wfunc, int datalen)
 
     /* Remember this window for future use */
     {
-	stored_window_t *new = malloc(sizeof(stored_window_t));
+	stored_window_t *new = Malloc(sizeof(*new));
 	if (new == NULL) {
 	    fprintf(stderr, "Out of memory storing new window\n");
 	    exit(1);

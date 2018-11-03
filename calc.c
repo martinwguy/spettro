@@ -98,11 +98,7 @@ get_result(calc_t *calc, spectrum *spec)
         result_t *result;	/* The result structure */
 	int fftsize = calc->speclen * 2;
 
-	result = (result_t *) malloc(sizeof(result_t));
-	if (!result) {
-	    fprintf(stderr, "Out of memory in calc()\n");
-	    return NULL;
-	}
+	result = (result_t *) Malloc(sizeof(result_t));
 
 	result->t = calc->t;
 	result->speclen = calc->speclen;
@@ -132,11 +128,7 @@ get_result(calc_t *calc, spectrum *spec)
 	 * the already-allocated buffer and malloc a new one for next time.
 	 */
 	result->spec = spec->mag_spec;
-	spec->mag_spec = malloc((calc->speclen+1) * sizeof(*(spec->mag_spec)));
-	if (spec->mag_spec == NULL) {
-	    fprintf(stderr, "Out of memory in calc()\n");
-	    return NULL;
-	}
+	spec->mag_spec = Malloc((calc->speclen+1) * sizeof(*(spec->mag_spec)));
 
 	/* Mark the converted data as not having been allocated yet */
 	result->logmag = NULL;

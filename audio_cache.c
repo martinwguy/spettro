@@ -110,11 +110,7 @@ read_cached_audio(audio_file_t *audio_file, char *data,
     if (buflen < frames_to_read * audio_file->channels) {
     	free(buf);
 	buflen = frames_to_read * audio_file->channels;
-    	buf = malloc(buflen * sizeof(*buf));
-	if (buf == NULL) {
-	    fprintf(stderr, "Out of memory in do_read_audio_file\n");
-	    exit(1);
-	}
+    	buf = Malloc(buflen * sizeof(*buf));
     }
     /* Set all to 0 so that reads past the end of the cache file leave the
      * data as "not cached yet" */

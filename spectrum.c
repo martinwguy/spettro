@@ -20,8 +20,7 @@ create_spectrum (int speclen, window_function_t window_function)
 {
     spectrum *spec;
 
-    spec = calloc(1, sizeof(spectrum));
-    if (spec == NULL) return(NULL);
+    spec = Calloc(1, sizeof(*spec));
 
     spec->wfunc = window_function;
     spec->speclen = speclen;
@@ -35,7 +34,7 @@ create_spectrum (int speclen, window_function_t window_function)
     spec->time_domain	= fftw_alloc_real(2 * speclen + 1);
     spec->freq_domain	= fftw_alloc_real(2 * speclen);
     unlock_fftw3();
-    spec->mag_spec	= calloc(speclen + 1,	  sizeof(*spec->mag_spec));
+    spec->mag_spec	= Calloc(speclen + 1, sizeof(*spec->mag_spec));
     spec->plan = NULL;
     if (spec->time_domain == NULL ||
 	spec->freq_domain == NULL ||

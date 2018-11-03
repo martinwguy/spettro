@@ -47,7 +47,6 @@
 #include <SDL.h>
 #endif
 
-#include <malloc.h>		/* for free(!) */
 #include <math.h>		/* for floor() */
 
 #if ECORE_MAIN
@@ -98,11 +97,7 @@ start_scheduler(int nthreads)
 #if ECORE_MAIN
     if (nthreads == 0) nthreads = ecore_thread_max_get();
 
-    thread = (Ecore_Thread **) malloc(nthreads * sizeof(Ecore_Thread *));
-    if (thread == NULL) {
-	fprintf(stderr, "Out of memory allocating %d threads\n", nthreads);
-	exit(1);
-    }
+    thread = (Ecore_Thread **) Malloc(nthreads * sizeof(*thread));
 
     /* Start the FFT calculation threads, which ask get_work() for work. */
     /* try_no_queue==TRUE so that all threads run simultaneously. */
@@ -126,11 +121,7 @@ start_scheduler(int nthreads)
     {
 	if (nthreads == 0) nthreads = sysconf(_SC_NPROCESSORS_ONLN);
 
-	thread = (SDL_Thread **) malloc(nthreads * sizeof(SDL_Thread *));
-	if (thread == NULL) {
-	    fprintf(stderr, "Out of memory allocating %d threads\n", nthreads);
-	    exit(1);
-	}
+	thread = (SDL_Thread **) Malloc(nthreads * sizeof(*thread));
 
 	/* Start the FFT threads */
 	for (threads=0; threads < nthreads; threads++) {

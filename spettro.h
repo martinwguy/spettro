@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "alloc.h"
+
 typedef int bool;
 
 #ifndef FALSE

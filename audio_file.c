@@ -35,13 +35,10 @@ open_audio_file(char *filename)
 #if USE_LIBAUDIOFILE
 
     AFfilehandle af;
-    audio_file_t *audio_file = malloc(sizeof(audio_file_t));
+    audio_file_t *audio_file;
     int comptype;	/* Compression type */
 
-    if (audio_file == NULL) {
-	fprintf(stderr, "Out of memory in open_audio_file()\n");
-	return(NULL);
-    }
+    audio_file = Malloc(sizeof(audio_file_t));
 
     if ((af = afOpenFile(filename, "r", NULL)) == NULL) {
 	/* By default it prints a line to stderr, which is what we want.
@@ -234,11 +231,7 @@ read_audio_file(audio_file_t *audio_file, char *data,
 
     /* Adjust size of 32-bit-sample buffer for the raw data from sox_read() */
     if (sox_buf_size < samples_to_read) {
-	sox_buf = realloc(sox_buf, samples_to_read * sizeof(sox_sample_t));
-	if (sox_buf == NULL) {
-	    fprintf(stderr, "Out of memory.\n");
-	    exit(1);
-	}
+	sox_buf = Realloc(sox_buf, samples_to_read * sizeof(sox_sample_t));
 	sox_buf_size = samples_to_read;
     }
 #endif
@@ -416,11 +409,7 @@ mix_mono_read_doubles(audio_file_t *audio_file, double *data, int frames_to_read
 	int dataout = 0;		    /* No of samples written so far */
 
 	if (multi_data_samples < frames_to_read * audio_file->channels) {
-	    multi_data = realloc(multi_data, frames_to_read * audio_file->channels * sizeof(*multi_data));
-	    if (multi_data == NULL) {
-		fprintf(stderr, "Out of memory in mix_mono_doubles\n");
-		exit(1);
-	    }
+	    multi_data = Realloc(multi_data, frames_to_read * audio_file->channels * sizeof(*multi_data));
 	    multi_data_samples = frames_to_read * audio_file->channels;
 	}
 

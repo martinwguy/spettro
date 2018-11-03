@@ -45,8 +45,9 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
 	 || max_freq != mtoscache_max_freq
 	 || sample_rate != mtoscache_sample_rate) {
 	    int i;
-	    if (mtoscache != NULL) free(mtoscache);
-	    mtoscache = malloc((maglen+1) * sizeof(double));
+
+	    if (maglen != mtoscache_maglen)
+		mtoscache = Realloc(mtoscache, (maglen+1) * sizeof(double));
 	
 	    for (i=0; i <= maglen; i++) {
 		double freq = min_freq * pow(max_freq/min_freq, (double)i/(maglen-1));

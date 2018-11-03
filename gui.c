@@ -147,11 +147,7 @@ gui_init(char *filename)
     evas_object_image_colorspace_set(image, EVAS_COLORSPACE_ARGB8888);
     evas_object_image_size_set(image, disp_width, disp_height);
     imagestride = evas_object_image_stride_get(image);
-    imagedata = malloc(imagestride * disp_height);
-    if (imagedata == NULL) {
-	fprintf(stderr, "Out of memory allocating image data\n");
-	exit(1);
-    }
+    imagedata = Malloc(imagestride * disp_height);
     /* Clear the image buffer to the background color */
     {	register int i;
 	register unsigned int *p = (unsigned int *)imagedata;

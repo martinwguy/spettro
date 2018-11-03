@@ -64,7 +64,6 @@
 
 #include <unistd.h>	/* for sleep() */
 #include <math.h>	/* for lrint() */
-#include <malloc.h>
 #include <string.h>	/* for memset() */
 #include <errno.h>
 #include <math.h>
@@ -432,15 +431,12 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 static void
 calc_columns(int from_col, int to_col)
 {
-    calc_t *calc = malloc(sizeof(calc_t));
+    calc_t *calc;
     /* The times represented by from_col and to_col */
     double from = disp_time + (from_col - disp_offset) * step;
     double to   = disp_time + (to_col - disp_offset) * step;;
 
-    if (calc == NULL) {
-	fputs("Out of memory in calc_columns()\n", stderr);
-	exit(1);
-    }
+    calc = Malloc(sizeof(calc_t));
     calc->audio_file = audio_file;
     calc->length = audio_length;
     calc->sr	= sample_rate;
@@ -488,7 +484,7 @@ calc_columns(int from_col, int to_col)
 	if (to >= disp_time - DELTA) {
 	    double t;
 	    for (t = max(from, disp_time); t <= to + DELTA; t += step) {
-		calc_t *new = malloc(sizeof(calc_t));
+		calc_t *new = Malloc(sizeof(calc_t));
 		memcpy(new, calc, sizeof(calc_t));
 		new->t = t;
 		schedule(new);
@@ -498,7 +494,7 @@ calc_columns(int from_col, int to_col)
 	if (from < disp_time - DELTA) {
 	    double t;
 	    for (t=max(disp_time - step, t); t >= from - DELTA; t -= step) {
-		calc_t *new = malloc(sizeof(calc_t));
+		calc_t *new = Malloc(sizeof(calc_t));
 		memcpy(new, calc, sizeof(calc_t));
 		new->t = t;
 		schedule(new);
@@ -1017,11 +1013,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     }
 
     maglen = disp_height;
-    logmag = calloc(maglen, sizeof(*logmag));
-    if (logmag == NULL) {
-       fprintf(stderr, "Out of memory in paint_column.\n");
-       exit(1);
-    }
+    logmag = Calloc(maglen, sizeof(*logmag));
     old_max = logmax;
     logmax = interpolate(logmag, maglen, result->spec, result->speclen,
 			 min_freq, max_freq, sample_rate, from_y, to_y);

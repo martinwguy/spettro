@@ -38,13 +38,13 @@ static bool is_bar_line(int x);
  * indexed from y=0 at the bottom to disp_height-1
  */
 static unsigned int *row_overlay = NULL;
+static int    row_overlay_len = 0;
 
 /* and we remember what parameters we calculated it for so as to recalculate it
  * automatically if anything changes.
  */
 static double row_overlay_min_freq;
 static double row_overlay_max_freq;
-static int    row_overlay_len;
 
 /*
  * Calculate the overlays
@@ -57,21 +57,9 @@ make_row_overlay()
 #define NOTE_A440	48  /* A above middle C */
     int len = disp_height;
 
-    /* Check allocation of overlay array and zero it */
-    if (row_overlay == NULL ) {
-        row_overlay = malloc(len *sizeof(unsigned int));
-      if (row_overlay == NULL )
-          /* Continue with no overlay */
-          return;
-      }
-      row_overlay_len = len;
-
     /* Check for resize */
     if (row_overlay_len != len) {
-      row_overlay = realloc(row_overlay, len *sizeof(unsigned int));
-      if (row_overlay == NULL )
-          /* Continue with no overlay */
-          return;
+      row_overlay = Realloc(row_overlay, len * sizeof(*row_overlay));
       row_overlay_len = len;
     }
     memset(row_overlay, 0, len * sizeof(unsigned int));
