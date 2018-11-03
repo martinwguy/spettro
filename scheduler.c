@@ -223,6 +223,7 @@ stop_scheduler(void)
     }
 
 #endif
+    free(thread);
     threads = 0;
 }
 

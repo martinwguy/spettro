@@ -105,6 +105,18 @@ get_window(window_function_t wfunc, int datalen)
     return new_window;
 }
 
+void
+free_windows()
+{
+    stored_window_t *w, *next_w;
+
+    for (w = stored_windows; w != NULL; w=next_w) {
+	next_w = w->next;
+	free(w->window);
+    }
+    stored_windows = NULL;
+}
+
 static void
 kaiser_window(double *data, int datalen)
 {

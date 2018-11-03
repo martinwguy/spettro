@@ -504,6 +504,9 @@ gui_deinit()
     /* This makes it dump core or barf error messages about bad magic */
     ecore_evas_shutdown();
 #endif
+#if EVAS_VIDEO
+    free(imagedata);
+#endif
 
 #if SDL_AUDIO || SDL_TIMER || SDL_VIDEO || SDL_MAIN
     /* SDL_Quit(); is called by atexit() */

@@ -87,6 +87,7 @@
 #include "scheduler.h"
 #include "speclen.h"
 #include "timer.h"
+#include "window.h"	/* for free_windows() */
 #include "ui_funcs.h"
 #include "main.h"
 #include "key.h"
@@ -417,6 +418,9 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     drop_all_work();
     drop_all_results();
     no_audio_cache();
+    free_interpolate_cache();
+    free_row_overlay();
+    free_windows();
     close_audio_file(audio_file);
 
     return 0;

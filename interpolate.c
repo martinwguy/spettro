@@ -69,6 +69,14 @@ magindex_to_specindex(int speclen, int maglen, int magindex,
 	return mtoscache[magindex];
 }
 
+void
+free_interpolate_cache()
+{
+    free(mtoscache);
+    mtoscache = NULL;
+    mtoscache_size = 0;
+}
+
 /*
  * interpolate()
  *

@@ -129,6 +129,13 @@ make_row_overlay()
     }
 }
 
+void
+free_row_overlay()
+{
+    free(row_overlay);
+    row_overlay = NULL;
+}
+
 /* What colour overlays this pixel row?
  * 0x00000000 = Nothing
  * 0xFFrrggbb = this colour

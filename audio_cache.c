@@ -59,11 +59,16 @@ create_audio_cache()
     }
 }
 
+static short *audio_buf = NULL;	/* The required audio data as 16-bit signed,
+    				 * with same number of channels as audio file */
+static int audio_buflen = 0;	/* Memory allocated to buf[], in samples */
+
 void
 no_audio_cache()
 {
     if (cache >= 0) close(cache);
     cache = -1;
+    free(audio_buf);
 }
 
 /* Read audio data using our cache. Same interface as read_audio_file().
@@ -71,14 +76,12 @@ no_audio_cache()
  * Note: "channels" is the number of channels they want returned;
  * audio_file->channels is the number of channels in the original file
  */
+
 int
 read_cached_audio(audio_file_t *audio_file, char *data,
 		  af_format format, int channels,
 		  int start, int frames_to_read)
 {
-    static short *buf = NULL;	/* The required audio data as 16-bit signed,
-    				 * with same number of channels as audio file */
-    static int buflen = 0;	/* Memory allocated to buf[], in samples */
     static int samples_in_buf = 0;/* Number of samples read into buf[] */
     long offset;		/* temp: Where to seek to in the cache file */
 
@@ -107,14 +110,13 @@ read_cached_audio(audio_file_t *audio_file, char *data,
     }
 
     /* Make sure our buffer is big enough */
-    if (buflen < frames_to_read * audio_file->channels) {
-    	free(buf);
-	buflen = frames_to_read * audio_file->channels;
-    	buf = Malloc(buflen * sizeof(*buf));
+    if (audio_buflen < frames_to_read * audio_file->channels) {
+	audio_buflen = frames_to_read * audio_file->channels;
+    	audio_buf = Realloc(audio_buf, audio_buflen * sizeof(*audio_buf));
     }
     /* Set all to 0 so that reads past the end of the cache file leave the
      * data as "not cached yet" */
-    memset(buf, 0, buflen * sizeof(*buf));
+    memset(audio_buf, 0, audio_buflen * sizeof(*audio_buf));
 
     /* Try to fetch cached data from the file. As it's read-write, a seek
      * past the end of the file should extend it silently. */
@@ -126,15 +128,15 @@ read_cached_audio(audio_file_t *audio_file, char *data,
 	perror("lseek");	
 	return(0);
     } else {
-        int bytes_read = read(cache, (char *)buf,
-	     frames_to_read * audio_file->channels * sizeof(*buf));
+        int bytes_read = read(cache, (char *)audio_buf,
+	     frames_to_read * audio_file->channels * sizeof(*audio_buf));
 	samples_in_buf = bytes_read / sizeof(short);
 	int frames_read = samples_in_buf / audio_file->channels;
         /* If the file read fails, is at-or-after EOF or is short, that leaves
 	 * zeroes in the buffer to be filled in from the real file.
 	 */
 	if (frames_read - frames_to_read) {
-	    fill_hole(audio_file, buf + samples_in_buf,
+	    fill_hole(audio_file, audio_buf + samples_in_buf,
 		      (frames_to_read - frames_read) * audio_file->channels,
 		      start + frames_read);
 	    samples_in_buf += (frames_to_read - frames_read) * audio_file->channels;
@@ -146,7 +148,7 @@ read_cached_audio(audio_file_t *audio_file, char *data,
     /* Now check for zones of uncached samples in the cached data
      * and replace them with the real data */
     hole_start = NULL;
-    for (i=0, sp=buf; i<samples_in_buf; i++, sp++) {
+    for (i=0, sp=audio_buf; i<samples_in_buf; i++, sp++) {
     	if (*sp == 0) {
 	    if (hole_start == NULL) {
 		hole_start = sp;
@@ -159,24 +161,24 @@ read_cached_audio(audio_file_t *audio_file, char *data,
 	    if (hole_start != NULL) {
 	    	/* This is the end of a hole. Fill it with data from the
 		 * audio file, converted to our funny format */
-		fill_hole(audio_file, hole_start, hole_size, start + (hole_start - buf));
+		fill_hole(audio_file, hole_start, hole_size, start + (hole_start - audio_buf));
 	    }
 	    hole_start = NULL;
 	}
     }
     /* If the buffer ends with a hole, fill it */
     if (hole_start != NULL) {
-	fill_hole(audio_file, hole_start, hole_size, start + (hole_start-buf));
+	fill_hole(audio_file, hole_start, hole_size, start + (hole_start-audio_buf));
     }
 
     /* Now convert our completed data to the required format, one of:
      * mono doubles or same-number-of-channels shorts */
     switch (format) {
     case af_signed:	/* 16-bit with the same number of channels */
-    	convert_cached_to_signed((short *)data, buf, samples_in_buf);
+    	convert_cached_to_signed((short *)data, audio_buf, samples_in_buf);
         break;
     case af_double:
-        convert_cached_to_mono_double((double *)data, buf, samples_in_buf,
+        convert_cached_to_mono_double((double *)data, audio_buf, samples_in_buf,
 				      audio_file->channels);
         break;
     }

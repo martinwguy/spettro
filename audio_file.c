@@ -21,6 +21,9 @@
 
 #if USE_LIBSNDFILE
 static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read);
+/* Buffer used by the above */
+static double *multi_data = NULL;   /* buffer for incoming samples */
+static int multi_data_samples = 0;  /* length of buffer in samples */
 #endif
 
 /* Audio file info */
@@ -148,6 +151,14 @@ open_audio_file(char *filename)
  *	in which case we invent some 0 data for the leading silence.
  * "frames_to_read" is the number of multi-sample frames to fill "data" with.
  */
+#if USE_LIBSOX
+/* Sox gives us the samples as 32-bit signed integers so
+ * accept them that way into a private buffer and then convert them
+ */
+static sox_sample_t *sox_buf = NULL;
+static size_t sox_buf_size = 0;	/* Size of sox_buf in samples */
+#endif
+
 int
 read_audio_file(audio_file_t *audio_file, char *data,
 		af_format format, int channels,
@@ -159,10 +170,6 @@ read_audio_file(audio_file_t *audio_file, char *data,
     SNDFILE *sndfile = audio_file->sndfile;
 #elif USE_LIBSOX
     sox_format_t *sf = audio_file->sf;
-    /* Sox gives us the samples as 32-bit signed integers so
-     * accept them that way into a private buffer and then convert them */
-    static sox_sample_t *sox_buf = NULL;
-    static size_t sox_buf_size = 0;	/* Size of sox_buf in samples */
     int samples_to_read, samples;
 #endif
 
@@ -361,8 +368,10 @@ close_audio_file(audio_file_t *audio_file)
     afCloseFile(audio_file->af);
 #elif USE_LIBSNDFILE
     sf_close(audio_file->sndfile);
+    free(multi_data);
 #elif USE_LIBSOX
     sox_close(audio_file->sf);
+    free(sox_buf);
 #endif
 }
 
@@ -403,8 +412,6 @@ mix_mono_read_doubles(audio_file_t *audio_file, double *data, int frames_to_read
 
     /* Read multi-channel data and mix it down to a single channel of doubles */
     {
-	static double *multi_data = NULL;   /* buffer for incomig samples */
-	static int multi_data_samples = 0;  /* length of buffer in samples */
 	int k, ch, frames_read;
 	int dataout = 0;		    /* No of samples written so far */
 
