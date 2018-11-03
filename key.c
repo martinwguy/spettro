@@ -6,6 +6,8 @@
 #include "spettro.h"
 #include "key.h"
 
+#include "ctype.h"	/* for tolower() */
+
 static void map_to_lower_case(char *s);
 
 bool Shift, Control;
