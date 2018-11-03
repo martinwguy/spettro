@@ -26,8 +26,8 @@ AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(SDL_CFLAGS) \
 	    -march=native
 AM_LDFLAGS = -lsox $(SDL_LIBS) -lfftw3 -lm
 
-SDL_CFLAGS=`sdl-config --cflags` -pthread
-SDL_LIBS=  `sdl-config --libs` -lX11 -pthread
+SDL_CFLAGS=`sdl2-config --cflags` -pthread
+SDL_LIBS=  `sdl2-config --libs` -lX11 -pthread
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
 
