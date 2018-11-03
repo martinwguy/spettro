@@ -59,3 +59,6 @@ Try scaling magnitudes with frequency to unweight its bottom-heaviness.
 ------------------------------------------------------------------------
 Try ffmpeg for audio file decoding.
 ------------------------------------------------------------------------
+Be able to change disp_height and disp_width while running, so that
+GUI window resizing becomes possible.
+------------------------------------------------------------------------
