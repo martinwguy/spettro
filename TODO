@@ -62,3 +62,6 @@ Try ffmpeg for audio file decoding.
 Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 ------------------------------------------------------------------------
+samplerate->sample_rate
+af_format->af_format_t
+------------------------------------------------------------------------
