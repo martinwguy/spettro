@@ -1,14 +1,14 @@
 /*
  * calc.c - Do all the heavy calculation of spectra.
  *
- * This file's only entry point is calc()
- *
- * The data points to a structure containing are all it needs to know
- * to calculate the complete spectrogram of the audio.
- *
- * The callback function signals a completed column of spectral data
- * which is colored and its axis made logarithmic in the main loop
+ * This file's only entry point is calc(), which is handed a calc_t
+ * describing the transform to perform, does the FFT, creates a result_t
+ * and hands it to calc_result(), which sends them via a GUI event
+ * to the main loop, which passes them to its calc_notify().
+ * The logarithmic frequency axis is applied and coloring done there, not here,
  * so as not to have to recalculate the FFT for zooms, pans and recoloring.
+ *
+ * When we're finished with the calc_t, it's up to us to free it.
  */
 
 #include "spettro.h"
@@ -36,9 +36,6 @@
 /*
  * The compute-FFTs function
  *
- * Results are returned in a result_t (struct result) which is obtained from
- * malloc, as is the "spec" field of it to calc_result() in main.c.
- * Passing a constant callback address down the call chain is just too awful.
  */
 
 /* Helper functions */

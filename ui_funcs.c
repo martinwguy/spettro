@@ -129,16 +129,17 @@ freq_zoom_by(double by)
     /* Don't let them turn the graphic upside-down! */
     if (max_freq / by <= min_freq * by + DELTA) return;
 
-    /* Limit frequency range */
     max_freq /= by;
-    if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
     min_freq *= by;
+
+    /* Limit to fftfreq..Nyquist */
+    if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
     if (min_freq < fftfreq) min_freq = fftfreq;
 
     if (yflag) draw_frequency_axis();
 }
 
-/* Change the color scale's dyna,ic range, thereby changing the brightness
+/* Change the color scale's dynamic range, thereby changing the brightness
  * of the darker areas.
  */
 void

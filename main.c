@@ -616,14 +616,17 @@ do_key(enum key key)
 	gui_update_display();
 	break;
 
-    /* Zoom on the time axis */
+    /* Zoom on the time axis by a factor of two so that, when zooming in,
+     * half of the results are still valid
+     */
     case KEY_X:
 	if (Control) break;
 	time_zoom_by(Shift ? 2.0 : 0.5);
 	repaint_display(FALSE);
 	break;
 
-    /* Zoom on the frequency axis */
+    /* Y/y: Zoom in/out on the frequency axis */
+    /* Ctrl-Y: Toggle the frequency axis */
     case KEY_Y:
 	if (Control) { /* Toggle frequency axis */
 	    if (yflag) {

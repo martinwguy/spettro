@@ -38,18 +38,16 @@ typedef struct calc_t {
  * Structure for results from calc() with the linear FFT for a pixel column,
  * callbacked to calc_result() as each column is ready.
  *
- * Fields mag and maglen are not filled by calc(); the main routine calls
+ * Fields logmag and maglen are not filled by calc(); the main routine calls
  * interpolate() on each one to generate columns of magnitudes for the screen,
  * as the mapping changes when they pan up and down or zoom the Y axis,
- * without a need to recalculate the FFT. That is required if they change
- * the FFT size, while zooming the time axis just requires more results to
- * be calculated.
+ * without needing to recalculate the FFT.
  */
 
 typedef struct result {
-    double t;		/* An FFT centred on what time through the piece? */
-    int speclen;	/* The length of the linear spectrum */
-    window_function_t window;	/* This was calculated using which window? */
+    double t;		/* An FFT centred on what time in the piece? */
+    int speclen;	/* The length of the required linear spectrum */
+    window_function_t window; /* Apply which window function to the audio data? */
     float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
     int maglen;		/* Length of magnitude data on log axis */
     float *logmag;	/* log10 of magnitude data from [0..maglen-1] */
