@@ -49,8 +49,6 @@ typedef struct result {
     int speclen;	/* The length of the required linear spectrum */
     window_function_t window; /* Apply which window function to the audio data? */
     float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
-    int maglen;		/* Length of magnitude data on log axis */
-    float *logmag;	/* log10 of magnitude data from [0..maglen-1] */
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif

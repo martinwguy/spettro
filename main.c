@@ -1026,8 +1026,6 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     old_max = logmax;
     logmax = interpolate(logmag, maglen, result->spec, result->speclen,
 			 min_freq, max_freq, sample_rate, from_y, to_y);
-    result->logmag = logmag;
-    result->maglen = maglen;
 
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
@@ -1045,6 +1043,8 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 	}
     }
     gui_unlock();
+
+    free(logmag);
 
     /* If the maximum amplitude changed, we should repaint the already-drawn
      * columns at the new brightness. We tried this calling repaint_display here
