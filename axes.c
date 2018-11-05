@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "gui.h"
+#include "lock.h"	/* for gui_lock/unlock() */
 #include "text.h"
 
 #include <math.h>
@@ -50,7 +51,7 @@ draw_frequency_axis(void)
 
     gui_paint_rect(0, 0, min_x-1,  disp_height-1, black);
 
-    lock_gui();
+    gui_lock();
     for (i=0; i < tick_count; i++) {
 	char s[6];
 	gui_putpixel(min_x-1, min_y + lrint(ticks.distance[i]),
@@ -66,7 +67,7 @@ draw_frequency_axis(void)
 		      RIGHT, CENTER);
 	}
     }
-    unlock_gui();
+    gui_unlock();
     gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 }
 
