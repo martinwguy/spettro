@@ -42,6 +42,7 @@ enum key {
     KEY_R,
     KEY_B,
     KEY_D,
+    KEY_A,
     KEY_H,
     KEY_N,
     KEY_0,

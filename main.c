@@ -628,22 +628,9 @@ do_key(enum key key)
     /* Y/y: Zoom in/out on the frequency axis */
     /* Ctrl-Y: Toggle the frequency axis */
     case KEY_Y:
-	if (Control) { /* Toggle frequency axis */
-	    if (yflag) {
-		/* Remove frequency axis */
-		min_x = 0;
-		repaint_columns(0, FREQUENCY_AXIS_WIDTH-1, min_y, max_y, FALSE);
-	    } else {
-		/* Add frequency axis */
-		min_x = FREQUENCY_AXIS_WIDTH;
-		draw_frequency_axis();
-	    }
-	    yflag = !yflag;
-	    gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
-	} else {
-	    freq_zoom_by(Shift ? 2.0 : 0.5);
-	    repaint_display(TRUE);
-	}
+	if (Control) break;
+	freq_zoom_by(Shift ? 2.0 : 0.5);
+	repaint_display(TRUE);
 	break;
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
@@ -664,16 +651,31 @@ do_key(enum key key)
      * Slash instead darkens them to reduce visibility of background noise.
      */
     case KEY_B:
-	if (Shift || Control) break;
     case KEY_STAR:
+	if (Shift || Control) break;
 	change_dyn_range(6.0);
 	repaint_display(TRUE);
 	break;
     case KEY_D:
-	if (Shift || Control) break;
     case KEY_SLASH:
+	if (Shift || Control) break;
 	change_dyn_range(-6.0);
 	repaint_display(TRUE);
+	break;
+
+    case KEY_A:
+	/* Toggle frequency axis */
+	if (yflag) {
+	    /* Remove frequency axis */
+	    min_x = 0;
+	    repaint_columns(0, FREQUENCY_AXIS_WIDTH-1, min_y, max_y, FALSE);
+	} else {
+	    /* Add frequency axis */
+	    min_x = FREQUENCY_AXIS_WIDTH;
+	    draw_frequency_axis();
+	}
+	yflag = !yflag;
+	gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 	break;
 
     /* Toggle staff/piano line overlays */
