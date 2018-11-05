@@ -19,3 +19,14 @@ Check fftfreq problems
 spettro -f 50		you can move the graphic up but not down again
 spettro -f 22050	Funny magindex of -33; Aborted
 ------------------------------------------------------------------------
+It schedules some columns that are already present.
+e.g. spettro 440.wav and press space a few times
+------------------------------------------------------------------------
+It calculates duplicate results.
+They seem mostly to be columns near the right hand side.
+Hypothesis: a calc thread takes a pending column to calculate, removes
+the work from the queue, a scroll happens and the same columns
+results unrefreshable because there is no work item for it, but there
+is no result in the result cache either.
+Solution: Keep track of which results are being calculated.
+------------------------------------------------------------------------

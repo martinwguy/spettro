@@ -47,14 +47,6 @@ side.  The calc needs to be scheduled far enough ahead that the calc
 threads have the time necessary to have it ready before that column
 appears in the display area.
 ------------------------------------------------------------------------
-Stop it from calculating duplicate results.
-They seem mostly to be columns near the right hand side.
-Hypothesis: a calc thread takes a pending column to calculate, removes
-the work from the queue, a scroll happens and the same columns
-results unrefreshable because there is no work item for it, but there
-is no result in the result cache either.
-Solution: Keep track of which results are being calculated.
-------------------------------------------------------------------------
 Try scaling magnitudes with frequency to unweight its bottom-heaviness.
 ------------------------------------------------------------------------
 Try ffmpeg for audio file decoding.
@@ -64,4 +56,7 @@ GUI window resizing becomes possible.
 ------------------------------------------------------------------------
 samplerate->sample_rate
 af_format->af_format_t
+------------------------------------------------------------------------
+Check that this/next stuff in interpolate() centres frequencies on that
+pixel rather than being slightly above/below it.
 ------------------------------------------------------------------------
