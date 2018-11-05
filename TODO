@@ -60,3 +60,17 @@ af_format->af_format_t
 Check that this/next stuff in interpolate() centres frequencies on that
 pixel rather than being slightly above/below it.
 ------------------------------------------------------------------------
+disp_height should be the height of the display, not of the spectrogram,
+which depends on {min,max}_y, so maybe reinstate maglen?
+------------------------------------------------------------------------
+Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
+------------------------------------------------------------------------
+Rename speclen and maglen
+------------------------------------------------------------------------
+interpolate(): Does it really use mag[maglen]?
+------------------------------------------------------------------------
+Include vol+ and vol- and play/pause/stop keys
+------------------------------------------------------------------------
+Limit the frequency zoom to some maximum instead of just refusing to
+turn the graphic upside down?
+------------------------------------------------------------------------
