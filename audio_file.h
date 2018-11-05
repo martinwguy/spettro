@@ -29,15 +29,15 @@ typedef struct audio_file {
 } audio_file_t;
 
 typedef enum {
-	af_double,
-	af_signed,	/* 16-bit native endian */
-} af_format;
+	af_double,  /* mono doubles */
+	af_signed,  /* 16-bit native endian, same channels as the input file */
+} af_format_t;
 
 /* Return a handle for the audio file, NULL on failure */
 extern audio_file_t *open_audio_file(char *filename);
 
 extern int read_audio_file(audio_file_t *audio_file, char *data,
-			   af_format format, int channels,
+			   af_format_t format, int channels,
 			   int start,	/* In frames offset from 0.0 */
 			   int nframes);
 

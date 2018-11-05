@@ -1,20 +1,45 @@
-/*
- *	Choose a good FFT size from the given parameters.
- */
+/* convert.c: Functions to convert one kind of value to another */
 
 #include "spettro.h"
-#include "speclen.h"
+#include "convert.h"
 
-int speclen;	/* Spectral data length. Usually set to the
-		 * result of fftfreq_to_speclen() */
+#include "main.h"
 
-static bool is_good_speclen(int n);
+#include <math.h>
 
-/* Choose a suitable value for speclen (== fftsize/2). */
-int
-fftfreq_to_speclen(double fftfreq, double sr)
+/* Return the frequency ratio between one pixel row and the one above,
+ * used to scroll/zoom by one pixel
+ */
+double
+one_vertical_pixel()
 {
-    int speclen = (sr / fftfreq + 1) / 2;
+    return exp(log(max_freq/min_freq)/(max_y-min_y));
+}
+
+/* What frequency does the centre of this pixel row represent? */
+double pixel_row_to_frequency(int pixel_row)
+{
+    return min_freq * pow(max_freq/min_freq, (double)pixel_row/(maglen-1));
+}
+
+double frequency_to_specindex(double freq)
+{
+    return freq * speclen / (sample_rate/2);
+}
+
+
+/*
+ *	Choose a good FFT size for the given fft frequency
+ */
+
+/* Helper functions */
+static bool is_good_speclen(int n);
+static bool is_2357(int n);
+
+int
+fft_freq_to_speclen(double fft_freq)
+{
+    int speclen = (sample_rate/fft_freq + 1) / 2;
     int d; /* difference between ideal speclen and preferred speclen */
 
     /* Find the nearest fast value for the FFT size. */
@@ -50,7 +75,6 @@ fftfreq_to_speclen(double fftfreq, double sr)
  * as 2 is an allowed factor and an odd fftsize may or may not work with
  * the "half complex" format conversion in calc_magnitudes().
  */
-static bool is_2357(int n);
 
 static bool
 is_good_speclen (int n)

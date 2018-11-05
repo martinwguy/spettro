@@ -161,7 +161,7 @@ static size_t sox_buf_size = 0;	/* Size of sox_buf in samples */
 
 int
 read_audio_file(audio_file_t *audio_file, char *data,
-		af_format format, int channels,
+		af_format_t format, int channels,
 		int start, int frames_to_read)
 {
 #if USE_LIBAUDIOFILE

@@ -34,7 +34,6 @@
 #include "calc.h"
 #include "gui.h"
 #include "lock.h"
-#include "speclen.h"
 #include "main.h"
 
 #if 0

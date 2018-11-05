@@ -21,10 +21,7 @@
  */
 typedef struct calc_t {
     audio_file_t *	audio_file; /* Our audio file handle */
-    double		length;	/* Length of piece in seconds */
-    double		sr;	/* Sample rate of the piece */
     double		t;	/* FFT centred on  when? */
-    double		ppsec;	/* Pixel columns per second */
     int			speclen; /* Size of spectrum == fftsize/2 */
     window_function_t	window;
 #if ECORE_MAIN
@@ -48,7 +45,8 @@ typedef struct result {
     double t;		/* An FFT centred on what time in the piece? */
     int speclen;	/* The length of the required linear spectrum */
     window_function_t window; /* Apply which window function to the audio data? */
-    float *spec;	/* The linear spectrum from [0..speclen] = 0Hz..sr/2 */
+    float *spec;	/* The linear spectrum from [0..speclen]
+    			 * representing 0Hz to sample_rate/2 */
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif

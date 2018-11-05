@@ -29,7 +29,6 @@
 #include "calc.h"
 #include "gui.h"	/* For RESULT_EVENT */
 #include "lock.h"
-#include "speclen.h"
 #include "spectrum.h"
 #include "main.h"	/* for window_function */
 
@@ -114,7 +113,7 @@ get_result(calc_t *calc, spectrum *spec)
 	}
 	read_cached_audio(calc->audio_file, (char *) spec->time_domain,
 			  af_double, 1,
-			  lrint(calc->t * calc->sr) - fftsize/2, fftsize);
+			  lrint(calc->t * sample_rate) - fftsize/2, fftsize);
 	if (!unlock_audio_file()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");
 	    exit(1);

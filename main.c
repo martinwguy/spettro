@@ -80,12 +80,12 @@
 #include "cache.h"
 #include "calc.h"
 #include "colormap.h"
+#include "convert.h"
 #include "interpolate.h"
 #include "gui.h"
 #include "mouse.h"
 #include "overlay.h"
 #include "scheduler.h"
-#include "speclen.h"
 #include "timer.h"
 #include "window.h"	/* for free_windows() */
 #include "ui_funcs.h"
@@ -106,7 +106,7 @@ static void	calc_columns(int from, int to);
  */
 
 /* GUI state variables */
-       int disp_width	= 640;	/* Size of displayed drawing area in pixels */
+       int disp_width	= 640;	/* Size of display area in pixels */
        int disp_height	= 480;
        double disp_time	= 0.0;	/* When in the audio file is the crosshair? */
        int disp_offset; 	/* Crosshair is in which display column? */
@@ -117,7 +117,10 @@ static void	calc_columns(int from, int to);
        double step = 0.0;		/* time step per column = 1/ppsec
 					 * 0.0 means "not set yet" as a
 					 * booby trap. */
-       double fftfreq	= 5.0;		/* 1/fft size in seconds */
+       double fft_freq	= 5.0;		/* 1/fft size in seconds */
+       int speclen;			/* Size of linear spectral data */
+       int maglen;			/* Size of logarithmic spectral data
+					 * == height of graph in pixels */
        window_function_t window_function = KAISER;
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
@@ -128,7 +131,7 @@ static void	calc_columns(int from, int to);
        bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
        bool fullscreen = FALSE;		/* Start up in fullscreen mode? */
-       int min_x, max_x, min_y, max_y;
+       int min_x, max_x, min_y, max_y;	/* Edges of graph in display coords */
        bool green_line_off = FALSE;	/* Do we repaint the green line with
 					 * spectral data when refreshing? */
        double softvol = 1.0;
@@ -261,7 +264,7 @@ main(int argc, char **argv)
 			fprintf(stderr, "-f FFT frequency must be > 0\n");
 			exit(1);
 		    }
-		    fftfreq = arg;
+		    fft_freq = arg;
 		    break;
 		}
 		/* We can't call set_bar_*_time() until audio_length is known */
@@ -348,7 +351,7 @@ PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
 MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-", fftfreq, ppsec, min_freq, max_freq, -min_db);
+", fft_freq, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	}
     }
@@ -377,10 +380,10 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     min_x = 0; max_x = disp_width - 1;
     min_y = 0; max_y = disp_height - 1;
     if (yflag) min_x = FREQUENCY_AXIS_WIDTH;
+    speclen = fft_freq_to_speclen(fft_freq);
+    maglen = (max_y - min_y) + 1;
 
     make_row_overlay();
-
-    speclen = fftfreq_to_speclen(fftfreq, sample_rate);
 
     init_audio(audio_file, filename);
 
@@ -442,9 +445,6 @@ calc_columns(int from_col, int to_col)
 
     calc = Malloc(sizeof(calc_t));
     calc->audio_file = audio_file;
-    calc->length = audio_length;
-    calc->sr	= sample_rate;
-    calc->ppsec  = ppsec;
     calc->speclen= speclen;
     calc->window = window_function;
 
@@ -600,11 +600,11 @@ do_key(enum key key)
     case KEY_PGUP:
     case KEY_PGDN:
 	if (key == KEY_UP)
-	    freq_pan_by(Control ? exp(log(max_freq/min_freq)/(max_y-min_y)) :
+	    freq_pan_by(Control ? one_vertical_pixel() :
 		        Shift ? 2.0 :
 			pow(2.0, 1/6.0));
 	else if (key == KEY_DOWN)
-	    freq_pan_by(Control ? 1/exp(log(max_freq/min_freq)/(max_y-min_y)) :
+	    freq_pan_by(Control ? 1/ one_vertical_pixel() :
 		        Shift ? 1/2.0 :
 			pow(2.0, -1/6.0));
 	else if (key == KEY_PGUP)
@@ -704,8 +704,8 @@ do_key(enum key key)
     /* Display the current UI parameters */
     case KEY_P:
 	if (Shift || Control) break;
-	printf("min_freq=%g max_freq=%g fftfreq=%g dyn_range=%g audio_length=%g\n",
-		min_freq,   max_freq,   fftfreq,   -min_db,   audio_length);
+	printf("min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g audio_length=%g\n",
+		min_freq,   max_freq,   fft_freq,   -min_db,   audio_length);
 	printf("playing %g disp_time=%g step=%g %g-%g speclen=%d logmax=%g\n",
 		get_playing_time(), disp_time, step,
 		disp_time - disp_offset * step,
@@ -725,13 +725,13 @@ do_key(enum key key)
 	if (Control) break;
 	if (Shift) {
 	   /* Increase FFT size */
-	   fftfreq /= 2;
+	   fft_freq /= 2;
 	} else {
 	   /* Decrease FFT size */
 	   if (speclen > 1)
-	   fftfreq *= 2;
+	   fft_freq *= 2;
 	}
-	speclen = fftfreq_to_speclen(fftfreq, sample_rate);
+	speclen = fft_freq_to_speclen(fft_freq);
 	drop_all_work();
 
 	/* Any calcs that are currently being performed will deliver
@@ -926,7 +926,7 @@ repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
  *
  * if "refresh_only" is TRUE, we only repaint columns that are already
  * displaying spectral data; we find out if a column is displaying spectral data
- * by checking the result cache: if we have a result for that time/fftfreq,
+ * by checking the result cache: if we have a result for that time/fft_freq,
  * it's probably displaying something.
  *
  * and we don't schedule the calculation of columns whose spectral data
@@ -1008,7 +1008,6 @@ void
 paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
     float *logmag;
-    int maglen;
     float old_max;		/* temp to detect when it changes */
     int y;
     unsigned int ov;		/* Overlay color temp; 0 = none */
@@ -1021,11 +1020,9 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 	return;
     }
 
-    maglen = disp_height;
     logmag = Calloc(maglen, sizeof(*logmag));
     old_max = logmax;
-    logmax = interpolate(logmag, maglen, result->spec, result->speclen,
-			 min_freq, max_freq, sample_rate, from_y, to_y);
+    logmax = interpolate(logmag, result->spec, from_y, to_y);
 
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.

@@ -98,10 +98,10 @@ freq_pan_by(double by)
 	max_freq = sample_rate / 2;
     }
     /* Limit bottom */
-    if (min_freq < fftfreq) {
-	max_freq *= fftfreq / min_freq;
-	by *= fftfreq / min_freq;
-	min_freq = fftfreq;
+    if (min_freq < fft_freq) {
+	max_freq *= fft_freq / min_freq;
+	by *= fft_freq / min_freq;
+	min_freq = fft_freq;
     }
 
     by_pixels = lrint(log(by) / log_one_pixel);
@@ -126,20 +126,20 @@ freq_pan_by(double by)
 void
 freq_zoom_by(double by)
 {
-    /* Don't let them turn the graphic upside-down! */
+    /* Without this, zooming in too much turns the graphic upside-down */
     if (max_freq / by <= min_freq * by + DELTA) return;
 
     max_freq /= by;
     min_freq *= by;
 
-    /* Limit to fftfreq..Nyquist */
+    /* Limit to fft_freq..Nyquist */
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
-    if (min_freq < fftfreq) min_freq = fftfreq;
+    if (min_freq < fft_freq) min_freq = fft_freq;
 
     if (yflag) draw_frequency_axis();
 }
 
-/* Change the color scale's dynamic range, thereby changing the brightness
+/* Change the color scale's dyna,ic range, thereby changing the brightness
  * of the darker areas.
  */
 void

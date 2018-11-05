@@ -22,7 +22,11 @@ extern double max_freq;
 extern double min_db;		/* Values below this are black */
 extern double ppsec;		/* pixel columns per second */
 extern double step;		/* time step per column = 1/ppsec */
-extern double fftfreq;		/* 1/fft size in seconds */
+extern double fft_freq;		/* 1/fft size in seconds */
+extern int speclen;		/* Size of linear spectral data,
+				 * close to (sample_rate/2)/fft_freq */
+extern int maglen;		/* Size of logarithmic spectral data
+				 * == height of the spectrogram in pixels */
 extern window_function_t window_function;/* Current FFT windowing function */
 extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */
@@ -32,11 +36,6 @@ extern bool exit_when_played;	/* -e  Exit when the file has played */
 extern bool fullscreen;		/* Start up in fullscreen mode? */
 extern int min_x, max_x, min_y, max_y;	/* spectrogram region of the display */
 extern bool green_line_off;	/* Also paint over the green line? */
-
-/* Audio file info */
-extern double audio_length;	/* Length of the audio in seconds */
-extern double sample_rate;	/* SR of the audio in Hertz */
-
 extern bool yflag;		/* display frequency axis? */
 extern double softvol;
 
