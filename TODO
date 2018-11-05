@@ -74,3 +74,5 @@ Include vol+ and vol- and play/pause/stop keys
 Limit the frequency zoom to some maximum instead of just refusing to
 turn the graphic upside down?
 ------------------------------------------------------------------------
+Keep setting fron one run to another (softvol, fftfreq etc)
+------------------------------------------------------------------------
