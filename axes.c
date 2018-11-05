@@ -50,6 +50,7 @@ draw_frequency_axis(void)
 
     gui_paint_rect(0, 0, min_x-1,  disp_height-1, black);
 
+    lock_gui();
     for (i=0; i < tick_count; i++) {
 	char s[6];
 	gui_putpixel(min_x-1, min_y + lrint(ticks.distance[i]),
@@ -58,13 +59,14 @@ draw_frequency_axis(void)
 		     (unsigned char *)&green);
 	if (ticks.value[i] != NO_NUMBER) {
 	    char *spacep;
+	    /* Left-align the number in the string, remove trailing spaces */
 	    sprintf(s, "%-5g", ticks.value[i]);
 	    if ((spacep = strchr(s, ' ')) != NULL) *spacep = '\0';
-	    draw_text(s,
-		      min_x-4, min_y+lrint(ticks.distance[i]),
+	    draw_text(s, min_x-4, min_y+lrint(ticks.distance[i]),
 		      RIGHT, CENTER);
 	}
     }
+    unlock_gui();
     gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 }
 
