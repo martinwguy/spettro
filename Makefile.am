@@ -33,7 +33,7 @@ EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
 
 bin_PROGRAMS = spettro
 
-desktopdir = $(datadir)/appllications
+desktopdir = $(datadir)/applications
 desktop_DATA = spettro.desktop
 icondir = $(datadir)/icons
 icon_DATA = spettro.png
