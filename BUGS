@@ -31,3 +31,7 @@ results unrefreshable because there is no work item for it, but there
 is no result in the result cache either.
 Solution: Keep track of which results are being calculated.
 ------------------------------------------------------------------------
+When increasing FFT size, that can increase max_magnitude and an erratic
+screen refresh leaves vertical stripes of diffrent brightnesses
+on the graphic. See vertical-stripes.png
+------------------------------------------------------------------------
