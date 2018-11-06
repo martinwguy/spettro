@@ -9,3 +9,4 @@ s/build EMOTION_SDL
 s/build AUDIOFILE
 s/build SNDFILE
 s/build SOX
+s/build AV

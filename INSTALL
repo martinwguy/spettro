@@ -11,11 +11,17 @@ On Debian/Ubuntu/Mint you need to:
 	apt-get install libsdl-dev
 	# or, for -DUSE_EMOTION:
 	apt-get install e17-dev libecore-dev libemotion-dev
+	# or, for -DUSE_EMOTION_SDL, all of the above.
 
 	# For -DUSE_LIBSNDFILE (the default):
 	apt-get install libsndfile-dev
 	# or, for -DUSE_LIBAUDIOFILE
 	apt-get install libaudiofile-dev
+	# or, for -DUSE_LIBSOX
+	apt-get install libsox-dev
+	# or, for -DUSE_LIBAV
+	apt-get install libavformat-dev libavfilter-dev
+	# libavformat-dev fetches the required libavcodec-dev and libavutil-dev
 
 and a compiler of some kind:
 	apt-get install build-essential

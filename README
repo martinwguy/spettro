@@ -1,7 +1,6 @@
-spettro - Show a moving log-frequency axis spectrograms of music while it plays
+spettro - Show a moving log-frequency axis spectrogram of music while it plays
 
-Following on from the work at http://wikidelia.net/wiki/Spectrograms
-here is a program play an audio file and show a scrolling spectrogram of it
+Here is a program to play an audio file and show a scrolling spectrogram of it
 with a vertical green one-pixel-wide line half way across the window to
 show the current playing position.
 
@@ -16,9 +15,9 @@ There is also:
 - An optional frequency axis label in Hertz
 - A "soft volume" control to raise the volume above 100%
 
-There is a screencast of it at https://youtu.be/fGRsLX0Ec1E
+- a screencast of it at https://youtu.be/fGRsLX0Ec1E
 
 Planned features are listed in TODO
 Known bugs are listed in BUGS
 
-    Martin Guy <martinwguy@gmail.com>, December 2016 - October 2018.
+    Martin Guy <martinwguy@gmail.com>, December 2016 - November 2018.

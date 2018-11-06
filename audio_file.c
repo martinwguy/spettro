@@ -24,6 +24,8 @@ static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_r
 /* Buffer used by the above */
 static double *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
+#elif USE_LIBAV
+# include "libav.h"
 #endif
 
 /* Audio file info */
@@ -119,6 +121,12 @@ open_audio_file(char *filename)
 	break;
     }
 
+#elif USE_LIBAV
+    libav_open_audio_file(&audio_file, filename);
+    if (audio_file == NULL) {
+	fprintf(stderr, "libav failed to open \"%s\"\n", filename);
+	return(NULL);
+    }
 #endif
 
     audio_file->filename = filename;
@@ -219,6 +227,8 @@ read_audio_file(audio_file_t *audio_file, char *data,
 #elif USE_LIBSOX
 	/* sox seeks in samples, not frames */
 	sox_seek(sf, start * audio_file->channels, SOX_SEEK_SET) != 0
+#elif USE_LIBAV
+	libav_seek(start) != 0
 #endif
 	) {
 	fprintf(stderr, "Failed to seek in audio file.\n");
@@ -245,7 +255,6 @@ read_audio_file(audio_file_t *audio_file, char *data,
 
 	/* libaudiofile does the mixing down to one channel for doubles */
         frames = afReadFrames(af, AF_DEFAULT_TRACK, write_to, frames_to_read);
-	if (frames == 0) break;
 
 #elif USE_LIBSNDFILE
 
@@ -259,9 +268,9 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	    }
 	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
 	}
-	if (frames == 0) break;
 
 #elif USE_LIBSOX
+
 	/* Shadows of write_to with an appropriate type */
     	double *dp;
     	signed short *sp;
@@ -332,6 +341,11 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	   fprintf(stderr, "Internal error: Unknown sample format.\n");
 	   abort();
 	}
+
+#elif USE_LIBAV
+
+	frames = libav_read_frames(write_to, frames_to_read, format);
+
 #endif
 
         if (frames > 0) {
@@ -365,6 +379,8 @@ close_audio_file(audio_file_t *audio_file)
 #elif USE_LIBSOX
     sox_close(audio_file->sf);
     free(sox_buf);
+#elif LIBAV
+    libav_close();
 #endif
 }
 

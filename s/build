@@ -55,6 +55,6 @@ do
     }
 done
 
-make -j2 clean spettro > /dev/null || { echo 'Build fails' 1>&2; exit 1; }
+make -j2 clean all > /dev/null || { echo 'Build fails' 1>&2; exit 1; }
 
 exit 0

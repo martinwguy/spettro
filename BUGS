@@ -35,3 +35,7 @@ When increasing FFT size, that can increase max_magnitude and an erratic
 screen refresh leaves vertical stripes of diffrent brightnesses
 on the graphic. See vertical-stripes.png
 ------------------------------------------------------------------------
+libav seeks to packet boundaries on MP3,FLAC,Ogg
+------------------------------------------------------------------------
+libav plays AAC and mp4 at one sixth of the speed.
+------------------------------------------------------------------------

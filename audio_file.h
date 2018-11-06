@@ -10,8 +10,10 @@
 # include <sndfile.h>
 #elif USE_LIBSOX
 # include <sox.h>
+#elif USE_LIBAV
+  /* nothing */
 #else
-# error "Define USE_LIBAUDIOFILE or USE_LIBSNDFILE or USE_LIBSOX"
+# error "Define one of USE_LIBAUDIOFILE USE_LIBSNDFILE USE_LIBSOX USE_LIBAV"
 #endif
 
 typedef struct audio_file {
@@ -22,6 +24,8 @@ typedef struct audio_file {
  	SNDFILE *sndfile;
 #elif USE_LIBSOX
 	sox_format_t *sf;
+#elif USE_LIBAV
+	/* keeps its private data as statics in filtering_audio.c */
 #endif
 	unsigned long samplerate;
 	unsigned long frames;	/* The file has (frames*channels) samples */

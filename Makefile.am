@@ -30,8 +30,10 @@ SDL_CFLAGS=`sdl2-config --cflags` -pthread
 SDL_LIBS=  `sdl2-config --libs` -lX11 -pthread
 EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
+AV_CFLAGS=`pkg-config --cflags libavformat libavcodec libavutil libavfilter`
+AV_LIBS=  `pkg-config --libs   libavformat libavcodec libavutil libavfilter`
 
-bin_PROGRAMS = spettro
+bin_PROGRAMS = spettro filtering_audio
 
 desktopdir = $(datadir)/applications
 desktop_DATA = spettro.desktop
@@ -40,12 +42,14 @@ icon_DATA = spettro.png
 
 spettro_SOURCES = main.c config.h spettro.h \
 	alloc.c audio.c audio_cache.c audio_file.c axes.c cache.c calc.c \
-	colormap.c convert.c gui.c interpolate.c key.c lock.c mouse.c \
+	colormap.c convert.c gui.c interpolate.c key.c libav.c lock.c mouse.c \
 	overlay.c scheduler.c spectrum.c text.c timer.c ui_funcs.c window.c \
 	\
 	alloc.h audio.h audio_cache.h audio_file.h axes.h cache.h calc.h\
-	colormap.h convert.h gui.h interpolate.h key.h lock.h mouse.h \
+	colormap.h convert.h gui.h interpolate.h key.h libav.h lock.h mouse.h \
 	overlay.h scheduler.h spectrum.h text.h timer.h ui_funcs.h window.h
+
+filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 
 # The source files that depend on USE_* defines from config.h
 # One day, a proper "configure" will make these go away
@@ -60,6 +64,8 @@ overlay.o: Makefile
 timer.o: Makefile
 audio_file.o: Makefile
 scheduler.o: Makefile
+filtering_audio.o: Makefile
+libav.o: Makefile
 
 tags:
 	ctags $(spettro_SOURCES)
