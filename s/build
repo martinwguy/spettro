@@ -1,0 +1,60 @@
+#! /bin/sh
+
+# build.sh: Build the name version:
+
+# Restore the original Makefile.am on exit and force a rebuild on "make"
+trap "mv -f Makefile.am.orig Makefile.am; touch Makefile.am" 0 INT
+
+mv -f Makefile.am Makefile.am.orig
+cp Makefile.am.orig Makefile.am
+
+for a
+do
+    echo Checking $a
+    case "$a" in
+    SDL1)
+    	sed -i -e '/^SDL_/s/sdl2-config/sdl-config/' Makefile.am
+	;;
+    SDL2)
+	continue
+	;;
+    EMOTION)
+	sed -i -e '/^AM_CFLAGS/s/USE_SDL/USE_EMOTION/' \
+	       -e '/^AM_CFLAGS/s/SDL_CFLAGS/EMOTION_CFLAGS/' \
+	       -e '/^AM_LDFLAGS/s/SDL_LIBS/EMOTION_LIBS/' Makefile.am
+	;;
+    EMOTION_SDL)
+	sed -i -e '/^AM_CFLAGS/s/USE_SDL/USE_EMOTION_SDL/' \
+	       -e '/^AM_CFLAGS/s/SDL_CFLAGS/&) $(EMOTION_CFLAGS/' \
+	       -e '/^AM_LDFLAGS/s/SDL_LIBS/SDL_LIBS) $(EMOTION_LIBS/' Makefile.am
+	;;
+    SOX)
+	continue
+	;;
+    AUDIOFILE)
+	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBAUDIOFILE/' \
+	       -e '/^AM_LDFLAGS/s/-lsox/-laudiofile/' Makefile.am
+	;;
+    SNDFILE)
+	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBSNDFILE/' \
+	       -e '/^AM_LDFLAGS/s/-lsox/-lsndfile/' Makefile.am
+	;;
+    AV)
+	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBAV/' \
+	       -e '/^AM_LDFLAGS/s/-lsox/$(AV_LIBS)/' Makefile.am
+	;;
+    *)
+    	echo "$a unrecognized"
+	echo "Usage: s/build [SDL1|SDL2|EMOTION|EMOTION_SDL] [SOX|AUDIOFILE|SNDFILE|AV]"; exit 1
+	;;
+    esac
+    cmp -s Makefile.am Makefile.am.orig && {
+	echo "$0 failed to modify Makefile.am"
+	diff Makefile.am.orig Makefile.am
+	exit 1
+    }
+done
+
+make -j2 clean spettro > /dev/null || { echo 'Build fails' 1>&2; exit 1; }
+
+exit 0

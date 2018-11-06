@@ -1,0 +1,11 @@
+#! /bin/sh
+
+# check-builds.sh: See if the source compiles with all USE_ variants
+
+s/build SDL1
+s/build SDL2
+s/build EMOTION
+s/build EMOTION_SDL
+s/build AUDIOFILE
+s/build SNDFILE
+s/build SOX
