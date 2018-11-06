@@ -186,7 +186,7 @@ main(int argc, char **argv)
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 'p':
-	case 'W': case 'c':
+	case 'W': case 'c': case 'v':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -237,37 +237,45 @@ main(int argc, char **argv)
 	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    break;
-	case 'v':
-	    printf("Version: %s\n", VERSION);
-	    exit(0);
 	/*
 	 * Parameters that take a floating point argument
 	 */
 	case 'p':	/* Play starting from time t */
-	case 'l': case 'r':	/* Set bar line positions */
+	case 'l':	/* Set left bar line position */
+	case 'r':	/* Set right bar line position */
 	case 'f':	/* Set FFT frequency */
+	case 'v':	/* Set software volume control */
 	    errno = 0;
 	    {
 		char *endptr;
-		double arg = strtof(argv[0], &endptr);
+		double arg = strtod(argv[0], &endptr);
 
-		if (arg < 0.0 || errno == ERANGE || endptr == argv[0]) {
-		    fprintf(stderr, "-%c %s must be a positive floating point value\n", letter, letter == 'f' ? "Hz" : "seconds");
+		if (errno == ERANGE || endptr == argv[0] || !isfinite(arg)) {
+		    fprintf(stderr, "The parameter to -%c must be a floating point number%s.\n",
+		    	    letter,
+			    letter == 'f' ? "in Hz" :
+			    letter != 'v' ? "in seconds" :
+			    "");
+		    exit(1);
+		}
+		/* They should all be >= 0 (well, except softvol!) */
+		if (arg < 0.0 && letter != 'v') {
+		    fprintf(stderr, "The argument to -%c must be positive.\n",
+		    	    letter);
+		    exit(1);
+		}
+		if (arg == 0.0 && letter == 'f') {
+		    fprintf(stderr, "The FFT frequency must be > 0.\n",
+		    	    letter);
 		    exit(1);
 		}
 		switch (letter) {
-		case 'p': disp_time = arg; break;
-		case 'l': bar_left_time = arg; break;
+		case 'p': disp_time = arg;	break;
+		case 'l': bar_left_time = arg;	break;
 		case 'r': bar_right_time = arg; break;
-		case 'f':
-		    if (arg <= 0.0) {
-			fprintf(stderr, "-f FFT frequency must be > 0\n");
-			exit(1);
-		    }
-		    fft_freq = arg;
-		    break;
+		case 'f': fft_freq = arg;	break;
+		case 'v': softvol = arg;	break;
 		}
-		/* We can't call set_bar_*_time() until audio_length is known */
 	    }
 	    break;
 	/*
@@ -297,14 +305,14 @@ main(int argc, char **argv)
 	    }
 	    break;
 
-
 	case 'y':
 	    yflag = TRUE;
 	    break;
 
 	default:
 	    fprintf(stderr,
-"Usage: spettro [options] [file.wav]\n\
+"Usage: spettro [options] [file]\n\
+Version %s\n\
 -a:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set spectrogram display height to n pixels\n\
@@ -316,7 +324,7 @@ main(int argc, char **argv)
 -k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
 -s     Overlay conventional score notation pentagrams as white lines\n\
 -g     Overlay lines showing the positions of a classical guitar's strings\n\
--v:    Print the version of spettro that you're using\n\
+-v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
        r for rectangular, k for Kaiser, n for Nuttall or h for Hann\n\
 -c map Select a color map from sox, sndfile, gray, print\n\
@@ -351,7 +359,7 @@ PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
 MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-", fft_freq, ppsec, min_freq, max_freq, -min_db);
+", VERSION, fft_freq, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	}
     }
