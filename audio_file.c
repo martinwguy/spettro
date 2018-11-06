@@ -35,13 +35,12 @@ double		sample_rate = 0.0;	/* SR of the audio in Hertz.
 audio_file_t *
 open_audio_file(char *filename)
 {
+    audio_file_t *audio_file = Malloc(sizeof(audio_file_t));
+
 #if USE_LIBAUDIOFILE
 
     AFfilehandle af;
-    audio_file_t *audio_file;
     int comptype;	/* Compression type */
-
-    audio_file = Malloc(sizeof(audio_file_t));
 
     if ((af = afOpenFile(filename, "r", NULL)) == NULL) {
 	/* By default it prints a line to stderr, which is what we want.
@@ -70,9 +69,6 @@ open_audio_file(char *filename)
     }
 
 #elif USE_LIBSNDFILE
-
-    static audio_file_t our_audio_file;
-    audio_file_t *audio_file = &our_audio_file;
     SF_INFO info;
     SNDFILE *sndfile;
 
@@ -99,9 +95,6 @@ open_audio_file(char *filename)
     }
 
 #elif USE_LIBSOX
-
-    static audio_file_t our_audio_file;
-    audio_file_t *audio_file = &our_audio_file;
     sox_format_t *sf;
 
     sox_init();
