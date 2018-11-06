@@ -74,5 +74,15 @@ Include vol+ and vol- and play/pause/stop keys
 Limit the frequency zoom to some maximum instead of just refusing to
 turn the graphic upside down?
 ------------------------------------------------------------------------
-Keep setting fron one run to another (softvol, fftfreq etc)
+Keep settings from one run to another (softvol, fftfreq etc)
+------------------------------------------------------------------------
+Profile the max amplitude for each bin to derive an equalization function
+------------------------------------------------------------------------
+Optional: When softvol makes it clip, adjust softvol accordingly
+------------------------------------------------------------------------
+'-p' can be > audio_length, but check that emotion_set_time() > length works.
+------------------------------------------------------------------------
+Change Makefile flags to USE_SDL1/USE_SDL2
+------------------------------------------------------------------------
+Make Ctrl-[yY] pan by one pixel
 ------------------------------------------------------------------------
