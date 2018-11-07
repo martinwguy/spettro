@@ -88,3 +88,14 @@ Make Ctrl-[yY] pan by one pixel
 ------------------------------------------------------------------------
 Drop the green line's black shadow on LCD displays by or-ing it into the data
 ------------------------------------------------------------------------
+Be able to increase the number of labels/divisions on the frequency axis
+------------------------------------------------------------------------
+If gui_v_scroll_by is called with >= screen height, don't.
+------------------------------------------------------------------------
+make gui_v_scroll_by respect min_y and max_y (or take them as params)
+------------------------------------------------------------------------
+make freq_pan_by take into account scrolls > graph height
+------------------------------------------------------------------------
+make freq_pan_by's pan_by amount reflect the current zoom:
+an Nth of the screen height rather than a fixed ratio.
+------------------------------------------------------------------------
