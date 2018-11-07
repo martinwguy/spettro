@@ -47,9 +47,6 @@
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
 
-static const char *filter_descr = "aresample=44100,aformat=sample_fmts=s16:channel_layouts=mono";
-static const char *player       = "ffplay -f s16le -ar 44100 -ac 1 -";
-
 static AVFormatContext *fmt_ctx;
 static AVCodecContext *dec_ctx;
 static AVFilterContext *buffersink_ctx;
@@ -237,6 +234,9 @@ int filtering_main(int argc, char **argv)
     AVPacket packet;
     AVFrame *frame = av_frame_alloc();
     AVFrame *filt_frame = av_frame_alloc();
+    const char *filter_descr =
+    		"aresample=8000,aformat=sample_fmts=s16:channel_layouts=mono";
+    const char *player = "ffplay -f s16le -ar 8000 -ac 1 -";
 
     if (!frame || !filt_frame) {
         perror("Could not allocate frame");
@@ -328,6 +328,7 @@ void
 libav_open_audio_file(audio_file_t **afp, const char *filename)
 {
     audio_file_t *audio_file = *afp;
+    char *filter_descr;
 
     if (!libav_is_initialized) {
         av_register_all();
