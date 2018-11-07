@@ -14,6 +14,8 @@ SDL2: SDL always turns numlock off on startup but if it was on, the light
       remains on so its action appears inverted.
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy
+This may be because it is seeking to the beginning/end of a frame instead
+of to a sample, like libav.
 ------------------------------------------------------------------------
 Check fftfreq problems
 spettro -f 50		you can move the graphic up but not down again
@@ -38,4 +40,12 @@ on the graphic. See vertical-stripes.png
 libav seeks to packet boundaries on MP3,FLAC,Ogg
 ------------------------------------------------------------------------
 libav plays AAC and mp4 at one sixth of the speed.
+------------------------------------------------------------------------
+On beppe4, EMOTION doesn't move the spectrogram when playing and consumes
+100% processor doing nothing (50% user, 50% system). On ciccio2, which has
+the same OS (Debian stretch), it works fine.
+SSH-ing from ciccio2 into beppe4 with X11forwarding, it works.
+SSH-ing from beppe4 into ciccio2 with X11forwarding, it doesn't work.
+Something to do with X or presence/absence of some X extension?
+This is using beppe4's crappy on-board SiS VGA controller.
 ------------------------------------------------------------------------
