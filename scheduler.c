@@ -169,7 +169,6 @@ ecore_calc_heavy(void *data, Ecore_Thread *thread)
 static int
 sdl_calc_heavy(void *data)
 {
-    int oldtype;
     calc_t *work;
 
     work = get_work();

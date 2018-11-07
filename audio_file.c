@@ -300,6 +300,7 @@ read_audio_file(audio_file_t *audio_file, char *data,
 		int clips = 0;
 		int i;
 
+		(void)clips;	/* Disable "unused variable" warning */
 		for (i=0; i<samples; i++) {
 		    *dp++ = SOX_SAMPLE_TO_FLOAT_64BIT(*bp++,clips);
 		}
@@ -311,6 +312,8 @@ read_audio_file(audio_file_t *audio_file, char *data,
 		for (i=0; i<frames; i++) {
 		    int channel;
 		    int clips = 0;
+
+		    (void)clips;	/* Disable "unused variable" warning */
 		    *dp = 0.0;
 		    for (channel=0; channel < audio_file->channels; channel++)
 			*dp += SOX_SAMPLE_TO_FLOAT_64BIT(*bp++,clips);

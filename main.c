@@ -265,8 +265,7 @@ main(int argc, char **argv)
 		    exit(1);
 		}
 		if (arg == 0.0 && letter == 'f') {
-		    fprintf(stderr, "The FFT frequency must be > 0.\n",
-		    	    letter);
+		    fprintf(stderr, "The FFT frequency must be > 0.\n");
 		    exit(1);
 		}
 		switch (letter) {
@@ -505,7 +504,7 @@ calc_columns(int from_col, int to_col)
 	/* Do any columns that are < disp_time in reverse order */
 	if (from < disp_time - DELTA) {
 	    double t;
-	    for (t=max(disp_time - step, t); t >= from - DELTA; t -= step) {
+	    for (t=disp_time - step; t >= from - DELTA; t -= step) {
 		calc_t *new = Malloc(sizeof(calc_t));
 		memcpy(new, calc, sizeof(calc_t));
 		new->t = t;
@@ -1016,7 +1015,6 @@ void
 paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
     float *logmag;
-    float old_max;		/* temp to detect when it changes */
     int y;
     unsigned int ov;		/* Overlay color temp; 0 = none */
 
@@ -1029,7 +1027,6 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     }
 
     logmag = Calloc(maglen, sizeof(*logmag));
-    old_max = logmax;
     logmax = interpolate(logmag, result->spec, from_y, to_y);
 
     /* For now, we just normalize each column to the maximum seen so far.

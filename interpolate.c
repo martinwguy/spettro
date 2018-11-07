@@ -38,37 +38,35 @@ static double mtoscache_sample_rate = 0.0;
 static double
 magindex_to_specindex(int magindex)
 {
-	double freq; /* The frequency that this output value represents */
+    /* Recalculate the array of values if any of the parameters changed */
+    if (speclen != mtoscache_speclen
+     || maglen != mtoscache_maglen
+     || min_freq != mtoscache_min_freq
+     || max_freq != mtoscache_max_freq
+     || sample_rate != mtoscache_sample_rate) {
+	int y;
 
-	/* Recalculate the array of values if any of the parameters changed */
-	if (speclen != mtoscache_speclen
-	 || maglen != mtoscache_maglen
-	 || min_freq != mtoscache_min_freq
-	 || max_freq != mtoscache_max_freq
-	 || sample_rate != mtoscache_sample_rate) {
-	    int y;
+	if (maglen != mtoscache_maglen)
+	    mtoscache = Realloc(mtoscache, (maglen+1) * sizeof(double));
 
-	    if (maglen != mtoscache_maglen)
-		mtoscache = Realloc(mtoscache, (maglen+1) * sizeof(double));
-	
-	    for (y=0; y <= maglen; y++) {
-		double freq = pixel_row_to_frequency(y);
-		mtoscache[y] = frequency_to_specindex(freq);
-	    }
-
-	    mtoscache_speclen = speclen;
-	    mtoscache_maglen = maglen;
-	    mtoscache_min_freq = min_freq;
-	    mtoscache_max_freq = max_freq;
-	    mtoscache_sample_rate = sample_rate;
+	for (y=0; y <= maglen; y++) {
+	    double freq = pixel_row_to_frequency(y);
+	    mtoscache[y] = frequency_to_specindex(freq);
 	}
 
-	if (magindex < 0 || magindex > maglen) {
-		fprintf(stderr, "Invalid magindex of %d\n", magindex);
-		abort();
-	}
+	mtoscache_speclen = speclen;
+	mtoscache_maglen = maglen;
+	mtoscache_min_freq = min_freq;
+	mtoscache_max_freq = max_freq;
+	mtoscache_sample_rate = sample_rate;
+    }
 
-	return mtoscache[magindex];
+    if (magindex < 0 || magindex > maglen) {
+	    fprintf(stderr, "Invalid magindex of %d\n", magindex);
+	    abort();
+    }
+
+    return mtoscache[magindex];
 }
 
 void

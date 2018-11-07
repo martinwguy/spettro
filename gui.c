@@ -319,7 +319,6 @@ gui_main()
 #elif SDL_MAIN
     {
 	SDL_Event event;
-	enum key key;
 
 # if SDL2
 	/* Use SDL2's TEXTINPUT mode so that keyboard mapping with Shift and
@@ -423,8 +422,6 @@ gui_main()
 static int
 get_next_SDL_event(SDL_Event *eventp)
 {
-    int nevents;
-
     /* Prioritise UI events over window refreshes, results and such */
     /* First, see if there are any UI events to be had */
     SDL_PumpEvents();

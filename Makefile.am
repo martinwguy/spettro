@@ -23,7 +23,7 @@
 # gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
 
 AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(SDL_CFLAGS) \
-	    -march=native
+	    -march=native -Wall
 AM_LDFLAGS = -lsox $(SDL_LIBS) -lfftw3 -lm
 
 SDL_CFLAGS=`sdl2-config --cflags` -pthread
