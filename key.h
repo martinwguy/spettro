@@ -47,6 +47,12 @@ enum key {
     KEY_N,
     KEY_0,
     KEY_9,
+#if ECORE_MAIN
+    KEY_PLAY,	/* Extended keyboard's >/|| [] |<< and >>| buttons */
+    KEY_STOP,
+    KEY_PREV,
+    KEY_NEXT,
+#endif
 };
 extern bool Shift, Control;
 

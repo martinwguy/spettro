@@ -22,23 +22,29 @@ Spettro is different. With its logarithmic frequency axis, every
 octave occupies the same amount of space, spreading the musical
 information out evenly in the same way as in conventional musical
 score notation.
-<H2>Usage</H2>
-To use it, you launch it from the command line with the audio file name
-as its argument, press the space bar to start it playing, pause it,
-or carry on playing it. When it gets to the end of the piece it stops,
-and pressing Space again to start again from the beginning.
 
 <H2>Keyboard commands</H2>
 
 <H3>Keys to position the graphic</H3>
 <DL>
+ <DT>Space
+  <DD>The space bar makes spettro play the file, scrolling the graphic
+      leftwards in time with the audio. Press it again and it pauses,
+      press it again and it continues playing. WHen it gets to the end
+      of the piece, it stops automatically; pressing Space again makes it
+      start playing again from the beginning.<BR>
+      If spettro was built to use the Enlightenment toolkit instead of SDL,
+      the Play/Pause media button has the same effect
+      and the Stop media button pauses playing.
  <DT>&larr; &rarr;
   <DD>Left arrow skips back one tenth of a screenful in the audio file.
-      If you were holding down a Shift key, it skips back a whole screenful;
-      if holding down Control, by one pixel; with both, by one second.
+      If a Shift key was held down, it skips back a whole screenful, and
+      holding down Control scrolls by one pixel; with both, by one second.
   <BR>Right arrow works similarly but skips forward in time instead of back.
  <DT>Home End
-  <DD>Home moves you to the start of the piece, End to the end.
+  <DD>Home moves you to the start of the piece, End to the end.<BR>
+      If spettro was built to use the Enlightenment toolkit instead of SDL,
+      the |<< ad >>| keys also do these.
  <DT>&uarr; &darr;
   <DD>Up arrow pans moves you up the frequency axis by a whole tone,
       moving the graphic down; down arrow pans down, revealing

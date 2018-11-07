@@ -552,6 +552,9 @@ do_key(enum key key)
 	break;
 
     case KEY_SPACE:	/* Play/Pause/Rewind */
+#if ECORE_MAIN
+    case KEY_PLAY:	/* Extended keyboard's >/|| button (EMOTION only) */
+#endif
 	switch (playing) {
 	case PLAYING:
 	    pause_audio();
@@ -567,6 +570,11 @@ do_key(enum key key)
 	    break;
 	}
 	break;
+#if ECORE_MAIN
+    case KEY_STOP:	/* Extended keyboard's [] button (EMOTION only) */
+	if (playing == PLAYING) pause_audio();
+	break;
+#endif
 
     /*
      * Arrow <-/->: Jump back/forward a tenth of a screenful
@@ -589,9 +597,15 @@ do_key(enum key key)
      * Home and End: Go to start or end of piece
      */
     case KEY_HOME:
+#if ECORE_MAIN
+    case KEY_PREV:	/* Extended keyboard's |<< button (EMOTION only) */
+#endif
 	set_playing_time(0.0);
 	break;
     case KEY_END:
+#if ECORE_MAIN
+    case KEY_NEXT:	/* Extended keyboard's >>| button (EMOTION only) */
+#endif
 	set_playing_time(audio_length);
 	break;
 

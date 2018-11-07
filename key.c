@@ -28,11 +28,12 @@ bool Shift, Control;
  *	The TEXTINPUT event ignores the keypad, the arrow keys and
  *	Control-X combinations.
  *
- * Other interesting Ecore key names:
- *	"XF86AudioPlay"	Media button >
- *	"XF86AudioStop"	Media button []
- *	"XF86AudioPrev"	Media button <<
- *	"XF86AudioNext"	Media button >>
+ * Other Ecore key names seen by Emotion:
+ *	"XF86HomePage"	|^|
+ *	"XF86Mail"	|v|
+ *
+ * SDL1 returns "unknown key" for |>/|| [] |<< and >>|, HomePage and Mail,
+ * SDL2 doesn't even get a keypress event for these.
  */
 
 #if ECORE_MAIN
@@ -159,6 +160,10 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "kp_divide"))		key = KEY_SLASH;
     else if (!strcmp(name, "asterisk"))			key = KEY_STAR;
     else if (!strcmp(name, "slash"))			key = KEY_SLASH;
+    else if (!strcmp(name, "xf86audioplay"))		key = KEY_PLAY;
+    else if (!strcmp(name, "xf86audiostop"))		key = KEY_STOP;
+    else if (!strcmp(name, "xf86audioprev"))		key = KEY_PREV;
+    else if (!strcmp(name, "xf86audionext"))		key = KEY_NEXT;
 #elif SDL_MAIN
 # if SDL1
     else if (!strcmp(name, "page up"))			key = KEY_PGUP;
