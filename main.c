@@ -309,9 +309,9 @@ main(int argc, char **argv)
 	    break;
 
 	default:
-	    fprintf(stderr,
+	    printf(
 "Usage: spettro [options] [file]\n\
-Version %s\n\
+Version %s built with %s and %s.\n\
 -a:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set spectrogram display height to n pixels\n\
@@ -358,7 +358,33 @@ PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
 MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-", VERSION, fft_freq, ppsec, min_freq, max_freq, -min_db);
+", VERSION,
+#if USE_EMOTION
+		"Enlightenment",
+#elif USE_EMOTION_SDL
+# if SDL1
+		"Enlightenment, SDL 1.2",
+# elif SDL2
+		"Enlightenment, SDL 2.0",
+# endif
+#elif USE_SDL
+# if SDL1
+		"SDL 1.2",
+# elif SDL2
+		"SDL 2.0",
+# endif
+#endif
+
+#if USE_LIBAUDIOFILE
+		"libaudiofile",
+#elif USE_LIBSNDFILE
+		"libsndfile",
+#elif USE_LIBSOX
+		"libSoX",
+#elif USE_LIBAV
+		"FFMPEG's libav",
+#endif
+   fft_freq, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	}
     }
