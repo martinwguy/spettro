@@ -362,15 +362,31 @@ fail:
 }
 
 /* Seek to sample frame "start".
+ *
+ * For uncompressed audio, it seeks to the right sample.
+ * For most compresed formats, it seeks to the start of the chunk that contains
+ * the sample frame, leaving "frames_to_skip" as the number of samples frames
+ * to skip when reading, to get the the right sample.
+ *
  * Returns 0 for success, non-zero for failure
  */
+
+static int frames_to_skip = 0;
+
 int
 libav_seek(int start)
 {
-    int64_t start_in_time_base =
-    	(int64_t)start * AV_TIME_BASE / dec_ctx->sample_rate;
-    if (av_seek_frame(fmt_ctx, -1, start_in_time_base, 0) < 0)
-	return 1;
+    int64_t dts;	/* Which sample frame did it actually seek to? */
+
+    if (av_seek_frame(fmt_ctx, audio_stream_index, start, AVSEEK_FLAG_BACKWARD)
+        < 0) return 1;
+
+    dts = fmt_ctx->streams[audio_stream_index]->cur_dts;
+    if (dts > start) { fprintf(stderr, "Late seek\n"); return -1; }
+
+    /* Tell libav_read_frames() how many samples to drop at the start */
+    frames_to_skip = start - dts;
+
     return 0;
 }
 
@@ -385,6 +401,11 @@ libav_read_frames(void *write_to, int frames_to_read, af_format_t format)
     uint16_t *sp = (uint16_t *)write_to;
     double *dp = (double *)write_to;
     int ret;
+
+    /* In chunked audio formats, libav_seek() moves to the start of the chunk
+     * containing the required offset. To get sample-precise audio we have to
+     * figure out where it really went and discard the extra initial samples.
+     */
 
     /* read enough packets */
     while (frames_written < frames_to_read) {
@@ -428,10 +449,15 @@ libav_read_frames(void *write_to, int frames_to_read, af_format_t format)
 			    const AVFrame *frame = filt_frame;
 			    const int channels = av_get_channel_layout_nb_channels(av_frame_get_channel_layout(frame));
 			    const int n = frame->nb_samples * channels;
-			    const int16_t *p     = (int16_t*)frame->data[0];
+			    const int16_t *p = (int16_t*)frame->data[0];
 			    const int16_t *p_end = p + n;
 
 			    while (p < p_end && frames_written < frames_to_read) {
+			    	if (frames_to_skip > 0) {
+				    p += channels;
+				    frames_to_skip--;
+				    continue;
+				}
 				switch (format) {
 				case af_signed:
 				    *sp++ = *p++;
