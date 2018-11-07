@@ -68,6 +68,9 @@
 #include <errno.h>
 #include <math.h>
 #include <ctype.h>	/* for tolower() */
+#if USE_LIBAV
+#include "libavformat/version.h"
+#endif
 
 /*
  * Local header files
@@ -308,10 +311,38 @@ main(int argc, char **argv)
 	    yflag = TRUE;
 	    break;
 
-	default:
+	default:	/* Print Usage message */
+	  {
+	    printf("Spettro version %s built with", VERSION);
+#if USE_EMOTION || USE_EMOTION_SDL
+	    printf(" Enlightenment %d.%d", EFL_VERSION_MAJOR, EFL_VERSION_MINOR);
+#endif
+#if USE_EMOTION_SDL
+	    printf(",");
+#endif
+#if USE_SDL || USE_EMOTION_SDL
+# if SDL1
+	    printf(" SDL 1.2");
+# elif SDL2
+	    printf(" SDL 2.0");
+# endif
+#endif
+	    printf(" and ");
+#if USE_LIBAUDIOFILE
+	    printf("libaudiofile %d.%d.%d",
+		    LIBAUDIOFILE_MAJOR_VERSION,
+		    LIBAUDIOFILE_MINOR_VERSION,
+		    LIBAUDIOFILE_MICRO_VERSION);
+#elif USE_LIBSNDFILE
+	    printf("libsndfile");
+#elif USE_LIBSOX
+	    printf("libSoX %s", sox_version());
+#elif USE_LIBAV
+	    printf("FFMPEG's libav %s", AV_STRINGIFY(LIBAVFORMAT_VERSION));
+#endif
+	    printf("\n");
 	    printf(
 "Usage: spettro [options] [file]\n\
-Version %s built with %s and %s.\n\
 -a:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set spectrogram display height to n pixels\n\
@@ -358,34 +389,9 @@ PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
 MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-", VERSION,
-#if USE_EMOTION
-		"Enlightenment",
-#elif USE_EMOTION_SDL
-# if SDL1
-		"Enlightenment, SDL 1.2",
-# elif SDL2
-		"Enlightenment, SDL 2.0",
-# endif
-#elif USE_SDL
-# if SDL1
-		"SDL 1.2",
-# elif SDL2
-		"SDL 2.0",
-# endif
-#endif
-
-#if USE_LIBAUDIOFILE
-		"libaudiofile",
-#elif USE_LIBSNDFILE
-		"libsndfile",
-#elif USE_LIBSOX
-		"libSoX",
-#elif USE_LIBAV
-		"FFMPEG's libav",
-#endif
-   fft_freq, ppsec, min_freq, max_freq, -min_db);
+", fft_freq, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
+	  }
 	}
     }
 
