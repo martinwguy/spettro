@@ -145,7 +145,7 @@ static audio_file_t *	audio_file;
 /* The maximum magnitude seen so far by interpolate() */
 static float logmax = 1.0;	/* maximum magnitude value seen so far */
 
-       bool yflag = FALSE;
+       bool show_axes = FALSE;	/* Are we to show/showing the axes? */
 
 int
 main(int argc, char **argv)
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
-	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 'p':
+	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
 	case 'W': case 'c': case 'v':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
@@ -202,7 +202,7 @@ main(int argc, char **argv)
 	}
 
 	switch (letter) {
-	case 'a':
+	case 'p':
 	    autoplay = TRUE;
 	    break;
 	case 'e':
@@ -243,7 +243,7 @@ main(int argc, char **argv)
 	/*
 	 * Parameters that take a floating point argument
 	 */
-	case 'p':	/* Play starting from time t */
+	case 't':	/* Play starting from time t */
 	case 'l':	/* Set left bar line position */
 	case 'r':	/* Set right bar line position */
 	case 'f':	/* Set FFT frequency */
@@ -272,7 +272,7 @@ main(int argc, char **argv)
 		    exit(1);
 		}
 		switch (letter) {
-		case 'p': disp_time = arg;	break;
+		case 't': disp_time = arg;	break;
 		case 'l': bar_left_time = arg;	break;
 		case 'r': bar_right_time = arg; break;
 		case 'f': fft_freq = arg;	break;
@@ -307,8 +307,8 @@ main(int argc, char **argv)
 	    }
 	    break;
 
-	case 'y':
-	    yflag = TRUE;
+	case 'a':
+	    show_axes = TRUE;
 	    break;
 
 	default:	/* Print Usage message */
@@ -343,13 +343,13 @@ main(int argc, char **argv)
 	    printf("\n");
 	    printf(
 "Usage: spettro [options] [file]\n\
--a:    Autoplay the file on startup\n\
+-p:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set spectrogram display height to n pixels\n\
 -w n   Set spectrogram display width to n pixels\n\
 -y     Label the vertical frequency axis\n\
 -f n   Set the FFT frequency (default: %g Hz)\n\
--p n   Set the initial playing time in seconds\n\
+-t n   Set the initial playing time in seconds\n\
 -j n   Set maximum number of threads to use (default: the number of CPUs)\n\
 -k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
 -s     Overlay conventional score notation pentagrams as white lines\n\
@@ -418,7 +418,7 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     step = 1 / ppsec;
     min_x = 0; max_x = disp_width - 1;
     min_y = 0; max_y = disp_height - 1;
-    if (yflag) min_x = FREQUENCY_AXIS_WIDTH;
+    if (show_axes) min_x = FREQUENCY_AXIS_WIDTH;
     speclen = fft_freq_to_speclen(fft_freq);
     maglen = (max_y - min_y) + 1;
 
@@ -444,7 +444,7 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 
     start_scheduler(max_threads);
 
-    if (yflag) draw_frequency_axis();
+    if (show_axes) draw_frequency_axis();
 
     repaint_display(FALSE); /* Schedules the initial screen refresh */
 
@@ -665,7 +665,7 @@ do_key(enum key key)
 	else if (key == KEY_PGDN)
 	    freq_pan_by(min_freq/max_freq);
 
-	if (yflag) draw_frequency_axis();
+	if (show_axes) draw_frequency_axis();
 	gui_update_display();
 	break;
 
@@ -718,7 +718,7 @@ do_key(enum key key)
 
     case KEY_A:
 	/* Toggle frequency axis */
-	if (yflag) {
+	if (show_axes) {
 	    /* Remove frequency axis */
 	    min_x = 0;
 	    repaint_columns(0, FREQUENCY_AXIS_WIDTH-1, min_y, max_y, FALSE);
@@ -727,7 +727,7 @@ do_key(enum key key)
 	    min_x = FREQUENCY_AXIS_WIDTH;
 	    draw_frequency_axis();
 	}
-	yflag = !yflag;
+	show_axes = !show_axes;
 	gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 	break;
 

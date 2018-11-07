@@ -36,7 +36,7 @@ extern bool exit_when_played;	/* -e  Exit when the file has played */
 extern bool fullscreen;		/* Start up in fullscreen mode? */
 extern int min_x, max_x, min_y, max_y;	/* spectrogram region of the display */
 extern bool green_line_off;	/* Also paint over the green line? */
-extern bool yflag;		/* display frequency axis? */
+extern bool show_axes;		/* display frequency axis? */
 extern double softvol;
 
 #define MAIN_H
