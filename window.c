@@ -44,11 +44,11 @@ window_name(window_function_t w)
 {
     switch (w) {
     case ANY:	 return "Any";
-    RECTANGULAR: return "Rectangular";
-    KAISER:	 return "Kaiser";
-    NUTTALL:	 return "Nuttall";
-    HANN:	 return "Hann";
-    default:	 return "Invalid";
+    case RECTANGULAR:	return "Rectangular";
+    case KAISER:	return "Kaiser";
+    case NUTTALL:	return "Nuttall";
+    case HANN:	 	return "Hann";
+    default:	 	return "?Invalid";
     }
 }
 
