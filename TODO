@@ -86,3 +86,5 @@ Change Makefile flags to USE_SDL1/USE_SDL2
 ------------------------------------------------------------------------
 Make Ctrl-[yY] pan by one pixel
 ------------------------------------------------------------------------
+Drop the green line's black shadow on LCD displays by or-ing it into the data
+------------------------------------------------------------------------
