@@ -39,3 +39,11 @@ libav seeks to packet boundaries on MP3,FLAC,Ogg
 ------------------------------------------------------------------------
 libav plays AAC and mp4 at one sixth of the speed.
 ------------------------------------------------------------------------
+On beppe4, EMOTION doesn't move the spectrogram when playing and consumes
+100% processor doing nothing (50% user, 50% system). On ciccio2, which has
+the same OS (Debian stretch), it works fine.
+SSH-ing from ciccio2 into beppe4 with X11forwarding, it works.
+SSH-ing from beppe4 into ciccio2 with X11forwarding, it doesn't work.
+Something to do with X or presence/absence of some X extension?
+This is using beppe4's crappy on-board SiS VGA controller.
+------------------------------------------------------------------------
