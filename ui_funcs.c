@@ -9,6 +9,7 @@
 #include "ui_funcs.h"
 #include "audio.h"
 #include "axes.h"
+#include "convert.h"
 #include "scheduler.h"
 #include "timer.h"
 #include "main.h"
@@ -79,15 +80,7 @@ time_zoom_by(double by)
 void
 freq_pan_by(double by)
 {
-    double log_one_pixel = log(max_freq/min_freq) / (max_y - min_y);
-    /* How many times do we have to multiply one_pixel by to get "by"?
-     * one_pixel ^ by_pixels == by
-     * exp(log(one_pixel) * by_pixels) == by
-     * log(one_pixel) * by_pixels == log(by)
-     * by_pixels == log(by) / log(one_pixel);
-     */
-    int by_pixels;
-    register int x;
+    int by_pixels;	/* How many pixels to scroll by */
 
     min_freq *= by;
     max_freq *= by;
@@ -104,18 +97,32 @@ freq_pan_by(double by)
 	min_freq = fft_freq;
     }
 
-    by_pixels = lrint(log(by) / log_one_pixel);
-    gui_v_scroll_by(by_pixels);
+    /* How many pixels represent a frequency ratio of "by"?
+     * one_pixel ^ by_pixels == by
+     * exp(log(one_pixel) * by_pixels) == by
+     * log(one_pixel) * by_pixels == log(by)
+     * by_pixels == log(by) / log(one_pixel);
+     */
+    by_pixels = lrint(log(by) / log(v_pixel_freq_ratio()));
 
-    /* repaint the newly-exposed area */
-    for (x=min_x; x <= max_x; x++) {
-	if (by_pixels > 0) {
-	    /* Moving to higher frequencies: repaint the top rows */
-	    repaint_column(x, max_y - by_pixels + 1, max_y, TRUE);
-	}
-	if (by_pixels < 0) {
-	    /* Moving to lower frequencies: repaint the bottom rows */
-	    repaint_column(x, min_y, min_y - by_pixels - 1, TRUE);
+    /* If the scroll is more than a screenful, repaint all displayed columns */
+    if (abs(by_pixels) >= max_y - min_y + 1) {
+	repaint_display(TRUE);
+    } else {
+        register int x;
+
+	gui_v_scroll_by(by_pixels);
+
+	/* repaint the newly-exposed area */
+	for (x=min_x; x <= max_x; x++) {
+	    if (by_pixels > 0) {
+		/* Moving to higher frequencies: repaint the top rows */
+		repaint_column(x, max_y - by_pixels + 1, max_y, TRUE);
+	    }
+	    if (by_pixels < 0) {
+		/* Moving to lower frequencies: repaint the bottom rows */
+		repaint_column(x, min_y, min_y - by_pixels - 1, TRUE);
+	    }
 	}
     }
 }

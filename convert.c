@@ -1,4 +1,5 @@
-/* convert.c: Functions to convert one kind of value to another */
+/* convert.c: Functions to convert one kind of value to another and
+ * compute useful values from the global data. */
 
 #include "spettro.h"
 #include "convert.h"
@@ -8,12 +9,14 @@
 #include <math.h>
 
 /* Return the frequency ratio between one pixel row and the one above,
- * used to scroll/zoom by one pixel
+ * used to scroll/zoom by one pixel.
+ * e.g. If the graph is 480 pixels high, it's the 479th root of the ratio
+ * between the top and bottom frequencies.
  */
 double
-one_vertical_pixel()
+v_pixel_freq_ratio()
 {
-    return exp(log(max_freq/min_freq)/(max_y-min_y));
+    return pow(max_freq / min_freq, 1.0 / (max_y - min_y));
 }
 
 /* What frequency does the centre of this pixel row represent? */
@@ -26,7 +29,6 @@ double frequency_to_specindex(double freq)
 {
     return freq * speclen / (sample_rate/2);
 }
-
 
 /*
  *	Choose a good FFT size for the given fft frequency

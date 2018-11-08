@@ -653,11 +653,11 @@ do_key(enum key key)
     case KEY_PGUP:
     case KEY_PGDN:
 	if (key == KEY_UP)
-	    freq_pan_by(Control ? one_vertical_pixel() :
+	    freq_pan_by(Control ? v_pixel_freq_ratio() :
 		        Shift ? 2.0 :
 			pow(2.0, 1/6.0));
 	else if (key == KEY_DOWN)
-	    freq_pan_by(Control ? 1/ one_vertical_pixel() :
+	    freq_pan_by(Control ? 1.0 / v_pixel_freq_ratio() :
 		        Shift ? 1/2.0 :
 			pow(2.0, -1/6.0));
 	else if (key == KEY_PGUP)
