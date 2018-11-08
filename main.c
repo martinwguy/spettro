@@ -345,8 +345,8 @@ main(int argc, char **argv)
 "Usage: spettro [options] [file]\n\
 -p:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
--h n   Set spectrogram display height to n pixels\n\
--w n   Set spectrogram display width to n pixels\n\
+-h n   Set the window's height to n pixels\n\
+-w n   Set the window's width to n pixels\n\
 -y     Label the vertical frequency axis\n\
 -f n   Set the FFT frequency (default: %g Hz)\n\
 -t n   Set the initial playing time in seconds\n\
@@ -363,13 +363,13 @@ If no filename is supplied, it opens \"audio.wav\"\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by a tenth of a screenful\n\
            Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
-Up/Down    Pan up/down the frequency axis by a whole tone\n\
-           (by an octave if Shift is held; by one pixel if Control is held)\n\
-PgUp/PgDn  Pan up/down the frequency axis by a screenful\n\
-X/x        Zoom in/out on the time axis by a factor of 2\n\
-Y/y        Zoom in/out on the frequency axis by a factor of 2\n\
-Plus/Minus Zoom in/out on both axes\n\
-c          Flip between color maps: sox - sndfile-spectrogram\n\
+Up/Down    Pan up/down the frequency axis by a tenth of the graph's height\n\
+           (by a screenful if Shift is held; by one pixel if Control is held)\n\
+PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
+X/x        Zoom in/out on the time axis\n\
+Y/y        Zoom in/out on the frequency axis\n\
+Plus/Minus Zoom both axes\n\
+c          Flip between color maps: heat map - grayscale - gray for printer\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
@@ -642,24 +642,26 @@ do_key(enum key key)
 	break;
 
     /*
-     * Arrow Up/Down: Pan the frequency axis by a tone.
-     * With Shift: by an octave. With Control, by a pixel.
+     * Arrow Up/Down: Pan the frequency axis by a tenth of the screen height.
+     * With Shift: by a screenful. With Control, by a pixel.
      * The argument to freq_pan_by() multiplies min_freq and max_freq.
-     * Page Up/Down: Pan the frequency axis by (up to) a screenful
+     * Page Up/Down: Pan the frequency axis by a screenful
      */
+    case KEY_PGUP:
+    case KEY_PGDN:
+	if (Shift || Control) break;
     case KEY_UP:
     case KEY_DOWN:
 	if (Shift && Control) break;
-    case KEY_PGUP:
-    case KEY_PGDN:
+
 	if (key == KEY_UP)
-	    freq_pan_by(Control ? v_pixel_freq_ratio() :
-		        Shift ? 2.0 :
-			pow(2.0, 1/6.0));
+	    freq_pan_by(Control ? v_pixel_freq_ratio():
+		        Shift ? max_freq / min_freq :
+			pow(max_freq / min_freq, 1/10.0));
 	else if (key == KEY_DOWN)
 	    freq_pan_by(Control ? 1.0 / v_pixel_freq_ratio() :
-		        Shift ? 1/2.0 :
-			pow(2.0, -1/6.0));
+		        Shift ? min_freq / max_freq :
+			pow(min_freq / max_freq, 1/10.0));
 	else if (key == KEY_PGUP)
 	    freq_pan_by(max_freq/min_freq);
 	else if (key == KEY_PGDN)

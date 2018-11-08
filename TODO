@@ -88,6 +88,5 @@ If gui_v_scroll_by is called with >= screen height, don't.
 ------------------------------------------------------------------------
 Unlimit frequency zoom.
 ------------------------------------------------------------------------
-make freq_pan_by's pan_by amount reflect the current zoom:
-an Nth of the screen height rather than a fixed ratio.
+Make frequency zoom with Shift double, less without, with Ctrl by a pixel.
 ------------------------------------------------------------------------
