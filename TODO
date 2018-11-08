@@ -49,30 +49,24 @@ appears in the display area.
 ------------------------------------------------------------------------
 Try scaling magnitudes with frequency to unweight its bottom-heaviness.
 ------------------------------------------------------------------------
-Try ffmpeg for audio file decoding.
+Give configure --with flags instead of Makefile's USE_ stuff.
+------------------------------------------------------------------------
+Move toolkit-specific stuff each to their own file.
 ------------------------------------------------------------------------
 Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 ------------------------------------------------------------------------
 samplerate->sample_rate
-af_format->af_format_t
 ------------------------------------------------------------------------
 Check that this/next stuff in interpolate() centres frequencies on that
 pixel rather than being slightly above/below it.
 ------------------------------------------------------------------------
-disp_height should be the height of the display, not of the spectrogram,
-which depends on {min,max}_y, so maybe reinstate maglen?
+Check uses of disp_height to respect {min,max}_y where approriate in
+- gui_?_scroll()
 ------------------------------------------------------------------------
 Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
 ------------------------------------------------------------------------
 Rename speclen and maglen
-------------------------------------------------------------------------
-interpolate(): Does it really use mag[maglen]?
-------------------------------------------------------------------------
-Include vol+ and vol- and play/pause/stop keys
-------------------------------------------------------------------------
-Limit the frequency zoom to some maximum instead of just refusing to
-turn the graphic upside down?
 ------------------------------------------------------------------------
 Keep settings from one run to another (softvol, fftfreq etc)
 ------------------------------------------------------------------------
@@ -80,11 +74,11 @@ Profile the max amplitude for each bin to derive an equalization function
 ------------------------------------------------------------------------
 Optional: When softvol makes it clip, adjust softvol accordingly
 ------------------------------------------------------------------------
-'-p' can be > audio_length, but check that emotion_set_time() > length works.
+'-t' can be > audio_length, but check that emotion_set_time() > length works.
 ------------------------------------------------------------------------
 Change Makefile flags to USE_SDL1/USE_SDL2
 ------------------------------------------------------------------------
-Make Ctrl-[yY] pan by one pixel
+Use Shift-B do darkness instead of 'd'.
 ------------------------------------------------------------------------
 Drop the green line's black shadow on LCD displays by or-ing it into the data
 ------------------------------------------------------------------------
@@ -92,9 +86,7 @@ Be able to increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
 If gui_v_scroll_by is called with >= screen height, don't.
 ------------------------------------------------------------------------
-make gui_v_scroll_by respect min_y and max_y (or take them as params)
-------------------------------------------------------------------------
-make freq_pan_by take into account scrolls > graph height
+Unlimit frequency zoom.
 ------------------------------------------------------------------------
 make freq_pan_by's pan_by amount reflect the current zoom:
 an Nth of the screen height rather than a fixed ratio.
