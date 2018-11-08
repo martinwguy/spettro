@@ -128,16 +128,28 @@ freq_pan_by(double by)
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
- * Values > 1.0 zoom in; values < 1.0 zoom out.
+ *
+ * A zoom-in (by > 1.0) reduces the range of displayed frequency values, while
+ * a zoom-out (by < 1.0) increases the range of displayed frequencies
+ * In each case, remaining centred on the middle of the graphic.
  */
 void
 freq_zoom_by(double by)
 {
-    /* Without this, zooming in too much turns the graphic upside-down */
-    if (max_freq / by <= min_freq * by + DELTA) return;
+    double center_frequency = sqrt(min_freq * max_freq);
+    double range = max_freq / min_freq;
 
-    max_freq /= by;
-    min_freq *= by;
+    if (by == 2.0) {
+	/* Zoom in by 2.0 */
+	range = sqrt(range);
+	max_freq = center_frequency * sqrt(range);
+	min_freq = center_frequency / sqrt(range);
+    } else if (by == 0.5) {
+	/* Zoom out by 2.0 */
+	range = range*range;
+	max_freq = center_frequency * (range * range);
+	min_freq = center_frequency / (range * range);
+    } else fprintf(stderr, "Huh?\n");
 
     /* Limit to fft_freq..Nyquist */
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
