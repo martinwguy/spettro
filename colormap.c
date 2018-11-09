@@ -5,10 +5,23 @@
 #include "spettro.h"
 #include "colormap.h"
 
+#include "gui.h"
+
 #include <math.h>
 
+/* Which elements of *_map[] represent which primary colors? */
+#define R 0
+#define G 1
+#define B 2
+
+/* The type of the value for one primary color */
+typedef unsigned char primary_t;
+
+/* color maps run from the RGB color of the brightest value (0.0) to
+ * the colors for a value of min_db */
+
 /* Heatmap from sox spectrogram */
-static unsigned char sox_map[][3] = {
+static primary_t sox_map[][3] = {
     {242,255,235}, {242,255,232}, {241,255,230}, {241,255,228},
     {241,255,225}, {241,255,223}, {241,255,221}, {240,254,218},
     {240,254,216}, {240,254,214}, {240,254,212}, {240,254,209},
@@ -56,39 +69,40 @@ static unsigned char sox_map[][3] = {
 #define sox_map_len (sizeof(sox_map) / sizeof(sox_map[0]))
 
 /* White marks on a black background */
-static unsigned char gray_map[][3] = {
+static primary_t gray_map[][3] = {
     { 255, 255, 255 },	/* -0dB */
     {   0,   0,   0 },  /* min_db */
 };
 #define gray_map_len (sizeof(gray_map) / sizeof(gray_map[0]))
 
 /* Black marks on a white background */
-static unsigned char print_map[][3] = {
+static primary_t print_map[][3] = {
     {   0,   0,   0 },	/* -0dB */
     { 255, 255, 255 },  /* min_db */
 };
 #define print_map_len (sizeof(print_map) / sizeof(print_map[0]))
 
-static unsigned char (*map)[3] = sox_map;
+static primary_t (*map)[3] = sox_map;
 static int map_len = sox_map_len;
 
-/* Which color map do they want? */
-static int which = 0;
+/* Which color map are we using? */
+static int which = HEAT_MAP;
 
 void
 set_colormap(int w)
 {
-    switch (which = w) {
-    case HEAT_MAP: map = sox_map;	map_len = sox_map_len;		break;
-    case GRAY_MAP: map = gray_map;	map_len = gray_map_len;		break;
-    case PRINT_MAP: map = print_map;	map_len = print_map_len;	break;
+    which = w;
+    switch (which) {
+    case HEAT_MAP:    map = sox_map;	map_len = sox_map_len;    break;
+    case GRAY_MAP:    map = gray_map;	map_len = gray_map_len;   break;
+    case PRINT_MAP:   map = print_map;	map_len = print_map_len;  break;
     }
 }
 
 void
 change_colormap()
 {
-    set_colormap((which + 1) % NMAPS);
+    set_colormap((which + 1) % NUMBER_OF_COLORMAPS);
 }
 
 /*
@@ -98,28 +112,27 @@ change_colormap()
  * "min_db" is the negative decibel value for the bottom of the color range.
  * The resulting color is deposited in color[B,G,R].
  */
-void
-colormap(double value, double min_db, unsigned char *color)
+color_t
+colormap(double value, double min_db)
 {
-    double rem;
-    double findx;
-    int indx;
+    double findx;  /* floating-point version of indx */
+    int indx;	/* Index into colormap for a value <= the current one */
+    double rem; /* How far does this fall between one index and another
+    		 * 0.0 <= rem < 1.0 */
 
-    if (value >= 0.0) {
-	color[0] = map[0][0];
-	color[1] = map[0][1];
-	color[2] = map[0][2];
-	return;
-    }
+    /* Map over-bright values to the brightest color */
+    if (DELTA_GE(value, 0.0))	 return RGB_to_color(map[0][R],
+    						     map[0][G],
+						     map[0][B]);
 
-    if (value <= min_db) {
-	color[0] = map[map_len-1][0];
-	color[1] = map[map_len-1][1];
-	color[2] = map[map_len-1][2];
-	return;
-    }
+    /* Map values below the dynamic range to the dimmest color */
+    if (DELTA_LE(value, min_db)) return RGB_to_color(map[map_len-1][R],
+						     map[map_len-1][G],
+						     map[map_len-1][B]);
     
-    /* floating-point version of indx */
+    /* value is < 0.0 and > min_db.
+     * Interpolate between elements of the color map.
+     */
     findx = value * (map_len-1) / min_db;
     indx = lrintf(floor(findx));
     rem = fmod(findx, 1.0);
@@ -128,18 +141,15 @@ colormap(double value, double min_db, unsigned char *color)
 	fprintf(stderr, "colormap: array index is %d because value is %g.\n",
 		indx, value);
 	/* Carry on with the show */
-	return;
+	return gray;
     }
 
     if (indx > map_len - 2) {	/* Need map[indx] and map[indx+1] */
-	color[0] = color[1] = color[2] = 0;
-	return;
+	return black;
     }
 
-    /* The map is R,G,B while color[] is [B,G,R] (to match ARGB on a little-endian machine) */
-    color[2] = lrintf((1.0 - rem) * map[indx][0] + rem * map[indx + 1][0]);
-    color[1] = lrintf((1.0 - rem) * map[indx][1] + rem * map[indx + 1][1]);
-    color[0] = lrintf((1.0 - rem) * map[indx][2] + rem * map[indx + 1][2]);
-
-    return;
+    return RGB_to_color(
+        (primary_t) lrint((1.0 - rem) * map[indx][R] + rem * map[indx + 1][R]),
+	(primary_t) lrint((1.0 - rem) * map[indx][G] + rem * map[indx + 1][G]),
+	(primary_t) lrint((1.0 - rem) * map[indx][B] + rem * map[indx + 1][B]));
 }

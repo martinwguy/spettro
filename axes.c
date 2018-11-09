@@ -49,10 +49,8 @@ draw_frequency_axis(void)
     gui_lock();
     for (i=0; i < tick_count; i++) {
 	char s[16];	/* [6] is probably enough */
-	gui_putpixel(min_x-1, min_y + lrint(tick_distance[i]),
-		     (unsigned char *)&green);
-	gui_putpixel(min_x-2, min_y + lrint(tick_distance[i]),
-		     (unsigned char *)&green);
+	gui_putpixel(min_x-1, min_y + lrint(tick_distance[i]), green);
+	gui_putpixel(min_x-2, min_y + lrint(tick_distance[i]), green);
 	if (tick_value[i] != NO_NUMBER) {
 	    char *spacep;
 	    /* Left-align the number in the string, remove trailing spaces */

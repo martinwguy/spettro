@@ -54,12 +54,12 @@ static SDL_Surface *screen;
 #endif
 
 #if EVAS_VIDEO
-const unsigned background = 0xFF808080;	/* 50% grey */
-const unsigned green	  = 0xFF00FF00;
-const unsigned white	  = 0xFFFFFFFF;
-const unsigned black	  = 0xFF000000;
+const color_t gray	= 0xFF808080;
+const color_t green	= 0xFF00FF00;
+const color_t white	= 0xFFFFFFFF;
+const color_t black	= 0xFF000000;
 #elif SDL_VIDEO
-unsigned background, green, white, black;
+color_t gray, green, white, black;
 #endif
 
 #if SDL_MAIN
@@ -224,10 +224,10 @@ gui_init(char *filename)
     screen = SDL_GetWindowSurface(window);
 # endif
 
-    background	= SDL_MapRGB(screen->format, 0x80, 0x80, 0x80);
-    green	= SDL_MapRGB(screen->format, 0x00, 0xFF, 0x00);
-    white	= SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF);
-    black	= SDL_MapRGB(screen->format, 0x00, 0x00, 0x01); /* 0 means "no overlay */
+    background	= RGB_to_color(0x80, 0x80, 0x80);	/* 50% gray */
+    green	= RGB_to_color(0x00, 0xFF, 0x00);
+    white	= RGB_to_color(0xFF, 0xFF, 0xFF);
+    black	= RGB_to_color(0x00, 0x00, 0x00);
 
     /* Clear the image buffer to the background color */
     if (SDL_FillRect(screen, NULL, background) != 0) {
@@ -629,7 +629,7 @@ gui_v_scroll_by(int scroll_by)
 
 /* Fill a rectangle with a single colour" */
 void
-gui_paint_rect(int from_x, int from_y, int to_x, int to_y, unsigned int color)
+gui_paint_rect(int from_x, int from_y, int to_x, int to_y, color_t color)
 {
 #if EVAS_VIDEO
     unsigned char *p;	/* pointer to pixel to set */
@@ -679,20 +679,31 @@ gui_unlock()
 #endif
 }
 
-/* Calls to this should be bracketed by gui_lock() and gui_unlock(). */
-void
-gui_putpixel(int x, int y, unsigned char *color)
+/* Convert a 0-255 value of red, green and blue to a color_t */
+color_t
+RGB_to_color(primary_t red, primary_t green, primary_t blue)
 {
 #if EVAS_VIDEO
-    unsigned int *row;	/* of pixels */
+    return red | (green << 8) | (blue << 16) | 0xFF000000;
+#elif SDL_VIDEO
+    return SDL_MapRGB(screen->format, red, green, blue);
+#endif
+}
+
+/* Calls to this should be bracketed by gui_lock() and gui_unlock(). */
+void
+gui_putpixel(int x, int y, color_t color)
+{
+#if EVAS_VIDEO
+    color_t *row;	/* of pixels */
 # endif
 
     if (x < 0 || x >= disp_width ||
 	y < 0 || y >= disp_height) return;
 
 #if EVAS_VIDEO
-    row = (unsigned int *)&imagedata[imagestride * ((disp_height-1) - y)];
-    row[x] = (color[0]) | (color[1] << 8) | (color[2] << 16) | 0xFF000000;
+    row = (color_t *)&imagedata[imagestride * ((disp_height-1) - y)];
+    row[x] = color;
 #elif SDL_VIDEO
 
 /* Macro derived from http://sdl.beuc.net/sdl.wiki/Pixel_Access's putpixel() */
@@ -700,7 +711,6 @@ gui_putpixel(int x, int y, unsigned char *color)
 	((Uint32 *)((Uint8 *)surface->pixels + (y) * surface->pitch))[x] = pixel
 
     /* SDL has y=0 at top */
-    putpixel(screen, x, (disp_height-1) - y,
-	     SDL_MapRGB(screen->format, color[2], color[1], color[0]));
+    putpixel(screen, x, (disp_height-1) - y, color);
 # endif
 }

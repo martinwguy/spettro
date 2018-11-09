@@ -21,11 +21,11 @@ static char *digits[] = {
 static const int digit_stride = 10;
 
 static char *letters[] = {
-    "000", "00 ", "000", "00 ", "000", "000", " 00",
+    " 0 ", "00 ", " 00", "00 ", "000", "000", " 00",
     "0 0", "0 0", "0  ", "0 0", "0  ", "0  ", "0  ",
-    "0 0", "00 ", "0  ", "0 0", "000", "000", "0 0",
+    "0 0", "00 ", "0  ", "0 0", "00 ", "00 ", "0 0",
     "000", "0 0", "0  ", "0 0", "0  ", "0  ", "0 0",
-    "0 0", "00 ", "000", "00 ", "000", "0  ", " 0 ",
+    "0 0", "00 ", " 00", "00 ", "000", "0  ", " 0 ",
 };
 static const int letter_stride = 7;
 
@@ -80,19 +80,18 @@ draw_text(char *text, int at_x, int at_y,
 	    for (col = 0; col<3; col++) {
 	        for (row = 0; row<5; row++) {
 		   gui_putpixel(at_x + col, at_y - row,
-				(unsigned char *)(glyphs[stride*row + digit][col] == '0'
-				? &green : &black));
+				glyphs[stride*row + digit][col] == '0'
+				? green : black);
 		}
 	    }
 	    /* Paint the inter-character gap if there's another character */
 	    if (text[x+1])
 	        for (row = 0; row<5; row++)
-		   gui_putpixel(at_x + 3, at_y - row,
-				(unsigned char *)&black);
+		   gui_putpixel(at_x + 3, at_y - row, black);
 	    at_x += 4;
 	} else if (c == '.') {
 	    gui_paint_rect(at_x, at_y - 4, at_x+1, at_y, black);
-	    gui_putpixel(at_x, at_y - 4, (unsigned char *)&green);
+	    gui_putpixel(at_x, at_y - 4, green);
 	    at_x += 2;
 	}
     }

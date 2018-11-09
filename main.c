@@ -1012,7 +1012,7 @@ repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
     for (x=from_x; x <= to_x; x++) {
 	if (refresh_only) {
 	    /* Don't repaint bar lines or the green line */
-	    if (get_col_overlay(x) != 0) continue;
+	    if (get_col_overlay(x, NULL)) continue;
 	}
 	repaint_column(x, min_y, max_y, refresh_only);
     }
@@ -1060,7 +1060,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
-	if (get_col_overlay(column)) return;
+	if (get_col_overlay(column, NULL)) return;
 
 	/* If there's any result for this column in the cache, it should be
 	 * displaying something, but it might be for the wrong speclen/window.
@@ -1081,8 +1081,8 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	     * so it can't be displaying any spectral data */
 	}
     } else {
-	unsigned int ov;
-	if ((ov = get_col_overlay(column)) != 0) {
+	color_t ov;
+	if (get_col_overlay(column, &ov)) {
 	    gui_paint_column(column, from_y, to_y, ov);
 	} else
 	/* If we have the right spectral data for this column, repaint it */
@@ -1110,12 +1110,12 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
     float *logmag;
     int y;
-    unsigned int ov;		/* Overlay color temp; 0 = none */
+    color_t ov;		/* Overlay color */
 
     /*
      * Apply column overlay
      */
-    if ((ov = get_col_overlay(pos_x)) != 0) {
+    if (get_col_overlay(pos_x, &ov)) {
 	gui_paint_column(pos_x, from_y, to_y, ov);
 	return;
     }
@@ -1129,14 +1129,9 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     gui_lock();		/* Allow pixel-writing access */
     for (y=from_y; y <= to_y; y++) {
 	/* Apply row overlay, if any, otherwise paint the pixel */
-	if ( (ov = get_row_overlay(y)) != 0) {
-	    unsigned char *color = (unsigned char *) &ov;
-	    gui_putpixel(pos_x, y, color);
-	} else {
-	    unsigned char color[3];
-	    colormap(20.0 * (logmag[y] - logmax), min_db, color);
-	    gui_putpixel(pos_x, y, color);
-	}
+	gui_putpixel(pos_x, y,
+		     get_row_overlay(y, &ov)
+		     ? ov : colormap(20.0 * (logmag[y] - logmax), min_db));
     }
     gui_unlock();
 
