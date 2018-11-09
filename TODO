@@ -84,10 +84,7 @@ Drop the green line's black shadow on LCD displays by or-ing it into the data
 ------------------------------------------------------------------------
 Be able to increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
-If gui_v_scroll_by is called with >= screen height, don't.
-------------------------------------------------------------------------
-Unlimit frequency zoom out.
-The axis code needs fixing for this to work.
+Unlimit frequency zoom out. The axis code needs fixing for this to work.
 ------------------------------------------------------------------------
 Make frequency zoom with Shift double, less without, with Ctrl by a pixel.
 ------------------------------------------------------------------------
