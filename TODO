@@ -55,6 +55,7 @@ Move toolkit-specific stuff each to their own file.
 ------------------------------------------------------------------------
 Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
+Check make_row_overlay()
 ------------------------------------------------------------------------
 samplerate->sample_rate
 ------------------------------------------------------------------------
@@ -87,4 +88,8 @@ Be able to increase the number of labels/divisions on the frequency axis
 Unlimit frequency zoom out. The axis code needs fixing for this to work.
 ------------------------------------------------------------------------
 Frequency axis ticks are slightly too high. Zoom in on sawtooth.wav
+------------------------------------------------------------------------
+Move overlay.c's freq_to_magindex() into convert.c
+------------------------------------------------------------------------
+Zooming Y with overlays in operation is incredibly slow
 ------------------------------------------------------------------------
