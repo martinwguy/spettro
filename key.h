@@ -43,8 +43,11 @@ enum key {
     KEY_B,
     KEY_D,
     KEY_A,
+    /* Unclaimed window functions */
     KEY_H,
     KEY_N,
+    KEY_M,
+    /* Soft volume control */
     KEY_0,
     KEY_9,
 #if ECORE_MAIN

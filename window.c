@@ -24,9 +24,13 @@
 
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
 
-static void kaiser_window(double *data, int datalen);
-static void nuttall_window(double *data, int datalen);
-static void hann_window(double *data, int datalen);
+static void kaiser(double *data, int datalen);
+static void nuttall(double *data, int datalen);
+static void hann(double *data, int datalen);
+static void hamming(double *data, int datalen);
+static void bartlett(double *data, int datalen);
+static void blackman(double *data, int datalen);
+static void dolph(double *data, int datalen);
 
 static double besseli0(double x);
 
@@ -43,13 +47,23 @@ const char *
 window_name(window_function_t w)
 {
     switch (w) {
-    case ANY:	 return "Any";
+    case ANY:		return "Any";
     case RECTANGULAR:	return "Rectangular";
     case KAISER:	return "Kaiser";
     case NUTTALL:	return "Nuttall";
     case HANN:	 	return "Hann";
-    default:	 	return "?Invalid";
+    case HAMMING:	return "Hamming";
+    case BARTLETT:	return "Bartlett";
+    case BLACKMAN:	return "Blackman";
+    case DOLPH:		return "Dolph";
+    default:	 	return "Invalid";
     }
+}
+
+const char
+window_key(window_function_t w)
+{
+    return "RKNHMBLD?"[w];
 }
 
 double *
@@ -75,11 +89,16 @@ get_window(window_function_t wfunc, int datalen)
     new_window = Malloc(datalen * sizeof(*new_window));
 
     switch (wfunc) {
-    case KAISER:  kaiser_window(new_window, datalen);	break;
-    case NUTTALL: nuttall_window(new_window, datalen);	break;
-    case HANN:    hann_window(new_window, datalen);		break;
-    default:      fprintf(stderr, "Internal error: Unknown window_function.\n");
-		  exit(1);
+    case KAISER:	kaiser(new_window, datalen);	break;
+    case NUTTALL:	nuttall(new_window, datalen);	break;
+    case HANN:		hann(new_window, datalen);	break;
+    case HAMMING:	hamming(new_window, datalen);	break;
+    case BARTLETT:	bartlett(new_window, datalen);	break;
+    case BLACKMAN:	blackman(new_window, datalen);	break;
+    case DOLPH:		dolph(new_window, datalen);	break;
+    default:
+	fprintf(stderr, "Internal error: Unknown window_function.\n");
+	exit(1);
     };
 
     if (new_window == NULL) {
@@ -118,7 +137,7 @@ free_windows()
 }
 
 static void
-kaiser_window(double *data, int datalen)
+kaiser(double *data, int datalen)
 {
     double beta = 20.0;
 
@@ -147,7 +166,7 @@ kaiser_window(double *data, int datalen)
 }
 
 static void
-nuttall_window(double *data, int datalen)
+nuttall(double *data, int datalen)
 {
     const double a[4] = { 0.355768, 0.487396, 0.144232, 0.012604 };
     int k;
@@ -171,7 +190,7 @@ nuttall_window(double *data, int datalen)
 }
 
 static void
-hann_window(double *data, int datalen)
+hann(double *data, int datalen)
 {
     int k;
 
@@ -181,8 +200,57 @@ hann_window(double *data, int datalen)
      *	http://en.wikipedia.org/wiki/Window_function
      */
 
-    for (k = 0; k < datalen ; k++) {
+    for (k = 0; k < datalen ; k++)
 	data[k] = 0.5 * (1.0 - cos(2.0 * M_PI * k / (datalen - 1)));
+}
+
+static void
+hamming(double *data, int datalen)
+{
+    int k;
+    double m = datalen - 1;
+
+    /* From sox spectrogram */
+    for (k = 0; k < datalen ; k++)
+	data[k] = .53836 - .46164 * cos(2 * M_PI * (double)k / m);
+}
+
+static void
+bartlett(double *data, int datalen)
+{
+    int k;
+    double m = datalen - 1;
+
+    /* From sox spectrogram */
+    for (k = 0; k < datalen ; k++)
+	data[k] = 2.0 / m * (m/2 - fabs(k - m/2));
+}
+
+static void
+blackman(double *data, int datalen)
+{
+    int k;
+    double m = datalen - 1;
+    double alpha = .16;
+
+    /* From sox spectrogram */
+    for (k = 0; k < datalen ; k++) {
+	double x = 2 * M_PI * k / m;
+	data[k] = 0.5 * ((1 - alpha) - cos(x) + alpha * cos(2 * x));
+    }
+}
+
+static void
+dolph(double *data, int N)
+{
+    double att = 126.6;	/* empirically */
+    double b = cosh(acosh(pow(10., att/20)) / (N-1)), sum, t, c, norm = 0;
+    int i, j;
+    for (c = 1 - 1 / (b*b), i = (N-1) / 2; i >= 0; --i) {
+      for (sum = !i, b = t = j = 1; j <= i && sum != t; b *= (i-j) * (1./j), ++j)
+	t = sum, sum += (b *= c * (N - i - j) * (1./j));
+      sum /= (N - 1 - i), sum /= (norm = norm ? norm : sum);
+      data[i] = sum, data[N - 1 - i] = sum;
     }
 }
 

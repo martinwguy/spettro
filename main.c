@@ -287,10 +287,22 @@ main(int argc, char **argv)
 	    switch (tolower(argv[0][0])) {
 	    case 'r': window_function = RECTANGULAR; break;
 	    case 'k': window_function = KAISER; break;
-	    case 'h': window_function = HANN; break;
 	    case 'n': window_function = NUTTALL; break;
+	    case 'h': window_function = HANN; break;
+	    case 'm': window_function = HAMMING; break;
+	    case 'b': window_function = BARTLETT; break;
+	    case 'l': window_function = BLACKMAN; break;
+	    case 'd': window_function = DOLPH; break;
 	    default:
-		fprintf(stderr, "-W which? (rectangular/kaiser/hann/nuttall)\n");
+		fprintf(stderr, "-W which_window_function?\n\
+R = Rectangular\n\
+K = Kaiser (the default)\n\
+N = Nuttall\n\
+H = Hann\n\
+M = Hamming\n\
+B = Bartlett\n\
+L = Blackman\n\
+D = Dolph\n");
 		exit(1);
 	    }
 	    break;
@@ -372,7 +384,8 @@ c          Flip between color maps: heat map - grayscale - gray for printing\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
-R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
+R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
+M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\
 a          Toggle the frequency axis legend\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
 s          Toggle the overlay of conventional staff lines\n\
@@ -732,12 +745,14 @@ do_key(enum key key)
      * Slash instead darkens them to reduce visibility of background noise.
      */
     case KEY_B:
+    	if (Shift && !Control) { set_window_function(BARTLETT); break; }
     case KEY_STAR:
 	if (Shift || Control) break;
 	change_dyn_range(6.0);
 	repaint_display(TRUE);
 	break;
     case KEY_D:
+	if (Shift && !Control) set_window_function(DOLPH);
     case KEY_SLASH:
 	if (Shift || Control) break;
 	change_dyn_range(-6.0);
@@ -761,10 +776,8 @@ do_key(enum key key)
 
     /* Toggle staff/piano line overlays */
     case KEY_K:
-	if (Shift) {
-	    set_window_function(KAISER);
-	    break;
-	} /* else drop through */
+	if (Shift && !Control) { set_window_function(KAISER); break; }
+	/* else drop through */
     case KEY_S:
     case KEY_G:
 	if (Shift || Control) break;
@@ -824,6 +837,7 @@ do_key(enum key key)
     /* Set left or right bar line position to current play position */
     case KEY_L:
 	if (!Shift && !Control) set_bar_left_time(disp_time);
+    	if (Shift && !Control) set_window_function(BLACKMAN);
 	if (Control && !Shift) repaint_display(FALSE);
 	break;
     case KEY_R:
@@ -842,6 +856,9 @@ do_key(enum key key)
 	break;
     case KEY_N:
 	if (Shift && !Control) set_window_function(NUTTALL);
+	break;
+    case KEY_M:
+	if (Shift && !Control) set_window_function(HAMMING);
 	break;
 
     /* softvol volume controls */

@@ -116,6 +116,7 @@ sdl_keydown(SDL_Event *eventp)
 	/* Other window function keys */
 	case 'h': key = KEY_H;			break;
 	case 'n': key = KEY_N;			break;
+	case 'm': key = KEY_M;			break;
 	/* Avanti! */
 	case '0': key = KEY_0;			break;
 	case '9': key = KEY_9;			break;

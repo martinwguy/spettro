@@ -241,7 +241,7 @@ schedule(calc_t *calc)
     lock_list();
 
 DEBUG("Scheduling %g/%d/%c... ", calc->t, calc->speclen,
-      window_name(calc->window)[0]);
+      window_key(calc->window));
     if (list == NULL) {
 DEBUG("Adding to empty list:\n");
 	list = calc;
@@ -271,8 +271,8 @@ DEBUG("Adding at end of list\n");
     if ((*cpp)->t > calc->t - DELTA &&
         (*cpp)->t < calc->t + DELTA) {
 DEBUG("Replacing existing item/%d/%c at %g with new/%d/%c\n",
-      (*cpp)->speclen, (*cpp)->t, window_name((*cpp)->window)[0],
-      calc->speclen, window_name((*cpp)->window)[0]);
+      (*cpp)->speclen, (*cpp)->t, window_key((*cpp)->window),
+      calc->speclen, window_key((*cpp)->window));
 	    calc_t *old = *cpp;
 	    calc->next = old->next;
 	    calc->prev = old->prev;
@@ -410,7 +410,7 @@ fprintf(stderr, "Avanti!\n");
 	}
 
 DEBUG("Picked %g/%d/%c from list\n", cp->t, cp->speclen,
-      window_name(cp->window)[0]);
+      window_key(cp->window));
 
 	*cpp = cp->next;
 	if (cp->next) cp->next->prev = cp->prev;
@@ -442,7 +442,7 @@ DEBUG("Last cell is at time %g\n", cp->t);
 	if (cp->speclen != speclen || cp->window != window_function) {
 	    calc_t *cp = *cpp;
 fprintf(stderr, "Dropping work at %g/%d/%c for wrong parameters\n", 
-	cp->t, cp->speclen, window_name(cp->window)[0]);
+	cp->t, cp->speclen, window_key(cp->window));
 	    if (cp->next) cp->next->prev = cp->prev;
 	    if (cp->prev) cp->prev->next = cp->next;
 	    else list = cp->next;
@@ -494,7 +494,7 @@ DEBUG("List:");
     for (cp = list; cp != NULL; cp=cp->next) {
 	DEBUG(" %g/%d", cp->t, cp->speclen);
 	if (cp->window != window_function)
-	    DEBUG("/%c", window_name(cp->window)[0]);
+	    DEBUG("/%c", window_(cp->window));
     }
 DEBUG("\n");
 }
