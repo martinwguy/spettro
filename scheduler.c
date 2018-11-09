@@ -252,7 +252,7 @@ DEBUG("Adding to empty list:\n");
     }
 
     for (cpp = &list;
-	 *cpp != NULL && (*cpp)->t < calc->t - DELTA;
+	 *cpp != NULL && DELTA_LT((*cpp)->t, calc->t);
 	 cpp = &((*cpp)->next))
 	;
 
@@ -268,8 +268,7 @@ DEBUG("Adding at end of list\n");
 	calc->prev = (calc_t *)((char *)cpp - ((char *)&(calc->next)-(char *)calc));
 	*cpp = calc;
     } else /* If a duplicate in time, replace the existing one */
-    if ((*cpp)->t > calc->t - DELTA &&
-        (*cpp)->t < calc->t + DELTA) {
+    if (DELTA_EQ((*cpp)->t, calc->t)) {
 DEBUG("Replacing existing item/%d/%c at %g with new/%d/%c\n",
       (*cpp)->speclen, (*cpp)->t, window_key((*cpp)->window),
       calc->speclen, window_key((*cpp)->window));
@@ -345,7 +344,7 @@ DEBUG("List is empty\r");
     }
 
     /* First, drop any list items that are off the left side of the screen */
-    while (list != NULL && list->t < disp_time - disp_offset*step - DELTA) {
+    while (list != NULL && DELTA_LT(list->t, disp_time - disp_offset*step)) {
 	calc_t *old_cp = list;
 	old_cp = list;	/* Remember cell to free */
 	list = list->next;
@@ -365,7 +364,7 @@ DEBUG("List is empty after dropping before-screens\r");
      * as soon as the next scroll happens, so having it ready is preferable.
      */
     for (cpp = &list; (*cpp) != NULL; cpp = &((*cpp)->next)) {
-	if ((*cpp)->t >= disp_time - DELTA) {
+	if (DELTA_GE((*cpp)->t, disp_time)) {
 	    /* Found the first time >= disp_time */
 	    break;
 	}
@@ -373,7 +372,7 @@ DEBUG("List is empty after dropping before-screens\r");
     /* If the first one >= disp_time is off the right side of the screen,
      * remove it and anything after it */
     if (*cpp != NULL &&
-	(*cpp)->t > disp_time + (disp_width-1-disp_offset)*step + DELTA) {
+	DELTA_GT((*cpp)->t, disp_time + (disp_width-1-disp_offset)*step)) {
 	calc_t *cp = *cpp;	/* List pointer to free unwanted cells */
 	while (cp != NULL) {
 	    calc_t *old_cp = cp;
@@ -469,7 +468,7 @@ reschedule_for_bigger_step()
 
     for (cpp = &list; *cpp != NULL; /* see below */) {
 	/* If its time is no longer a multiple of the step, drop it */
-	if ((*cpp)->t > floor((*cpp)->t / step) * step + DELTA) {
+	if (DELTA_GT((*cpp)->t, floor((*cpp)->t / step) * step)) {
 	    calc_t *cp = *cpp;	/* Old cell to free */
 	    /* Rewrite "next" field of previous cell or the "list" pointer */
 	    *cpp = cp->next;

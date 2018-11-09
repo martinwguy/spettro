@@ -22,7 +22,13 @@ typedef int bool;
 #endif
 
 /* Slop factor for comparisons involving calculated floating point values. */
-#define DELTA (1.0e-6)
+#define DELTA (1.0e-10)
+#define DELTA_GT(a, b) ((a) > (b) + DELTA)
+#define DELTA_LT(a, b) ((a) < (b) - DELTA)
+#define DELTA_GE(a, b) ((a) >= (b) - DELTA)
+#define DELTA_LE(a, b) ((a) <= (b) + DELTA)
+#define DELTA_EQ(a, b) ((a) > (b) - DELTA && (a) < (b) + DELTA)
+#define DELTA_NE(a, b) ((a) < (b) - DELTA || (a) > (b) + DELTA)
 
 #define SPETTRO_H
 #endif

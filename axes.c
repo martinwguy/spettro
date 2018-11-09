@@ -95,7 +95,7 @@ add_tick(int k, double min, double max, double distance, int log_scale, double v
 	tick_distance = Realloc(tick_distance, (k+1) * sizeof(*tick_distance));
 	number_of_ticks = k+1;
     }
-    if (val >= min - DELTA && val < max + DELTA) {
+    if (DELTA_GE(val, min) && DELTA_LE(val, max)) {
 	tick_value[k] = just_a_tick ? NO_NUMBER : val;
 	tick_distance[k] =
 	    distance * (log_scale == 2
@@ -160,7 +160,7 @@ calculate_ticks(double min, double max, double distance, int log_scale)
     /* Add the half-way tick before the first number if it's in range */
     k = add_tick(k, min, max, distance, log_scale, value - step / 2, TRUE);
 
-    while (value <= max + DELTA) {
+    while (DELTA_LE(value, max)) {
 	/* Add a tick next to each printed number */
 	k = add_tick(k, min, max, distance, log_scale, value, FALSE);
 
@@ -216,13 +216,13 @@ add_log_ticks(double min, double max, double distance,
 {
     double value;
 
-    for (value = start_value; value <= max + DELTA; value *= 10.0) {
+    for (value = start_value; DELTA_LE(value, max); value *= 10.0) {
 	if (k >= number_of_ticks) {
 	    tick_value = Realloc(tick_value, (k+1) * sizeof(*tick_value));
 	    tick_distance = Realloc(tick_distance, (k+1) * sizeof(*tick_distance));
 	    number_of_ticks = k+1;
 	}
-	if (value < min - DELTA) continue;
+	if (DELTA_LT(value, min)) continue;
 	tick_value[k] = include_number ? value : NO_NUMBER;
 	tick_distance[k] = distance * (log(value) - log(min))
 				    / (log(max) - log(min));

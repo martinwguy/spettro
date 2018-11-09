@@ -442,13 +442,13 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     if (disp_time != 0.0) set_playing_time(disp_time);
 
     if (bar_left_time != UNDEFINED) {
-	if (bar_left_time > audio_length + DELTA) {
+	if (DELTA_GT(bar_left_time, audio_length)) {
 	    fprintf(stderr, "-l time is after the end of the audio\n");
 	    exit(1);
 	} else set_bar_left_time(bar_left_time);
     }
     if (bar_right_time != UNDEFINED) {
-	if (bar_right_time > audio_length + DELTA) {
+	if (DELTA_GT(bar_right_time, audio_length)) {
 	    fprintf(stderr, "-r time is after the end of the audio\n");
 	    exit(1);
 	} else set_bar_right_time(bar_right_time);
@@ -502,14 +502,14 @@ calc_columns(int from_col, int to_col)
     /*
      * Limit the range to the start and end of the audio file.
      */
-    if (from <= DELTA) from = 0.0;
-    if (to <= DELTA) to = 0.0;
+    if (DELTA_LE(from, 0.0)) from = 0.0;
+    if (DELTA_LE(to, 0.0)) to = 0.0;
     {
 	/* End of audio file as a multiple of step */
 	double last_time= floor(audio_length / step) * step;
 
-	if (from >= last_time - DELTA)	from = last_time;
-	if (to >= last_time - DELTA)	to = last_time;
+	if (DELTA_GE(from, last_time))	from = last_time;
+	if (DELTA_GE(to, last_time))	to = last_time;
     }
 
     /* If it's for a single column, just schedule it... */
@@ -536,9 +536,9 @@ calc_columns(int from_col, int to_col)
 	 * then disp_time-1 to left edge.
 	 */
 	/* Columns >= disp_time */
-	if (to >= disp_time - DELTA) {
+	if (DELTA_GE(to, disp_time)) {
 	    double t;
-	    for (t = max(from, disp_time); t <= to + DELTA; t += step) {
+	    for (t = max(from, disp_time); DELTA_LE(t, to); t += step) {
 		calc_t *new = Malloc(sizeof(calc_t));
 		memcpy(new, calc, sizeof(calc_t));
 		new->t = t;
@@ -546,9 +546,9 @@ calc_columns(int from_col, int to_col)
 	    }
 	}
 	/* Do any columns that are < disp_time in reverse order */
-	if (from < disp_time - DELTA) {
+	if (DELTA_LT(from, disp_time)) {
 	    double t;
-	    for (t=disp_time - step; t >= from - DELTA; t -= step) {
+	    for (t=disp_time - step; DELTA_GE(t, from); t -= step) {
 		calc_t *new = Malloc(sizeof(calc_t));
 		memcpy(new, calc, sizeof(calc_t));
 		new->t = t;
@@ -901,12 +901,8 @@ do_scroll()
 
     new_disp_time = get_playing_time();
 
-    if (new_disp_time < DELTA) {
-	new_disp_time = 0.0;
-    }
-    if (new_disp_time > audio_length - DELTA) {
-	new_disp_time = audio_length;
-    }
+    if (DELTA_LE(new_disp_time, 0.0)) new_disp_time = 0.0;
+    if (DELTA_GE(new_disp_time, audio_length)) new_disp_time = audio_length;
 
     /* Align to a multiple of 1/ppsec so that times in cached results
      * continue to match. This is usually a no-op.
@@ -1056,7 +1052,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 
     /* If the column is before/after the start/end of the piece,
      * give it the background colour */
-    if (t < 0.0 - DELTA || t > audio_length + DELTA) {
+    if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_length)) {
 	if (!refresh_only)
 	    gui_paint_column(column, min_y, max_y, background);
 	return;
@@ -1097,7 +1093,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	    gui_paint_column(column, from_y, to_y, background);
 
 	    /* and if it was for a valid time, schedule its calculation */
-	    if (t >= 0.0 - DELTA && t <= audio_length + DELTA) {
+	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_length)) {
 		calc_columns(column, column);
 	    }
 	}

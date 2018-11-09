@@ -30,7 +30,7 @@ result_t *
 remember_result(result_t *result)
 {
     /* Drop any stored results more than a screenful before the display */
-    while (results != NULL && results->t < disp_time - (disp_offset + disp_width) * step - DELTA) {
+    while (results != NULL && DELTA_LT(results->t, disp_time - (disp_offset + disp_width) * step)) {
 	result_t *r = results;
 	results = results->next;
 	destroy_result(r);
@@ -45,7 +45,7 @@ remember_result(result_t *result)
         /* If it's after the last one (the most common case),
 	 * add it at the tail of the list
 	 */
-	if (result->t > last_result->t + DELTA) {
+	if (DELTA_GT(result->t, last_result->t)) {
             result->next = NULL;
 	    last_result->next = result;
 	    last_result = result;
@@ -60,11 +60,11 @@ remember_result(result_t *result)
 	    result_t *r;	/* Handy pointer to the result to examine */
 
 	    for (rp=&results;
-		 (r = *rp) != NULL && r->t <= result->t + DELTA;
+		 (r = *rp) != NULL && DELTA_LE(r->t, result->t);
 		 rp = &((*rp)->next)) {
 		/* Check for duplicates */
-		if (r->t <= result->t + DELTA &&
-		    r->t >= result->t - DELTA &&
+		if (DELTA_LE(r->t, result->t) &&
+		    DELTA_GE(r->t, result->t) &&
 		    r->speclen == result->speclen &&
 		    r->window == result->window) {
 		    /* Same params: forget the new result and return the old */
@@ -95,19 +95,19 @@ recall_result(double t, int speclen, window_function_t window)
     /* If it's later than the last cached result, we don't have it.
      * This saves uselessly scanning the whole list of results.
      */
-    if (last_result == NULL || t > last_result->t + DELTA)
+    if (last_result == NULL || DELTA_GT(t, last_result->t))
 	return(NULL);
 
     for (p=results; p != NULL; p=p->next) {
 	/* If the time is the same and speclen is the same,
 	 * this is the result we want */
-	if (p->t >= t - DELTA && p->t <= t + DELTA &&
+	if (DELTA_GE(p->t, t) && DELTA_LE(p->t, t) &&
 	    (speclen == -1 || p->speclen == speclen) &&
 	    (window == -1 || p->window == window)) {
 	    break;
 	}
 	/* If the stored time is greater, it isn't there. */
-	if (p->t > t + DELTA) {
+	if (DELTA_GT(p->t, t)) {
 	    p = NULL;
 	    break;
 	}

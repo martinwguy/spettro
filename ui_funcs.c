@@ -27,10 +27,10 @@ time_pan_by(double by)
 
     playing_time = get_playing_time() + by;
 
-    if (playing_time < 0.0 + DELTA) playing_time = 0.0;
+    if (DELTA_LE(playing_time, 0.0)) playing_time = 0.0;
 
     /* If we're at/after the end of the piece, stop */
-    if (playing_time > audio_length - DELTA) playing_time = audio_length;
+    if (DELTA_GE(playing_time, audio_length)) playing_time = audio_length;
     if (playing_time == audio_length) {
 	/* If playing, stop */
 	stop_playing();
