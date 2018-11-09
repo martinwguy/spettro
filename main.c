@@ -774,6 +774,13 @@ do_key(enum key key)
 	gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
 	break;
 
+    case KEY_W:
+	/* Cycle through window functions */
+	next_window_function();
+	printf("Using %s window\n", window_name(window_function));
+	repaint_display(TRUE);
+	break;
+
     /* Toggle staff/piano line overlays */
     case KEY_K:
 	if (Shift && !Control) { set_window_function(KAISER); break; }

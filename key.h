@@ -43,6 +43,7 @@ enum key {
     KEY_B,
     KEY_D,
     KEY_A,
+    KEY_W,
     /* Unclaimed window functions */
     KEY_H,
     KEY_N,

@@ -113,6 +113,7 @@ sdl_keydown(SDL_Event *eventp)
 	case 'b': key = KEY_B;			break;
 	case 'd': key = KEY_D;			break;
         case 'a': key = KEY_A;			break;
+        case 'w': key = KEY_W;			break;
 	/* Other window function keys */
 	case 'h': key = KEY_H;			break;
 	case 'n': key = KEY_N;			break;

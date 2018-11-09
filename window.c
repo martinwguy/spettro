@@ -19,6 +19,7 @@
 #include "window.h"
 
 #include "lock.h"
+#include "main.h"
 
 #include <math.h>
 
@@ -47,8 +48,8 @@ const char *
 window_name(window_function_t w)
 {
     switch (w) {
-    case ANY:		return "Any";
-    case RECTANGULAR:	return "Rectangular";
+    case ANY:		return "any";
+    case RECTANGULAR:	return "rectangular";
     case KAISER:	return "Kaiser";
     case NUTTALL:	return "Nuttall";
     case HANN:	 	return "Hann";
@@ -56,7 +57,7 @@ window_name(window_function_t w)
     case BARTLETT:	return "Bartlett";
     case BLACKMAN:	return "Blackman";
     case DOLPH:		return "Dolph";
-    default:	 	return "Invalid";
+    default:	 	return "invalid";
     }
 }
 
@@ -134,6 +135,13 @@ free_windows()
 	free(w->window);
     }
     stored_windows = NULL;
+}
+
+void
+next_window_function(void)
+{
+    window_function = (window_function + 1) % NUMBER_OF_WINDOW_FUNCTIONS;
+    repaint_display(TRUE);
 }
 
 static void
