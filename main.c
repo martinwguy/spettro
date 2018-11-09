@@ -374,10 +374,10 @@ Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Hann or Nuttall\n\
-Ctrl-Y     Toggle the frequency axis legend\n\
-k          Toggle overlay of 88 piano key frequencies\n\
-s          Toggle overlay of conventional staff lines\n\
-g          Toggle overlay of classical guitar strings' frequencies\n\
+a          Toggle the frequency axis legend\n\
+k          Toggle the overlay of 88 piano key frequencies\n\
+s          Toggle the overlay of conventional staff lines\n\
+g          Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
