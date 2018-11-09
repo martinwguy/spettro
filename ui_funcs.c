@@ -136,20 +136,20 @@ freq_pan_by(double by)
 void
 freq_zoom_by(double by)
 {
+    /* We want to stay centred on the frequency at the middle of the screen
+     * so convert max/min to centre/range */
     double center_frequency = sqrt(min_freq * max_freq);
     double range = max_freq / min_freq;
 
-    if (by == 2.0) {
-	/* Zoom in by 2.0 */
-	range = sqrt(range);
-	max_freq = center_frequency * sqrt(range);
-	min_freq = center_frequency / sqrt(range);
-    } else if (by == 0.5) {
-	/* Zoom out by 2.0 */
-	range = range*range;
-	max_freq = center_frequency * (range * range);
-	min_freq = center_frequency / (range * range);
-    } else fprintf(stderr, "Huh?\n");
+    /* If by == 2.0, new_range = sqrt(range)
+     * if by == 0.5, new_range = range squared
+     * general case: new_range = range ** (1/by)
+     */
+    range = pow(range, 1.0 / by);
+
+    /* Convert center/range back to min/max */
+    max_freq = center_frequency * sqrt(range);
+    min_freq = center_frequency / sqrt(range);
 
     /* Limit to fft_freq..Nyquist */
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;

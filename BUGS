@@ -49,3 +49,9 @@ SSH-ing from beppe4 into ciccio2 with X11forwarding, it doesn't work.
 Something to do with X or presence/absence of some X extension?
 This is using beppe4's crappy on-board SiS VGA controller.
 ------------------------------------------------------------------------
+When scrolling up by one pixel, the bottom label disappears
+one pixel before it should, probably due to rounding.
+------------------------------------------------------------------------
+When key-repeating a slow operation, the Shift state is measured when
+the event is processed, not when the key was pressed.
+------------------------------------------------------------------------

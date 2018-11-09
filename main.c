@@ -681,11 +681,38 @@ do_key(enum key key)
 	break;
 
     /* Y/y: Zoom in/out on the frequency axis */
-    /* Ctrl-Y: Toggle the frequency axis */
     case KEY_Y:
-	if (Control) break;
-	freq_zoom_by(Shift ? 2.0 : 0.5);
-	repaint_display(TRUE);
+	{
+	    double by = 2.0;	/* Normally we double/halve */
+	    if (Control) {
+#if 0
+	    	by = v_pixel_freq_ratio();
+		by = by * by;	/* the new range includes 2 more pixels */
+#else
+		/* I can't figure out how to make freq_zoom_by() get it right
+		 * so do the one-pixel zoom in a way that works.
+		 * This reproduces what freq_zoom_by() does.
+		 */
+		double vpfr = v_pixel_freq_ratio();
+		if (Shift) {	/* Zoom in */
+		    max_freq /= vpfr;
+		    min_freq *= vpfr;
+		} else {	/* Zoom out */
+		    max_freq *= vpfr;
+		    min_freq /= vpfr;
+		}
+		/* Limit to fft_freq..Nyquist */
+		if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
+		if (min_freq < fft_freq) min_freq = fft_freq;
+
+		if (show_axes) draw_frequency_axis();
+		repaint_display(TRUE);
+		break;
+#endif
+	    }
+	    freq_zoom_by(Shift ? by : 1.0/by);
+	    repaint_display(TRUE);
+	}
 	break;
 
     /* Normal zoom-in zoom-out, i.e. both axes. */
