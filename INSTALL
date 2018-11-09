@@ -8,7 +8,9 @@ On Debian/Ubuntu/Mint you need to:
 	apt-get install libfftw3-dev pkg-config
 
 	# For -DUSE_SDL (the default, see Makefile.am)
-	apt-get install libsdl-dev
+	apt-get install libsdl2-dev
+	# or, if you want to use SDL1.2 instead of SDL2.0
+	apt-get install libsdl1.2-dev
 	# or, for -DUSE_EMOTION:
 	apt-get install e17-dev libecore-dev libemotion-dev
 	# or, for -DUSE_EMOTION_SDL, all of the above.
@@ -22,10 +24,13 @@ On Debian/Ubuntu/Mint you need to:
 	# or, for -DUSE_LIBAV
 	apt-get install libavformat-dev libavfilter-dev
 
+for the build system:
+	apt-get install autoconf make
+
 and a compiler of some kind:
 	apt-get install build-essential
 will do the trick for sure, but
-	apt-get install gcc make
+	apt-get install gcc
 will probably be enough.
 
 
