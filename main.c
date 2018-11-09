@@ -10,7 +10,7 @@
  * The audio file is given as a command-line argument
  * A window opens showing a graphical representation of the audio file:
  * each frame of audio samples is shown as a vertical bar whose colors are
- * taken from the "heat maps" of sndfile-spectrogram.
+ * taken from the "heat maps" of "sox spectrogram".
  *
  * The color at each point represents the energy in the sound at some
  * frequency (band) at a certain moment in time (over a short period).
@@ -296,13 +296,12 @@ main(int argc, char **argv)
 	    break;
 
 	case 'c':
-	    if (!strcmp(argv[0], "sox")) set_colormap(SOX_MAP);
-	    else if (!strcmp(argv[0], "sndfile")) set_colormap(SNDFILE_MAP);
-	    else if (!strcmp(argv[0], "gray")) set_colormap(GRAY_MAP);
-	    else if (!strcmp(argv[0], "grey")) set_colormap(GRAY_MAP);
-	    else if (!strcmp(argv[0], "print")) set_colormap(PRINT_MAP);
-	    else {
-		fprintf(stderr, "-c which? (sox/sndfile/gray/print)\n");
+	    switch (tolower(argv[0][0])) {
+	    case 'h': set_colormap(HEAT_MAP); break;
+	    case 'g': set_colormap(GRAY_MAP); break;
+	    case 'p': set_colormap(PRINT_MAP); break;
+	    default:
+		fprintf(stderr, "-c which? (heat/gray/print)\n");
 		exit(1);
 	    }
 	    break;
@@ -369,7 +368,7 @@ PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
 X/x        Zoom in/out on the time axis\n\
 Y/y        Zoom in/out on the frequency axis\n\
 Plus/Minus Zoom both axes\n\
-c          Flip between color maps: heat map - grayscale - gray for printer\n\
+c          Flip between color maps: heat map - grayscale - gray for printing\n\
 Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\

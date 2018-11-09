@@ -7,31 +7,7 @@
 
 #include <math.h>
 
-/* Heat map from sndfile-spectrogram */
-/* These values were originally calculated for a dynamic range of 180dB. */
-static unsigned char sndfile_map[][3] = {
-    { 255, 255, 255 },	/* -0dB */
-    { 240, 254, 216 },	/* -10dB */
-    { 242, 251, 185 },	/* -20dB */
-    { 253, 245, 143 },	/* -30dB */
-    { 253, 200, 102 },	/* -40dB */
-    { 252, 144, 66  },	/* -50dB */
-    { 252, 75,  32  },	/* -60dB */
-    { 237, 28,  41  },	/* -70dB */
-    { 214, 3,   64  },	/* -80dB */
-    { 183, 3,   101 },	/* -90dB */
-    { 157, 3,   122 },	/* -100dB */
-    { 122, 3,   126 },	/* -110dB */
-    { 80,  2,   110 },	/* -120dB */
-    { 45,  2,   89  },	/* -130dB */
-    { 19,  2,   70  },	/* -140dB */
-    { 1,   3,   53  },	/* -150dB */
-    { 1,   3,   37  },	/* -160dB */
-    { 1,   2,   19  },	/* -170dB */
-    { 0,   0,   0   },	/* -180dB */
-};
-#define sndfile_map_len (sizeof(sndfile_map) / sizeof(sndfile_map[0]))
-
+/* Heatmap from sox spectrogram */
 static unsigned char sox_map[][3] = {
     {242,255,235}, {242,255,232}, {241,255,230}, {241,255,228},
     {241,255,225}, {241,255,223}, {241,255,221}, {240,254,218},
@@ -103,10 +79,9 @@ void
 set_colormap(int w)
 {
     switch (which = w) {
-    case 0: map = sox_map;	map_len = sox_map_len;		break;
-    case 1: map = sndfile_map;	map_len = sndfile_map_len; 	break;
-    case 2: map = gray_map;	map_len = gray_map_len;		break;
-    case 3: map = print_map;	map_len = print_map_len;	break;
+    case HEAT_MAP: map = sox_map;	map_len = sox_map_len;		break;
+    case GRAY_MAP: map = gray_map;	map_len = gray_map_len;		break;
+    case PRINT_MAP: map = print_map;	map_len = print_map_len;	break;
     }
 }
 
