@@ -41,13 +41,17 @@ icondir = $(datadir)/icons
 icon_DATA = spettro.png
 
 spettro_SOURCES = main.c config.h spettro.h \
-	alloc.c audio.c audio_cache.c audio_file.c axes.c cache.c calc.c \
-	colormap.c convert.c gui.c interpolate.c key.c libav.c lock.c mouse.c \
-	overlay.c scheduler.c spectrum.c text.c timer.c ui_funcs.c window.c \
+	alloc.c audio.c audio_cache.c audio_file.c axes.c \
+	barlines.c cache.c calc.c colormap.c convert.c \
+	gui.c interpolate.c key.c libav.c lock.c mouse.c \
+	overlay.c scheduler.c spectrum.c text.c timer.c \
+	ui_funcs.c window.c \
 	\
-	alloc.h audio.h audio_cache.h audio_file.h axes.h cache.h calc.h\
-	colormap.h convert.h gui.h interpolate.h key.h libav.h lock.h mouse.h \
-	overlay.h scheduler.h spectrum.h text.h timer.h ui_funcs.h window.h
+	alloc.h audio.h audio_cache.h audio_file.h axes.h \
+	barlines.h cache.h calc.h colormap.h convert.h \
+	gui.h interpolate.h key.h libav.h lock.h mouse.h \
+	overlay.h scheduler.h spectrum.h text.h timer.h \
+	ui_funcs.h window.h
 
 filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 

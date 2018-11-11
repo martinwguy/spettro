@@ -80,6 +80,7 @@
 #include "audio_file.h"
 #include "audio_cache.h"
 #include "axes.h"
+#include "barlines.h"
 #include "cache.h"
 #include "calc.h"
 #include "colormap.h"

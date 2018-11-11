@@ -6,6 +6,7 @@
 
 #include "mouse.h"
 
+#include "barlines.h"	/* for Shift and Control */
 #include "key.h"	/* for Shift and Control */
 #include "overlay.h"	/* for set_*_bar_time() */
 #include "ui_funcs.h"
