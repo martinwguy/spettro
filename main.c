@@ -445,13 +445,13 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 	if (DELTA_GT(bar_left_time, audio_length)) {
 	    fprintf(stderr, "-l time is after the end of the audio\n");
 	    exit(1);
-	} else set_bar_left_time(bar_left_time);
+	} else set_left_bar_time(bar_left_time);
     }
     if (bar_right_time != UNDEFINED) {
 	if (DELTA_GT(bar_right_time, audio_length)) {
 	    fprintf(stderr, "-r time is after the end of the audio\n");
 	    exit(1);
-	} else set_bar_right_time(bar_right_time);
+	} else set_right_bar_time(bar_right_time);
     }
 
     start_scheduler(max_threads);
@@ -843,12 +843,12 @@ do_key(enum key key)
 
     /* Set left or right bar line position to current play position */
     case KEY_L:
-	if (!Shift && !Control) set_bar_left_time(disp_time);
+	if (!Shift && !Control) set_left_bar_time(disp_time);
     	if (Shift && !Control) set_window_function(BLACKMAN);
 	if (Control && !Shift) repaint_display(FALSE);
 	break;
     case KEY_R:
-	if (!Shift && !Control) set_bar_right_time(disp_time);
+	if (!Shift && !Control) set_right_bar_time(disp_time);
 	if (Shift && !Control) set_window_function(RECTANGULAR);
 	if (Control && !Shift) {
 	    drop_all_work();

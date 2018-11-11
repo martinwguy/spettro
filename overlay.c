@@ -31,7 +31,6 @@
 #include <math.h>	/* for pow() */
 #include <string.h>	/* for memset() */
 
-static bool is_bar_line(int x);
 static void overlay_row(int magindex, color_t color);
 
 /* The array of overlay colours for every pixel column,
@@ -197,100 +196,71 @@ get_row_overlay(int y, color_t *colorp)
  * With beats, 3 pixels wide.
  */
 #define UNDEFINED (-1.0)
-static double bar_left_time = UNDEFINED;
-static double bar_right_time = UNDEFINED;
+static double left_bar_time = UNDEFINED;
+static double right_bar_time = UNDEFINED;
 /* The bar position converted to a pixel index into the whole piece */
-#define bar_left_ticks (lrint(bar_left_time / step))
-#define bar_right_ticks (lrint(bar_right_time / step))
+#define left_bar_ticks (lrint(left_bar_time / step))
+#define right_bar_ticks (lrint(right_bar_time / step))
 
 /* Set start and end of marked bar.
  * If neither is defined, we display nothing.
- * If only one is defined or they are the same, display a marker at that point.
+ * If only one is defined, display a marker at that point.
+ * If both are defined at the same time, cancel both.
  * If both are defined, we display both and other barlines at the same interval.
  *
- * We used to repaint the whole display every time, slow slow. Now when
- * bar line positions change, we wipe out the already-displayed ones and
- * redraw the new ones, which is much faster.
+ * For speed, when bar line positions change, we wipe out the already-displayed
+ * ones and redraw the new ones.
  */
+
+static void set_bar_time(double *this_one, double *the_other_one, double when);
+static bool is_bar_line(int x);
+
 void
-set_bar_left_time(double when)
+set_left_bar_time(double when)
 {
-    if (bar_right_time == UNDEFINED) {
-        int new_col;
-	/* Move the sole left marker */
-	if (bar_left_time != UNDEFINED) {
-	    int old_col = disp_offset + lrint((bar_left_time - disp_time) / step);
-	    bar_left_time = when;
-	    if (old_col >= min_x && old_col <= max_x) {
-		repaint_column(old_col, min_y, max_y, FALSE);
-		gui_update_column(old_col);
-	    }
-	}
-	bar_left_time = when;
-	new_col = disp_offset + floor((when - disp_time) / step);
-	repaint_column(new_col, min_y, max_y, FALSE);
-	gui_update_column(new_col);
-    } else {
-	if (bar_left_time != UNDEFINED) {
-	    double old_bar_left_time = bar_left_time;
-	    int col;
-	    /* Both left and right were already defined so clear existing bar lines */
-	    for (col=min_x; col <= max_x; col++) {
-		if (is_bar_line(col)) {	
-		    bar_left_time = when;
-		    repaint_column(col, min_y, max_y, FALSE);
-		    gui_update_column(col);
-		    bar_left_time = old_bar_left_time;
-		}
-	    }
-	}
-	/* and paint the new bar lines */
-    	bar_left_time = when;
-	{   int col;
-	    for (col=min_x; col <= max_x; col++) {
-		if (is_bar_line(col)) {
-		    repaint_column(col, min_y, max_y, FALSE);
-		    gui_update_column(col);
-		}
-	    }
-	}
-    }
+    set_bar_time(&left_bar_time, &right_bar_time, when);
 }
 
 void
-set_bar_right_time(double when)
+set_right_bar_time(double when)
 {
-    if (bar_left_time == UNDEFINED) {
+    set_bar_time(&right_bar_time, &left_bar_time, when);
+}
+
+static void
+set_bar_time(double *this_one, double *the_other_one, double when)
+{
+    if (*the_other_one == UNDEFINED) {
         int new_col;
-	/* Move the sole right marker */
-	if (bar_right_time != UNDEFINED) {
-	    int old_col = disp_offset + lrint((bar_right_time - disp_time)/step);
-	    bar_right_time = when;
+	/* Move the sole left marker */
+	if (*this_one != UNDEFINED) {
+	    int old_col = disp_offset + lrint((*this_one - disp_time) / step);
+	    *this_one = when;
 	    if (old_col >= min_x && old_col <= max_x) {
 		repaint_column(old_col, min_y, max_y, FALSE);
 		gui_update_column(old_col);
 	    }
 	}
-	bar_right_time = when;
+	*this_one = when;
 	new_col = disp_offset + floor((when - disp_time) / step);
 	repaint_column(new_col, min_y, max_y, FALSE);
 	gui_update_column(new_col);
     } else {
-	if (bar_right_time != UNDEFINED) {
-	    double old_bar_right_time = bar_right_time;
+	if (*this_one != UNDEFINED) {
+	    double old_this_one = *this_one;
 	    int col;
 	    /* Both left and right were already defined so clear existing bar lines */
 	    for (col=min_x; col <= max_x; col++) {
 		if (is_bar_line(col)) {	
-		    bar_right_time = when;
+		    *this_one = when;
 		    repaint_column(col, min_y, max_y, FALSE);
 		    gui_update_column(col);
-		    bar_right_time = old_bar_right_time;
+		    *this_one = old_this_one;
 		}
 	    }
 	}
 	/* and paint the new bar lines */
-    	bar_right_time = when;
+    	*this_one = when;
 	{   int col;
 	    for (col=min_x; col <= max_x; col++) {
 		if (is_bar_line(col)) {
@@ -340,10 +310,10 @@ is_bar_line(int x)
     x += lrint(disp_time / step) - disp_offset;
 
     /* If neither of the bar positions is defined, there are none displayed */
-    if (bar_left_time == UNDEFINED &&
-	bar_right_time == UNDEFINED) return FALSE;
+    if (left_bar_time == UNDEFINED &&
+	right_bar_time == UNDEFINED) return FALSE;
 
-    bar_width = bar_right_ticks - bar_left_ticks;
+    bar_width = right_bar_ticks - left_bar_ticks;
     /* They can set the "left" and "right" bar lines the other way round too */
     if (bar_width < 0) bar_width = -bar_width;
 
@@ -353,13 +323,13 @@ is_bar_line(int x)
      * Both UNDEFINED is handled above; if either are UNDEFINED here,
      * bar_*_ticks will not be called.
      */
-    if (bar_left_time == UNDEFINED ||
-	bar_right_time == UNDEFINED ||
-	bar_left_ticks == bar_right_ticks) {
+    if (left_bar_time == UNDEFINED ||
+	right_bar_time == UNDEFINED ||
+	left_bar_ticks == right_bar_ticks) {
 
-	return x == bar_left_ticks || x == bar_right_ticks;
+	return x == left_bar_ticks || x == right_bar_ticks;
     }
 
     /* Both bar positions are defined. See if this column falls on one. */
-    return x % bar_width == bar_left_ticks % bar_width;
+    return x % bar_width == left_bar_ticks % bar_width;
 }

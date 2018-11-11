@@ -7,7 +7,7 @@
 #include "mouse.h"
 
 #include "key.h"	/* for Shift and Control */
-#include "overlay.h"	/* for set_bar_*_time() */
+#include "overlay.h"	/* for set_*_bar_time() */
 #include "ui_funcs.h"
 #include "main.h"
 
@@ -113,8 +113,8 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
 
     /* Mouse up while setting bar line position: set it. */
     if (!down && Control) switch (button) {
-    case LEFT_BUTTON:	set_bar_left_time(when);	break;
-    case RIGHT_BUTTON:	set_bar_right_time(when);	break;
+    case LEFT_BUTTON:	set_left_bar_time(when);	break;
+    case RIGHT_BUTTON:	set_right_bar_time(when);	break;
     }
 
     if (!down) switch (button) {
@@ -130,8 +130,8 @@ do_mouse_move(int screen_x, int screen_y)
     if (Control) {
 	double when = disp_time + (screen_x - disp_offset) * step;
 
-	if (left_button_is_down) set_bar_left_time(when);
-	if (right_button_is_down) set_bar_right_time(when);
+	if (left_button_is_down) set_left_bar_time(when);
+	if (right_button_is_down) set_right_bar_time(when);
     }
 
     /* Plain dragging while holding left button:
