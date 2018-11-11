@@ -1,23 +1,24 @@
-spettro - Show a moving log-frequency axis spectrogram of music while it plays
+spettro - Show a moving log-frequency-axis spectrogram of music while it plays
 
-Here is a program to play an audio file and show a scrolling spectrogram of it
+Spettro plays an audio file and shows a scrolling spectrogram of it
 with a vertical green one-pixel-wide line half way across the window to
 show the current playing position.
 
-There is also:
-- Pan and zoom in time and in frequency range
-- A brightness control, made by changing the dynamic range of the colors
-- Four FFT window functions: rectangular, Kaiser, Hann and Nuttall
-- A variable FFT sample size, changing the relative frequency/time resolution
-- Various color maps: heat map, grayscale for screen, grayscale for printer
-- Overlays of score staves, open guitar strings or 88-note piano keys
-- An overlay of bar lines repeated regularly in time
-- An optional frequency axis label in Hertz
-- A "soft volume" control to raise the volume above 100%
+You can also:
+- Pause, continue, rewind and seek back and forth in the audio
+- Zoom in and out in time in frequency.
+- Adjust the dynamic range (a sort of brightness (well, contrast) control
+- Change the FFT sample size to adjust the relative frequency/time resolution
+- Select from eight different FFT window functions
+- Change the colors it uses to represent sound energy
+- Show where the ten score lines, six guitar strings or 88 piano keys fall
+- Position bar lines to help determine the rhythm
+- Add a frequency axis
+- Increase the playing volume above 100%
 
-- a screencast of it at https://youtu.be/fGRsLX0Ec1E
+There is a screencast of it at https://youtu.be/fGRsLX0Ec1E
 
-Planned features are listed in TODO
+Planned features and improvements are listed in TODO
 Known bugs are listed in BUGS
 
     Martin Guy <martinwguy@gmail.com>, December 2016 - November 2018.
