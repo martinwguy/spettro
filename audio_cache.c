@@ -25,7 +25,6 @@
 
 #include <unistd.h>	/* for Unix file system calls */
 #include <string.h>	/* for memset() */
-#include <assert.h>	/* for memset() */
 
 /* Functions to convert between the cache format and 16-bit signed */
 static void convert_signed_to_cached(short *to, short *from, long len);
