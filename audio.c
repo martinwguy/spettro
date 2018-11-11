@@ -233,10 +233,15 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	     i < frames_read * channels;
 	     i++, sp++) {
 	    double value = *sp * softvol;
-	    if (value < -32767) value = -32767;
-	    if (value >  32767) value =  32767;
+	    if (DELTA_LT(value, -32767.0) || DELTA_GT(value, 32767.0)) {
+		/* Reduce softvol to avoid clipping */
+		softvol = 32767.0 / abs(*sp);
+		value = *sp * softvol;
+printf("The audio would have clipped so I lowered softvol to %g\n", softvol);
+	     }
+
 	    /* Plus half a bit of dither? */
-	    *sp = lrint(value);
+	    *sp = (short) lrint(value);
 	}
     }
 
