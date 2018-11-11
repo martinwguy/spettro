@@ -344,16 +344,11 @@ libav_open_audio_file(audio_file_t **afp, const char *filename)
     filter_descr = "aformat=sample_fmts=s16";
     if (init_filters(filter_descr, dec_ctx->sample_rate, af_signed) != 0) goto fail;
 
-    audio_file->samplerate = dec_ctx->sample_rate;
+    audio_file->sample_rate = dec_ctx->sample_rate;
     audio_file->channels = dec_ctx->channels;
     audio_file->frames = lrint(((double)(fmt_ctx->duration) / AV_TIME_BASE)
     			       * (double)(dec_ctx->sample_rate));
-/*
-fprintf(stderr, "sr=%d channels=%d frames=%d\n",
-    audio_file->samplerate,
-    audio_file->channels,
-    audio_file->frames);
- */
+ 
     return;
 
 fail:

@@ -51,7 +51,7 @@ open_audio_file(char *filename)
 	return(NULL);
     }
     audio_file->af = af;
-    audio_file->samplerate = afGetRate(af, AF_DEFAULT_TRACK);
+    audio_file->sample_rate = afGetRate(af, AF_DEFAULT_TRACK);
     audio_file->frames = afGetFrameCount(af, AF_DEFAULT_TRACK);
     audio_file->channels = afGetChannels(af, AF_DEFAULT_TRACK);
     comptype = afGetCompression(af, AF_DEFAULT_TRACK);
@@ -82,7 +82,7 @@ open_audio_file(char *filename)
 	return(NULL);
     }
     audio_file->sndfile = sndfile;
-    audio_file->samplerate = info.samplerate;
+    audio_file->sample_rate = info.samplerate;
     audio_file->frames = info.frames;
     audio_file->channels = info.channels;
     /* Switch on major format type */
@@ -107,7 +107,7 @@ open_audio_file(char *filename)
 	return(NULL);
     }
     audio_file->sf = sf;
-    audio_file->samplerate = sf->signal.rate;
+    audio_file->sample_rate = sf->signal.rate;
     audio_file->channels = sf->signal.channels;
     audio_file->frames = sf->signal.length / audio_file->channels;
     switch (sf->encoding.encoding) {	/* See sox.h */
@@ -132,7 +132,7 @@ open_audio_file(char *filename)
     audio_file->filename = filename;
 
     /* Set the globals that everyone picks at */
-    sample_rate = audio_file->samplerate;
+    sample_rate = audio_file->sample_rate;
     audio_length = (double)audio_file->frames / sample_rate;
 
     return(audio_file);

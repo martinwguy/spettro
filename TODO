@@ -57,8 +57,6 @@ Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 Check make_row_overlay()
 ------------------------------------------------------------------------
-samplerate->sample_rate
-------------------------------------------------------------------------
 Check that this/next stuff in interpolate() centres frequencies on that
 pixel rather than being slightly above/below it.
 ------------------------------------------------------------------------

@@ -27,7 +27,7 @@ typedef struct audio_file {
 #elif USE_LIBAV
 	/* keeps its private data as statics in filtering_audio.c */
 #endif
-	unsigned long samplerate;
+	unsigned long sample_rate;
 	unsigned long frames;	/* The file has (frames*channels) samples */
 	unsigned channels;
 } audio_file_t;
