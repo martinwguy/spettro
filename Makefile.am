@@ -22,16 +22,20 @@
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(SDL_CFLAGS) \
-	    -march=native -Wall
-AM_LDFLAGS = -lsox $(SDL_LIBS) -lfftw3 -lm
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(FFTW_CFLAGS) $(PNG_CFLAGS)
+AM_CFLAGS += $(SDL_CFLAGS) -march=native -Wall
+AM_LDFLAGS = -lsox $(SDL_LIBS) $(FFTW_LIBS) $(PNG_LIBS) -lm
 
-SDL_CFLAGS=`sdl2-config --cflags` -pthread
-SDL_LIBS=  `sdl2-config --libs` -lX11 -pthread
-EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
-EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
 AV_CFLAGS=`pkg-config --cflags libavformat libavcodec libavutil libavfilter`
 AV_LIBS=  `pkg-config --libs   libavformat libavcodec libavutil libavfilter`
+EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
+EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
+FFTW_CFLAGS=`pkg-config --cflags fftw3`
+FFTW_LIBS=  `pkg-config --libs fftw3`
+PNG_CFLAGS=`pkg-config --cflags libpng`
+PNG_LIBS=  `pkg-config --libs libpng`
+SDL_CFLAGS=`sdl2-config --cflags` -pthread
+SDL_LIBS=  `sdl2-config --libs` -lX11 -pthread
 
 bin_PROGRAMS = spettro filtering_audio
 

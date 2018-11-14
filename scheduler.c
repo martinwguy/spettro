@@ -36,6 +36,9 @@
 #include "lock.h"
 #include "main.h"
 
+/* How many threads are busy calculating an FFT for us? */
+int jobs_in_flight = 0;
+
 #if 0
 #define DEBUG(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -317,6 +320,13 @@ drop_all_work()
     unlock_list();
 }
 
+/* Is there any work still queued to be done? */
+bool
+there_is_work()
+{
+    return list != NULL;
+}
+
 /* The FFT threads ask here for the next FFT to perform
  *
  * Priority: 1. times corrisponding to columns visible in the display window:
@@ -415,6 +425,7 @@ DEBUG("Picked %g/%d/%c from list\n", cp->t, cp->speclen,
 	if (cp->next) cp->next->prev = cp->prev;
 	if (cp->prev) cp->prev->next = cp->next;
 	cp->next = cp->prev = NULL; /* Not strictly necessary but */
+	jobs_in_flight++;
 	print_list();
 	unlock_list();
 	return cp;
@@ -434,8 +445,8 @@ DEBUG("Last cell is at time %g\n", cp->t);
 	if (cp->prev == NULL) list = NULL;
 	else cp->prev->next = NULL;
 	cp->prev = cp->next = NULL;	/* Not necessary but */
+	jobs_in_flight++;
 	print_list();
-
 	unlock_list();
 
 	if (cp->speclen != speclen || cp->window != window_function) {
@@ -501,6 +512,9 @@ DEBUG("\n");
 /*
  * The main loop has been notified of the arrival of a result. Process it.
  */
+
+extern char *output_file;	/* In main.c */
+
 void
 calc_notify(result_t *result)
 {
@@ -526,6 +540,16 @@ calc_notify(result_t *result)
 	pos_x != disp_offset) {
 	paint_column(pos_x, min_y, max_y, result);
 	gui_update_column(pos_x);
+    }
+
+    jobs_in_flight--;
+
+    /* We can output the PNG file for the -o option when all work is complete */
+
+    if (output_file != NULL && jobs_in_flight == 0 && !there_is_work()) {
+	gui_output_png_file(output_file);
+	gui_quit_main_loop();
+	return;
     }
 
     /* To avoid an embarassing pause at the start of the graphics, we wait

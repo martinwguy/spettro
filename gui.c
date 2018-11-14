@@ -14,6 +14,9 @@
 
 /* Libraries' header files. See config.h for working combinations of defines */
 
+#include <png.h>
+#include <errno.h>
+
 #if ECORE_TIMER || EVAS_VIDEO || ECORE_MAIN
 #include <Ecore.h>
 #include <Ecore_Evas.h>
@@ -707,10 +710,60 @@ gui_putpixel(int x, int y, color_t color)
 #elif SDL_VIDEO
 
 /* Macro derived from http://sdl.beuc.net/sdl.wiki/Pixel_Access's putpixel() */
-#define putpixel(surface, x, y, pixel) \
-	((Uint32 *)((Uint8 *)surface->pixels + (y) * surface->pitch))[x] = pixel
+#define putpixel(screen, x, y, pixel) \
+	((Uint32 *)((Uint8 *)screen->pixels + (y) * screen->pitch))[x] = pixel
 
     /* SDL has y=0 at top */
     putpixel(screen, x, (disp_height-1) - y, color);
 # endif
+}
+
+/* Returns TRUE on success, FALSE on failure */
+bool
+gui_output_png_file(const char *filename)
+{
+    png_bytepp  png_rows = Malloc(disp_height * sizeof(*png_rows));
+    png_structp png      = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0,0);
+    png_infop   png_info = png_create_info_struct(png);
+    FILE *file = fopen(filename, "wb");
+    int y;
+
+    if (file == NULL) {
+      fprintf(stderr, "Can't open \"%s\"\n", strerror(errno));
+      return FALSE;
+    }
+
+    if (png == NULL || png_info == NULL) {
+    	fprintf(stderr, "Can't create PNG write structure.\n");
+	return FALSE;
+    }
+
+    png_init_io(png, file);
+    png_set_IHDR(png, png_info,
+    		 (png_uint_32)disp_width, (png_uint_32)disp_height,
+		 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_ADAM7,
+      		 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+    for (y = 0; y < disp_height; y++) {
+	png_bytep row = (png_bytep)
+#if EVAS_VIDEO
+	    (&imagedata[imagestride * y]);
+#elif SDL_VIDEO
+	    ((Uint8 *)screen->pixels + (y) * screen->pitch);
+	{
+	    int x;
+	    for (x=0; x < disp_width; x++)
+		((unsigned long *)row)[x] |= 0xFF000000; /* Set alpha to 100% */
+	}
+#endif
+	png_rows[y] = row;
+    }
+
+    png_set_rows(png, png_info, png_rows);
+    png_write_png(png, png_info, PNG_TRANSFORM_BGR, NULL);
+    png_destroy_write_struct(&png, &png_info);
+    free(png_rows);
+    fclose(file);
+
+    return TRUE;
 }

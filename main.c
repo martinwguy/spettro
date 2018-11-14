@@ -148,6 +148,10 @@ static float logmax = 1.0;	/* maximum magnitude value seen so far */
 
        bool show_axes = FALSE;	/* Are we to show/showing the axes? */
 
+       char *output_file = NULL; /* PNG file to write to and quit. This is done
+       				  * when the last result has come in from the
+				  * FFT threads, in calc_notify in scheduler.c
+				  */
 int
 main(int argc, char **argv)
 {
@@ -190,7 +194,7 @@ main(int argc, char **argv)
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
-	case 'W': case 'c': case 'v':
+	case 'o': case 'W': case 'c': case 'v':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -241,6 +245,10 @@ main(int argc, char **argv)
 	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    break;
+	case 'a':
+	    show_axes = TRUE;
+	    break;
+
 	/*
 	 * Parameters that take a floating point argument
 	 */
@@ -284,6 +292,10 @@ main(int argc, char **argv)
 	/*
 	 * Parameters that take a string argument
 	 */
+	case 'o':
+	    output_file = argv[0];
+	    break;
+
 	case 'W':
 	    switch (tolower(argv[0][0])) {
 	    case 'r': window_function = RECTANGULAR; break;
@@ -308,7 +320,7 @@ D = Dolph\n");
 	    }
 	    break;
 
-	case 'c':
+	case 'c':			     /* Choose color palette */
 	    switch (tolower(argv[0][0])) {
 	    case 'h': set_colormap(HEAT_MAP); break;
 	    case 'g': set_colormap(GRAY_MAP); break;
@@ -317,10 +329,6 @@ D = Dolph\n");
 		fprintf(stderr, "-c which? (heat/gray/print)\n");
 		exit(1);
 	    }
-	    break;
-
-	case 'a':
-	    show_axes = TRUE;
 	    break;
 
 	default:	/* Print Usage message */
@@ -359,6 +367,8 @@ D = Dolph\n");
 -e:    Exit when the audio file has played\n\
 -h n   Set the window's height to n pixels\n\
 -w n   Set the window's width to n pixels\n\
+-n min Set the minimum displayed frequency in Hz\n\
+-x min Set the maximum displayed frequency in Hz\n\
 -y     Label the vertical frequency axis\n\
 -f n   Set the FFT frequency (default: %g Hz)\n\
 -t n   Set the initial playing time in seconds\n\
@@ -370,6 +380,7 @@ D = Dolph\n");
 -W x   Use FFT window function x where x starts with\n\
        r for rectangular, k for Kaiser, n for Nuttall or h for Hann\n\
 -c map Select a color map from sox, sndfile, gray, print\n\
+-o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
@@ -422,10 +433,6 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
 	exit(1);
     }
 
-    /* Initialise the graphics subsystem. */
-    /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
-    gui_init(filename);
-
     /* Set variables with derived values */
     disp_offset = disp_width / 2;
     step = 1 / ppsec;
@@ -436,6 +443,10 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     maglen = (max_y - min_y) + 1;
 
     make_row_overlay();
+
+    /* Initialise the graphics subsystem. */
+    /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
+    gui_init(filename);
 
     init_audio(audio_file, filename);
 
@@ -464,8 +475,13 @@ DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
     gui_update_display();
 
     start_timer();
-
     gui_main();
+
+    if (output_file) {
+	while (there_is_work()) sleep(1);
+	while (jobs_in_flight > 0) usleep(100000);
+	gui_output_png_file(output_file);
+    }
 
     gui_quit();
 

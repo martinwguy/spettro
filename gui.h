@@ -32,6 +32,8 @@ extern void gui_paint_rect(int from_x, int from_y, int to_x, int to_y, color_t c
 extern void gui_lock(void);
 extern void gui_unlock(void);
 extern void gui_putpixel(int x, int y, color_t color);
+extern bool gui_output_png_file(const char *filename);
+
 #if SDL_MAIN
 extern void sdl_main_loop_quit(void);
 #endif
