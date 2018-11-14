@@ -10,7 +10,7 @@ cp Makefile.am.orig Makefile.am
 
 for a
 do
-    echo Checking $a
+    echo "$a" | grep -q "=" || echo Checking $a
     case "$a" in
     SDL1)
     	sed -i -e '/^SDL_/s/sdl2-config/sdl-config/' Makefile.am
@@ -43,18 +43,23 @@ do
 	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBAV/' \
 	       -e '/^AM_LDFLAGS/s/-lsox/$(AV_LIBS)/' Makefile.am
 	;;
+    *=*)
+    	MAKEFLAGS="$MAKEFLAGS $a";
+	;;
     *)
     	echo "$a unrecognized"
 	echo "Usage: s/build [SDL1|SDL2|EMOTION|EMOTION_SDL] [SOX|AUDIOFILE|SNDFILE|AV]"; exit 1
 	;;
     esac
-    cmp -s Makefile.am Makefile.am.orig && {
+    shift
+    echo "$a" | grep -q = || test "$a" = SOX -o "$a" = SDL2 || {
+      cmp -s Makefile.am Makefile.am.orig && {
 	echo "$0 failed to modify Makefile.am"
-	diff Makefile.am.orig Makefile.am
 	exit 1
+      }
     }
 done
 
-make -j2 clean all > /dev/null || { echo 'Build fails' 1>&2; exit 1; }
+make -j4 $MAKEFLAGS clean all > /dev/null || { echo 'Build fails' 1>&2; exit 1; }
 
 exit 0
