@@ -126,7 +126,7 @@ static void	calc_columns(int from, int to);
        int speclen;			/* Size of linear spectral data */
        int maglen;			/* Size of logarithmic spectral data
 					 * == height of graph in pixels */
-       window_function_t window_function = KAISER;
+       window_function_t window_function = DOLPH;
        bool piano_lines	= FALSE;	/* Draw lines where piano keys fall? */
        bool staff_lines	= FALSE;	/* Draw manuscript score staff lines? */
        bool guitar_lines= FALSE;	/* Draw guitar string lines? */
@@ -416,7 +416,8 @@ usage:
 -g     Overlay lines showing the positions of a classical guitar's strings\n\
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
-       r for rectangular, k for Kaiser, n for Nuttall or h for Hann\n\
+       r for rectangular, k for Kaiser, n for Nuttall, h for Hann\n\
+       m for Hamming, b for Bartlett, l for Blackman or d for Dolph, the default\n\
 -c map Select a color map: heatmap, gray or print\n\
 -o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
@@ -1101,8 +1102,9 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
     double t = disp_time + (column - disp_offset) * step;
     result_t *r;
 
-    if (column < min_x || column >= max_x) {
+    if (column < min_x || column > max_x) {
 	fprintf(stderr, "Repainting off-screen column %d\n", column);
+	abort();
 	return;
     }
 

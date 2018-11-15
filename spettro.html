@@ -103,10 +103,11 @@ far more musically-interesting detail.
       while smaller values give crisper time definition at the price of
       fuzzier frequency definition.
       <BR>You can also set the initial FFT frequency with the <B>-f</B> flag.
- <DT>R K H N
+ <DT>R K H N M B L D
   <DD>These keys, when pressed with Shift, select a Rectangular, Kaiser,
-      Hann or Nuttall window as the pre-FFT convolution function.
-      There is a corresponding command-line option <B>-W</B>.
+      Nuttall, Hann, Hamming, Bartlett, Blackman of Dolph window
+      as the pre-FFT convolution function. The default is Dolph.
+      There are corresponding command-line options <B>-[RKHNMBLD]</B>.
  <DT>t
   <DD>The 't' key show the current playing time on stdout.
  <DT>Ctrl-L
@@ -237,29 +238,29 @@ audio file name:
  <DT>-a / --show-axes
   <DD>Shows a frequency scale in Hz on the left side of the graph
       and the note names on the right.
- <DT>-W w / --window w
+ / <DT>-R / -K / -N / -H / -M / -B / -L / -D
   <DD>Selects the convolution function to apply to the audio fragments
       before feeding them to the FFT function, one of:
     <DL>
-     <DT>-Wr / --rectangular
+     <DT>-R / --rectangular
        <DD>Rectangular. The sample's edges are not trimmed, resulting in
 	floral artifacts in the spectrogram, most easily seen at
 	high magnification.
 	It is the fastest of the window functions because it does nothing.
-     <DT>-Wk / --kaiser
-      <DD>Kaiser window (the default)
-     <DT>-Wn / --nuttall
+     <DT>-K / --kaiser
+      <DD>Kaiser window
+     <DT>-N / --nuttall
       <DD>Nuttall window
-     <DT>-Wh / --hann
+     <DT>-H / --hann
       <DD>Hann (a.k.a. "Hanning") window
-     <DT>-Wm / --hamming
+     <DT>-M / --hamming
       <DD>Hamming window
-     <DT>-Wb / --bartlett
+     <DT>-B / --bartlett
       <DD>Bartlett window
-     <DT>-Wl / --blackman
+     <DT>-L / --blackman
       <DD>Blackman window
-     <DT>-Wd / --dolph
-      <DD>Dolph window
+     <DT>-D / --dolph
+      <DD>Dolph window, the default, giving the best slot filter
     </DL>
     There are corresponding keystroke commands
     <B>R</B>, <B>K</B>, <B>N</B>, <B>H</B>,
