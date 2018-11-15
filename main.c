@@ -163,42 +163,61 @@ main(int argc, char **argv)
     double bar_left_time = UNDEFINED;
     double bar_right_time = UNDEFINED;
 
-    /*
-     * Pick up parameter values from the environment
-     *
-     * Variables set with garbage values are silently ignored.
-     *
-     * These are mostly for testing or for programming a performance.
-     * Interactive users will probably use the zoom function to get more ppsec
-     */
-    {
-	char *cp; double n;	/* Temporaries */
-
-	if ((cp = getenv("FPS")) != NULL && (n = atof(cp)) > 0.0)
-	    fps = n;
-
-	if ((cp = getenv("PPSEC")) != NULL && (n = atof(cp)) > 0.0)
-	    ppsec = n;
-
-	if ((cp = getenv("DYN_RANGE")) != NULL && (n = atof(cp)) > 0.0)
-	    min_db = -n;
-
-	if ((cp = getenv("MIN_FREQ")) != NULL && (n = atof(cp)) > 0.0)
-	    min_freq = n;
-
-	if ((cp = getenv("MAX_FREQ")) != NULL && (n = atof(cp)) > 0.0)
-	    max_freq = n;
-    }
-
     for (argv++, argc--;	/* Skip program name */
 	 argc > 0 && argv[0][0] == '-';
 	 argv++, argc--) {
 	int letter = argv[0][1];
 
-	/* For flags that take an argument, advance argv[0] to point to it */
+switchagain:
 	switch (letter) {
+	case '-':	/* Handle long args */
+	    if (!strcmp(argv[0], "--width")) argv[0] = "-w";
+	    else if (!strcmp(argv[0], "--height")) argv[0] = "-h";
+	    else if (!strcmp(argv[0], "--jobs")) argv[0] = "-j";
+	    else if (!strcmp(argv[0], "--left-bar-line")) argv[0] = "-l";
+	    else if (!strcmp(argv[0], "--right-bar-line")) argv[0] = "-r";
+	    else if (!strcmp(argv[0], "--fft-freq")) argv[0] = "-f";
+	    else if (!strcmp(argv[0], "--start-at")) argv[0] = "-t";
+	    else if (!strcmp(argv[0], "--output-png")) argv[0] = "-o";
+	    else if (!strcmp(argv[0], "--window")) argv[0] = "-W";
+	    else if (!strcmp(argv[0], "--rectangular")) argv[0] = "-WR";
+	    else if (!strcmp(argv[0], "--kaiser")) argv[0] = "-WK";
+	    else if (!strcmp(argv[0], "--nuttall")) argv[0] = "-WN";
+	    else if (!strcmp(argv[0], "--hann")) argv[0] = "-WH";
+	    else if (!strcmp(argv[0], "--hamming")) argv[0] = "-WM";
+	    else if (!strcmp(argv[0], "--bartlett")) argv[0] = "-WB";
+	    else if (!strcmp(argv[0], "--blackman")) argv[0] = "-WL";
+	    else if (!strcmp(argv[0], "--dolph")) argv[0] = "-WD";
+	    else if (!strcmp(argv[0], "--heatmap")) argv[0] = "-ch";
+	    else if (!strcmp(argv[0], "--gray")) argv[0] = "-cg";
+	    else if (!strcmp(argv[0], "--grey")) argv[0] = "-cg";
+	    else if (!strcmp(argv[0], "--print")) argv[0] = "-cp";
+	    else if (!strcmp(argv[0], "--softvol")) argv[0] = "-v";
+	    else if (!strcmp(argv[0], "--dyn-range")) argv[0] = "-d";
+	    else if (!strcmp(argv[0], "--min-freq")) argv[0] = "-n";
+	    else if (!strcmp(argv[0], "--max-freq")) argv[0] = "-x";
+	    /* Boolean flags */
+	    else if (!strcmp(argv[0], "--autoplay")) argv[0] = "-p";
+	    else if (!strcmp(argv[0], "--exit-at-end")) argv[0] = "-e";
+	    else if (!strcmp(argv[0], "--fullscreen")) argv[0] = "-F";
+	    else if (!strcmp(argv[0], "--fs")) argv[0] = "-F";
+	    else if (!strcmp(argv[0], "--piano")) argv[0] = "-k";
+	    else if (!strcmp(argv[0], "--guitar")) argv[0] = "-g";
+	    else if (!strcmp(argv[0], "--score")) argv[0] = "-s";
+	    else if (!strcmp(argv[0], "--show-axes")) argv[0] = "-a";
+	    /* Those environment variables */
+	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-S";
+	    else if (!strcmp(argv[0], "--ppsec")) argv[0] = "-P";
+	    else goto usage;
+
+	    letter = argv[0][1];
+
+	    goto switchagain;
+
+	/* For flags that take an argument, advance argv[0] to point to it */
+	case 'n': case 'x':
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
-	case 'o': case 'W': case 'c': case 'v': case 'd':
+	case 'o': case 'W': case 'c': case 'v': case 'd': case 'S': case 'P':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -256,12 +275,16 @@ main(int argc, char **argv)
 	/*
 	 * Parameters that take a floating point argument
 	 */
+	case 'n':	/* Minimum frequency */
+	case 'x':	/* Maximum frequency */
 	case 't':	/* Play starting from time t */
 	case 'l':	/* Set left bar line position */
 	case 'r':	/* Set right bar line position */
 	case 'f':	/* Set FFT frequency */
 	case 'v':	/* Set software volume control */
 	case 'd':	/* Set dynamic range */
+	case 'S':	/* Set scrolling rate */
+	case 'P':	/* Set pixel columns per second */
 	    errno = 0;
 	    {
 		char *endptr;
@@ -286,12 +309,16 @@ main(int argc, char **argv)
 		    exit(1);
 		}
 		switch (letter) {
+		case 'n': min_freq = arg;	break;
+		case 'm': max_freq = arg;	break;
 		case 't': disp_time = arg;	break;
 		case 'l': bar_left_time = arg;	break;
 		case 'r': bar_right_time = arg; break;
 		case 'f': fft_freq = arg;	break;
 		case 'v': softvol = arg;	break;
 		case 'd': min_db = -arg;	break;
+		case 'S': fps = arg;		break;
+		case 'P': ppsec = arg;		break;
 		}
 	    }
 	    break;
@@ -339,6 +366,7 @@ D = Dolph\n");
 
 	default:	/* Print Usage message */
 	  {
+usage:
 	    printf("Spettro version %s built with", VERSION);
 #if USE_EMOTION || USE_EMOTION_SDL
 	    printf(" Enlightenment %d.%d", EFL_VERSION_MAJOR, EFL_VERSION_MINOR);
@@ -380,6 +408,8 @@ D = Dolph\n");
 -y     Label the vertical frequency axis\n\
 -f n   Set the FFT frequency, default %gHz\n\
 -t n   Set the initial playing time in seconds\n\
+-S n   Set the scrolling rate in frames per second\n\
+-P n   Set the number of pixel columns per second\n\
 -j n   Set maximum number of threads to use (default: the number of CPUs)\n\
 -k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
 -s     Overlay conventional score notation pentagrams as white lines\n\
@@ -387,7 +417,7 @@ D = Dolph\n");
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
        r for rectangular, k for Kaiser, n for Nuttall or h for Hann\n\
--c map Select a color map from sox, sndfile, gray, print\n\
+-c map Select a color map: heatmap, gray or print\n\
 -o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
@@ -416,13 +446,7 @@ t          Show the current playing time on stdout\n\
 Crtl-L     Redraw the display from cached FFT results\n\
 Crtl-R     Empty the result cache and redraw the display from the audio data\n\
 q/Ctrl-C/Esc   Quit\n\
-== Environment variables ==\n\
-FPS        Video frames per second, default %g\n\
-PPSEC      Pixel columns per second, default %g\n\
-MIN_FREQ   The frequency centered on the bottom pixel row, default %gHz (A0)\n\
-MAX_FREQ   The frequency centered on the top pixel row, default %gHz (A9)\n\
-DYN_RANGE  Dynamic range of color map in decibels, default %gdB\n\
-", disp_width, disp_height,-min_db, fft_freq, fps, ppsec, min_freq, max_freq, -min_db);
+", disp_width, disp_height,-min_db, fft_freq);
 	    exit(1);
 	  }
 	}
