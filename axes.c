@@ -3,9 +3,9 @@
 #include "spettro.h"
 #include "axes.h"
 
-#include "main.h"
+#include "convert.h"
 #include "gui.h"
-#include "lock.h"	/* for gui_lock/unlock() */
+#include "main.h"
 #include "text.h"
 
 #include <math.h>
@@ -37,11 +37,13 @@ static int decimal_places_to_print;
 static int calculate_ticks(double min, double max, double distance, int log_scale);
 static int calculate_log_ticks(double min, double max, double distance);
 static void draw_frequency_axis(void);
+static void draw_note_names(void);
 
 void
 draw_frequency_axes(void)
 {
     draw_frequency_axis();
+    draw_note_names();
 }
 
 /* Put ticks on Frequency axis */
@@ -56,19 +58,42 @@ draw_frequency_axis()
     gui_lock();
     for (i=0; i < tick_count; i++) {
 	char s[16];	/* [6] is probably enough */
-	gui_putpixel(min_x-1, min_y + lrint(tick_distance[i]), green);
-	gui_putpixel(min_x-2, min_y + lrint(tick_distance[i]), green);
+	gui_putpixel(min_x - 1, min_y + lrint(tick_distance[i]), green);
+	gui_putpixel(min_x - 2, min_y + lrint(tick_distance[i]), green);
 	if (tick_value[i] != NO_NUMBER) {
 	    char *spacep;
 	    /* Left-align the number in the string, remove trailing spaces */
 	    sprintf(s, "%-5g", tick_value[i]);
 	    if ((spacep = strchr(s, ' ')) != NULL) *spacep = '\0';
-	    draw_text(s, min_x-4, min_y+lrint(tick_distance[i]),
+	    draw_text(s, min_x - 4, min_y + lrint(tick_distance[i]),
 		      RIGHT, CENTER);
 	}
     }
     gui_unlock();
     gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
+}
+
+static void
+draw_note_names()
+{
+    char note_name[3]; /* "A0" etc */
+
+    gui_paint_rect(max_x, 0, disp_width - 1,  disp_height - 1, black);
+
+    note_name[2] = '\0';
+    gui_lock();
+    for (note_name[0] = 'A'; note_name[0] <= 'G'; note_name[0]++) {
+	for (note_name[1] = '0'; note_name[1] <= '9'; note_name[1]++) {
+	    double freq = note_name_to_freq(note_name);
+	    if (DELTA_GE(freq, min_freq) && DELTA_LE(freq, max_freq)) {
+		int y = min_y + freq_to_magindex(freq);
+		gui_putpixel(max_x + 1, y, green);
+		gui_putpixel(max_x + 2, y, green);
+		draw_text(note_name, max_x + 4, y, LEFT, CENTER);
+	    }
+	}
+    }
+    gui_unlock();
 }
 
 /* Decide where to put ticks and numbers on an axis.

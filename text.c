@@ -72,10 +72,17 @@ draw_text(char *text, int at_x, int at_y,
 	    char **glyphs;
 	    int stride;
 	    int row, col;
-	    int digit = c - '0';
+	    int digit;
 
-	    glyphs = isdigit(text[x]) ? digits : letters;
-	    stride = isdigit(text[x]) ? digit_stride : letter_stride;
+	    if (isdigit(c)) {
+		glyphs = digits;
+		stride = digit_stride;
+		digit = c - '0';
+	    } else {
+		glyphs = letters;
+		stride = letter_stride;
+		digit = c - 'A';
+	    }
 	    /* Paint the character */
 	    for (col = 0; col<3; col++) {
 	        for (row = 0; row<5; row++) {
