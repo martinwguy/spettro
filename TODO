@@ -83,9 +83,7 @@ Drop the green line's black shadow on LCD displays by or-ing it into the data
 ------------------------------------------------------------------------
 Be able to increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
-Unlimit frequency zoom out. The axis code needs fixing for this to work.
-------------------------------------------------------------------------
-Frequency axis ticks are slightly too high. Zoom in on sawtooth.wav
-------------------------------------------------------------------------
 Add test suite using PNG output
+------------------------------------------------------------------------
+Decode MP3s from start to finish, preferably buffered with readahead.
 ------------------------------------------------------------------------

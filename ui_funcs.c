@@ -16,6 +16,7 @@
 #include "gui.h"
 
 #include <math.h>
+#include <values.h>	/* for DBL_MAX */
 
 /*
  * Jump forwards or backwards in time, scrolling the display accordingly.
@@ -133,6 +134,9 @@ freq_pan_by(double by)
  * a zoom-out (by < 1.0) increases the range of displayed frequencies
  * In each case, remaining centred on the middle of the graphic.
  */
+
+#define MAX_RANGE DBL_MAX/2
+
 void
 freq_zoom_by(double by)
 {
@@ -147,13 +151,18 @@ freq_zoom_by(double by)
      */
     range = pow(range, 1.0 / by);
 
+    if (range > MAX_RANGE || !isfinite(range)) {
+    	/* Silly zoom-out bursts the frequency axis. Refuse */
+	return;
+    }
+
     /* Convert center/range back to min/max */
     max_freq = center_frequency * sqrt(range);
     min_freq = center_frequency / sqrt(range);
 
     /* Limit to fft_freq..Nyquist */
-    if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
-    if (min_freq < fft_freq) min_freq = fft_freq;
+    //if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
+    //if (min_freq < fft_freq) min_freq = fft_freq;
 
     if (show_axes) draw_frequency_axes();
 }
