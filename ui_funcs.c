@@ -2,7 +2,8 @@
  * ui_funcs.c: Functions performing UI actions.
  *
  * It's up to the caller to call repaint_display() to show any changes
- * except for time pans, which are always updated when the timer ticks.
+ * except for time pans, which are always updated when the timer ticks and
+ * frequency pans, which know more about what to redwar than the caller.
  */
 
 #include "spettro.h"
@@ -106,11 +107,11 @@ freq_pan_by(double by)
 	for (x=min_x; x <= max_x; x++) {
 	    if (by_pixels > 0) {
 		/* Moving to higher frequencies: repaint the top rows */
-		repaint_column(x, max_y - by_pixels + 1, max_y, TRUE);
+		repaint_column(x, max_y - (by_pixels - 1), max_y, TRUE);
 	    }
 	    if (by_pixels < 0) {
 		/* Moving to lower frequencies: repaint the bottom rows */
-		repaint_column(x, min_y, min_y - by_pixels - 1, TRUE);
+		repaint_column(x, min_y, min_y + (-by_pixels - 1), TRUE);
 	    }
 	}
     }

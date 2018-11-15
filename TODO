@@ -55,9 +55,6 @@ Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 Check make_row_overlay()
 ------------------------------------------------------------------------
-Check uses of disp_height to respect {min,max}_y where approriate in
-- gui_?_scroll()
-------------------------------------------------------------------------
 Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
 ------------------------------------------------------------------------
 Keep settings from one run to another (softvol, fftfreq etc)
@@ -75,4 +72,6 @@ Be able to increase the number of labels/divisions on the frequency axis
 Add test suite using PNG output
 ------------------------------------------------------------------------
 Decode MP3s from start to finish, preferably buffered with readahead.
+------------------------------------------------------------------------
+Does adding an axis change what it prints for "Displaying" with 'p'?
 ------------------------------------------------------------------------

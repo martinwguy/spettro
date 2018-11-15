@@ -805,15 +805,15 @@ do_key(enum key key)
 	repaint_display(TRUE);
 	break;
     case KEY_D:
-	if (Shift && !Control) set_window_function(DOLPH);
+	if (Shift && !Control) { set_window_function(DOLPH); break; }
     case KEY_SLASH:
 	if (Shift || Control) break;
 	change_dyn_range(-6.0);
 	repaint_display(TRUE);
 	break;
 
-    case KEY_A:
-	/* Toggle frequency axis */
+    case KEY_A:				/* Toggle frequency axis */
+	if (Shift || Control) break;
 	if (show_axes) {
 	    /* Remove frequency axis */
 	    min_x = 0;
@@ -1101,7 +1101,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
     double t = disp_time + (column - disp_offset) * step;
     result_t *r;
 
-    if (column < 0 || column >= disp_width) {
+    if (column < min_x || column >= max_x) {
 	fprintf(stderr, "Repainting off-screen column %d\n", column);
 	return;
     }
@@ -1161,7 +1161,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 
 /* Paint a column for which we have result data.
  * pos_x is a screen coordinate.
- * min_y and max_y limit the updating to those rows (0 at the bottom).
+ * min_y and max_y limit the updating to those screen rows.
  * The GUI screen-updating function is called by whoever called us.
  */
 void
@@ -1179,6 +1179,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 	return;
     }
 
+    assert(maglen == max_y - min_y + 1);
     logmag = Calloc(maglen, sizeof(*logmag));
     logmax = interpolate(logmag, result->spec, from_y, to_y);
 
@@ -1187,10 +1188,11 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
      */
     gui_lock();		/* Allow pixel-writing access */
     for (y=from_y; y <= to_y; y++) {
+        int k = y - min_y;
 	/* Apply row overlay, if any, otherwise paint the pixel */
 	gui_putpixel(pos_x, y,
 		     get_row_overlay(y, &ov)
-		     ? ov : colormap(20.0 * (logmag[y] - logmax), min_db));
+		     ? ov : colormap(20.0 * (logmag[k] - logmax), min_db));
     }
     gui_unlock();
 

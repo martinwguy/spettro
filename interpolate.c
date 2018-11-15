@@ -13,7 +13,8 @@
 /* Helper function:
  * Map the index for an output pixel in a column to an index into the
  * FFT result representing the same frequency.
- * magindex is from 0 to maglen-1, representing min_freq to max_freq Hz.
+ * magindex is from 0 to maglen-1, representing min_freq to max_freq Hz
+ * displayed at pixel rows min_y to max_y
  * Return values from are from 0 to speclen representing frequencies from
  * 0 to the Nyquist frequency.
  * The result is a floating point number as it may fall between elements,
@@ -33,7 +34,7 @@ static double mtoscache_sample_rate = 0.0;
 
 /* What index in the linear spectrum does pixel row "magindex" correspond to?
  * "magindex" can be from 0..maglen, not 0..maglen-1, because the
- * interpolator may use the row above (is this right?).
+ * interpolator may use the row above the top one (is this right?).
  */
 static double
 magindex_to_specindex(int magindex)
@@ -44,14 +45,15 @@ magindex_to_specindex(int magindex)
      || min_freq != mtoscache_min_freq
      || max_freq != mtoscache_max_freq
      || sample_rate != mtoscache_sample_rate) {
-	int y;
+	int k;
 
 	if (maglen != mtoscache_maglen)
 	    mtoscache = Realloc(mtoscache, (maglen+1) * sizeof(double));
 
-	for (y=0; y <= maglen; y++) {
-	    double freq = pixel_row_to_frequency(y);
-	    mtoscache[y] = frequency_to_specindex(freq);
+	for (k=0; k <= maglen; k++) {
+	    /* The actual conversion function */
+	    double freq = magindex_to_frequency(k);
+	    mtoscache[k] = frequency_to_specindex(freq);
 	}
 
 	mtoscache_speclen = speclen;
@@ -83,16 +85,17 @@ free_interpolate_cache()
  * Map values from the spectrogram onto an array of magnitudes for display.
  * Reads spec[0..speclen], representing linearly 0Hz tp sample_rate/2
  * Writes mag[0..maglen-1], representing min_freq to max_freq.
- * from_y and to_y limit the range of rows to fill (0 and maglen-1 for all).
+ * from_y and to_y limit the range of diplay rows to fill
+ * (== min_y and max_y-1 to paint the whole column).
  *
  * Returns the maximum value seen so far.
  */
 
-float
+double
 interpolate(float* logmag, const float *spec, const int from_y, const int to_y)
 {
-    static float logmax = 0.0;	/* Highest value seen so far. 0 = log10(1.0) */
-    int k;
+    static double logmax = 0.0;	/* Highest value seen so far. 0 = log10(1.0) */
+    int y;
 
     /* Map each output coordinate to where it depends on in the input array.
      * If there are more input values than output values, we need to average
@@ -107,9 +110,10 @@ interpolate(float* logmag, const float *spec, const int from_y, const int to_y)
      * in the output represent the energy in the sound at min_ and max_freq Hz.
      */
 
-    for (k = from_y; k <= to_y; k++) {
+    for (y = from_y; y <= to_y; y++) {
+    	int k = y - min_y;	/* Index into magnitude array */
 	double this = magindex_to_specindex(k);
-	double next = magindex_to_specindex(k+1);
+	double next = magindex_to_specindex(k + 1);
 
 	/* Range check: can happen if max_freq > sample_rate / 2 */
 	if (this > speclen) {

@@ -576,7 +576,7 @@ gui_h_scroll_by(int scroll_by)
     }
 }
 
-/* Scroll the screen vertically by a number of pixels.
+/* Scroll the graph vertically by a number of pixels.
  * A positive value of scroll_by means to move to higher frequencies by
  * moving the graphic data downwards; a negative value to lower frequencies
  * by moving the displayed data upward.
@@ -600,9 +600,12 @@ gui_v_scroll_by(int scroll_by)
 	    int err;
 
 	    from.x = min_x; to.x = min_x;
-	    from.y = min_y; to.y = min_y + scroll_by;
-	    from.w = max_x - min_x + 1;    /* to.[wh] are ignored */
-	    from.h = max_y - min_y + 1 - scroll_by;
+	    from.w = max_x - min_x + 1;
+
+	    /* Invert coords bcos SDL is 0-to-top */
+	    from.y = (disp_height - 1) - max_y;
+	    to.y   = (disp_height - 1) - (max_y - scroll_by);
+	    from.h = (max_y - min_y + 1) - scroll_by;
 
 	    if ((err = SDL_BlitSurface(screen, &from, screen, &to)) != 0) {
 		fprintf(stderr, "SDL Blit failed with value %d.\n", err);
@@ -626,7 +629,8 @@ gui_v_scroll_by(int scroll_by)
 	    int err;
 
 	    from.x = min_x; to.x = min_x;
-	    from.y = disp_height-1-max_y-scroll_by; to.y = disp_height-1-max_y;
+	    from.y = (disp_height-1) - max_y - scroll_by;
+	    to.y   = (disp_height-1) - max_y;
 	    from.w = max_x - min_x + 1;    /* to.[wh] are ignored */
 	    from.h = max_y - min_y + 1 - -scroll_by;
 

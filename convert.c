@@ -19,10 +19,11 @@ v_pixel_freq_ratio()
     return pow(max_freq / min_freq, 1.0 / (max_y - min_y));
 }
 
-/* What frequency does the centre of this pixel row represent? */
-double pixel_row_to_frequency(int pixel_row)
+/* What frequency does the centre of this magnitude index represent? */
+double magindex_to_frequency(int k)
 {
-    return min_freq * pow(max_freq/min_freq, (double)pixel_row/(maglen-1));
+    return min_freq * pow(max_freq / min_freq,
+    			  (double)k / (maglen - 1));
 }
 
 double frequency_to_specindex(double freq)
