@@ -155,7 +155,7 @@ freq_zoom_by(double by)
     if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
     if (min_freq < fft_freq) min_freq = fft_freq;
 
-    if (show_axes) draw_frequency_axis();
+    if (show_axes) draw_frequency_axes();
 }
 
 /* Change the color scale's dynamic range, thereby changing the brightness

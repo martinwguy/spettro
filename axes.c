@@ -36,11 +36,18 @@ static int decimal_places_to_print;
 
 static int calculate_ticks(double min, double max, double distance, int log_scale);
 static int calculate_log_ticks(double min, double max, double distance);
+static void draw_frequency_axis(void);
 
 void
-draw_frequency_axis(void)
+draw_frequency_axes(void)
 {
-    /* Put ticks on Frequency axis */
+    draw_frequency_axis();
+}
+
+/* Put ticks on Frequency axis */
+static void
+draw_frequency_axis()
+{
     int tick_count = calculate_ticks(min_freq, max_freq, max_y - min_y, 1);
     int i;
 

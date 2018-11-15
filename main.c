@@ -471,7 +471,10 @@ q/Ctrl-C/Esc   Quit\n\
     step = 1 / ppsec;
     min_x = 0; max_x = disp_width - 1;
     min_y = 0; max_y = disp_height - 1;
-    if (show_axes) min_x = FREQUENCY_AXIS_WIDTH;
+    if (show_axes) {
+	min_x += FREQUENCY_AXIS_WIDTH;
+	max_x -= NOTE_NAME_AXIS_WIDTH;
+    }
     speclen = fft_freq_to_speclen(fft_freq);
     maglen = (max_y - min_y) + 1;
 
@@ -501,7 +504,7 @@ q/Ctrl-C/Esc   Quit\n\
 
     start_scheduler(max_threads);
 
-    if (show_axes) draw_frequency_axis();
+    if (show_axes) draw_frequency_axes();
 
     repaint_display(FALSE); /* Schedules the initial screen refresh */
 
@@ -729,7 +732,7 @@ do_key(enum key key)
 	else if (key == KEY_PGDN)
 	    freq_pan_by(min_freq/max_freq);
 
-	if (show_axes) draw_frequency_axis();
+	if (show_axes) draw_frequency_axes();
 	gui_update_display();
 	break;
 
@@ -767,7 +770,7 @@ do_key(enum key key)
 		if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
 		if (min_freq < fft_freq) min_freq = fft_freq;
 
-		if (show_axes) draw_frequency_axis();
+		if (show_axes) draw_frequency_axes();
 		repaint_display(TRUE);
 		break;
 #endif
@@ -814,14 +817,20 @@ do_key(enum key key)
 	if (show_axes) {
 	    /* Remove frequency axis */
 	    min_x = 0;
+	    max_x = disp_width - 1;
 	    repaint_columns(0, FREQUENCY_AXIS_WIDTH-1, min_y, max_y, FALSE);
+	    repaint_columns(disp_width - NOTE_NAME_AXIS_WIDTH, disp_width - 1,
+	    		    min_y, max_y, FALSE);
 	} else {
 	    /* Add frequency axis */
 	    min_x = FREQUENCY_AXIS_WIDTH;
-	    draw_frequency_axis();
+	    max_x = disp_width - 1 - NOTE_NAME_AXIS_WIDTH;
+	    draw_frequency_axes();
 	}
 	show_axes = !show_axes;
 	gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
+	gui_update_rect(disp_width - NOTE_NAME_AXIS_WIDTH, 0,
+			NOTE_NAME_AXIS_WIDTH, disp_height);
 	break;
 
     case KEY_W:
