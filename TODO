@@ -13,11 +13,7 @@ order with associated calc structure.
 ------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
-Add note names as frequency axis on RHS
-------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
-------------------------------------------------------------------------
-Add OCTAVES and PPOCT/PPSEMI to determine graphic height like -h
 ------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
@@ -49,6 +45,8 @@ appears in the display area.
 ------------------------------------------------------------------------
 Try scaling magnitudes with frequency to unweight its bottom-heaviness.
 ------------------------------------------------------------------------
+Profile the max amplitude for each bin to derive an equalization function
+------------------------------------------------------------------------
 Give configure --with flags instead of Makefile's USE_ stuff.
 ------------------------------------------------------------------------
 Move toolkit-specific stuff each to their own file.
@@ -57,21 +55,12 @@ Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 Check make_row_overlay()
 ------------------------------------------------------------------------
-Check that this/next stuff in interpolate() centres frequencies on that
-pixel rather than being slightly above/below it.
-------------------------------------------------------------------------
 Check uses of disp_height to respect {min,max}_y where approriate in
 - gui_?_scroll()
 ------------------------------------------------------------------------
 Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
 ------------------------------------------------------------------------
-Rename speclen and maglen
-------------------------------------------------------------------------
 Keep settings from one run to another (softvol, fftfreq etc)
-------------------------------------------------------------------------
-Profile the max amplitude for each bin to derive an equalization function
-------------------------------------------------------------------------
-Optional: When softvol makes it clip, adjust softvol accordingly
 ------------------------------------------------------------------------
 '-t' can be > audio_length, but check that emotion_set_time() > length works.
 ------------------------------------------------------------------------
