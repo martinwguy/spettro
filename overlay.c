@@ -15,6 +15,8 @@
 
 #include "spettro.h"
 #include "overlay.h"
+
+#include "convert.h"
 #include "gui.h"
 #include "main.h"
 
@@ -44,7 +46,6 @@ void
 make_row_overlay()
 {
     int note;	/* Of 88-note piano: 0 = Bottom A, 87 = top C */
-#define NOTE_A440	48  /* A above middle C */
     int len = maglen;
 
     /* Check for resize */
@@ -61,13 +62,7 @@ make_row_overlay()
 	for (note = 0; note < 88; note++) {
 	    /* Colour of notes in octave,  starting from A */
 	    static bool color[12] = { 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1 };
-
-#define note_to_freq(note) (440.0 * pow(2.0, (1/12.0) * (note - NOTE_A440)))
-#define freq_to_magindex(freq)	lrint((log(freq) - log(min_freq)) /	\
-				(log(max_freq) - log(min_freq)) *	\
-				(disp_height - 1))
-
-	    double freq = note_to_freq(note);
+	    double freq = note_number_to_freq(note);
 	    int magindex = freq_to_magindex(freq);
 
 	    /* If in screen range, write it to the overlay */
@@ -86,7 +81,7 @@ make_row_overlay()
 	int i;
 
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
-	    double freq = note_to_freq(notes[i]);
+	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
 
 	    /* Staff lines are 3 pixels wide */
@@ -104,7 +99,7 @@ make_row_overlay()
 	int i;
 
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
-	    double freq = note_to_freq(notes[i]);
+	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
 
 	    /* Guitar lines are also 3 pixels wide */

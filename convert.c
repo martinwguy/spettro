@@ -101,3 +101,35 @@ is_2357(int n)
     while (n % 7 == 0) n /= 7;
     return (n == 1);
 }
+
+/* Take "A0" or whatever and return the frequency it represents */
+double
+note_name_to_freq(const char *note)
+{
+    static int semitones[7] = { 0, 2, 3, 5, 7, 8, 10 }; /* A-G */
+
+    if (note[0] < 'A' || note[0] > 'G' || note[1] < '0' || note[1] > '9')
+        return NAN;
+
+    return A0_FREQUENCY *
+    	   pow(2.0, note[1] - '0') * 
+	   pow(2.0, (1/12.0) * semitones[note[0] - 'A']);
+}
+
+/* Convert a note number of the piano keyboard to the frequency it represents.
+ * It's the note of an 88-note piano: 0 = Bottom A, 87 = top C
+ */
+double
+note_number_to_freq(const int n)
+{
+    return A0_FREQUENCY * pow(2.0, (1/12.0) * n);
+}
+
+/* Convert an audio frequency to the pixel row it is represented by */
+int
+freq_to_magindex(double freq)
+{
+    return lrint((log(freq) - log(min_freq)) /
+		 (log(max_freq) - log(min_freq)) *
+		 (disp_height - 1));
+}
