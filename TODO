@@ -94,8 +94,6 @@ Zooming Y with overlays in operation is incredibly slow
 Add command-line flags for PPSEC etc and do have environment variables
 to set all values.
 ------------------------------------------------------------------------
-FPS
-------------------------------------------------------------------------
 --args
 ------------------------------------------------------------------------
 -d dynrange

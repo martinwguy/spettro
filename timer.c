@@ -102,11 +102,13 @@ delete_timer()
 
 /* Public functions */
 
+extern double fps;	/* From main.c */
+
 void
 start_timer()
 {
     /* Start screen-updating and scrolling timer */
-    add_timer(step);
+    add_timer(1.0/fps);
 }
 
 void

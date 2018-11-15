@@ -264,7 +264,8 @@ audio file name:
  <DT>-F
   <DD>Start in full-screen mode.
       The spectrogram is calculated at the width and height given above,
-      then scaled to the size of the screen.
+      then scaled to the size of the screen, so if you want it pixel-per-pixel
+      you need to supply the width and height. "xrandr" will tell you these.
  <DT>-j n
   <DD>Set maximum number of threads to use (default: the number of CPUs.)
  <DT>-k
@@ -288,6 +289,8 @@ variables on the command line, for example
 PPSEC=100&nbsp;&nbsp;spettro"
 </BLOCKQUOTE>
 <DL>
+ <DT>FPS
+  <DD>Video frames per second, default 25
  <DT>PPSEC
   <DD>Pixel columns per second, default 25
  <DT>DYN_RANGE

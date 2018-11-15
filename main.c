@@ -117,6 +117,7 @@ static void	calc_columns(int from, int to);
        double min_freq	= 27.5;		/* Range of frequencies to display: */
        double max_freq	= 14080;	/* 9 octaves from A0 to A9 */
        double min_db	= -100.0;	/* Values below this are black */
+       double fps	= 25.0;		/* Frames per second; scrolls per sec */
        double ppsec	= 25.0;		/* pixel columns per second */
        double step = 0.0;		/* time step per column = 1/ppsec
 					 * 0.0 means "not set yet" as a
@@ -172,6 +173,9 @@ main(int argc, char **argv)
      */
     {
 	char *cp; double n;	/* Temporaries */
+
+	if ((cp = getenv("FPS")) != NULL && (n = atof(cp)) > 0.0)
+	    fps = n;
 
 	if ((cp = getenv("PPSEC")) != NULL && (n = atof(cp)) > 0.0)
 	    ppsec = n;
@@ -265,7 +269,7 @@ main(int argc, char **argv)
 		if (errno == ERANGE || endptr == argv[0] || !isfinite(arg)) {
 		    fprintf(stderr, "The parameter to -%c must be a floating point number%s.\n",
 		    	    letter,
-			    letter == 'f' ? "in Hz" :
+			    tolower(letter) == 'f' ? "in Hz" :
 			    letter != 'v' ? "in seconds" :
 			    "");
 		    exit(1);
@@ -367,6 +371,7 @@ D = Dolph\n");
 -e:    Exit when the audio file has played\n\
 -h n   Set the window's height to n pixels\n\
 -w n   Set the window's width to n pixels\n\
+-F     Play in fullscreen mode\n\
 -n min Set the minimum displayed frequency in Hz\n\
 -x min Set the maximum displayed frequency in Hz\n\
 -y     Label the vertical frequency axis\n\
@@ -409,11 +414,12 @@ Crtl-L     Redraw the display from cached FFT results\n\
 Crtl-R     Empty the result cache and redraw the display from the audio data\n\
 q/Ctrl-C/Esc   Quit\n\
 == Environment variables ==\n\
+FPS        Video frames per second, default %g\n\
 PPSEC      Pixel columns per second, default %g\n\
-MIN_FREQ   The frequency centred on the bottom pixel row, default %gHz\n\
-MAX_FREQ   The frequency centred on the top pixel row, default %gHz\n\
+MIN_FREQ   The frequency centered on the bottom pixel row, default %gHz (A0)\n\
+MAX_FREQ   The frequency centered on the top pixel row, default %gHz (A9)\n\
 DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-", fft_freq, ppsec, min_freq, max_freq, -min_db);
+", fft_freq, fps, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	  }
 	}
