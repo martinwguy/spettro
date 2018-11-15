@@ -198,7 +198,7 @@ main(int argc, char **argv)
 	/* For flags that take an argument, advance argv[0] to point to it */
 	switch (letter) {
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
-	case 'o': case 'W': case 'c': case 'v':
+	case 'o': case 'W': case 'c': case 'v': case 'd':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -261,6 +261,7 @@ main(int argc, char **argv)
 	case 'r':	/* Set right bar line position */
 	case 'f':	/* Set FFT frequency */
 	case 'v':	/* Set software volume control */
+	case 'd':	/* Set dynamic range */
 	    errno = 0;
 	    {
 		char *endptr;
@@ -290,6 +291,7 @@ main(int argc, char **argv)
 		case 'r': bar_right_time = arg; break;
 		case 'f': fft_freq = arg;	break;
 		case 'v': softvol = arg;	break;
+		case 'd': min_db = -arg;	break;
 		}
 	    }
 	    break;
@@ -369,13 +371,14 @@ D = Dolph\n");
 "Usage: spettro [options] [file]\n\
 -p:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
--h n   Set the window's height to n pixels\n\
--w n   Set the window's width to n pixels\n\
+-h n   Set the window's height to n pixels, default %u\n\
+-w n   Set the window's width to n pixels, default %u\n\
 -F     Play in fullscreen mode\n\
 -n min Set the minimum displayed frequency in Hz\n\
 -x min Set the maximum displayed frequency in Hz\n\
+-d n   Set the dynamic range of the color map in decibels, default %gdB\n\
 -y     Label the vertical frequency axis\n\
--f n   Set the FFT frequency (default: %g Hz)\n\
+-f n   Set the FFT frequency, default %gHz\n\
 -t n   Set the initial playing time in seconds\n\
 -j n   Set maximum number of threads to use (default: the number of CPUs)\n\
 -k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
@@ -418,8 +421,8 @@ FPS        Video frames per second, default %g\n\
 PPSEC      Pixel columns per second, default %g\n\
 MIN_FREQ   The frequency centered on the bottom pixel row, default %gHz (A0)\n\
 MAX_FREQ   The frequency centered on the top pixel row, default %gHz (A9)\n\
-DYN_RANGE  Dynamic range of amplitude values in decibels, default %gdB\n\
-", fft_freq, fps, ppsec, min_freq, max_freq, -min_db);
+DYN_RANGE  Dynamic range of color map in decibels, default %gdB\n\
+", disp_width, disp_height,-min_db, fft_freq, fps, ppsec, min_freq, max_freq, -min_db);
 	    exit(1);
 	  }
 	}
