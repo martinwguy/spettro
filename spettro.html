@@ -234,25 +234,34 @@ audio file name:
    </DL>
  <DT>-f
   <DD>Set the FFT frequency in Hz. Default: 5 (one fifth of a second.)
- <DT>-y
-  <DD>Show a logarithmic frequency scale down the left side of the graph
+ <DT>-a
+  <DD>Show a frequency scale in Hz down the left side of the graph
  <DT>-W[rkhn]
-  <DD>Selects the pre-FFT window convolution function as
+  <DD>Select the pre-FFT window convolution function as
     <DL>
      <DT>r
        <DD>Rectangular. The sample's edges are not trimmed, resulting in
 	floral artifacts in the spectrogram, most easily seen at
-	high magnification., Kaiser, Hann or Nuttall.
+	high magnification.
 	It is the fastest of the window functions because it does nothing.
      <DT>k
-      <DD>Kaiser window
-     <DT>h
-      <DD>Hann (a.k.a. "Hanning") window
+      <DD>Kaiser window (the default)
      <DT>n
       <DD>Nuttall window
+     <DT>h
+      <DD>Hann (a.k.a. "Hanning") window
+     <DT>m
+      <DD>Hamming
+     <DT>b
+      <DD>Bartlett
+     <DT>l
+      <DD>Blackman
+     <DT>d
+      <DD>Dolph
     </DL>
     There are corresponding keystroke commands
-    <B>R</B>, <B>K</B>, <B>H</B> and <B>N</B>.
+    <B>R</B>, <B>K</B>, <B>N</B>, <B>H</B>,
+    <B>N</B>, <B>B</B>, <B>L</B> and <B>D</B>.
     For more info on the functions' peculiarities and merits, see
     <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
     or experiment with spettro and see for yourself :)
