@@ -85,18 +85,6 @@ freq_pan_by(double by)
 
     min_freq *= by;
     max_freq *= by;
-    /* Limit top */
-    if (max_freq > sample_rate / 2) {
-	min_freq /= max_freq / (sample_rate / 2);
-	by /= max_freq / (sample_rate / 2);
-	max_freq = sample_rate / 2;
-    }
-    /* Limit bottom */
-    if (min_freq < fft_freq) {
-	max_freq *= fft_freq / min_freq;
-	by *= fft_freq / min_freq;
-	min_freq = fft_freq;
-    }
 
     /* How many pixels represent a frequency ratio of "by"?
      * one_pixel ^ by_pixels == by
@@ -159,10 +147,6 @@ freq_zoom_by(double by)
     /* Convert center/range back to min/max */
     max_freq = center_frequency * sqrt(range);
     min_freq = center_frequency / sqrt(range);
-
-    /* Limit to fft_freq..Nyquist */
-    //if (max_freq > sample_rate / 2) max_freq = sample_rate / 2;
-    //if (min_freq < fft_freq) min_freq = fft_freq;
 
     if (show_axes) draw_frequency_axes();
 }
