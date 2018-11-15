@@ -44,7 +44,7 @@
 static Evas_Object *image;
 static Ecore_Evas *ee;
 static unsigned char *imagedata = NULL;
-static int imagestride;		/* How many bytes per screen line ?*/
+static size_t imagestride;		/* How many bytes per screen line ?*/
        Evas_Object *em = NULL;	/* The Emotion or Evas-Ecore object */
 #elif SDL_VIDEO
 # if SDL1
@@ -151,6 +151,7 @@ gui_init(char *filename)
     evas_object_image_size_set(image, disp_width, disp_height);
     imagestride = evas_object_image_stride_get(image);
     imagedata = Malloc(imagestride * disp_height);
+
     /* Clear the image buffer to the background color */
     {	register int i;
 	register unsigned int *p = (unsigned int *)imagedata;
@@ -214,8 +215,15 @@ gui_init(char *filename)
         fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());
         exit(1);
     }
-    if (fullscreen)
-	SDL_GetWindowSize(window, &disp_width, &disp_height);
+    if (fullscreen) {
+    	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	if (w <= 0 || h <= 0) {
+	    fprintf(stderr, "Image too big for SDL.\n");
+	    exit(1);
+	}
+	disp_width = w; disp_height = h;
+    }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     	/* maybe SDL_RENDERER_PRESENTVSYNC */

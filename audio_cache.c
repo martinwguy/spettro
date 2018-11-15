@@ -82,7 +82,7 @@ read_cached_audio(audio_file_t *audio_file, char *data,
 		  int start, int frames_to_read)
 {
     static int samples_in_buf = 0;/* Number of samples read into buf[] */
-    long offset;		/* temp: Where to seek to in the cache file */
+    off_t offset;		/* temp: Where to seek to in the cache file */
 
     short *hole_start = NULL;	/* No hole found yet */
     long hole_size;		/* Size of the hole we found, in samples */
@@ -120,7 +120,7 @@ read_cached_audio(audio_file_t *audio_file, char *data,
     /* Try to fetch cached data from the file. As it's read-write, a seek
      * past the end of the file should extend it silently. */
     offset = (long)start * audio_file->channels * sizeof(short);
-    long new_offset;
+    off_t new_offset;
     if ((new_offset = lseek(cache, offset, SEEK_SET)) != offset) {
         fprintf(stderr, "Can't seek to offset %ld in cache file: lseek returns %ld\n",
 		new_offset, offset);

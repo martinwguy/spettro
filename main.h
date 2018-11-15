@@ -13,8 +13,8 @@ extern void repaint_column(int column, int min_y, int max_y, bool refresh_only);
 extern void paint_column(int pos_x, int min_y, int max_y, result_t *result);
 
 /* GUI state variables */
-extern int disp_width;		/* Size of displayed drawing area in pixels */
-extern int disp_height;
+extern unsigned disp_width;	/* Size of displayed drawing area in pixels */
+extern unsigned disp_height;
 extern double disp_time; 	/* When in the audio file is the crosshair? */
 extern int disp_offset;  	/* Crosshair is in which display column? */
 extern double min_freq;		/* Range of frequencies to display: */

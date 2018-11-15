@@ -110,8 +110,8 @@ static void	calc_columns(int from, int to);
  */
 
 /* GUI state variables */
-       int disp_width	= 640;	/* Size of display area in pixels */
-       int disp_height	= 480;
+       unsigned disp_width	= 640;	/* Size of display area in pixels */
+       unsigned disp_height	= 480;
        double disp_time	= 0.0;	/* When in the audio file is the crosshair? */
        int disp_offset; 	/* Crosshair is in which display column? */
        double min_freq	= 27.5;		/* Range of frequencies to display: */
