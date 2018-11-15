@@ -14,7 +14,10 @@
 void *Malloc(size_t size)
 {
     void *mem = malloc(size);
-    if (!mem) abort();
+    if (!mem) {
+    	fprintf(stderr, "Cannot allocate %d bytes\n", size);
+	abort();
+    }
     return(mem);
 }
 
