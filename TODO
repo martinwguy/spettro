@@ -87,7 +87,5 @@ Unlimit frequency zoom out. The axis code needs fixing for this to work.
 ------------------------------------------------------------------------
 Frequency axis ticks are slightly too high. Zoom in on sawtooth.wav
 ------------------------------------------------------------------------
-Zooming Y with overlays in operation is incredibly slow
-------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------

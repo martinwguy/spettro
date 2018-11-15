@@ -30,7 +30,7 @@ static void overlay_row(int magindex, color_t color);
  */
 static color_t	*row_overlay = NULL;
 static bool	*row_is_overlaid = NULL;
-static int       row_overlay_len = 0;
+static int       row_overlay_maglen = 0;
 
 /* and we remember what parameters we calculated it for so as to recalculate it
  * automatically if anything changes.
@@ -49,10 +49,10 @@ make_row_overlay()
     int len = maglen;
 
     /* Check for resize */
-    if (row_overlay_len != len) {
+    if (row_overlay_maglen != len) {
       row_overlay = Realloc(row_overlay, len * sizeof(*row_overlay));
       row_is_overlaid = Realloc(row_is_overlaid, len * sizeof(*row_is_overlaid));
-      row_overlay_len = len;
+      row_overlay_maglen = len;
     }
     memset(row_overlay, 0, len * sizeof(*row_overlay));
     memset(row_is_overlaid, 0, len * sizeof(*row_is_overlaid));
@@ -83,11 +83,7 @@ make_row_overlay()
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
-
-	    /* Staff lines are 3 pixels wide */
-	    overlay_row(magindex-1, white);
-	    overlay_row(magindex,   white);
-	    overlay_row(magindex+1, white);
+	    overlay_row(magindex, white);
 	}
     }
 
@@ -101,11 +97,7 @@ make_row_overlay()
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
-
-	    /* Guitar lines are also 3 pixels wide */
-	    overlay_row(magindex-1, white);
-	    overlay_row(magindex,   white);
-	    overlay_row(magindex+1, white);
+	    overlay_row(magindex, white);
         }
     }
 }
@@ -150,13 +142,13 @@ get_row_overlay(int y, color_t *colorp)
      */
     if (row_overlay_min_freq != min_freq ||
 	row_overlay_max_freq != max_freq ||
-	row_overlay_len != maglen)
+	row_overlay_maglen != maglen)
     {
 	make_row_overlay();
 	if (row_overlay == NULL) return FALSE;
 	row_overlay_min_freq = min_freq;
 	row_overlay_max_freq = max_freq;
-	row_overlay_len = maglen - 1;
+	row_overlay_maglen = maglen;
     }
 
     if (row_is_overlaid[magindex] && colorp != NULL)

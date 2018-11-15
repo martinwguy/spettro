@@ -122,7 +122,10 @@ note_name_to_freq(const char *note)
 double
 note_number_to_freq(const int n)
 {
-    return A0_FREQUENCY * pow(2.0, (1/12.0) * n);
+    static double cache[88];	/* Init to 0.0 */
+    if (cache[n] == 0.0)
+	cache[n] = A0_FREQUENCY * pow(2.0, (1/12.0) * n);
+    return cache[n];
 }
 
 /* Convert an audio frequency to the pixel row it is represented by */
