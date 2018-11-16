@@ -1194,7 +1194,11 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 	/* Apply row overlay, if any, otherwise paint the pixel */
 	gui_putpixel(pos_x, y,
 		     get_row_overlay(y, &ov)
-		     ? ov : colormap(20.0 * (logmag[k] - logmax), min_db));
+		     ? ov :
+		     /* OR in the green line if it's on */
+		     ((!green_line_off && pos_x == disp_offset) ? green : 0)
+		     |
+		     colormap(20.0 * (logmag[k] - logmax), min_db));
     }
     gui_unlock();
 

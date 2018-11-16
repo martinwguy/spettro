@@ -139,7 +139,13 @@ get_col_overlay(int x, color_t *colorp)
 	color = white; is_overlayed = TRUE; 
     } else
     if (x == disp_offset && !green_line_off) {
-	color = green; is_overlayed = TRUE;
+	/* If you want a pixel-wide green line, use here
+	 * color = green; is_overlayed = TRUE;
+	 *
+	 * Instead, we say it's not overlayed so that we can OR the green line
+	 * into it when it's painted (unless it's covered by a bar line,
+	 * of course, which was handled above.) */
+	is_overlayed = FALSE;
     }
 
     if (is_overlayed && colorp != NULL) *colorp = color;

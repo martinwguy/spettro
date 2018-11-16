@@ -65,8 +65,6 @@ Change Makefile flags to USE_SDL1/USE_SDL2
 ------------------------------------------------------------------------
 Use Shift-B do darkness instead of 'd'.
 ------------------------------------------------------------------------
-Drop the green line's black shadow on LCD displays by or-ing it into the data
-------------------------------------------------------------------------
 Be able to increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
 Add test suite using PNG output
