@@ -85,6 +85,7 @@ mrproper: clean
 		configure.h*
 	rm -rf .deps autom4te.cache
 	rm -f build-stamp configure-stamp	# Debian stuff
+	rm -rf debian/spettro*			# Debian stuff
 	rm -f swoop.wav
 
 # Some test files
