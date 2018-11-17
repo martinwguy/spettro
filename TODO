@@ -73,3 +73,25 @@ Decode MP3s from start to finish, preferably buffered with readahead.
 ------------------------------------------------------------------------
 Does adding an axis change what it prints for "Displaying" with 'p'?
 ------------------------------------------------------------------------
+Give the failure reason in an exit status
+------------------------------------------------------------------------
+Convert html to man page
+------------------------------------------------------------------------
+Instead of a scrolling time scale, just mark 3 points and use rest of
+bottom/top line for status info.
+------------------------------------------------------------------------
+Be able to set spectrogram size in pixels or in seconds/frequency range.
+there's already min-max freq, allow min/max, min/range max/range or
+center/range.
+------------------------------------------------------------------------
+Recognise note names A0 in -n -x and the above.
+------------------------------------------------------------------------
+Make a ui struct of the parameters visible in main.c
+------------------------------------------------------------------------
+If 100000 or 0.0001 are displayed, increase frequency axis width.
+------------------------------------------------------------------------
+Need to vscroll the green line's column too now.
+------------------------------------------------------------------------
+When zoomed in a lot, print enough digits on frequency axis to reveal
+the digit that changes per tick.
+------------------------------------------------------------------------
