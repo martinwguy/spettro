@@ -13,9 +13,12 @@
 
 /* Array of numbers to print, or NO_NUMBER */
 /* Where to put each tick/label on the y-axis */
-static double *tick_value = NULL;
-static double *tick_distance = NULL;
-static int number_of_ticks = 0;	/* Number of labels allocated in these arrays */
+typedef struct {
+    double value;	/* No to show, NO_NUMBER if just a tick and no number */
+    double distance;	/* Distance of tick from min_y */
+} tick_t;
+static tick_t *ticks = NULL;
+static int number_of_ticks = 0;	/* Number of labels allocated in this array */
 
 /* The digit that changes from label to label.
  * This ensures that a range from 999 to 1001 prints 999.5 and 1000.5
@@ -23,14 +26,14 @@ static int number_of_ticks = 0;	/* Number of labels allocated in these arrays */
  */
 static int decimal_places_to_print;
 
-/* Value to store in the tick_value[k] field to mean
+/* Value to store in the ticks[k].value field to mean
  * "Put a tick here, but don't print a number."
  * NaN (0.0/0.0) is untestable without isnan() so use a random value.
  */
 #define NO_NUMBER (M_PI)		/* They're unlikely to hit that! */
 
 /* Is this entry in "ticks" one of the numberless ticks? */
-#define JUST_A_TICK(ticks, k)	(tick_value[k] == NO_NUMBER)
+#define JUST_A_TICK(ticks, k)	(ticks[k].value == NO_NUMBER)
 
 /* Forward declarations */
 
@@ -58,13 +61,13 @@ draw_frequency_axis()
     gui_lock();
     for (i=0; i < tick_count; i++) {
 	char s[16];	/* [6] is probably enough */
-	gui_putpixel(min_x - 1, min_y + lrint(tick_distance[i]), green);
-	gui_putpixel(min_x - 2, min_y + lrint(tick_distance[i]), green);
-	if (tick_value[i] != NO_NUMBER) {
+	gui_putpixel(min_x - 1, min_y + lrint(ticks[i].distance), green);
+	gui_putpixel(min_x - 2, min_y + lrint(ticks[i].distance), green);
+	if (ticks[i].value != NO_NUMBER) {
 	    char *spacep;
 	    int width;
 	    /* Left-align the number in the string, remove trailing spaces */
-	    sprintf(s, "%-5g", tick_value[i]);
+	    sprintf(s, "%-5g", ticks[i].value);
 	    if ((spacep = strchr(s, ' ')) != NULL) *spacep = '\0';
 
 	    /* If the text is wider than the axis, grow the axis */
@@ -75,7 +78,7 @@ draw_frequency_axis()
 		return;
 	    }
 
-	    draw_text(s, min_x - 4, min_y + lrint(tick_distance[i]),
+	    draw_text(s, min_x - 4, min_y + lrint(ticks[i].distance),
 		      RIGHT, CENTER);
 	}
     }
@@ -131,13 +134,13 @@ add_tick(int k, double min, double max, double distance, int log_scale, double v
     double range = max - min;
 
     if (k >= number_of_ticks) {
-	tick_value = Realloc(tick_value, (k+1) * sizeof(*tick_value));
-	tick_distance = Realloc(tick_distance, (k+1) * sizeof(*tick_distance));
+	ticks = Realloc(ticks, (k+1) * sizeof(*ticks));
 	number_of_ticks = k+1;
     }
+
     if (DELTA_GE(val, min) && DELTA_LE(val, max)) {
-	tick_value[k] = just_a_tick ? NO_NUMBER : val;
-	tick_distance[k] =
+	ticks[k].value = just_a_tick ? NO_NUMBER : val;
+	ticks[k].distance =
 	    distance * (log_scale == 2
 		/*log*/	? (log(val) - log(min)) / (log(max) - log(min))
 		/*lin*/	: (val - min) / range);
@@ -258,14 +261,13 @@ add_log_ticks(double min, double max, double distance,
 
     for (value = start_value; DELTA_LE(value, max); value *= 10.0) {
 	if (k >= number_of_ticks) {
-	    tick_value = Realloc(tick_value, (k+1) * sizeof(*tick_value));
-	    tick_distance = Realloc(tick_distance, (k+1) * sizeof(*tick_distance));
+	    ticks = Realloc(ticks, (k+1) * sizeof(*ticks));
 	    number_of_ticks = k+1;
 	}
 	if (DELTA_LT(value, min)) continue;
-	tick_value[k] = include_number ? value : NO_NUMBER;
-	tick_distance[k] = distance * (log(value) - log(min))
-				    / (log(max) - log(min));
+	ticks[k].value = include_number ? value : NO_NUMBER;
+	ticks[k].distance = distance * (log(value) - log(min))
+				     / (log(max) - log(min));
 	k++;
     }
     return k;
