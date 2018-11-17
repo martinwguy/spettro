@@ -58,12 +58,19 @@ far more musically-interesting detail.
       axis, so that twice as much of the audio becomes visible;
       Shift-'X' zooms in, enlarging the central half of the display to fit
       the whole window.
+      <P>
+      If you zoom in enough while playing, spettro will be unable to calculate
+      enough FFTs per second to keep the screen updated.
  <DT>y Y
   <DD>Similarly, 'y' zooms out on the frequency axis,
       showing twice the frequency range as before and compressing
       the graphic in the vertical direction; 'Y' zooms in by a factor of
       two so that what was the central half of the graphic now fills the
       whole height.
+      <P>
+      The maximum permitted zoom out is when the frequency at the top of
+      the graph is 9 x 10^307 times the one at the bottom
+      (half the value of the largest 64-bit floating-point number.)
  <DT>+ -
   <DD>Either of the Plus keys zooms in on both axes, like X and Y
       simultaneously, and the Minus keys zoom out in both directions.
@@ -224,9 +231,9 @@ audio file name:
  <DT>-e / --exit-at-end
   <DD>Exits when the audio file has finished playing.
  <DT>--heatmap / --gray / --print
-  <DD>Selects the palette as a colored heatmap,
-      in shades of gray as white on black (for screens)
-      or in shades of gray as black on white (for printing.)
+  <DD>Selects the palette as a colored heatmap from blue through red and yellow
+      to white, in shades of gray as white on black (for screens)
+      or in shades of gray as black on white (for printers.)
  <DT>-d n / --dyn-range n
   <DD>Sets the dynamic range of the color map. Default: 100dB.
  <DT>-f n / --fft-freq n
@@ -264,19 +271,28 @@ audio file name:
     </DL>
     There are corresponding keystroke commands
     <B>R</B>, <B>K</B>, <B>N</B>, <B>H</B>,
-    <B>N</B>, <B>B</B>, <B>L</B> and <B>D</B>.
-    For more info on the functions' peculiarities and merits, see
-    <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
-    or experiment with spettro and see for yourself :)
-
- <DT>-h n / --height n
-  <DD>Sets the spectrogram height to n pixels, with default of 480.
- <DT>-w n / --width n
-  <DD>Sets the spectrogram width to n pixels, with default of 640.
+    <B>N</B>, <B>B</B>, <B>L</B> and <B>D</B>
+    and a command-lne option <B>-W<B> / <B>--window<B> that recognizes
+    one-letter and full window names.
+    <P>
+    For more info on the different window functions' peculiarities and merits,
+    see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
+    or experiment with <B>spettro</B> and see for yourself :)
+ <DT>-h <I>n</I> / --height <I>n</I>
+  <DD>Sets the displayed window's height to <I>n</I> pixels.
+      The resolution of the spectrogram in the frequency direction is determined
+      by this and the size of the FFT in samples, set with -f / -fft-freq and
+      changed with the f and F keys.
+      The default height is 480.
+ <DT>-w <I>n</I> / --width <I>n</I>
+  <DD>Sets the displayed window's width to <I>n</I> pixels.
+      This determines (along with --ppsec or the x and X h-zoom keys) the
+      amount of time visible at once.
+      The default is 640.
  <DT>-F / --fullscreen
   <DD>Starts up in full-screen mode.
       The spectrogram is calculated at the width and height given above,
-      then scaled to the size of the screen, so if you want it pixel-per-pixel
+      then scaled to the size of the screen. If you want it pixel-per-pixel
       you need to supply the width and height. "xrandr" will tell you these.
  <DT>-j n / --jobs n
   <DD>Sets the number of calculation threads to start
