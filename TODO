@@ -88,10 +88,6 @@ Recognise note names A0 in -n -x and the above.
 ------------------------------------------------------------------------
 Make a ui struct of the parameters visible in main.c
 ------------------------------------------------------------------------
-If 100000 or 0.0001 are displayed, increase frequency axis width.
-------------------------------------------------------------------------
-Need to vscroll the green line's column too now.
-------------------------------------------------------------------------
 When zoomed in a lot, print enough digits on frequency axis to reveal
 the digit that changes per tick.
 ------------------------------------------------------------------------

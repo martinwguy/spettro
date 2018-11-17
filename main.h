@@ -39,5 +39,9 @@ extern bool green_line_off;	/* Also paint over the green line? */
 extern bool show_axes;		/* display frequency axis? */
 extern double softvol;
 
+/* Calculated values */
+extern unsigned frequency_axis_width;	/* Left axis area */
+extern unsigned note_name_axis_width;	/* Right axis area */
+
 #define MAIN_H
 #endif

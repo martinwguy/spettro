@@ -153,6 +153,16 @@ static float logmax = 1.0;	/* maximum magnitude value seen so far */
        				  * when the last result has come in from the
 				  * FFT threads, in calc_notify in scheduler.c
 				  */
+
+/* The size of the vercal axes, when they are present. */
+
+/* 22050- Space, Five * (digit + blank column), 2 pixels for tick */
+/* Will be increased if 100000 or 0.00001 are displayed */
+unsigned frequency_axis_width = 1 + 5 * (3 + 1) + 2;
+
+/* -A0 Two pixels for tick, a space, two * (letter + blank column) */
+unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);
+
 int
 main(int argc, char **argv)
 {
@@ -473,8 +483,8 @@ q/Ctrl-C/Esc   Quit\n\
     min_x = 0; max_x = disp_width - 1;
     min_y = 0; max_y = disp_height - 1;
     if (show_axes) {
-	min_x += FREQUENCY_AXIS_WIDTH;
-	max_x -= NOTE_NAME_AXIS_WIDTH;
+	min_x += frequency_axis_width;
+	max_x -= note_name_axis_width;
     }
     speclen = fft_freq_to_speclen(fft_freq);
     maglen = (max_y - min_y) + 1;
@@ -819,19 +829,19 @@ do_key(enum key key)
 	    /* Remove frequency axis */
 	    min_x = 0;
 	    max_x = disp_width - 1;
-	    repaint_columns(0, FREQUENCY_AXIS_WIDTH-1, min_y, max_y, FALSE);
-	    repaint_columns(disp_width - NOTE_NAME_AXIS_WIDTH, disp_width - 1,
+	    repaint_columns(0, frequency_axis_width-1, min_y, max_y, FALSE);
+	    repaint_columns(disp_width - note_name_axis_width, disp_width - 1,
 	    		    min_y, max_y, FALSE);
 	} else {
 	    /* Add frequency axis */
-	    min_x = FREQUENCY_AXIS_WIDTH;
-	    max_x = disp_width - 1 - NOTE_NAME_AXIS_WIDTH;
+	    min_x = frequency_axis_width;
+	    max_x = disp_width - 1 - note_name_axis_width;
 	    draw_frequency_axes();
 	}
 	show_axes = !show_axes;
-	gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
-	gui_update_rect(disp_width - NOTE_NAME_AXIS_WIDTH, 0,
-			NOTE_NAME_AXIS_WIDTH, disp_height);
+	gui_update_rect(0, 0, frequency_axis_width, disp_height);
+	gui_update_rect(disp_width - note_name_axis_width, 0,
+			note_name_axis_width, disp_height);
 	break;
 
     case KEY_W:

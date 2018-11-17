@@ -46,7 +46,7 @@ draw_frequency_axes(void)
     draw_note_names();
 }
 
-/* Put ticks on Frequency axis */
+/* Put ticks on Frequency axis. Only called when show_axes is TRUE. */
 static void
 draw_frequency_axis()
 {
@@ -62,15 +62,25 @@ draw_frequency_axis()
 	gui_putpixel(min_x - 2, min_y + lrint(tick_distance[i]), green);
 	if (tick_value[i] != NO_NUMBER) {
 	    char *spacep;
+	    int width;
 	    /* Left-align the number in the string, remove trailing spaces */
 	    sprintf(s, "%-5g", tick_value[i]);
 	    if ((spacep = strchr(s, ' ')) != NULL) *spacep = '\0';
+
+	    /* If the text is wider than the axis, grow the axis */
+	    if ((width = 1 + text_width(s) + 1 + 2) > frequency_axis_width) {
+	    	min_x = frequency_axis_width = width;
+    		gui_unlock();
+		draw_frequency_axis();
+		return;
+	    }
+
 	    draw_text(s, min_x - 4, min_y + lrint(tick_distance[i]),
 		      RIGHT, CENTER);
 	}
     }
     gui_unlock();
-    gui_update_rect(0, 0, FREQUENCY_AXIS_WIDTH, disp_height);
+    gui_update_rect(0, 0, frequency_axis_width, disp_height);
 }
 
 static void

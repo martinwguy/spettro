@@ -133,6 +133,7 @@ freq_zoom_by(double by)
      * so convert max/min to centre/range */
     double center_frequency = sqrt(min_freq * max_freq);
     double range = max_freq / min_freq;
+    double old_min_freq = min_freq, old_max_freq = max_freq;
 
     /* If by == 2.0, new_range = sqrt(range)
      * if by == 0.5, new_range = range squared
@@ -140,6 +141,8 @@ freq_zoom_by(double by)
      */
     range = pow(range, 1.0 / by);
 
+    /* This stops the frequency axis calculator from going into an infinite
+     * loop */
     if (range > MAX_RANGE || !isfinite(range)) {
     	/* Silly zoom-out bursts the frequency axis. Refuse */
 	return;
@@ -148,6 +151,14 @@ freq_zoom_by(double by)
     /* Convert center/range back to min/max */
     max_freq = center_frequency * sqrt(range);
     min_freq = center_frequency / sqrt(range);
+
+    /* Zoom limit: saves the axis calculator from an infinite loop */
+    if (log(v_pixel_freq_ratio()) == 0.0) {
+	fprintf(stderr, "Zoom limit reached\n");
+	min_freq = old_min_freq;
+	max_freq = old_max_freq;
+	return;
+    }
 
     if (show_axes) draw_frequency_axes();
 }
