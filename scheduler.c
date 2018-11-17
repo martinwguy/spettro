@@ -536,8 +536,7 @@ calc_notify(result_t *result)
     /* Update the display if the column is in the displayed region
      * and isn't at the green line's position
      */
-    if (pos_x >= min_x && pos_x <= max_x &&
-	pos_x != disp_offset) {
+    if (pos_x >= min_x && pos_x <= max_x) {
 	paint_column(pos_x, min_y, max_y, result);
 	gui_update_column(pos_x);
     }
