@@ -67,7 +67,7 @@ make_row_overlay()
 
 	    /* If in screen range, write it to the overlay */
 	    if (magindex >= 0 && magindex < len) {
-		overlay_row(magindex, color[note % 12] == 0 ? white : black);
+		overlay_row(magindex, color[note % 12] == 0 ? green : black);
 	    }
 	}
     }
