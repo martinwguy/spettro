@@ -30,21 +30,15 @@ static char *letters[] = {
 static const int letter_stride = 7;
 
 /*
- * Draw the given text at the given coordinates.
- * Alignment TOP put the top pixel of the text at that y coordinat
- * Alignment LEFT puts the leftmost pixel of the text at that x coordinat
- * CENTER centers the text on that coordinate value.
+ * Return the width of a text in pixels
  */
-void
-draw_text(char *text, int at_x, int at_y,
-		      alignment_t alignment_x, alignment_t alignment_y)
+int
+text_width(const char *text)
 {
-    int width;
-    int height = 5;
-    int x;	/* index into the string */
-
     /* Calculate the width of the typeset string in pixels */
-    width = 0;
+    int width = 0;
+    int x;
+
     for (x = 0; text[x] != '\0'; x++) {
     	char c = toupper(text[x]);
 	if (isdigit(c) || isupper(c)) width += 4;
@@ -53,6 +47,23 @@ draw_text(char *text, int at_x, int at_y,
 	else if (c == '-') width += 4;
     }
     if (width > 0) width--; /* Not including the trailing blank column */
+
+    return width;
+}
+    
+/*
+ * Draw the given text at the given coordinates.
+ * Alignment TOP put the top pixel of the text at that y coordinat
+ * Alignment LEFT puts the leftmost pixel of the text at that x coordinat
+ * CENTER centers the text on that coordinate value.
+ */
+void
+draw_text(const char *text, int at_x, int at_y,
+		      alignment_t alignment_x, alignment_t alignment_y)
+{
+    int width = text_width(text);
+    int height = 5;
+    int x;	/* index into the string */
 
     /* Make at_x and at_y the position of the top left pixel of the text */
     switch (alignment_x) {
@@ -114,8 +125,8 @@ draw_text(char *text, int at_x, int at_y,
 	    }
 	    /* Paint the inter-character gap if there's another character */
 	    if (text[x+1])
-	        for (row = 0; row<5; row++)
-		   gui_putpixel(at_x + 3, at_y - row, black);
+	        gui_paint_rect(at_x+3, at_y-4, at_x+3, at_y, black);
+
 	    at_x += 4;
 	}
     }
