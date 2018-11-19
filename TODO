@@ -91,3 +91,13 @@ Make a ui struct of the parameters visible in main.c
 When zoomed in a lot, print enough digits on frequency axis to reveal
 the digit that changes per tick.
 ------------------------------------------------------------------------
+Add fine control of h-zoom with Ctrl.
+------------------------------------------------------------------------
+Make the desktop icon appear in the window manager.
+------------------------------------------------------------------------
+Make Ctrl-left click play from here.
+------------------------------------------------------------------------
+Mouse wheel does x-zoom?
+------------------------------------------------------------------------
+p and P to dump the spectrogram screen view or the whole thing.
+------------------------------------------------------------------------
