@@ -1,4 +1,8 @@
-/* Main routing for standalone filtering_audio program */
+/* Main routine for the standalone test program filtering_audio program,
+ * used for testing libav functionality.
+ *
+ * See filtering_audio() in libav.c
+ */
 
 #include "spettro.h"
 #include "libav.h"

@@ -228,6 +228,11 @@ void print_frame(const AVFrame *frame)
     fflush(stdout);
 }
 
+/*
+ * This is not used by spettro. It is used when building the "filtering_audio"
+ * standalone test program, which should work the same as the example program
+ * that we copied the above (and this) from.
+ */
 int filtering_main(int argc, char **argv)
 {
     int ret;
