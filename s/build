@@ -10,12 +10,13 @@ cp Makefile.am.orig Makefile.am
 
 for a
 do
-    echo "$a" | grep -q "=" || echo Checking $a
+    echo "$a" | grep -q "[=-]" || echo Checking $a
     case "$a" in
     SDL1)
     	sed -i -e '/^SDL_/s/sdl2-config/sdl-config/' Makefile.am
 	;;
     SDL2)
+    	# is the default
 	continue
 	;;
     EMOTION)
@@ -28,22 +29,24 @@ do
 	       -e '/^AM_CFLAGS/s/SDL_CFLAGS/&) $(EMOTION_CFLAGS/' \
 	       -e '/^AM_LDFLAGS/s/SDL_LIBS/SDL_LIBS) $(EMOTION_LIBS/' Makefile.am
 	;;
+
     SOX)
+	# is the default
 	continue
 	;;
     AUDIOFILE)
-	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBAUDIOFILE/' \
-	       -e '/^AM_LDFLAGS/s/-lsox/-laudiofile/' Makefile.am
+	sed -i -e '/^AM_CFLAGS/s/USE_LIBSOX/USE_LIBAUDIOFILE/' \
+	       -e '/^AM_[CLD]*FLAGS/s/SOX_/AUDIOFILE_/' Makefile.am
 	;;
     SNDFILE)
-	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBSNDFILE/' \
-	       -e '/^AM_LDFLAGS/s/-lsox/-lsndfile/' Makefile.am
+	sed -i -e '/^AM_CFLAGS/s/USE_LIBSOX/USE_LIBSNDFILE/' \
+	       -e '/^AM_[CLD]*FLAGS/s/SOX_/SNDFILE_/' Makefile.am
 	;;
     AV)
-	sed -i -e '/^AM_CFLAGS/s/LIBSOX/LIBAV/' \
-	       -e '/^AM_LDFLAGS/s/-lsox/$(AV_LIBS)/' Makefile.am
+	sed -i -e '/^AM_CFLAGS/s/USE_LIBSOX/USE_LIBAV/' \
+	       -e '/^AM_[CLD]*FLAGS/s/SOX_/AV_/' Makefile.am
 	;;
-    *=*)
+    *=*|-*)
     	MAKEFLAGS="$MAKEFLAGS $a";
 	;;
     *)
@@ -52,7 +55,7 @@ do
 	;;
     esac
     shift
-    echo "$a" | grep -q = || test "$a" = SOX -o "$a" = SDL2 || {
+    echo "$a" | grep -q '[-=]' || test "$a" = SOX -o "$a" = SDL2 || {
       cmp -s Makefile.am Makefile.am.orig && {
 	echo "$0 failed to modify Makefile.am"
 	exit 1

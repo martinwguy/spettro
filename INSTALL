@@ -69,7 +69,7 @@ To do to graphics and to play the sound, by default it uses the
 Enlightenment Foundation Libraries; an alternative is to use SDL for both
 or EFL for the graphics and SDL for the sound player.
 
-To read/decode the audio file, by default it uses libsndfile;
-an alternative is to use libaudiofile.
+To read/decode the audio file, by default it uses libsox;
+alternatives are libaudiofile, libsndfile, libavformat (ffmpeg).
 
 Modify Makefile.am to make these alternative selections.

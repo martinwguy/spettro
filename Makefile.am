@@ -2,40 +2,56 @@
 # Makefile.am for spettro, a scrolling log-frequency axis spectrogram visualizer
 #
 
-# To choose the video- and audio-driving libraries,
-# define USE_EMOTION, USE_SDL or USE_EMOTION_SDL in AM_CFLAGS.
-# USE_EMOTION uses only Enlightenment and works best
-#	but the audio player doesn't work on 64-bit Ubuntu 16.04.
-#	Add $(EMOTION_CFLAGS) to AM_CFLAGS and EMOTION_LIBS to AM_LDFLAGS.
-# USE_EMOTION_SDL gives the best version if Emotion's audio is broken.
-#	For this, add -lSDL to AM_LDFLAGS.
-# USE_SDL uses SDL for everything but works worse.
-#	For this, add $(SD_CFLAGS) to AM_CFLAGS and $(SD_LIBS) to AM_LDFLAGS
+# To choose the video-driving and audio-file-reading libraries,
+# define one of USE_EMOTION, USE_SDL or USE_EMOTION_SDL in AM_CFLAGS:
+# USE_EMOTION	uses only Enlightenment and works best but the audio player
+#		doesn't work on 64-bit Ubuntu 16.04 or on Debian.
+# USE_EMOTION_SDL uses EFL for everything except sound-playing, for which it
+#		uses SDL, giving the best version if Emotion's audio player is
+#		broken.
+#		It also needs both $(SDL_CFLAGS/LIBS) and $(EMOTION_CFLAGS/LIBS)
+# USE_SDL	uses SDL for everything. This is now the default.
 #
-# To choose the audio file-reading/decoding library, use
-# USE_LIBSNDFILE in AM_CFLAGS and -lsndfile in AM_LDFLAGS
-# USE_LIBAUDIOFILE in AM_CFLAGS and -laudiofile in AM_LDFLAGS
-# USE_LIBSOX in AM_CFLAGS and -lsox in AM_LDFLAGS
-# The main difference btw sndfile and audiofile is that libaudiofile can't read
-# Ogg files. Libsox reads *everything*.
-#
+# To choose the audio file-reading/decoding library, define one of:
+# USE_AUDIOFILE, USE_SNDFILE, USE_SOX and USE_AV and change
+# SOX_CFLAGS and SOX_LIBS to AUDIOFILE_*, SNDFILE_*, SOX_* or AV_* accordingly.
+# See HACKING for how well they work.
+
+# ---------------- These are the lines you might want to change ---------------
+
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX
+AM_CFLAGS += $(SDL_CFLAGS) $(SOX_CFLAGS)
+AM_LDFLAGS = $(SDL_LIBS) $(SOX_LIBS)
+
+# ---------------------- That's all you need to change ----------------------
+
+# Compulsory flags and libraries.
+
 # We add -march=native, not only for best speed on your CPU, but also because
-# gcc's and clang's defaults generate "illegal instruction" on AMD Sempron.
+# gcc and clang's defaults generate "Illegal instruction" on AMD Sempron.
+AM_CFLAGS += $(FFTW_CFLAGS) $(PNG_CFLAGS) -march=native -Wall
+AM_LDFLAGS +=$(FFTW_LIBS) $(PNG_LIBS) -lm
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX $(FFTW_CFLAGS) $(PNG_CFLAGS)
-AM_CFLAGS += $(SDL_CFLAGS) -march=native -Wall
-AM_LDFLAGS = -lsox $(SDL_LIBS) $(FFTW_LIBS) $(PNG_LIBS) -lm
-
-AV_CFLAGS=`pkg-config --cflags libavformat libavcodec libavutil libavfilter`
-AV_LIBS=  `pkg-config --libs   libavformat libavcodec libavutil libavfilter`
-EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
-EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
 FFTW_CFLAGS=`pkg-config --cflags fftw3`
 FFTW_LIBS=  `pkg-config --libs fftw3`
 PNG_CFLAGS=`pkg-config --cflags libpng`
 PNG_LIBS=  `pkg-config --libs libpng`
+
+# Video-driving libraries
 SDL_CFLAGS=`sdl2-config --cflags` -pthread
 SDL_LIBS=  `sdl2-config --libs` -lX11 -pthread
+EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
+EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
+
+# Audio file-reading libraries
+AUDIOFILE_CFLAGS=`pkg-config --cflags audiofile`
+AUDIOFILE_LIBS=  `pkg-config --libs audiofile`
+SNDFILE_CFLAGS=  `pkg-config --cflags sndfile`
+SNDFILE_LIBS=    `pkg-config --libs sndfile`
+SOX_CFLAGS=      `pkg-config --cflags sox`
+SOX_LIBS=        `pkg-config --libs sox`
+AV_CFLAGS=`pkg-config --cflags libavformat libavcodec libavutil libavfilter`
+AV_LIBS=  `pkg-config --libs   libavformat libavcodec libavutil libavfilter`
 
 bin_PROGRAMS = spettro filtering_audio
 
