@@ -103,3 +103,5 @@ p and P to dump the spectrogram screen view or the whole thing.
 ------------------------------------------------------------------------
 Add --version
 ------------------------------------------------------------------------
+Decode compressed audio front-to-back without seeking
+------------------------------------------------------------------------
