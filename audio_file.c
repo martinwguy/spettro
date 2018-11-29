@@ -63,7 +63,7 @@ open_audio_file(char *filename)
     default:
 	compression = afQueryPointer(AF_QUERYTYPE_COMPRESSION, AF_QUERY_NAME,
 				     comptype, 0, 0);
-	if (!strcmp(compression, "FLAC")) {
+	if (strcmp(compression, "FLAC") != 0) {
 	    fprintf(stderr, "Unknown compression type \"%s\"\n", compression);
 	}
 	create_audio_cache();
