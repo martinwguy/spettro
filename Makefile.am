@@ -29,6 +29,7 @@ AM_LDFLAGS = $(SDL_LIBS) $(SOX_LIBS)
 
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc and clang's defaults generate "Illegal instruction" on AMD Sempron.
+
 AM_CFLAGS += $(FFTW_CFLAGS) $(PNG_CFLAGS) -march=native -Wall
 AM_LDFLAGS +=$(FFTW_LIBS) $(PNG_LIBS) -lm
 
@@ -100,10 +101,9 @@ mrproper: clean
 		config.status configure depcomp install-sh missing \
 		configure.h*
 	rm -rf .deps autom4te.cache
-	rm -f build-stamp configure-stamp	# Debian stuff
-	rm -rf debian/spettro*			# Debian stuff
 	rm -f swoop.wav
+	dh_clean		# Debian stuff
 
 # Some test files
 swoop.wav:
-	sox -n $@ synth 10 sine 27.5-14080
+	sox -n -b 16 -e signed $@ synth 10 sine 27.5-14080
