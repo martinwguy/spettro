@@ -134,7 +134,7 @@ read_cached_audio(audio_file_t *audio_file, char *data,
         /* If the file read fails, is at-or-after EOF or is short, that leaves
 	 * zeroes in the buffer to be filled in from the real file.
 	 */
-	if (frames_read - frames_to_read) {
+	if (frames_read < frames_to_read) {
 	    fill_hole(audio_file, audio_buf + samples_in_buf,
 		      (frames_to_read - frames_read) * audio_file->channels,
 		      start + frames_read);
