@@ -137,8 +137,7 @@ static void	calc_columns(int from, int to);
 static int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
        bool fullscreen = FALSE;		/* Start up in fullscreen mode? */
        int min_x, max_x, min_y, max_y;	/* Edges of graph in display coords */
-       bool green_line_off = FALSE;	/* Do we repaint the green line with
-					 * spectral data when refreshing? */
+       bool green_line_off = FALSE;	/* Should we omit it when repainting? */
        double softvol = 1.0;
 
 /* The currently opened audio file */
@@ -352,13 +351,13 @@ switchagain:
 	    default:
 		fprintf(stderr, "-W which_window_function?\n\
 R = Rectangular\n\
-K = Kaiser (the default)\n\
+K = Kaiser\n\
 N = Nuttall\n\
 H = Hann\n\
 M = Hamming\n\
 B = Bartlett\n\
 L = Blackman\n\
-D = Dolph\n");
+D = Dolph (the default)\n");
 		exit(1);
 	    }
 	    break;
@@ -369,7 +368,7 @@ D = Dolph\n");
 	    case 'g': set_colormap(GRAY_MAP); break;
 	    case 'p': set_colormap(PRINT_MAP); break;
 	    default:
-		fprintf(stderr, "-c which? (heat/gray/print)\n");
+		fprintf(stderr, "-c: Which colormap? (heat/gray/print)\n");
 		exit(1);
 	    }
 	    break;
