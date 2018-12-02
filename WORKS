@@ -1,0 +1,53 @@
+Which audio file-reading libraries work with which file format types?
+1) Does it try to read it?
+2) Does it get the native-endian 16-bit short audio data right for playing?
+   a) From mono files?  b) From stereo files?
+3) Does it get the mono-double audio data right for display?
+
+	  AUDIOFILE	   SNDFILE	     SOX	     AV
+	audio	video	audio	video	audio	video	audio	video
+
+AAC	--		--		--		JUMP	OFFSET
+AAC2	--		--		--		JUMP	OFFSET
+
+FLAC	UP	UP	OK	OK	OK	OK	OK	OK
+FLAC-2	UP	UP	OK	OK	OK	OK	UP(2)	OK
+
+MP3	--		--		GAPS(1)	GAPS	LAGGY	REPEAT
+MP3-2	--		--		GAPS(1)	GAPS	UPLAGGY	REPEAT
+
+MP4	--		--		--		HALF	HALF
+MP4-2	--		--		--		HALF	HALF
+
+OGG	--		OK	OK	OK	OK	BLOCKY	BLOCKY
+OGG-2	--		OK	OK	OK	OK		BLOCKY
+
+WAV	UP	OK	OK	OK	OK	OK	OK	OK
+WAV-2	UP	OK	OK	OK	OK	OK	UP	OK
+
+
+1) Messages "mp3: MAD lost sync" "mp3: recoverable MAD error" and
+	    "Failed to seek in audio file"
+
+2) Messages: "[flac @ 0x12c6c80] read_timestamp() failed in the middle
+	     Failed to seek in audio file."  when it reads the end of the file.
+
+--: Doesn't even try to read the file
+OK: Looks or sounds right
+GAPS: The audio is like a dotted line
+UP: The same but at twice the correct frequency
+OFFSET: The display starts with 15 seconds of black before the spectral data.
+JUMP: The audio is silent and playing skips immediately to end-of-file.
+	Stereo: you can seek in the file and play the displayed part, hearing it
+	at the correct speed but lumpily at twice the frequency.
+REPEAT: Repeats the first 8.5 seconds three times. 
+LAGGY:	Once decoded, plays OK at first, then gets progressively more gappy.
+HALF: The video output is half its normal width but at the right frequency.
+      There are a few pixel columns of black at the start.
+      Pressins Space jumps to the end of the piece (or the end of the black
+      second half) but you can seek back in the file to hear it lumpily at
+      the right frequency but twice the speed (half the samples are missing)
+      In stereo, it's twice the speed and twice the frequency.
+BLOCKY: Looks right vertically but 5 or 6 adjacent pixel columns are the same.
+	Audio corresponds: the audio spectrum only changes 4 times a second.
+	From a stereo file, the same but the audio is also twice the frequency.
