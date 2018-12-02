@@ -6,19 +6,18 @@ PREPARATION
 On Debian/Ubuntu/Mint you need to:
 	# Always
 	apt-get install libfftw3-dev pkg-config
+	# Default library choices
+	apt-get install libsdl2-dev libsndfile-dev
 
-	# For -DUSE_SDL (the default, see Makefile.am)
-	apt-get install libsdl2-dev
-	# or, if you want to use SDL1.2 instead of SDL2.0
+	# If you want to use SDL1.2 instead of SDL2.0
 	apt-get install libsdl1.2-dev
+	# and change sdl2-config to sdl-config in Makefile.am
 	# or, for -DUSE_EMOTION:
 	apt-get install e17-dev libecore-dev libemotion-dev
 	# or, for -DUSE_EMOTION_SDL, all of the above.
 
-	# Use, for -DUSE_LIBSOX (the default)
+	# For -DUSE_LIBSOX
 	apt-get install libsox-dev
-	# or, for -DUSE_LIBSNDFILE
-	apt-get install libsndfile-dev
 	# or, for -DUSE_LIBAUDIOFILE
 	apt-get install libaudiofile-dev
 	# or, for -DUSE_LIBAV
@@ -31,7 +30,7 @@ and a compiler of some kind:
 	apt-get install build-essential
 will do the trick for sure, but
 	apt-get install gcc
-will probably be enough.
+will probably be enough. Clang also works: configure CC=clang
 
 
 FETCHING THE SOURCE CODE

@@ -9,19 +9,19 @@
 # USE_EMOTION_SDL uses EFL for everything except sound-playing, for which it
 #		uses SDL, giving the best version if Emotion's audio player is
 #		broken.
-#		It also needs both $(SDL_CFLAGS/LIBS) and $(EMOTION_CFLAGS/LIBS)
+#		It needs both $(SDL_CFLAGS/LIBS) and $(EMOTION_CFLAGS/LIBS)
 # USE_SDL	uses SDL for everything. This is now the default.
 #
 # To choose the audio file-reading/decoding library, define one of:
 # USE_AUDIOFILE, USE_SNDFILE, USE_SOX and USE_AV and change
-# SOX_CFLAGS and SOX_LIBS to AUDIOFILE_*, SNDFILE_*, SOX_* or AV_* accordingly.
-# See HACKING for how well they work.
+# SNDFILE_{CFLAGS,LIBS} to AUDIOFILE_*, SNDFILE_*, SOX_* or AV_* accordingly.
+# See the file WORKS for how well they work.
 
 # ---------------- These are the lines you might want to change ---------------
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSOX
-AM_CFLAGS += $(SDL_CFLAGS) $(SOX_CFLAGS)
-AM_LDFLAGS = $(SDL_LIBS) $(SOX_LIBS)
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBSNDFILE
+AM_CFLAGS += $(SDL_CFLAGS) $(SNDFILE_CFLAGS)
+AM_LDFLAGS = $(SDL_LIBS) $(SNDFILE_LIBS)
 
 # ---------------------- That's all you need to change ----------------------
 
@@ -30,8 +30,8 @@ AM_LDFLAGS = $(SDL_LIBS) $(SOX_LIBS)
 # We add -march=native, not only for best speed on your CPU, but also because
 # gcc and clang's defaults generate "Illegal instruction" on AMD Sempron.
 
-AM_CFLAGS += $(FFTW_CFLAGS) $(PNG_CFLAGS) -march=native -Wall
-AM_LDFLAGS +=$(FFTW_LIBS) $(PNG_LIBS) -lm
+AM_CFLAGS += $(FFTW_CFLAGS) $(PNG_CFLAGS) -march=native -mtune=native -Wall
+AM_LDFLAGS += $(FFTW_LIBS) $(PNG_LIBS) -lm
 
 FFTW_CFLAGS=`pkg-config --cflags fftw3`
 FFTW_LIBS=  `pkg-config --libs fftw3`

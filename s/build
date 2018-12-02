@@ -30,21 +30,21 @@ do
 	       -e '/^AM_LDFLAGS/s/SDL_LIBS/SDL_LIBS) $(EMOTION_LIBS/' Makefile.am
 	;;
 
-    SOX)
+    SNDFILE)
 	# is the default
 	continue
 	;;
     AUDIOFILE)
-	sed -i -e '/^AM_CFLAGS/s/USE_LIBSOX/USE_LIBAUDIOFILE/' \
-	       -e '/^AM_[CLD]*FLAGS/s/SOX_/AUDIOFILE_/' Makefile.am
+	sed -i -e '/^AM_CFLAGS/s/USE_LIBSNDFILE/USE_LIBAUDIOFILE/' \
+	       -e '/^AM_[CLD]*FLAGS/s/SNDFILE_/AUDIOFILE_/' Makefile.am
 	;;
-    SNDFILE)
-	sed -i -e '/^AM_CFLAGS/s/USE_LIBSOX/USE_LIBSNDFILE/' \
-	       -e '/^AM_[CLD]*FLAGS/s/SOX_/SNDFILE_/' Makefile.am
+    SOX)
+	sed -i -e '/^AM_CFLAGS/s/USE_LIBSNDFILE/USE_LIBSOX/' \
+	       -e '/^AM_[CLD]*FLAGS/s/SNDFILE_/SOX_/' Makefile.am
 	;;
     AV)
-	sed -i -e '/^AM_CFLAGS/s/USE_LIBSOX/USE_LIBAV/' \
-	       -e '/^AM_[CLD]*FLAGS/s/SOX_/AV_/' Makefile.am
+	sed -i -e '/^AM_CFLAGS/s/USE_LIBSNDFILE/USE_LIBAV/' \
+	       -e '/^AM_[CLD]*FLAGS/s/SNDFILE_/AV_/' Makefile.am
 	;;
     *=*|-*)
     	MAKEFLAGS="$MAKEFLAGS $a";
@@ -55,7 +55,8 @@ do
 	;;
     esac
     shift
-    echo "$a" | grep -q '[-=]' || test "$a" = SOX -o "$a" = SDL2 || {
+    # Ensure that the sed scripts modified Makefile.am
+    echo "$a" | grep -q '[-=]' || test "$a" = SNDFILE -o "$a" = SDL2 || {
       cmp -s Makefile.am Makefile.am.orig && {
 	echo "$0 failed to modify Makefile.am"
 	exit 1
