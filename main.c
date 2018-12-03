@@ -99,6 +99,7 @@
 /*
  * Function prototypes
  */
+static void print_version(void);
 static void
 repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only);
 
@@ -217,6 +218,11 @@ switchagain:
 	    /* Those environment variables */
 	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-S";
 	    else if (!strcmp(argv[0], "--ppsec")) argv[0] = "-P";
+	    /* Flags with no single-letter equivalent */
+	    else if (!strcmp(argv[0], "--version")) {
+		print_version();
+		exit(0);
+	    }
 	    else goto usage;
 
 	    letter = argv[0][1];
@@ -376,34 +382,6 @@ D = Dolph (the default)\n");
 	default:	/* Print Usage message */
 	  {
 usage:
-	    printf("Spettro version %s built with", VERSION);
-#if USE_EMOTION || USE_EMOTION_SDL
-	    printf(" Enlightenment %d.%d", EFL_VERSION_MAJOR, EFL_VERSION_MINOR);
-#endif
-#if USE_EMOTION_SDL
-	    printf(",");
-#endif
-#if USE_SDL || USE_EMOTION_SDL
-# if SDL1
-	    printf(" SDL 1.2");
-# elif SDL2
-	    printf(" SDL 2.0");
-# endif
-#endif
-	    printf(" and ");
-#if USE_LIBAUDIOFILE
-	    printf("libaudiofile %d.%d.%d",
-		    LIBAUDIOFILE_MAJOR_VERSION,
-		    LIBAUDIOFILE_MINOR_VERSION,
-		    LIBAUDIOFILE_MICRO_VERSION);
-#elif USE_LIBSNDFILE
-	    printf("libsndfile");
-#elif USE_LIBSOX
-	    printf("libSoX %s", sox_version());
-#elif USE_LIBAV
-	    printf("FFMPEG's libav %s", AV_STRINGIFY(LIBAVFORMAT_VERSION));
-#endif
-	    printf("\n");
 	    printf(
 "Usage: spettro [options] [file]\n\
 -p:    Autoplay the file on startup\n\
@@ -541,6 +519,39 @@ q/Ctrl-C/Esc   Quit\n\
     close_audio_file(audio_file);
 
     return 0;
+}
+
+static void
+print_version()
+{
+    printf("Spettro version %s built with", VERSION);
+#if USE_EMOTION || USE_EMOTION_SDL
+    printf(" Enlightenment %d.%d", EFL_VERSION_MAJOR, EFL_VERSION_MINOR);
+#endif
+#if USE_EMOTION_SDL
+    printf(",");
+#endif
+#if USE_SDL || USE_EMOTION_SDL
+# if SDL1
+    printf(" SDL 1.2");
+# elif SDL2
+    printf(" SDL 2.0");
+# endif
+#endif
+    printf(" and ");
+#if USE_LIBAUDIOFILE
+    printf("libaudiofile %d.%d.%d",
+	    LIBAUDIOFILE_MAJOR_VERSION,
+	    LIBAUDIOFILE_MINOR_VERSION,
+	    LIBAUDIOFILE_MICRO_VERSION);
+#elif USE_LIBSNDFILE
+    printf("libsndfile");
+#elif USE_LIBSOX
+    printf("libSoX %s", sox_version());
+#elif USE_LIBAV
+    printf("FFMPEG's libav %s", AV_STRINGIFY(LIBAVFORMAT_VERSION));
+#endif
+    printf("\n");
 }
 
 #define max(a, b) ((a)>(b) ? (a) : (b))

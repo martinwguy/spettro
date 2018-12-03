@@ -3,10 +3,18 @@
 # check-builds.sh: See if the source compiles with all USE_ variants
 
 s/build SDL1 "$@"
+./spettro --version
 s/build SDL2 "$@"
+./spettro --version
 s/build EMOTION "$@"
+./spettro --version
 s/build EMOTION_SDL "$@"
+./spettro --version
 s/build AUDIOFILE "$@"
+./spettro --version
 s/build SNDFILE "$@"
+./spettro --version
 s/build SOX "$@"
+./spettro --version
 s/build AV "$@"
+./spettro --version
