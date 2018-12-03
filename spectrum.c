@@ -5,7 +5,6 @@
  */
 
 #include <string.h>
-#include <math.h>
 #include <limits.h>
 #include <fftw3.h>
 #include <sndfile.h>

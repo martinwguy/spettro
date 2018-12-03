@@ -18,9 +18,8 @@
 
 #include "convert.h"
 #include "gui.h"
-#include "main.h"
+#include "ui.h"
 
-#include <math.h>	/* for pow() */
 #include <string.h>	/* for memset() */
 
 static void overlay_row(int magindex, color_t color);

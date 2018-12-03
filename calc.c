@@ -14,7 +14,6 @@
 #include "spettro.h"
 
 #include <unistd.h>	/* for usleep() */
-#include <math.h>
 
 #if ECORE_MAIN
 #include <Ecore.h>
@@ -30,7 +29,7 @@
 #include "gui.h"	/* For RESULT_EVENT */
 #include "lock.h"
 #include "spectrum.h"
-#include "main.h"	/* for window_function */
+#include "ui.h"
 
 /*
  * The compute-FFTs function
@@ -46,7 +45,9 @@ calc(calc_t *calc)
 {
     spectrum *spec;
 
-    /* If parameters have changed since the work was queued, use the new ones */
+    /* If parameters have changed since the work was queued, don't bother.
+     * This should never happen because we clear the work queue when we
+     * change these parameters */
     if (calc->speclen != speclen || calc->window != window_function) {
 	free(calc);
 	return;
@@ -113,7 +114,8 @@ get_result(calc_t *calc, spectrum *spec)
 	}
 	read_cached_audio(calc->audio_file, (char *) spec->time_domain,
 			  af_double, 1,
-			  lrint(calc->t * sample_rate) - fftsize/2, fftsize);
+			  lrint(calc->t * audio_file->sample_rate) - fftsize/2,
+			  fftsize);
 	if (!unlock_audio_file()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");
 	    exit(1);

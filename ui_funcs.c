@@ -8,15 +8,16 @@
 
 #include "spettro.h"
 #include "ui_funcs.h"
+
 #include "audio.h"
 #include "axes.h"
 #include "convert.h"
+#include "gui.h"
+#include "paint.h"
 #include "scheduler.h"
 #include "timer.h"
-#include "main.h"
-#include "gui.h"
+#include "ui.h"
 
-#include <math.h>
 #include <values.h>	/* for DBL_MAX */
 
 /*
@@ -26,13 +27,16 @@ void
 time_pan_by(double by)
 {
     double playing_time;
+    double audio_length = audio_file_length(audio_file);
 
     playing_time = get_playing_time() + by;
 
     if (DELTA_LE(playing_time, 0.0)) playing_time = 0.0;
 
     /* If we're at/after the end of the piece, stop */
-    if (DELTA_GE(playing_time, audio_length)) playing_time = audio_length;
+    if (DELTA_GE(playing_time, audio_length))
+	playing_time = audio_length;
+
     if (playing_time == audio_length) {
 	/* If playing, stop */
 	stop_playing();
@@ -60,7 +64,7 @@ time_pan_by(double by)
 void
 time_zoom_by(double by)
 {
-    if (ppsec * by > sample_rate) {
+    if (ppsec * by > audio_file->sample_rate) {
     	fprintf(stderr, "Limiting time zoom to one sample per column\n");
 	return;
     }

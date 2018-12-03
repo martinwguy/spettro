@@ -28,19 +28,18 @@ static int multi_data_samples = 0;  /* length of buffer in samples */
 # include "libav.h"
 #endif
 
-/* Audio file info */
-double		audio_length = 0.0;	/* Length of the audio in seconds */
-double		sample_rate = 0.0;	/* SR of the audio in Hertz.
-					 * 0.0 is a booby trap so no one
-					 * uses it unititialized. */
+/* Handing the audio file info down to everybody is too much of a pain
+ * so we just make it global.
+ */
+static audio_file_t our_audio_file;
+
+/* Audio file info for everybody */
+audio_file_t *	audio_file = &our_audio_file;
 
 audio_file_t *
 open_audio_file(char *filename)
 {
-    audio_file_t *audio_file = Malloc(sizeof(audio_file_t));
-
 #if USE_LIBAUDIOFILE
-
     AFfilehandle af;
     int comptype;	/* Compression type */
 
@@ -131,11 +130,14 @@ open_audio_file(char *filename)
 
     audio_file->filename = filename;
 
-    /* Set the globals that everyone picks at */
-    sample_rate = audio_file->sample_rate;
-    audio_length = (double)audio_file->frames / sample_rate;
-
     return(audio_file);
+}
+
+/* Return audio file length in seconds */
+double
+audio_file_length(audio_file_t *audio_file)
+{
+    return audio_file->frames / audio_file->sample_rate;
 }
 
 /*

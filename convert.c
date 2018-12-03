@@ -4,9 +4,9 @@
 #include "spettro.h"
 #include "convert.h"
 
-#include "main.h"
+#include "audio_file.h"		/* for audio_file->sample_rate */
+#include "ui.h"
 
-#include <math.h>
 
 /* Return the frequency ratio between one pixel row and the one above,
  * used to scroll/zoom by one pixel.
@@ -28,11 +28,11 @@ double magindex_to_frequency(int k)
 
 double frequency_to_specindex(double freq)
 {
-    return freq * speclen / (sample_rate/2);
+    return freq * speclen / (audio_file->sample_rate / 2);
 }
 
 /*
- *	Choose a good FFT size for the given fft frequency
+ *	Choose a good FFT size for the given FFT frequency
  */
 
 /* Helper functions */
@@ -42,7 +42,7 @@ static bool is_2357(int n);
 int
 fft_freq_to_speclen(double fft_freq)
 {
-    int speclen = (sample_rate/fft_freq + 1) / 2;
+    int speclen = (audio_file->sample_rate / fft_freq + 1) / 2;
     int d; /* difference between ideal speclen and preferred speclen */
 
     /* Find the nearest fast value for the FFT size. */

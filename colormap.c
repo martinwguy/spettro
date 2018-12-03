@@ -7,7 +7,6 @@
 
 #include "gui.h"
 
-#include <math.h>
 
 /* Which elements of *_map[] represent which primary colors? */
 #define R 0

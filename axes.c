@@ -5,10 +5,9 @@
 
 #include "convert.h"
 #include "gui.h"
-#include "main.h"
 #include "text.h"
+#include "ui.h"
 
-#include <math.h>
 #include <string.h>
 
 /* Array of numbers to print, or NO_NUMBER */

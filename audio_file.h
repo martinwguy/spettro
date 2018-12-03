@@ -47,9 +47,11 @@ extern int read_audio_file(audio_file_t *audio_file, char *data,
 
 extern void close_audio_file(audio_file_t *audio_file);
 
+/* Convenience function */
+extern double audio_file_length(audio_file_t *audio_file);
+
 /* Audio file info for everybody */
-extern double		audio_length;	/* Length of the audio in seconds */
-extern double		sample_rate;	/* SR of the audio in Hertz */
+extern audio_file_t *	audio_file;
 
 # define AUDIO_FILE_H
 #endif /* HAVE_INCLUDED_AUDIO_FILE_H */

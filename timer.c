@@ -4,10 +4,8 @@
 
 #include "spettro.h"
 #include "timer.h"
-#include "main.h"
 #include "gui.h"
-
-#include <math.h>
+#include "paint.h"		/* for do_scroll() */
 
 /* The timer and its callback function. */
 #if ECORE_TIMER

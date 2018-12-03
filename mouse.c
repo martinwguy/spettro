@@ -9,10 +9,10 @@
 #include "barlines.h"	/* for Shift and Control */
 #include "key.h"	/* for Shift and Control */
 #include "overlay.h"	/* for set_*_bar_time() */
+#include "paint.h"
 #include "ui_funcs.h"
-#include "main.h"
+#include "ui.h"
 
-#include <math.h>
 
 /*
  * They can click and release the mouse of the same point.

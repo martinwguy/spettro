@@ -8,9 +8,10 @@
 #include "audio.h"
 #include "key.h"
 #include "mouse.h"
+#include "paint.h"	/* for do_scroll() */
 #include "scheduler.h"
 #include "timer.h"
-#include "main.h"
+#include "ui.h"
 
 /* Libraries' header files. See config.h for working combinations of defines */
 

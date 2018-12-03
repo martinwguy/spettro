@@ -3,12 +3,12 @@
  * required for display.  Log frequency axis distortion is also done here.
  */
 
-#include <math.h>
 
 #include "spettro.h"
 
+#include "audio_file.h"		/* for audio_file->sample_rate */
 #include "convert.h"
-#include "main.h"
+#include "ui.h"
 
 /* Helper function:
  * Map the index for an output pixel in a column to an index into the
@@ -44,7 +44,7 @@ magindex_to_specindex(int magindex)
      || maglen != mtoscache_maglen
      || min_freq != mtoscache_min_freq
      || max_freq != mtoscache_max_freq
-     || sample_rate != mtoscache_sample_rate) {
+     || audio_file->sample_rate != mtoscache_sample_rate) {
 	int k;
 
 	if (maglen != mtoscache_maglen)
@@ -60,7 +60,7 @@ magindex_to_specindex(int magindex)
 	mtoscache_maglen = maglen;
 	mtoscache_min_freq = min_freq;
 	mtoscache_max_freq = max_freq;
-	mtoscache_sample_rate = sample_rate;
+	mtoscache_sample_rate = audio_file->sample_rate;
     }
 
     if (magindex < 0 || magindex > maglen) {
@@ -115,7 +115,7 @@ interpolate(float* logmag, const float *spec, const int from_y, const int to_y)
 	double this = magindex_to_specindex(k);
 	double next = magindex_to_specindex(k + 1);
 
-	/* Range check: can happen if max_freq > sample_rate / 2 */
+	/* Range check: can happen if max_freq > audio_file->sample_rate / 2 */
 	if (this > speclen) {
 	    logmag[k] = -INFINITY;
 	    continue;

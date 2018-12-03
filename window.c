@@ -19,9 +19,9 @@
 #include "window.h"
 
 #include "lock.h"
-#include "main.h"
+#include "paint.h"
+#include "ui.h"
 
-#include <math.h>
 
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
 

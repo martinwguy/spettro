@@ -1,0 +1,66 @@
+/*
+ * ui.h - Header for the ui.c and its callers
+ *        and default values of its settings.
+ */
+
+#include "spettro.h"
+#include "ui.h"
+
+/* UI state variables */
+
+/* Size of display area in pixels */
+unsigned disp_width	= DEFAULT_DISP_WIDTH;
+unsigned disp_height	= DEFAULT_DISP_HEIGHT;
+
+/* Range of frequencies to display */
+double min_freq	= DEFAULT_MIN_FREQ;
+double max_freq	= DEFAULT_MAX_FREQ;	
+
+/* Dynamic range of color map (values below this are black) */
+double min_db	= DEFAULT_MIN_DB;
+
+/* How many video output frames to generate per second while playing
+ * and how many pixel columns to generate per second of the audio file.
+ * If they are equal, the graphic should scroll by one pixel column at a time.
+ */
+double fps	= DEFAULT_FPS;
+double ppsec	= DEFAULT_PPSEC;
+
+/* The "FFT frequency": 1/fft_freq seconds of audio are windowed and FFT-ed */
+double fft_freq	= DEFAULT_FFT_FREQ;
+
+/* Which window functions to apply to each audio sample before FFt-ing it */
+window_function_t window_function = DEFAULT_WINDOW_FUNCTION;
+
+bool piano_lines  = FALSE;	/* Draw lines where piano keys fall? */
+bool staff_lines  = FALSE;	/* Draw manuscript score staff lines? */
+bool guitar_lines = FALSE;	/* Draw guitar string lines? */
+bool show_axes = FALSE;		/* Are we to show/showing the axes? */
+
+/* Other option flags */
+bool autoplay = FALSE;		/* -p  Start playing on startup */
+bool exit_when_played = FALSE;	/* -e  Exit when the file has played */
+bool fullscreen = FALSE;	/* Start up in fullscreen mode? */
+int min_x, max_x, min_y, max_y;	/* Edges of graph in display coords */
+bool green_line_off = FALSE;	/* Should we omit it when repainting? */
+double softvol = 1.0;
+
+/* Where is time and space is the current playing position on the scren? */
+double disp_time = 0.0;	/* When in the audio file is the crosshair? */
+int disp_offset; 	/* Crosshair is in which display column? */
+
+/* The size of the vertical axes, when they are present. */
+
+/* 22050- == Space, Five * (digit + blank column) + 2 pixels for tick */
+/* Will be increased if 100000 or 0.00001 are displayed */
+unsigned frequency_axis_width = 1 + 5 * (3 + 1) + 2;
+
+/* -A0 == Two pixels for tick, a space, two * (letter + blank column) */
+unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);
+
+/* Values derived from the above */
+double step = 0.0;	/* time step per column = 1/ppsec
+			 * 0.0 means "not set yet" as a booby trap. */
+int speclen;		/* Size of linear spectral data */
+int maglen;		/* Size of logarithmic spectral data
+			 * == height of graph in pixels */

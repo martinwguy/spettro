@@ -77,8 +77,7 @@ no_audio_cache()
  */
 
 int
-read_cached_audio(audio_file_t *audio_file, char *data,
-		  af_format_t format, int channels,
+read_cached_audio(audio_file_t *audio_file, char *data, af_format_t format, int channels,
 		  int start, int frames_to_read)
 {
     static int samples_in_buf = 0;/* Number of samples read into buf[] */

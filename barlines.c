@@ -19,9 +19,9 @@
 #include "barlines.h"
 
 #include "gui.h"
-#include "main.h"
+#include "paint.h"
+#include "ui.h"
 
-#include <math.h>
 
 /* Helper function tells whether to display a bar line at this pixel offset */
 static bool is_bar_line(int x);

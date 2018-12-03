@@ -34,7 +34,8 @@
 #include "calc.h"
 #include "gui.h"
 #include "lock.h"
-#include "main.h"
+#include "paint.h"
+#include "ui.h"
 
 /* How many threads are busy calculating an FFT for us? */
 int jobs_in_flight = 0;
@@ -49,7 +50,6 @@ int jobs_in_flight = 0;
 #include <SDL.h>
 #endif
 
-#include <math.h>		/* for floor() */
 
 #if ECORE_MAIN
 #include <unistd.h>		/* for usleep() */

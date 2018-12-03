@@ -12,7 +12,7 @@
 #include "spettro.h"
 #include "calc.h"	/* for result_t */
 #include "window.h"
-#include "main.h"
+#include "ui.h"
 
 #include <string.h>	/* for memcmp() */
 #include <assert.h>
