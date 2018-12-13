@@ -731,7 +731,10 @@ gui_putpixel(int x, int y, color_t color)
 # endif
 }
 
-/* Returns TRUE on success, FALSE on failure */
+/* Dump the current screen contents to a PNG file.
+ *
+ * Returns TRUE on success, FALSE on failure
+ */
 bool
 gui_output_png_file(const char *filename)
 {
@@ -742,7 +745,7 @@ gui_output_png_file(const char *filename)
     int y;
 
     if (file == NULL) {
-      fprintf(stderr, "Can't open \"%s\"\n", strerror(errno));
+      fprintf(stderr, "Can't open \"%s\": %s\n", filename, strerror(errno));
       return FALSE;
     }
 
@@ -777,6 +780,8 @@ gui_output_png_file(const char *filename)
     png_destroy_write_struct(&png, &png_info);
     free(png_rows);
     fclose(file);
+
+    printf("Dumped the window to %s\n", filename);
 
     return TRUE;
 }
