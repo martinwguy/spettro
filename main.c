@@ -66,6 +66,7 @@
 #include <string.h>	/* for memset() */
 #include <errno.h>
 #include <ctype.h>	/* for tolower() */
+#include <libgen.h>	/* for basename() */
 #if USE_LIBAV
 #include "libavformat/version.h"
 #endif
@@ -100,10 +101,10 @@
  */
 static void print_version(void);
 
-       char *output_file = NULL; /* PNG file to write to and quit. This is done
-       				  * when the last result has come in from the
-				  * FFT threads, in calc_notify in scheduler.c
-				  */
+    char *output_file = NULL;  /* PNG file to write to and quit. This is done
+       				* when the last result has come in from the
+				* FFT threads, in calc_notify in scheduler.c */
+
 
 int
 main(int argc, char **argv)
@@ -376,8 +377,10 @@ g          Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
-Crtl-L     Redraw the display from cached FFT results\n\
-Crtl-R     Empty the result cache and redraw the display from the audio data\n\
+p          Dump the current screen into a PNG file\n\
+Ctrl-p     Show the playing time and settings on stdout\n\
+Crtl-l     Redraw the display from cached FFT results\n\
+Crtl-r     Empty the result cache and redraw the display from the audio data\n\
 q/Ctrl-C/Esc   Quit\n\
 ", disp_width, disp_height,-min_db, fft_freq);
 	    exit(1);
@@ -447,8 +450,8 @@ q/Ctrl-C/Esc   Quit\n\
     gui_main();
 
     if (output_file) {
-	while (there_is_work()) sleep(1);
-	while (jobs_in_flight > 0) usleep(100000);
+	while (there_is_work()) {abort(); sleep(1);}
+	while (jobs_in_flight > 0) {abort(); usleep(100000);}
 	gui_output_png_file(output_file);
     }
 
@@ -747,17 +750,46 @@ do_key(enum key key)
 	repaint_display(FALSE);
 	break;
 
-    /* Display the current UI parameters */
     case KEY_P:
-	if (Shift || Control) break;
-	printf("min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g audio_length=%g\n",
-		min_freq,   max_freq,   fft_freq,   -min_db,
-		audio_file_length(audio_file));
-	printf("playing %g disp_time=%g step=%g %g-%g speclen=%d\n",
+	/* Ctrl-P: Print current UI parameters and derived values */
+	if (Control && !Shift) {
+	    printf("Spectrogram of %s\n", audio_file->filename);
+	    printf(
+"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g audio_length=%g\n",
+ min_freq,   max_freq,   fft_freq,   -min_db,   audio_file_length(audio_file));
+	    printf(
+"playing %g disp_time=%g step=%g showing %g - %g speclen=%d\n",
 		get_playing_time(), disp_time, step,
 		disp_time - disp_offset * step,
 		disp_time + (disp_width - disp_offset) * step,
 		speclen);
+	}
+
+	/* p: Dump the screen as a PNG file */
+	if (!Control && !Shift) {
+	    char s[1024];
+	    char *filename = strdup(audio_file->filename);;
+
+	    sprintf(s, "spettro");
+	    /* Add any parameters that they've changed */
+#define add(s, fmt, val) sprintf(s + strlen(s), fmt, val)
+	    if (disp_width != DEFAULT_DISP_WIDTH)     add(s, " -w %d", disp_width);
+	    if (disp_height != DEFAULT_DISP_HEIGHT)   add(s, " -h %d", disp_height);
+	    if (DELTA_NE(min_freq, DEFAULT_MIN_FREQ)) add(s, " -n %g", min_freq);
+	    if (DELTA_NE(max_freq, DEFAULT_MAX_FREQ)) add(s, " -x %g", max_freq);
+	    if (DELTA_NE(min_db, DEFAULT_MIN_DB))     add(s, " -d %g", -min_db);
+	    if (DELTA_NE(fps, DEFAULT_FPS))           add(s, " -S %g", fps);
+	    if (DELTA_NE(ppsec, DEFAULT_PPSEC))       add(s, " -P %g", ppsec);
+	    if (DELTA_NE(fft_freq, DEFAULT_FFT_FREQ)) add(s, " -f %g", fft_freq);
+	    if (piano_lines)      add(s, " %s", "-k");
+	    if (staff_lines)      add(s, " %s", "-s");
+	    if (guitar_lines)     add(s, " %s", "-g");
+	    if (show_axes)        add(s, " %s", "-a");
+	    add(s, " %s.png", basename(filename));
+#undef add
+	    gui_output_png_file(s);
+	    free(filename);
+	}
 	break;
 
     /* Display the current playing time */

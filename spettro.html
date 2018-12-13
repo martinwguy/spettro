@@ -71,7 +71,7 @@ far more musically-interesting detail.
       The maximum permitted zoom out is when the frequency at the top of
       the graph is 9 x 10^307 times the one at the bottom
       (half the value of the largest 64-bit floating-point number.)
- <DT>+ -
+ <DT>« -
   <DD>Either of the Plus keys zooms in on both axes, like X and Y
       simultaneously, and the Minus keys zoom out in both directions.
 </DL>
@@ -82,7 +82,7 @@ far more musically-interesting detail.
  <DT>c
   <DD>Cycle through alternate color maps: sox, sndfile-spectrogram,
       gray (white on black), print (grayscale, black on white).
-      You can also select an initial color map with the <B>-c<b> option.
+      You can also select an initial color map with the <B>-c</B> option.
  <DT>* /
   <DD>Star and slash adjust the dynamic range of the color values and act
       like a contrast control.
@@ -109,14 +109,20 @@ far more musically-interesting detail.
       improving the vertical "focus" but smearing it horizontally,
       while smaller values give crisper time definition at the price of
       fuzzier frequency definition.
-      <BR>You can also set the initial FFT frequency with the <B>-f</B> flag.
+      <BR>You can also set the initial FFT frequency with the <B>-f</B> option.
  <DT>R K H N M B L D
   <DD>These keys, when pressed with Shift, select a Rectangular, Kaiser,
       Nuttall, Hann, Hamming, Bartlett, Blackman of Dolph window
       as the pre-FFT convolution function. The default is Dolph.
       There are corresponding command-line options <B>-[RKHNMBLD]</B>.
+ <DT>p
+  <DD>The 'p' key saves a copy of the current screenful into a PNG file
+      and prints the file's name, which is the command line required
+      to get this picture plus ".png", on the standard output.
  <DT>t
-  <DD>The 't' key show the current playing time on stdout.
+  <DD>The 't' key shows the current playing time on stdout.
+ <DT>Ctrl-P
+  <DD>Control-P instead shows all the current settings.
  <DT>Ctrl-L
   <DD>Control-L redraws the display from the FFT result cache.
  <DT>Ctrl-R
@@ -272,30 +278,31 @@ audio file name:
     There are corresponding keystroke commands
     <B>R</B>, <B>K</B>, <B>N</B>, <B>H</B>,
     <B>N</B>, <B>B</B>, <B>L</B> and <B>D</B>
-    and a command-lne option <B>-W<B> / <B>--window<B> that recognizes
-    one-letter and full window names.
+    and a command-line option <B>-W</B> / <B>--window</B> that recognizes
+    single-letter and full window names.
     <P>
     For more info on the different window functions' peculiarities and merits,
     see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
     or experiment with <B>spettro</B> and see for yourself :)
+ <DT>-w <I>n</I> / --width <I>n</I>
+  <DD>Sets the displayed window's width to <I>n</I> pixels.
+      This determines (along with --ppsec or the x and X horizontal zoom keys)
+      the amount of time that is visible.
+      The default width  is 640.
  <DT>-h <I>n</I> / --height <I>n</I>
   <DD>Sets the displayed window's height to <I>n</I> pixels.
       The resolution of the spectrogram in the frequency direction is determined
-      by this and the size of the FFT in samples, set with -f / -fft-freq and
-      changed with the f and F keys.
-      The default height is 480.
- <DT>-w <I>n</I> / --width <I>n</I>
-  <DD>Sets the displayed window's width to <I>n</I> pixels.
-      This determines (along with --ppsec or the x and X h-zoom keys) the
-      amount of time visible at once.
-      The default is 640.
+      by this and the size of the FFT in samples, which is set with
+      -f / -fft-freq and changed with the 'f' and 'F' keys.
+      The default is 480.
  <DT>-F / --fullscreen
   <DD>Starts up in full-screen mode.
       The spectrogram is calculated at the width and height given above,
       then scaled to the size of the screen. If you want it pixel-per-pixel
-      you need to supply the width and height. "xrandr" will tell you these.
+      you also need use -w and -h to specify the screen's width and height.
+      The command "xrandr" will tell you these.
  <DT>-j n / --jobs n
-  <DD>Sets the number of calculation threads to start
+  <DD>Sets the number of FFT calculation threads
       (default: the same as the number of CPUs.)
  <DT>-n f / --min-freq f
   <DD>Sets the frequency centered on the bottom pixel row, default %gHz (A0)\n\
@@ -310,18 +317,11 @@ audio file name:
  <DT>-v n / --softvol n
   <DD>Sets the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
  <DT>--help
-  <DD>Shows a summary of all option flags, keys and environment variables.
+  <DD>Shows a summary of all option flags and keys.
 </DL>
 If no filename is supplied, it opens "audio.wav".
 
-<H2>Bugs</H2>
-<OL>
-<LI>
-If you zoom in too much (about five 'Y's) the graphic turns upside down
-and zooms out (because min_freq > max_freq... and it still works!)
-</OL>
-
 <HR>
-Martin Guy <martinwguy&#64;gmail.com>, August 2018.
+Martin Guy &lt;martinwguy&#64;gmail.com>, August-December 2018.
 </BODY>
 </HTML>

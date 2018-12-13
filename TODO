@@ -99,7 +99,9 @@ Make Ctrl-left click play from here.
 ------------------------------------------------------------------------
 Mouse wheel does x-zoom?
 ------------------------------------------------------------------------
-p and P to dump the spectrogram screen view or the whole thing.
+Add P to dump the whole thing to a file.
 ------------------------------------------------------------------------
 Decode compressed audio front-to-back without seeking
+------------------------------------------------------------------------
+Have a way to turn the bar lines off.
 ------------------------------------------------------------------------
