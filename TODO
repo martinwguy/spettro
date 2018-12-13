@@ -105,3 +105,5 @@ Decode compressed audio front-to-back without seeking
 ------------------------------------------------------------------------
 Have a way to turn the bar lines off.
 ------------------------------------------------------------------------
+With libav, only cache compressed formats.
+------------------------------------------------------------------------

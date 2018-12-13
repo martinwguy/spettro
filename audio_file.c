@@ -126,6 +126,7 @@ open_audio_file(char *filename)
 	fprintf(stderr, "libav failed to open \"%s\"\n", filename);
 	return(NULL);
     }
+    create_audio_cache();
 #endif
 
     audio_file->filename = filename;
