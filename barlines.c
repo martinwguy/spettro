@@ -29,7 +29,6 @@ static bool is_bar_line(int x);
 /* Markers for the start and end of one bar, measured in seconds from
  * the start of the piece.
  */
-#define UNDEFINED (-1.0)
 static double left_bar_time = UNDEFINED;
 static double right_bar_time = UNDEFINED;
 
@@ -48,6 +47,18 @@ static double right_bar_time = UNDEFINED;
  * For speed, when bar line positions change, we wipe out the already-displayed
  * ones and redraw the new ones.
  */
+
+double
+get_left_bar_time(void)
+{
+    return left_bar_time;
+}
+
+double
+get_right_bar_time(void)
+{
+    return right_bar_time;
+}
 
 static void set_bar_time(double *this_one, double *the_other_one, double when);
 

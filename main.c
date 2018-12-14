@@ -115,7 +115,6 @@ main(int argc, char **argv)
     int  max_threads = 0;	/* 0 means use default (the number of CPUs) */
 
     /* Local versions to delay setting until audio length is known */
-#define UNDEFINED (-1.0)
     double bar_left_time = UNDEFINED;
     double bar_right_time = UNDEFINED;
 
@@ -753,16 +752,31 @@ do_key(enum key key)
     case KEY_P:
 	/* Ctrl-P: Print current UI parameters and derived values */
 	if (Control && !Shift) {
+	    double left_bar_time = get_left_bar_time();
+	    double right_bar_time = get_right_bar_time();
+
 	    printf("Spectrogram of %s\n", audio_file->filename);
 	    printf(
-"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g audio_length=%g\n",
- min_freq,   max_freq,   fft_freq,   -min_db,   audio_file_length(audio_file));
+"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g speclen=%d\n",
+ min_freq,   max_freq,   fft_freq,   -min_db,     speclen);
 	    printf(
-"playing %g disp_time=%g step=%g showing %g - %g speclen=%d\n",
+"playing %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
 		get_playing_time(), disp_time, step,
 		disp_time - disp_offset * step,
 		disp_time + (disp_width - disp_offset) * step,
-		speclen);
+		audio_file_length(audio_file));
+	    if (left_bar_time != UNDEFINED)
+		printf("left bar line=%g", left_bar_time);
+	    if (right_bar_time != UNDEFINED) {
+		if (left_bar_time != UNDEFINED) printf(" ");
+		printf("right bar line=%g", right_bar_time);
+	    }
+	    if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED)
+		printf(" interval=%g bpm=%g",
+		    fabs(right_bar_time - left_bar_time),
+		    60.0 / fabs(right_bar_time - left_bar_time));
+	    if (left_bar_time != UNDEFINED || right_bar_time != UNDEFINED)
+		printf("\n");
 	}
 
 	/* p: Dump the screen as a PNG file */
