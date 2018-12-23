@@ -107,3 +107,10 @@ Have a way to turn the bar lines off.
 ------------------------------------------------------------------------
 With libav, only cache compressed formats.
 ------------------------------------------------------------------------
+Be able to save the audio fragment between left and right as a WAV file.
+------------------------------------------------------------------------
+Be able to play the l-r selection
+Ctrl-L: play from left bar marker, then stop
+Shift-L or C-S-L: play from left bar marker, then repeat
+Ctrl-R: play from right bar marker onwards
+------------------------------------------------------------------------
