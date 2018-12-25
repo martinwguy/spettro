@@ -52,3 +52,5 @@ near the RHS.
 Repeat-by: A A Space. or A A Ctrl ->. The black line appears with 10 gray
 ones on its right when the scrolling starts.
 ------------------------------------------------------------------------
+In EMOTION_SDL, the color are inverted!
+------------------------------------------------------------------------

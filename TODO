@@ -114,3 +114,5 @@ Ctrl-L: play from left bar marker, then stop
 Shift-L or C-S-L: play from left bar marker, then repeat
 Ctrl-R: play from right bar marker onwards
 ------------------------------------------------------------------------
+In libav, cache all of the decoded frame, not just the bit we wanted.
+------------------------------------------------------------------------

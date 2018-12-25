@@ -84,7 +84,7 @@ free_interpolate_cache()
  *
  * Map values from the spectrogram onto an array of magnitudes for display.
  * Reads spec[0..speclen], representing linearly 0Hz tp sample_rate/2
- * Writes mag[0..maglen-1], representing min_freq to max_freq.
+ * Writes logmag[0..maglen-1], representing min_freq to max_freq.
  * from_y and to_y limit the range of diplay rows to fill
  * (== min_y and max_y-1 to paint the whole column).
  *
