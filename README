@@ -18,6 +18,11 @@ You can also:
 
 There is a screencast of it at https://youtu.be/fGRsLX0Ec1E
 
+To get it:
+	git clone https://github.com/martinwguy/spettro
+	cd spettro
+	vi INSTALL
+
 Planned features and improvements are listed in TODO
 Known bugs are listed in BUGS
 
