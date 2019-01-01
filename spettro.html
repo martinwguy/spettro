@@ -95,20 +95,24 @@ far more musically-interesting detail.
       (white) and by changing the dynamic range, you change which sound energy
       value is represented by the dimmest color.
  <DT>f F
-  <DD>These keys change the FFT size to improve vertical or horizontal focus.
-      'f' halves it, improving time resolution, and 'F' doubles it, improving
+  <DD>These keys change the FFT frequency to improve vertical or horizontal
+      focus.
+      'f' doubles it, improving time resolution, and 'F' halves it, improving
       frequency resolution.
       <BR>
-      The FFT size determines the length of the audio sample used to
+      The FFT frequency determines the length of the audio sample used to
       create each column of pixels.
-      The starting value is 1/5th of a second, which resolves frequencies
-      with a resolution of 5Hz and clearly shows about five distinct
+      The starting value is 5Hz, or 1/5th of a second, which resolves
+      frequencies with a resolution of 5Hz and clearly shows about five distinct
       musical events per second.
       <BR>
-      Larger values resolve frequencies more finely but time more coarsely,
+      Lower values use a larger sample for each FFT,
+      resolving frequencies more finely (a narrow-band spectrogram)
+      but time more coarsely and
       improving the vertical "focus" but smearing it horizontally,
-      while smaller values give crisper time definition at the price of
-      fuzzier frequency definition.
+      while higher values use a shorter sample giving
+      crisper time definition at the price of
+      fuzzier frequency definition (a wide-band spectrogram.)
       <BR>You can also set the initial FFT frequency with the <B>-f</B> option.
  <DT>R K H N M B L D
   <DD>These keys, when pressed with Shift, select a Rectangular, Kaiser,

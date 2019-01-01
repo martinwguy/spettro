@@ -816,11 +816,11 @@ do_key(enum key key)
 
     case KEY_F:
 	if (Control) break;
-	if (Shift) {
-	   /* Increase FFT size */
+	if (!Shift) {
+	   /* Decrease FFT frequency, increasing FFT size */
 	   fft_freq /= 2;
 	} else {
-	   /* Decrease FFT size */
+	   /* Increase FFT frequency, decreasing FFT size */
 	   if (speclen > 1)
 	   fft_freq *= 2;
 	}
