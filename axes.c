@@ -82,7 +82,7 @@ draw_frequency_axis()
 	}
     }
     gui_unlock();
-    gui_update_rect(0, 0, frequency_axis_width, disp_height);
+    gui_update_rect(0, 0, frequency_axis_width - 1, disp_height - 1);
 }
 
 static void

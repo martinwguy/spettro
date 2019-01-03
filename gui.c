@@ -284,24 +284,27 @@ gui_update_display()
 
 /* Tell the video subsystem to update a rectangle from the pixel data
  * The parameters are in our 0-at-bottom coordinates;
- * evas and SDL both have 0-at-top.
+ * while Evas and SDL both have 0-at-top.
  */
 void
-gui_update_rect(int pos_x, int pos_y, int width, int height)
+gui_update_rect(int from_x, int from_y, int to_x, int to_y)
 {
+    int width = to_x - from_x + 1;
+    int height = to_y - from_y + 1;
+
 #if EVAS_VIDEO
-    evas_object_image_data_update_add(image, pos_x,
-	(disp_height - 1) - (pos_y + height - 1), width, height);
+    evas_object_image_data_update_add(image, from_x,
+	(disp_height - 1) - (from_y + height - 1), width, height);
 #elif SDL_VIDEO
 # if SDL1
-    SDL_UpdateRect(screen, pos_x,
-	(disp_height - 1) - (pos_y + height - 1), width, height);
+    SDL_UpdateRect(screen, from_x,
+	(disp_height - 1) - (from_y + height - 1), width, height);
 # elif SDL2
     {
     	SDL_Rect rect;
-	rect.x = pos_x;
+	rect.x = from_x;
 	/* Our Y coordinates have their origin at the bottom, SDL at the top */
-	rect.y = (disp_height - 1) - (pos_y + height - 1);
+	rect.y = (disp_height - 1) - (from_y + height - 1);
 	rect.w = width;
 	rect.h = height;
 	if (SDL_UpdateWindowSurfaceRects(window, &rect, 1) != 0) {
@@ -319,7 +322,7 @@ gui_update_rect(int pos_x, int pos_y, int width, int height)
 void
 gui_update_column(int pos_x)
 {
-    gui_update_rect(pos_x, min_y, 1, max_y - min_y + 1);
+    gui_update_rect(pos_x, min_y, pos_x, max_y);
 }
 
 void

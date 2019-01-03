@@ -23,7 +23,7 @@ extern void gui_quit(void);
 extern void gui_quit_main_loop(void);
 extern void gui_deinit(void);
 extern void gui_update_display(void);
-extern void gui_update_rect(int pos_x, int pos_y, int width, int height);
+extern void gui_update_rect(int from_x, int from_y, int to_x, int to_y);
 extern void gui_update_column(int pos_x);
 extern void gui_h_scroll_by(int by);
 extern void gui_v_scroll_by(int by);

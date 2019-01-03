@@ -716,9 +716,9 @@ do_key(enum key key)
 	    draw_frequency_axes();
 	}
 	show_axes = !show_axes;
-	gui_update_rect(0, 0, frequency_axis_width, disp_height);
+	gui_update_rect(0, 0, frequency_axis_width - 1, disp_height - 1);
 	gui_update_rect(disp_width - note_name_axis_width, 0,
-			note_name_axis_width, disp_height);
+			disp_width - 1, disp_height - 1);
 	break;
 
     case KEY_W:
