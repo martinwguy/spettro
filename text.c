@@ -83,11 +83,9 @@ draw_text(const char *text, int at_x, int at_y,
     for (x=0; text[x]; x++) {
 	char c = toupper(text[x]);
 	if (c == '.') {
-	    gui_paint_rect(at_x, at_y - 4, at_x+1, at_y, black);
 	    gui_putpixel(at_x, at_y - 4, green);
 	    at_x += 2;
 	} else if (c == '+') {
-	    gui_paint_rect(at_x, at_y - 4, at_x+3, at_y, black);
 	    gui_putpixel(at_x+1, at_y - 1, green);	/* top */
 	    gui_putpixel(at_x,   at_y - 2, green);	
 	    gui_putpixel(at_x+1, at_y - 2, green);
@@ -95,7 +93,6 @@ draw_text(const char *text, int at_x, int at_y,
 	    gui_putpixel(at_x+1, at_y - 3, green);	/* bottom */
 	    at_x += 4;
 	} else if (c == '-') {
-	    gui_paint_rect(at_x, at_y - 4, at_x+3, at_y, black);
 	    gui_putpixel(at_x,   at_y - 2, green);	
 	    gui_putpixel(at_x+1, at_y - 2, green);
 	    gui_putpixel(at_x+2, at_y - 2, green);
@@ -116,16 +113,10 @@ draw_text(const char *text, int at_x, int at_y,
 		digit = c - 'A';
 	    }
 	    /* Paint the character */
-	    for (col = 0; col<3; col++) {
-	        for (row = 0; row<5; row++) {
-		   gui_putpixel(at_x + col, at_y - row,
-				glyphs[stride*row + digit][col] == '0'
-				? green : black);
-		}
-	    }
-	    /* Paint the inter-character gap if there's another character */
-	    if (text[x+1])
-	        gui_paint_rect(at_x+3, at_y-4, at_x+3, at_y, black);
+	    for (col = 0; col<3; col++)
+	        for (row = 0; row<5; row++)
+		   if (glyphs[stride*row + digit][col] == '0')
+		       gui_putpixel(at_x + col, at_y - row, green);
 
 	    at_x += 4;
 	}
