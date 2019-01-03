@@ -1,4 +1,15 @@
-/* axes.c: Stuff to draw axes at the edges of the graphic */
+/* axes.c: Stuff to draw axes at the edges of the graphic.
+ *
+ * There is a numeric Hertz frequency axis on the left, a note name
+ * frequency axis on the right (A0, B0, C1, D1 etc)
+ * along the bottom the time axis in seconds (actually just the times at the
+ * current playing position, the left/rightmost edges  and maybe bar lines)
+ * and along the top various status information (FFT freq, window etc).
+ *
+ * The corners belong to the frequency axes: if the topmost pixel row has a
+ * numbered tick, the text will overflow into the gap, while the leftmost and
+ * rightmost times are left and right aligned so do not overflow the corners.
+ */
 
 #include "spettro.h"
 #include "axes.h"
@@ -42,6 +53,13 @@ static void draw_frequency_axis(void);
 static void draw_note_names(void);
 
 void
+draw_axes(void)
+{
+    draw_frequency_axes();
+    draw_time_axes();
+}
+
+void
 draw_frequency_axes(void)
 {
     draw_frequency_axis();
@@ -55,7 +73,7 @@ draw_frequency_axis()
     int tick_count = calculate_ticks(min_freq, max_freq, max_y - min_y, 1);
     int i;
 
-    gui_paint_rect(0, 0, min_x-1,  disp_height-1, black);
+    gui_paint_rect(0, 0, min_x - 1, disp_height - 1, black);
 
     gui_lock();
     for (i=0; i < tick_count; i++) {
@@ -90,7 +108,7 @@ draw_note_names()
 {
     char note_name[3]; /* "A0" etc */
 
-    gui_paint_rect(max_x, 0, disp_width - 1,  disp_height - 1, black);
+    gui_paint_rect(max_x + 1, 0, disp_width - 1, disp_height - 1, black);
 
     note_name[2] = '\0';
     gui_lock();
@@ -106,6 +124,7 @@ draw_note_names()
 	}
     }
     gui_unlock();
+    gui_update_rect(max_x + 1, 0, disp_width - 1, disp_height - 1);
 }
 
 /* Decide where to put ticks and numbers on an axis.
@@ -117,7 +136,7 @@ draw_note_names()
  */
 
 /* The old code used to make 6 to 14 divisions and number every other tick.
- * What we now mean by "division" is one of teh gaps between numbered segments
+ * What we now mean by "division" is one of the gaps between numbered segments
  * so we ask for a minimum of 3 to give the same effect as the old minimum of
  * 6 half-divisions.
  * This results in the same axis labelling for all maximum values
@@ -321,4 +340,16 @@ calculate_log_ticks(double min, double max, double distance)
      */
 
     return k;
+}
+
+/* Stuff for axes along the top and bottom edges of the screen */
+void
+draw_time_axes(void)
+{
+    /* clear bottom */
+    gui_paint_rect(min_x, 0,         max_x, min_y - 1, black);
+    gui_update_rect(min_x, 0,         max_x, min_y - 1);
+    /* clear top */
+    gui_paint_rect(min_x, max_y + 1, max_x, disp_height - 1, black);
+    gui_update_rect(min_x, max_y + 1, max_x, disp_height - 1);
 }

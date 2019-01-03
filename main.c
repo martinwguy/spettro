@@ -409,6 +409,8 @@ q/Ctrl-C/Esc   Quit\n\
     if (show_axes) {
 	min_x += frequency_axis_width;
 	max_x -= note_name_axis_width;
+	min_y += bottom_margin;
+	max_y -= top_margin;
     }
     speclen = fft_freq_to_speclen(fft_freq);
     maglen = (max_y - min_y) + 1;
@@ -439,7 +441,7 @@ q/Ctrl-C/Esc   Quit\n\
 
     start_scheduler(max_threads);
 
-    if (show_axes) draw_frequency_axes();
+    if (show_axes) draw_axes();
 
     repaint_display(FALSE); /* Schedules the initial screen refresh */
 
@@ -655,8 +657,10 @@ do_key(enum key key)
 		    min_freq /= vpfr;
 		}
 		/* Limit to fft_freq..Nyquist */
-		if (max_freq > audio_file->sample_rate / 2) max_freq = audio_file->sample_rate / 2;
-		if (min_freq < fft_freq) min_freq = fft_freq;
+		if (max_freq > audio_file->sample_rate / 2)
+		    max_freq = audio_file->sample_rate / 2;
+		if (min_freq < fft_freq)
+		    min_freq = fft_freq;
 
 		if (show_axes) draw_frequency_axes();
 		repaint_display(TRUE);
@@ -704,21 +708,23 @@ do_key(enum key key)
 	if (Shift || Control) break;
 	if (show_axes) {
 	    /* Remove frequency axis */
-	    min_x = 0;
-	    max_x = disp_width - 1;
-	    repaint_columns(0, frequency_axis_width-1, min_y, max_y, FALSE);
-	    repaint_columns(disp_width - note_name_axis_width, disp_width - 1,
-	    		    min_y, max_y, FALSE);
+	    min_x = 0; max_x = disp_width - 1;
+	    min_y = 0; max_y = disp_height - 1;
+	    maglen = (max_y - min_y) + 1;
 	} else {
 	    /* Add frequency axis */
 	    min_x = frequency_axis_width;
 	    max_x = disp_width - 1 - note_name_axis_width;
-	    draw_frequency_axes();
+	    /* Add time axis */
+	    min_y = bottom_margin;
+	    max_y = disp_height - 1 - top_margin;
+	    maglen = (max_y - min_y) + 1;
+	    draw_axes();
 	}
 	show_axes = !show_axes;
-	gui_update_rect(0, 0, frequency_axis_width - 1, disp_height - 1);
-	gui_update_rect(disp_width - note_name_axis_width, 0,
-			disp_width - 1, disp_height - 1);
+	/* Adding/removing the top and bottom axes scales the graph vertically
+	 * so repaint all */
+	repaint_columns(min_x, max_x, min_y, max_y, FALSE);
 	break;
 
     case KEY_W:

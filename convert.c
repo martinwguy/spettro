@@ -129,11 +129,13 @@ note_number_to_freq(const int n)
     return cache[n];
 }
 
-/* Convert an audio frequency to the pixel row it is represented by */
+/* Convert an audio frequency to its index in the magnitude spectrum.
+ * To get the screen pixel row it falls in, add min_y.
+ */
 int
 freq_to_magindex(double freq)
 {
     return lrint((log(freq) - log(min_freq)) /
 		 (log(max_freq) - log(min_freq)) *
-		 (disp_height - 1));
+		 (max_y - min_y));
 }

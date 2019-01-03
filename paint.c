@@ -153,6 +153,7 @@ repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
 	}
 	repaint_column(x, min_y, max_y, refresh_only);
     }
+    gui_update_rect(from_x, from_y, to_x, to_y);
 }
 
 /* Repaint a column of the display from the result cache or paint it

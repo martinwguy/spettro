@@ -55,6 +55,7 @@ extern int disp_offset; 	/* Crosshair is in which display column? */
 
 extern unsigned frequency_axis_width;	/* Left axis area */
 extern unsigned note_name_axis_width;	/* Right axis area */
+extern unsigned top_margin, bottom_margin; /* Top and bottom axes heights */
 
 /* Values derived from the above */
 extern double step;		/* time step per column = 1/ppsec */
