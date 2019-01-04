@@ -155,7 +155,6 @@ switchagain:
 	    else if (!strcmp(argv[0], "--autoplay")) argv[0] = "-p";
 	    else if (!strcmp(argv[0], "--exit-at-end")) argv[0] = "-e";
 	    else if (!strcmp(argv[0], "--fullscreen")) argv[0] = "-F";
-	    else if (!strcmp(argv[0], "--fs")) argv[0] = "-F";
 	    else if (!strcmp(argv[0], "--piano")) argv[0] = "-k";
 	    else if (!strcmp(argv[0], "--guitar")) argv[0] = "-g";
 	    else if (!strcmp(argv[0], "--score")) argv[0] = "-s";
@@ -253,18 +252,29 @@ switchagain:
 		if (errno == ERANGE || endptr == argv[0] || !isfinite(arg)) {
 		    fprintf(stderr, "The parameter to -%c must be a floating point number%s.\n",
 		    	    letter,
-			    tolower(letter) == 'f' ? "in Hz" :
-			    letter != 'v' ? "in seconds" :
+			    tolower(letter) == 'f' ? " in Hz" :
+			    letter != 'v' ? " in seconds" :
 			    "");
 		    exit(1);
 		}
-		/* They should all be >= 0 (well, except softvol!) */
-		if (arg < 0.0 && letter != 'v') {
+		/* They should all be >= 0 */
+		if (arg < 0.0) {
 		    fprintf(stderr, "The argument to -%c must be positive.\n",
 		    	    letter);
 		    exit(1);
 		}
-		if (arg == 0.0 && letter == 'f') {
+		/* These must be > 0.
+		 * Dynamic range and FPS can be 0, if silly.
+		 */
+		if (arg == 0.0) switch (letter) {
+		case 'f': case 'n': case 'x': case 'P':
+		    fprintf(stderr, "The argument to -%c must be positive.\n",
+		    	    letter);
+		    exit(1);
+		default:
+		    break;
+		}
+		if (arg == 0.0 && letter == 'n') {
 		    fprintf(stderr, "The FFT frequency must be > 0.\n");
 		    exit(1);
 		}
