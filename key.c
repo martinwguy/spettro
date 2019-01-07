@@ -20,6 +20,7 @@ bool Shift, Control;
  *	so you can't get keys only available with Shift or AltGr
  *	(e.g. If the keyboard's * is shift-+, you can't use it for brightness)
  *	Apparently this is because that's more suitable for games.
+ *	The CACA port over ssh returns "unknown key" for capital letters.
  * SDL2's KEYDOWN events are the same, but it also has a TEXTINPUT event
  *	which does respond to Shift and AltGr, but ignores
  *	Home, End, PgUp, PgDown and the keypad arrow keys.
@@ -105,6 +106,7 @@ sdl_keydown(SDL_Event *eventp)
 	case 'k': key = KEY_K;			break;
 	case 's': key = KEY_S;			break;
 	case 'g': key = KEY_G;			break;
+	case 'o': key = KEY_O;			break;
 	case 'p': key = KEY_P;			break;
 	case 't': key = KEY_T;			break;
 	case 'f': key = KEY_F;			break;

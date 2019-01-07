@@ -35,6 +35,7 @@ enum key {
     KEY_K,
     KEY_S,
     KEY_G,
+    KEY_O,
     KEY_P,
     KEY_T,
     KEY_F,

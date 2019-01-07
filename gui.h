@@ -22,6 +22,7 @@ extern void gui_main(void);
 extern void gui_quit(void);
 extern void gui_quit_main_loop(void);
 extern void gui_deinit(void);
+extern void gui_fullscreen(void);
 extern void gui_update_display(void);
 extern void gui_update_rect(int from_x, int from_y, int to_x, int to_y);
 extern void gui_update_column(int pos_x);

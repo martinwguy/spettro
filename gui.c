@@ -520,8 +520,27 @@ gui_deinit()
     free(imagedata);
 #endif
 
-#if SDL_AUDIO || SDL_TIMER || SDL_VIDEO || SDL_MAIN
+#if SDL_VIDEO
+# if SDL2
+    SDL_DestroyWindow(window);
+# endif
+#endif
     /* SDL_Quit(); is called by atexit() */
+}
+
+/*
+ * Flip between windowed and full-screen mode in response to the Control-F key.
+ * "fullscreen" in ui.c knows whether we are in fullscreen mode already or not.
+ */
+void
+gui_fullscreen()
+{
+/* Only works in SDL at present */
+#if SDL_VIDEO
+    gui_deinit();
+    fullscreen = !fullscreen;
+    gui_init(audio_file->filename);
+    repaint_display(FALSE);
 #endif
 }
 

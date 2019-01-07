@@ -393,12 +393,19 @@ g          Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
-p          Dump the current screen into a PNG file\n\
-Ctrl-p     Show the playing time and settings on stdout\n\
+o          Output the current screen into a PNG file\n\
+p          Show the playing time and settings on stdout\n\
 Crtl-l     Redraw the display from cached FFT results\n\
 Crtl-r     Empty the result cache and redraw the display from the audio data\n\
-q/Ctrl-C/Esc   Quit\n\
 ", disp_width, disp_height,-min_db, fft_freq);
+#if SDL_VIDEO
+# if SDL1
+puts("\
+Ctrl-f     Flip full-screen mode");
+# endif
+#endif
+puts("\
+q/Ctrl-C/Esc   Quit");
 	    exit(1);
 	  }
 	}
@@ -773,37 +780,8 @@ do_key(enum key key)
 	repaint_display(FALSE);
 	break;
 
-    case KEY_P:
-	/* Ctrl-P: Print current UI parameters and derived values */
-	if (Control && !Shift) {
-	    double left_bar_time = get_left_bar_time();
-	    double right_bar_time = get_right_bar_time();
-
-	    printf("Spectrogram of %s\n", audio_file->filename);
-	    printf(
-"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g speclen=%d\n",
- min_freq,   max_freq,   fft_freq,   -min_db,     speclen);
-	    printf(
-"playing %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
-		get_playing_time(), disp_time, step,
-		disp_time - disp_offset * step,
-		disp_time + (disp_width - disp_offset) * step,
-		audio_file_length(audio_file));
-	    if (left_bar_time != UNDEFINED)
-		printf("left bar line=%g", left_bar_time);
-	    if (right_bar_time != UNDEFINED) {
-		if (left_bar_time != UNDEFINED) printf(" ");
-		printf("right bar line=%g", right_bar_time);
-	    }
-	    if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED)
-		printf(" interval=%g bpm=%g",
-		    fabs(right_bar_time - left_bar_time),
-		    60.0 / fabs(right_bar_time - left_bar_time));
-	    if (left_bar_time != UNDEFINED || right_bar_time != UNDEFINED)
-		printf("\n");
-	}
-
-	/* p: Dump the screen as a PNG file */
+    case KEY_O:
+	/* o: Dump the screen as a PNG file */
 	if (!Control && !Shift) {
 	    char s[1024];
 	    char *filename = strdup(audio_file->filename);;
@@ -830,6 +808,37 @@ do_key(enum key key)
 	}
 	break;
 
+    case KEY_P:
+	/* P: Print current UI parameters and derived values */
+	if (!Control && !Shift) {
+	    double left_bar_time = get_left_bar_time();
+	    double right_bar_time = get_right_bar_time();
+
+	    printf("Spectrogram of %s\n", audio_file->filename);
+	    printf(
+"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g speclen=%d\n",
+ min_freq,   max_freq,   fft_freq,   -min_db,     speclen);
+	    printf(
+"playing %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
+		get_playing_time(), disp_time, step,
+		disp_time - disp_offset * step,
+		disp_time + (disp_width - disp_offset) * step,
+		audio_file_length(audio_file));
+	    if (left_bar_time != UNDEFINED)
+		printf("left bar line=%g", left_bar_time);
+	    if (right_bar_time != UNDEFINED) {
+		if (left_bar_time != UNDEFINED) printf(" ");
+		printf("right bar line=%g", right_bar_time);
+	    }
+	    if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED)
+		printf(" interval=%g bpm=%g",
+		    fabs(right_bar_time - left_bar_time),
+		    60.0 / fabs(right_bar_time - left_bar_time));
+	    if (left_bar_time != UNDEFINED || right_bar_time != UNDEFINED)
+		printf("\n");
+	}
+	break;
+
     /* Display the current playing time */
     case KEY_T:
 	if (Shift || Control) break;
@@ -839,7 +848,11 @@ do_key(enum key key)
 	break;
 
     case KEY_F:
-	if (Control) break;
+	if (Control) {
+	    /* Flip fullscreen mode */
+	    gui_fullscreen();
+	    break;
+	}
 	if (!Shift) {
 	   /* Decrease FFT frequency, increasing FFT size */
 	   fft_freq /= 2;
