@@ -1,14 +1,14 @@
 Which audio file-reading libraries work with which file format types?
-1) Does it try to read it?
+1) Does it try to read it?  -- means no, for the others see the Legend.
 2) Does it get the native-endian 16-bit short audio data right for playing?
-   a) From mono files?  b) From stereo files?
+   a) From mono files?  b) From stereo files (-2)?
 3) Does it get the mono-double audio data right for display?
 
 	  AUDIOFILE	   SNDFILE	     SOX	     AV
 	audio	video	audio	video	audio	video	audio	video
 
 AAC	--		--		--		JUMP	OFFSET
-AAC2	--		--		--		JUMP	OFFSET
+AAC-2	--		--		--		JUMP	OFFSET
 
 FLAC	UP	UP	OK	OK	OK	OK	OK	OK
 FLAC-2	UP	UP	OK	OK	OK	OK	UP(2)	OK
@@ -32,6 +32,7 @@ WAV-2	UP	OK	OK	OK	OK	OK	UP	OK
 2) Messages: "[flac @ 0x12c6c80] read_timestamp() failed in the middle
 	     Failed to seek in audio file."  when it reads the end of the file.
 
+== Legend ==
 --: Doesn't even try to read the file
 OK: Looks or sounds right
 GAPS: The audio is like a dotted line
