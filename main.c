@@ -101,10 +101,17 @@
  */
 static void print_version(void);
 
+/*
+ * Exported data
+ */
     char *output_file = NULL;  /* PNG file to write to and quit. This is done
        				* when the last result has come in from the
 				* FFT threads, in calc_notify in scheduler.c */
 
+/*
+ * Local data
+ */
+static int exit_status = 0;
 
 int
 main(int argc, char **argv)
@@ -477,7 +484,7 @@ q/Ctrl-C/Esc   Quit\n\
     free_windows();
     close_audio_file(audio_file);
 
-    return 0;
+    return exit_status;
 }
 
 static void
@@ -543,6 +550,7 @@ do_key(enum key key)
 	}
 	/* Only Control-C is an alias for Quit */
 	if (!Control) break;	
+	exit_status = 1;
     case KEY_ESC:
     case KEY_Q:
 	gui_quit_main_loop();
