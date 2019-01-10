@@ -354,13 +354,13 @@ usage:
 -n min Set the minimum displayed frequency in Hz\n\
 -x min Set the maximum displayed frequency in Hz\n\
 -d n   Set the dynamic range of the color map in decibels, default %gdB\n\
--y     Label the vertical frequency axis\n\
+-a     Label the vertical frequency axes\n\
 -f n   Set the FFT frequency, default %gHz\n\
 -t n   Set the initial playing time in seconds\n\
 -S n   Set the scrolling rate in frames per second\n\
 -P n   Set the number of pixel columns per second\n\
 -j n   Set maximum number of threads to use (default: the number of CPUs)\n\
--k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
+-k     Overlay black and green lines showing frequencies of an 88-note keyboard\n\
 -s     Overlay conventional score notation pentagrams as white lines\n\
 -g     Overlay lines showing the positions of a classical guitar's strings\n\
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
