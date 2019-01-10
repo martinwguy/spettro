@@ -53,6 +53,12 @@ Repeat-by: A A Space. or A A Ctrl ->. The black line appears with 10 gray
 ones on its right when the scrolling starts.
 ------------------------------------------------------------------------
 In EMOTION SDL, playing doesn't work
+
+"git bisect" says:
+There are only 'skip'ped commits left to test.
+The first bad commit could be any of:
+04ff38eb0dc3f4df886e5817d313398fffc9525c
+13f8db1e501b49a80acf08dccfdb326abdc19020
 ------------------------------------------------------------------------
 In EMOTION_SDL, red and blue are inverted
 ------------------------------------------------------------------------
