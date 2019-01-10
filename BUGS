@@ -60,8 +60,6 @@ The first bad commit could be any of:
 04ff38eb0dc3f4df886e5817d313398fffc9525c
 13f8db1e501b49a80acf08dccfdb326abdc19020
 ------------------------------------------------------------------------
-In EMOTION_SDL, red and blue are inverted
-------------------------------------------------------------------------
 Capital command letters don't work in SDL CACA driver over ssh.
 ------------------------------------------------------------------------
 Toggle fullscreen key Ctrl-F doesn't work in EFL.

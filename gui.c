@@ -722,7 +722,7 @@ color_t
 RGB_to_color(primary_t red, primary_t green, primary_t blue)
 {
 #if EVAS_VIDEO
-    return red | (green << 8) | (blue << 16) | 0xFF000000;
+    return blue | (green << 8) | (red << 16) | 0xFF000000;
 #elif SDL_VIDEO
     return SDL_MapRGB(screen->format, red, green, blue);
 #endif
