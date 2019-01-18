@@ -95,16 +95,16 @@ far more musically-interesting detail.
       (white) and by changing the dynamic range, you change which sound energy
       value is represented by the dimmest color.
  <DT>f F
-  <DD>These keys change the FFT frequency to improve vertical or horizontal
-      focus.
-      'f' doubles it, improving time resolution, and 'F' halves it, improving
-      frequency resolution.
+  <DD>These keys change the size of tha audio sample used to calculate each
+      column of the spectrogram.
       <BR>
-      The FFT frequency determines the length of the audio sample used to
-      create each column of pixels.
-      The starting value is 5Hz, or 1/5th of a second, which resolves
-      frequencies with a resolution of 5Hz and clearly shows about five distinct
-      musical events per second.
+      'f' halves it, improving the graph's time resolution but losing focus
+      in the frequency direction, while
+      'F' doubles it, which smears time but increases the frequency resolution.
+      <BR>
+      The starting value is 1/5th of a second, equivalent to "-f&nbsp;5",
+      which resolves frequencies with a resolution of 5Hz
+      and shows about five distinct musical events per second.
       <BR>
       Lower values use a larger sample for each FFT,
       resolving frequencies more finely (a narrow-band spectrogram)

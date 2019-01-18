@@ -853,11 +853,11 @@ do_key(enum key key)
 	    gui_fullscreen();
 	    break;
 	}
-	if (!Shift) {
-	   /* Decrease FFT frequency, increasing FFT size */
+	if (Shift) {
+	   /* Increase FFT size; decrease FFT frequency */
 	   fft_freq /= 2;
 	} else {
-	   /* Increase FFT frequency, decreasing FFT size */
+	   /* Decrease FFT size: increase FFT frequency */
 	   if (speclen > 1)
 	   fft_freq *= 2;
 	}
