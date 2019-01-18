@@ -15,7 +15,6 @@
 #include "ui.h"
 
 #include <string.h>	/* for memcmp() */
-#include <assert.h>
 
 static void destroy_result(result_t *r);
 
@@ -38,7 +37,10 @@ remember_result(result_t *result)
 
     /* Now find where to add the result to the time-ordered list */
     if (results == NULL) {
-	assert(last_result == NULL);
+	if (last_result != NULL) {
+	    fprintf(stderr, "result is null but last_results isn't at time %g\n",
+		    last_result->t);
+	}
         result->next = NULL;
 	results = last_result = result;
     } else {

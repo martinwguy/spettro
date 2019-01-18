@@ -69,9 +69,3 @@ the green line disappears.
 ------------------------------------------------------------------------
 [End] [Space] doesn't replay the piece until a second space is pressed.
 ------------------------------------------------------------------------
-Pressing [End] on startup when the end of the piece is off-screen provokes:
-spettro: cache.c:41: remember_result: Assertion `last_result == NULL' failed.
-Aborted
-Repeat-by: ./spettro -P 200 swoop.wav
-[End]
-------------------------------------------------------------------------
