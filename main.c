@@ -908,6 +908,28 @@ fprintf(stderr, "Soltvol = %g\n", softvol);
 fprintf(stderr, "Soltvol = %g\n", softvol);
 	break;
 
+    /* Beats per bar */
+    case KEY_1: set_beats_per_bar(1); break;
+    case KEY_2: set_beats_per_bar(2); break;
+    case KEY_3: set_beats_per_bar(3); break;
+    case KEY_4: set_beats_per_bar(4); break;
+    case KEY_5: set_beats_per_bar(5); break;
+    case KEY_6: set_beats_per_bar(6); break;
+    case KEY_7: set_beats_per_bar(7); break;
+    case KEY_8: set_beats_per_bar(8); break;
+    case KEY_F1: set_beats_per_bar(1); break;
+    case KEY_F2: set_beats_per_bar(2); break;
+    case KEY_F3: set_beats_per_bar(3); break;
+    case KEY_F4: set_beats_per_bar(4); break;
+    case KEY_F5: set_beats_per_bar(5); break;
+    case KEY_F6: set_beats_per_bar(6); break;
+    case KEY_F7: set_beats_per_bar(7); break;
+    case KEY_F8: set_beats_per_bar(8); break;
+    case KEY_F9: set_beats_per_bar(9); break;
+    case KEY_F10: set_beats_per_bar(10); break;
+    case KEY_F11: set_beats_per_bar(11); break;
+    case KEY_F12: set_beats_per_bar(12); break;
+
     default:
 	fprintf(stderr, "Bogus KEY_ number %d\n", key);
     }

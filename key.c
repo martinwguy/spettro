@@ -122,6 +122,14 @@ sdl_keydown(SDL_Event *eventp)
 	case 'm': key = KEY_M;			break;
 	/* Avanti! */
 	case '0': key = KEY_0;			break;
+	case '1': key = KEY_1;			break;
+	case '2': key = KEY_2;			break;
+	case '3': key = KEY_3;			break;
+	case '4': key = KEY_4;			break;
+	case '5': key = KEY_5;			break;
+	case '6': key = KEY_6;			break;
+	case '7': key = KEY_7;			break;
+	case '8': key = KEY_8;			break;
 	case '9': key = KEY_9;			break;
         case '+': key = KEY_PLUS;		break;
         case '-': key = KEY_MINUS;		break;
@@ -147,6 +155,18 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "end"))			key = KEY_END;
     else if (!strcmp(name, "up"))			key = KEY_UP;
     else if (!strcmp(name, "down"))			key = KEY_DOWN;
+    else if (!strcmp(name, "f1"))			key = KEY_F1;
+    else if (!strcmp(name, "f2"))			key = KEY_F2;
+    else if (!strcmp(name, "f3"))			key = KEY_F3;
+    else if (!strcmp(name, "f4"))			key = KEY_F4;
+    else if (!strcmp(name, "f5"))			key = KEY_F5;
+    else if (!strcmp(name, "f6"))			key = KEY_F6;
+    else if (!strcmp(name, "f7"))			key = KEY_F7;
+    else if (!strcmp(name, "f8"))			key = KEY_F8;
+    else if (!strcmp(name, "f9"))			key = KEY_F9;
+    else if (!strcmp(name, "f10"))			key = KEY_F10;
+    else if (!strcmp(name, "f11"))			key = KEY_F11;
+    else if (!strcmp(name, "f12"))			key = KEY_F12;
 #if ECORE_MAIN
     else if (!strcmp(name, "prior"))			key = KEY_PGUP;
     else if (!strcmp(name, "next"))			key = KEY_PGDN;

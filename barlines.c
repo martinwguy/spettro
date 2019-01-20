@@ -2,8 +2,10 @@
  * barlines.c - Overlay the graphic with pixel-wide vertical limes to help
  * figure out the rhythm of a piece.
  *
- * One day the bar lines will be 3 pixels wide with intermediate beat markers
- * 1 pixel wide.
+ * If you press 2, 3, 4 ecc, this makes the bar lines three pixels wide and
+ * gives N-1 one-pixel-wide beat lines (think: 4 to a bar).
+ * 1 reverts to no beat lines and 0 reverts to none with one-pixel-wide
+ * bar lines again.
  *
  * The column overlay takes priority over the row overlay, so that
  * "bar lines" are maintained whole, not cut, and the bar lines overlay the
@@ -31,6 +33,9 @@ static bool is_bar_line(int x);
  */
 static double left_bar_time = UNDEFINED;
 static double right_bar_time = UNDEFINED;
+
+/* Number of beats per bar. If >=1, the bar lines become 3 pixels wide. */
+static int beats_per_bar = 0;
 
 /* The same bar positions converted to a pixel index measured from 
  * the start of the piece.
@@ -60,6 +65,12 @@ get_right_bar_time(void)
     return right_bar_time;
 }
 
+int
+get_beats_per_bar()
+{
+    return beats_per_bar;
+}
+
 static void set_bar_time(double *this_one, double *the_other_one, double when);
 
 void
@@ -72,6 +83,12 @@ void
 set_right_bar_time(double when)
 {
     set_bar_time(&right_bar_time, &left_bar_time, when);
+}
+
+void
+set_beats_per_bar(int bpb)
+{
+    beats_per_bar = bpb;
 }
 
 static void
@@ -146,7 +163,11 @@ get_col_overlay(int x, color_t *colorp)
      * appear to flash as they cross it while playing and so that you can
      * see when you have placed a bar line at the current playing position
      * when it's paused. */
-    if (is_bar_line(x)) {
+    if (is_bar_line(x) ||
+    			/* For now, the 3-pixel-wide stuff is done here.
+			 * It should be done in is_bar_line() */
+    			  (beats_per_bar > 0 &&
+    			   (is_bar_line(x-1) || is_bar_line(x+1)))) {
 	color = white; is_overlayed = TRUE; 
     } else
     if (x == disp_offset && !green_line_off) {
@@ -164,7 +185,11 @@ get_col_overlay(int x, color_t *colorp)
     return is_overlayed;
 }
 
-/* Does screen column x coincide with the position of a bar line? */
+/* Does screen column x coincide with the position of a bar line?
+ *
+ * This is where bar lines are made three pixels wide when beat lines are shown,
+ * by answering "yes" if either of the adjacent columns is on a bar line.
+ */
 static bool
 is_bar_line(int x)
 {
@@ -191,9 +216,32 @@ is_bar_line(int x)
 	right_bar_time == UNDEFINED ||
 	left_bar_ticks == right_bar_ticks) {
 
-	return x == left_bar_ticks || x == right_bar_ticks;
+	return (x == left_bar_ticks || x == right_bar_ticks) ||
+	       /* If bar lines are three pixels wide, include left and right */
+	       (beats_per_bar > 0 &&
+	        (x-1 == left_bar_ticks || x-1 == right_bar_ticks ||
+	         x+1 == left_bar_ticks || x+1 == right_bar_ticks));
     }
 
     /* Both bar positions are defined. See if this column falls on one. */
-    return x % bar_width == left_bar_ticks % bar_width;
+    if (beats_per_bar <= 0)
+	return x % bar_width == left_bar_ticks % bar_width;
+    else {
+    	/* How to do sub-pixel positioning of beat lines?
+	 * Could we return a double 0.0 to 1.0 to say how much bar line color
+	 * to or into (or out of) this column's data? Or just round to the
+	 * nearest pixel? How to express that?!
+	 */
+
+	return /* If it falls on a bar line */
+	       x % bar_width == left_bar_ticks % bar_width ||
+	       /* If bar lines are three pixels wide, include left and right */
+	       (beats_per_bar > 0 &&
+	        (x-1 % bar_width == left_bar_ticks % bar_width ||
+	         x+1 % bar_width == left_bar_ticks % bar_width)) ||
+	       /* Beat lines: does the time this pixel column covers include
+	        * the time on which one of the beats falls? */
+	       (beats_per_bar > 1 &&
+	        (0));	/* TODO */
+    }
 }
