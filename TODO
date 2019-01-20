@@ -118,3 +118,6 @@ In libav, cache all of the decoded frame, not just the bit we wanted.
 ------------------------------------------------------------------------
 Compile the Enlightenment port for Android, iOS and Windows!
 ------------------------------------------------------------------------
+Pressing the same overlay key again cycles through white, black, none.
+Idem for bar lines. So last_key_presssed?
+------------------------------------------------------------------------
