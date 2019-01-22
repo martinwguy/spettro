@@ -13,7 +13,7 @@ halved in time and doubled in frequency.
 SDL2: SDL always turns numlock off on startup but if it was on, the light
       remains on so its action appears inverted.
 ------------------------------------------------------------------------
-libsox: MP3 decoding via MAD is noisy
+libsox: MP3 decoding via MAD is noisy. Both audio and the graphic are bad.
 This may be because it is seeking to the beginning/end of a frame instead
 of to a sample, like libav.
 ------------------------------------------------------------------------
