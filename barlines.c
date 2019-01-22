@@ -24,18 +24,8 @@
 #include "paint.h"
 #include "ui.h"
 
-
 /* Helper function tells whether to display a bar line at this pixel offset */
 static bool is_bar_line(int x);
-
-/* Markers for the start and end of one bar, measured in seconds from
- * the start of the piece.
- */
-static double left_bar_time = UNDEFINED;
-static double right_bar_time = UNDEFINED;
-
-/* Number of beats per bar. If >=1, the bar lines become 3 pixels wide. */
-static int beats_per_bar = 0;
 
 /* The same bar positions converted to a pixel index measured from 
  * the start of the piece.
@@ -94,6 +84,7 @@ set_beats_per_bar(int bpb)
 static void
 set_bar_time(double *this_one, double *the_other_one, double when)
 {
+    /* If only this bar line is defined, show it */
     if (*the_other_one == UNDEFINED) {
         int new_col;
 	/* Move the sole left marker */
@@ -118,6 +109,8 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 	double old_this_one = *this_one;
 	int col;
 	for (col=min_x; col <= max_x; col++) {
+	    /* If there was a bar line here with the old settings,
+	     * repaint that column as it will be with the new settings */
 	    if (is_bar_line(col)) {	
 		*this_one = when;
 		repaint_column(col, min_y, max_y, FALSE);
@@ -163,11 +156,7 @@ get_col_overlay(int x, color_t *colorp)
      * appear to flash as they cross it while playing and so that you can
      * see when you have placed a bar line at the current playing position
      * when it's paused. */
-    if (is_bar_line(x) ||
-    			/* For now, the 3-pixel-wide stuff is done here.
-			 * It should be done in is_bar_line() */
-    			  (beats_per_bar > 0 &&
-    			   (is_bar_line(x-1) || is_bar_line(x+1)))) {
+    if (is_bar_line(x)) {
 	color = white; is_overlayed = TRUE; 
     } else
     if (x == disp_offset && !green_line_off) {
@@ -185,7 +174,7 @@ get_col_overlay(int x, color_t *colorp)
     return is_overlayed;
 }
 
-/* Does screen column x coincide with the position of a bar line?
+/* Does screen column x coincide with the position of a bar or beat line?
  *
  * This is where bar lines are made three pixels wide when beat lines are shown,
  * by answering "yes" if either of the adjacent columns is on a bar line.
@@ -216,32 +205,45 @@ is_bar_line(int x)
 	right_bar_time == UNDEFINED ||
 	left_bar_ticks == right_bar_ticks) {
 
-	return (x == left_bar_ticks || x == right_bar_ticks) ||
-	       /* If bar lines are three pixels wide, include left and right */
-	       (beats_per_bar > 0 &&
-	        (x-1 == left_bar_ticks || x-1 == right_bar_ticks ||
-	         x+1 == left_bar_ticks || x+1 == right_bar_ticks));
+	if (x == left_bar_ticks || x == right_bar_ticks) return TRUE;
+
+	/* If bar lines are three pixels wide, include left and right */
+	if (beats_per_bar > 0 &&
+	    (x-1 == left_bar_ticks || x-1 == right_bar_ticks ||
+	     x+1 == left_bar_ticks || x+1 == right_bar_ticks)) return TRUE;
+
+	return FALSE;
     }
 
     /* Both bar positions are defined. See if this column falls on one. */
     if (beats_per_bar <= 0)
 	return x % bar_width == left_bar_ticks % bar_width;
-    else {
-    	/* How to do sub-pixel positioning of beat lines?
-	 * Could we return a double 0.0 to 1.0 to say how much bar line color
-	 * to or into (or out of) this column's data? Or just round to the
-	 * nearest pixel? How to express that?!
+    else if (x % bar_width == left_bar_ticks % bar_width)
+	/* It falls on a bar line */
+	return TRUE;
+    else if (beats_per_bar > 0 &&
+	     ((x-1) % bar_width == left_bar_ticks % bar_width ||
+	      (x+1) % bar_width == left_bar_ticks % bar_width))
+       /* Bar lines are three pixels wide, so include the columns
+        * left and right of them */
+       return TRUE;
+    else if (beats_per_bar > 1) {
+    	/* To do sub-pixel positioning of beat lines we could return a double
+	 * from 0.0 to 1.0 to say how much of the bar line color to OR into
+	 * (or out of) this column's spectrogram data.
+	 *
+	 * For now, just see if any beat's time falls within the time covered
+	 * by this column to get a probably-juddery version of whole columns.
+	 * This is true if left_bar_time + N*beat_step is within .5*step of
+	 * the time represented by the center of the column.
+	 * The column centre time in the piece is (double)x * step.
+	 * - Convert the time the column represents to the nearest beat time,
+	 *   and if that's within step/2 of the column time, say yes.
 	 */
-
-	return /* If it falls on a bar line */
-	       x % bar_width == left_bar_ticks % bar_width ||
-	       /* If bar lines are three pixels wide, include left and right */
-	       (beats_per_bar > 0 &&
-	        (x-1 % bar_width == left_bar_ticks % bar_width ||
-	         x+1 % bar_width == left_bar_ticks % bar_width)) ||
-	       /* Beat lines: does the time this pixel column covers include
-	        * the time on which one of the beats falls? */
-	       (beats_per_bar > 1 &&
-	        (0));	/* TODO */
+        double column_time = x * step;
+        double beat_period = fabs(right_bar_time - left_bar_time) / beats_per_bar;
+	double nearest_beat = lrint((column_time - left_bar_time) / beat_period) * beat_period + left_bar_time;
+	return fabs(column_time - nearest_beat) < step/2;
     }
+    return FALSE;
 }

@@ -41,6 +41,13 @@ extern bool staff_lines;	/* Draw manuscript score staff lines? */
 extern bool guitar_lines;	/* Draw guitar string lines? */
 extern bool show_axes;		/* Are we to show/showing the axes? */
 
+/* Markers for the start and end of one bar, measured in seconds from
+ * the start of the piece. */
+extern double left_bar_time, right_bar_time;
+/* Number of beats per bar. If >=1, the bar lines become 3 pixels wide. */
+extern int beats_per_bar;
+#define DEFAULT_BEATS_PER_BAR 0
+
 /* Other option flags */
 extern bool autoplay;		/* -p  Start playing on startup */
 extern bool exit_when_played;	/* -e  Exit when the file has played */

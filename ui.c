@@ -6,6 +6,8 @@
 #include "spettro.h"
 #include "ui.h"
 
+#include "barlines.h"	/* for UNDEFINED */
+
 /* UI state variables */
 
 /* Size of display area in pixels */
@@ -36,6 +38,10 @@ bool piano_lines  = FALSE;	/* Draw lines where piano keys fall? */
 bool staff_lines  = FALSE;	/* Draw manuscript score staff lines? */
 bool guitar_lines = FALSE;	/* Draw guitar string lines? */
 bool show_axes = FALSE;		/* Are we to show/showing the axes? */
+
+double left_bar_time = UNDEFINED;
+double right_bar_time = UNDEFINED;
+int beats_per_bar = DEFAULT_BEATS_PER_BAR;
 
 /* Other option flags */
 bool autoplay = FALSE;		/* -p  Start playing on startup */

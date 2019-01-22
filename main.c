@@ -184,6 +184,7 @@ switchagain:
 	case 'n': case 'x':
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
 	case 'o': case 'W': case 'c': case 'v': case 'd': case 'S': case 'P':
+	case 'b':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -196,32 +197,17 @@ switchagain:
 	}
 
 	switch (letter) {
+	/*
+	 * Boolean flags
+	 */
 	case 'p':
 	    autoplay = TRUE;
 	    break;
 	case 'e':
 	    exit_when_played = TRUE;
 	    break;
-	case 'w':
-	    if ((disp_width = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-w width must be > 0\n");
-		exit(1);
-	    }
-	    break;
-	case 'h':
-	    if ((disp_height = atoi(argv[0])) <= 0) {
-		fprintf(stderr, "-w height must be > 0\n");
-		exit(1);
-	    }
-	    break;
 	case 'F':
 	    fullscreen = TRUE;
-	    break;
-	case 'j':
-	    if ((max_threads = atoi(argv[0])) < 0) {
-		fprintf(stderr, "-j threads must be >= 0 ?\n");
-		exit(1);
-	    }
 	    break;
 	case 'k':	/* Draw black and white lines where piano keys fall */
 	    piano_lines = TRUE;
@@ -236,6 +222,33 @@ switchagain:
 	    break;
 	case 'a':
 	    show_axes = TRUE;
+	    break;
+
+	/*
+	 * Parameters that take an integer argument 
+	 */
+	case 'w':
+	    if ((disp_width = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-w width must be > 0\n");
+		exit(1);
+	    }
+	    break;
+	case 'h':
+	    if ((disp_height = atoi(argv[0])) <= 0) {
+		fprintf(stderr, "-h height must be > 0\n");
+		exit(1);
+	    }
+	    break;
+	case 'j':
+	    if ((max_threads = atoi(argv[0])) < 0) {
+		fprintf(stderr, "-j threads must be >= 0\n");
+		exit(1);
+	    }
+	case 'b':
+	    if ((beats_per_bar = atoi(argv[0])) < 0) {
+		fprintf(stderr, "-b beats_per_bar must be >= 0\n");
+		exit(1);
+	    }
 	    break;
 
 	/*
