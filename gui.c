@@ -6,6 +6,7 @@
 #include "gui.h"
 
 #include "audio.h"
+#include "axes.h"
 #include "key.h"
 #include "mouse.h"
 #include "paint.h"	/* for do_scroll() */
@@ -540,6 +541,7 @@ gui_fullscreen()
     gui_deinit();
     fullscreen = !fullscreen;
     gui_init(audio_file->filename);
+    draw_axes();
     repaint_display(FALSE);
 #endif
 }
