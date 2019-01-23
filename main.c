@@ -113,17 +113,6 @@ main(int argc, char **argv)
     /* Set default values for unset parameters */
     filename = (argc > 0) ? argv[0] : "audio.wav";
 
-    /* Open the audio file to find out sampling rate, length and to be able
-     * to fetch pixel data to be converted into spectra.
-     * Emotion seems not to let us get the raw sample data or sampling rate
-     * and doesn't know the file length until the "open_done" event arrives
-     * so we use libsndfile, libaudiofile or libsox for that.
-     */
-    if ((audio_file = open_audio_file(filename)) == NULL) {
-    	gui_quit();
-	exit(1);
-    }
-
     /* Set variables with derived values */
     disp_offset = disp_width / 2;
     step = 1 / ppsec;
@@ -135,10 +124,21 @@ main(int argc, char **argv)
 	min_y += bottom_margin;
 	max_y -= top_margin;
     }
-    speclen = fft_freq_to_speclen(fft_freq);
     maglen = (max_y - min_y) + 1;
-
     make_row_overlay();
+
+    /* Open the audio file to find out sampling rate, length and to be able
+     * to fetch pixel data to be converted into spectra.
+     * Emotion seems not to let us get the raw sample data or sampling rate
+     * and doesn't know the file length until the "open_done" event arrives
+     * so we use libsndfile, libaudiofile or libsox for that.
+     */
+    if ((audio_file = open_audio_file(filename)) == NULL) {
+    	gui_quit();
+	exit(1);
+    }
+
+    speclen = fft_freq_to_speclen(fft_freq);	/* Needs the sample rate */
 
     /* Initialise the graphics subsystem. */
     /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
@@ -154,8 +154,6 @@ main(int argc, char **argv)
     if (show_axes) draw_axes();
 
     repaint_display(FALSE); /* Schedules the initial screen refresh */
-
-    gui_update_display();
 
     start_timer();
     gui_main();
