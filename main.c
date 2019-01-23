@@ -67,9 +67,6 @@
 #include <errno.h>
 #include <ctype.h>	/* for tolower() */
 #include <libgen.h>	/* for basename() */
-#if USE_LIBAV
-#include "libavformat/version.h"
-#endif
 
 /*
  * Local header files
