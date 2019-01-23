@@ -24,6 +24,8 @@ static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_r
 /* Buffer used by the above */
 static double *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
+#elif USE_LIBSOX
+static size_t sox_frame;	/* Which will be returned if you sox_read? */
 #elif USE_LIBAV
 # include "libav.h"
 #endif
@@ -119,6 +121,7 @@ open_audio_file(char *filename)
 	no_audio_cache();
 	break;
     }
+    sox_frame = 0;
 
 #elif USE_LIBAV
     libav_open_audio_file(&audio_file, filename);
@@ -213,13 +216,16 @@ read_audio_file(audio_file_t *audio_file, char *data,
      * and just returns the data linearly to end of file.
      * Work round this by closing and reopening the file.
      */
-    sox_close(sf);
-    sf = sox_open_read(audio_file->filename, NULL, NULL, NULL);
-    if (sf == NULL) {
-	fprintf(stderr, "libsox failed to reopen \"%s\"\n", audio_file->filename);
-	return 0;
+    if (start < sox_frame) {
+	sox_close(sf);
+	sf = sox_open_read(audio_file->filename, NULL, NULL, NULL);
+	sox_frame = 0;
+	if (sf == NULL) {
+	    fprintf(stderr, "libsox failed to reopen \"%s\"\n", audio_file->filename);
+	    return 0;
+	}
+	audio_file->sf = sf;
     }
-    audio_file->sf = sf;
 #endif
 
     if (
@@ -239,6 +245,8 @@ read_audio_file(audio_file_t *audio_file, char *data,
     }
 
 #if USE_LIBSOX
+    sox_frame = start;	/* Next audio should be truened from this offset */
+
     /* sox reads a number of samples, not frames */
     samples_to_read = frames_to_read * audio_file->channels;
 
@@ -285,6 +293,8 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	}
 	frames = samples / audio_file->channels;
 	if (frames == 0) break;
+
+	sox_frame += frames;
 
 	/* Convert to desired format */
 	switch (format) {
