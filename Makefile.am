@@ -63,13 +63,13 @@ icon_DATA = spettro.png
 
 spettro_SOURCES = main.c config.h spettro.h \
 	alloc.c audio.c audio_cache.c audio_file.c axes.c \
-	barlines.c cache.c calc.c colormap.c convert.c \
+	barlines.c cache.c calc.c colormap.c convert.c dump.c \
 	gui.c interpolate.c key.c libav.c lock.c mouse.c \
 	paint.c overlay.c scheduler.c spectrum.c text.c timer.c \
 	ui.c ui_funcs.c window.c \
 	\
 	alloc.h audio.h audio_cache.h audio_file.h axes.h \
-	barlines.h cache.h calc.h colormap.h convert.h \
+	barlines.h cache.h calc.h colormap.h convert.h dump.h \
 	gui.h interpolate.h key.h libav.h lock.h mouse.h \
 	paint.h overlay.h scheduler.h spectrum.h text.h timer.h \
 	ui.h ui_funcs.h window.h
