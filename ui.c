@@ -50,6 +50,10 @@ bool fullscreen = FALSE;	/* Start up in fullscreen mode? */
 int min_x, max_x, min_y, max_y;	/* Edges of graph in display coords */
 bool green_line_off = FALSE;	/* Should we omit it when repainting? */
 double softvol = 1.0;
+int max_threads = 0;		/* 0 means use default (the number of CPUs) */
+char *output_file = NULL;	/* Image file to write to and quit. This is done
+       				 * when the last result has come in from the
+				 * FFT threads, in calc_notify in scheduler.c */
 
 /* Where is time and space is the current playing position on the scren? */
 double disp_time = 0.0;	/* When in the audio file is the crosshair? */

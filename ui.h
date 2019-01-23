@@ -55,6 +55,12 @@ extern bool fullscreen;		/* Start up in fullscreen mode? */
 extern int min_x, max_x, min_y, max_y;	/* Edges of graph in display coords */
 extern bool green_line_off;	/* Should we omit it when repainting? */
 extern double softvol;
+extern int max_threads;		/* 0 means use default (the number of CPUs) */
+extern char *output_file;	/* Image file to write to */
+
+/* End of option flags. Derived and calculated parameters follow */
+
+extern char *filename;		/* Current audio file name */
 
 /* Where is time and space is the current playing position on the scren? */
 extern double disp_time;	/* When in the audio file is the crosshair? */

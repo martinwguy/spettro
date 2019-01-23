@@ -62,13 +62,13 @@ icondir = $(datadir)/icons
 icon_DATA = spettro.png
 
 spettro_SOURCES = main.c config.h spettro.h \
-	alloc.c audio.c audio_cache.c audio_file.c axes.c \
+	alloc.c args.c audio.c audio_cache.c audio_file.c axes.c \
 	barlines.c cache.c calc.c colormap.c convert.c dump.c \
 	gui.c interpolate.c key.c libav.c lock.c mouse.c \
 	paint.c overlay.c scheduler.c spectrum.c text.c timer.c \
 	ui.c ui_funcs.c window.c \
 	\
-	alloc.h audio.h audio_cache.h audio_file.h axes.h \
+	alloc.h args.h audio.h audio_cache.h audio_file.h axes.h \
 	barlines.h cache.h calc.h colormap.h convert.h dump.h \
 	gui.h interpolate.h key.h libav.h lock.h mouse.h \
 	paint.h overlay.h scheduler.h spectrum.h text.h timer.h \
@@ -79,6 +79,7 @@ filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 # The source files that depend on USE_* defines from config.h
 # One day, a proper "configure" will make these go away
 main.o: Makefile
+args.o: Makefile
 audio.o: Makefile
 calc.o: Makefile
 gui.o: Makefile
