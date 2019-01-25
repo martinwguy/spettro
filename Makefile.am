@@ -81,17 +81,17 @@ filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 main.o: Makefile
 args.o: Makefile
 audio.o: Makefile
+audio_file.o: Makefile
 calc.o: Makefile
+filtering_audio.o: Makefile
 gui.o: Makefile
 key.o: Makefile
+libav.o: Makefile
 lock.o: Makefile
 mouse.o: Makefile
 overlay.o: Makefile
-timer.o: Makefile
-audio_file.o: Makefile
 scheduler.o: Makefile
-filtering_audio.o: Makefile
-libav.o: Makefile
+timer.o: Makefile
 
 tags:
 	ctags $(spettro_SOURCES)
