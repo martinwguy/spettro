@@ -1,6 +1,10 @@
 #! /bin/sh
 
-# build.sh: Build the name version:
+# build: Compile the named variant. Default is SDL2 and SNDFILE
+# Usage: s/build [ SDL1 | EMOTION | EMOTION_SDL ] [ AUDIOFILE | SOX | AV ]
+#
+# s/build EMOTION_SDL SDL1 also works to build the hybrid version using
+# SDL1.2 instead of SDL2.0
 
 # Restore the original Makefile.am on exit and force a rebuild on "make"
 trap "mv -f Makefile.am.orig Makefile.am; touch Makefile.am" 0 INT
@@ -24,7 +28,7 @@ do
 	       -e '/^AM_CFLAGS/s/SDL_CFLAGS/EMOTION_CFLAGS/' \
 	       -e '/^AM_LDFLAGS/s/SDL_LIBS/EMOTION_LIBS/' Makefile.am
 	;;
-    EMOTION_SDL)
+    EMOTION_SDL)	# EFL for graphics, SDL2 for sound
 	sed -i -e '/^AM_CFLAGS/s/USE_SDL/USE_EMOTION_SDL/' \
 	       -e '/^AM_CFLAGS/s/SDL_CFLAGS/&) $(EMOTION_CFLAGS/' \
 	       -e '/^AM_LDFLAGS/s/SDL_LIBS/SDL_LIBS) $(EMOTION_LIBS/' Makefile.am
