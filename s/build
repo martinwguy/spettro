@@ -68,6 +68,13 @@ do
     }
 done
 
-make -j4 $MAKEFLAGS clean all > /dev/null || { echo 'Build fails' 1>&2; exit 1; }
+if make -j4 $MAKEFLAGS clean all > /dev/null
+then
+    git checkout Makefile.am
+else
+    echo 'Build fails' 1>&2
+    git checkout Makefile.am
+    exit 1
+fi
 
 exit 0
