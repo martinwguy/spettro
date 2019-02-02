@@ -66,7 +66,7 @@ add_timer(double interval)
 	X_refresh_rate =
 	    ecore_x_randr_screen_primary_output_current_refresh_rate_get(X);
 
-        minimum_interval = 1.0 / X_refresh_rate;
+        if (X_refresh_rate > 0) minimum_interval = 1.0 / X_refresh_rate;
     }
 #endif
 
