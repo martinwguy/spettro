@@ -536,8 +536,10 @@ gui_deinit()
 void
 gui_fullscreen()
 {
-/* Only works in SDL at present */
-#if SDL_VIDEO
+#if EVAS_VIDEO
+    fullscreen = !fullscreen;
+    ecore_evas_fullscreen_set(ee, fullscreen);
+#elif SDL_VIDEO
     gui_deinit();
     fullscreen = !fullscreen;
     gui_init(audio_file->filename);

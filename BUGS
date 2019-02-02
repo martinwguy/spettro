@@ -63,8 +63,6 @@ The first bad commit could be any of:
 ------------------------------------------------------------------------
 Capital command letters don't work in SDL CACA driver over ssh.
 ------------------------------------------------------------------------
-Toggle fullscreen key Ctrl-F doesn't work in EFL.
-------------------------------------------------------------------------
 When it gets to the end of the piece, by playing or by [End],
 the green line disappears.
 ------------------------------------------------------------------------
