@@ -188,6 +188,7 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "xf86audiostop"))		key = KEY_STOP;
     else if (!strcmp(name, "xf86audioprev"))		key = KEY_PREV;
     else if (!strcmp(name, "xf86audionext"))		key = KEY_NEXT;
+    else if (!strcmp(name, "stop"))			key = KEY_STOP;
 #elif SDL_MAIN
 # if SDL1
     else if (!strcmp(name, "page up"))			key = KEY_PGUP;
