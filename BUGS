@@ -68,5 +68,3 @@ Toggle fullscreen key Ctrl-F doesn't work in EFL.
 When it gets to the end of the piece, by playing or by [End],
 the green line disappears.
 ------------------------------------------------------------------------
-[End] [Space] doesn't replay the piece until a second space is pressed.
-------------------------------------------------------------------------

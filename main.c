@@ -221,11 +221,16 @@ do_key(enum key key)
 	    break;
 
 	case STOPPED:
+restart:
 	    set_playing_time(0.0);
 	    start_playing();
 	    break;
 
 	case PAUSED:
+	    if (DELTA_GE(get_playing_time(), audio_file_length(audio_file))) {
+		/* They went "End" while it was paused. Restart from 0 */
+		goto restart;
+	    }
 	    continue_playing();
 	    break;
 	}
@@ -444,7 +449,10 @@ do_key(enum key key)
 "min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g speclen=%d\n",
  min_freq,   max_freq,   fft_freq,   -min_db,     speclen);
 	    printf(
-"playing %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
+"%s %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
+		playing == PLAYING ? "Playing" :
+		playing == STOPPED ? "Stopped at" :
+		playing == PAUSED  ? "Paused at" : "Doing what? at",
 		get_playing_time(), disp_time, step,
 		disp_time - disp_offset * step,
 		disp_time + (disp_width - disp_offset) * step,
