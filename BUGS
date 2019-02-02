@@ -47,11 +47,6 @@ one pixel before it should, probably due to rounding.
 When key-repeating a slow operation, the Shift state is measured when
 the event is processed, not when the key was pressed. This may be better.
 ------------------------------------------------------------------------
-When removing the note-frequency axis, a black line is sometimes left
-near the RHS.
-Repeat-by: A A Space. or A A Ctrl ->. The black line appears with 10 gray
-ones on its right when the scrolling starts.
-------------------------------------------------------------------------
 Capital command letters don't work in SDL CACA driver over ssh.
 ------------------------------------------------------------------------
 When it gets to the end of the piece, by playing or by [End],

@@ -121,3 +121,5 @@ Compile the Enlightenment port for Android, iOS and Windows!
 Pressing the same overlay key again cycles through white, black, none.
 Idem for bar lines. So last_key_presssed?
 ------------------------------------------------------------------------
+Incorporate amp into spettro.
+------------------------------------------------------------------------
