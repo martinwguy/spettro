@@ -1,5 +1,6 @@
 /*
 ** Copyright (C) 2007-2015 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Modified (M) 2018 by Martin Guy <martinwguy@gmail.com>
 **
 ** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
