@@ -97,10 +97,14 @@ filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 main.o: Makefile
 args.o: Makefile
 audio.o: Makefile
+audio_cache.o: Makefile	# Bcos includes audio_file.h
 audio_file.o: Makefile
 calc.o: Makefile
+convert.o: Makefile	# Bcos includes audio_file.h
+dump.o: Makefile	# Bcos includes audio_file.h
 filtering_audio.o: Makefile
 gui.o: Makefile
+interpolate.o: Makefile	# Bcos includes audio_file.h
 key.o: Makefile
 libav.o: Makefile
 lock.o: Makefile
