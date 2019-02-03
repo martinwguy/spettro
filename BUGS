@@ -33,9 +33,6 @@ libav seeks to packet boundaries on MP3,FLAC,Ogg
 ------------------------------------------------------------------------
 libav plays AAC and mp4 at one sixth of the speed.
 ------------------------------------------------------------------------
-When scrolling up by one pixel, the bottom label disappears
-one pixel before it should, probably due to rounding.
-------------------------------------------------------------------------
 When key-repeating a slow operation, the Shift state is measured when
 the event is processed, not when the key was pressed. This may be better.
 ------------------------------------------------------------------------

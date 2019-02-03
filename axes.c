@@ -132,7 +132,15 @@ draw_note_names()
     for (note_name[0] = 'A'; note_name[0] <= 'G'; note_name[0]++) {
 	for (note_name[1] = '0'; note_name[1] <= '9'; note_name[1]++) {
 	    double freq = note_name_to_freq(note_name);
-	    if (DELTA_GE(freq, min_freq) && DELTA_LE(freq, max_freq)) {
+	    double half_a_pixel = sqrt(v_pixel_freq_ratio());
+	    /* If the tick is within the axis range, draw it.
+	     * The half pixel slop ensures that the top and bottom pixel rows
+	     * receive a tick if the vertical pixel position of that label
+	     * would round to the pixel row in question. Otherwise half the
+	     * time at random the top or bottom pixel rows are not labelled.
+	     */
+	    if (DELTA_GE(freq, min_freq / half_a_pixel) &&
+	        DELTA_LE(freq, max_freq * half_a_pixel)) {
 		int y = min_y + freq_to_magindex(freq);
 		gui_putpixel(max_x + 1, y, green);
 		gui_putpixel(max_x + 2, y, green);
@@ -294,16 +302,22 @@ add_log_ticks(double min, double max, double distance,
 {
     double value;
 
-    for (value = start_value; DELTA_LE(value, max); value *= 10.0) {
+    /* Include the top and bottom rows if the tick for a frequency label
+     * would round to that pixel row */
+    double half_a_pixel = sqrt(v_pixel_freq_ratio());
+
+    for (value = start_value; DELTA_LE(value, max * half_a_pixel);
+         value *= 10.0) {
 	if (k >= number_of_ticks) {
 	    ticks = Realloc(ticks, (k+1) * sizeof(*ticks));
 	    number_of_ticks = k+1;
 	}
-	if (DELTA_LT(value, min)) continue;
-	ticks[k].value = include_number ? value : NO_NUMBER;
-	ticks[k].distance = distance * (log(value) - log(min))
-				     / (log(max) - log(min));
-	k++;
+	if (DELTA_GE(value, min / half_a_pixel)) {
+	    ticks[k].value = include_number ? value : NO_NUMBER;
+	    ticks[k].distance = distance * (log(value) - log(min))
+					 / (log(max) - log(min));
+	    k++;
+	}
     }
     return k;
 }
