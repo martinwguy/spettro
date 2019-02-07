@@ -6,15 +6,16 @@ PREPARATION
 On Debian/Ubuntu/Mint you need to:
 	# Always
 	apt-get install libfftw3-dev pkg-config
+
 	# Default library choices
-	apt-get install libsdl2-dev libsndfile-dev
+	apt-get install libsdl2-dev libsndfile-dev libmpg123-dev
 
 	# If you want to use SDL1.2 instead of SDL2.0
+	# change sdl2-config to sdl-config in Makefile.am and
 	apt-get install libsdl1.2-dev
-	# and change sdl2-config to sdl-config in Makefile.am
 	# or, for -DUSE_EMOTION:
 	apt-get install e17-dev libecore-dev libemotion-dev
-	# or, for -DUSE_EMOTION_SDL, all of the above.
+	# or, for -DUSE_EMOTION_SDL, both
 
 	# For -DUSE_LIBSOX
 	apt-get install libsox-dev

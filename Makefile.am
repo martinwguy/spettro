@@ -35,9 +35,9 @@
 
 # ---------------- These are the lines you might want to change ---------------
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSNDFILE
-AM_CFLAGS += $(SDL_CFLAGS) $(SNDFILE_CFLAGS)
-AM_LDFLAGS = $(SDL_LIBS) $(SNDFILE_LIBS)
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBSNDFILE -DUSE_LIBMPG123
+AM_CFLAGS += $(SDL_CFLAGS) $(SNDFILE_CFLAGS) $(MPG123_CFLAGS)
+AM_LDFLAGS = $(SDL_LIBS) $(SNDFILE_LIBS) $(MPG123_LIBS)
 
 # ---------------------- That's all you need to change ----------------------
 
@@ -63,6 +63,8 @@ EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
 # Audio file-reading libraries
 AUDIOFILE_CFLAGS=`pkg-config --cflags audiofile`
 AUDIOFILE_LIBS=  `pkg-config --libs audiofile`
+MPG123_CFLAGS=   `pkg-config --cflags libmpg123`
+MPG123_LIBS=     `pkg-config --libs libmpg123`
 SNDFILE_CFLAGS=  `pkg-config --cflags sndfile`
 SNDFILE_LIBS=    `pkg-config --libs sndfile`
 SOX_CFLAGS=      `pkg-config --cflags sox`
@@ -80,13 +82,13 @@ icon_DATA = spettro.png
 spettro_SOURCES = main.c config.h spettro.h \
 	alloc.c args.c audio.c audio_cache.c audio_file.c axes.c \
 	barlines.c cache.c calc.c colormap.c convert.c dump.c \
-	gui.c interpolate.c key.c libav.c lock.c mouse.c \
+	gui.c interpolate.c key.c libav.c libmpg123.c lock.c mouse.c \
 	paint.c overlay.c scheduler.c spectrum.c text.c timer.c \
 	ui.c ui_funcs.c window.c \
 	\
 	alloc.h args.h audio.h audio_cache.h audio_file.h axes.h \
 	barlines.h cache.h calc.h colormap.h convert.h dump.h \
-	gui.h interpolate.h key.h libav.h lock.h mouse.h \
+	gui.h interpolate.h key.h libav.h libmpg123.h lock.h mouse.h \
 	paint.h overlay.h scheduler.h spectrum.h text.h timer.h \
 	ui.h ui_funcs.h window.h
 
@@ -107,6 +109,7 @@ gui.o: Makefile
 interpolate.o: Makefile	# Bcos includes audio_file.h
 key.o: Makefile
 libav.o: Makefile
+libmpg123.o: Makefile
 lock.o: Makefile
 mouse.o: Makefile
 overlay.o: Makefile

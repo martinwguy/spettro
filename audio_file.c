@@ -32,6 +32,7 @@
 #include "audio_file.h"		/* Our header file */
 
 #include "audio_cache.h"
+#include "libmpg123.h"
 #include "lock.h"
 
 #include <string.h>		/* for memset() */
@@ -47,6 +48,10 @@ static size_t sox_frame;	/* Which will be returned if you sox_read? */
 # include "libav.h"
 #endif
 
+#if USE_LIBMPG123
+#include "libmpg123.h"
+#endif
+
 /* Handing the audio file info down to everybody is too much of a pain
  * so we just make it global.
  */
@@ -58,7 +63,17 @@ audio_file_t *	audio_file = &our_audio_file;
 audio_file_t *
 open_audio_file(char *filename)
 {
+#if USE_LIBMPG123
+    /* Decode MP3's with libmpg123 */
+    if (strcasecmp(filename + strlen(filename)-4, ".mp3") == 0) {
+	libmpg123_open(&audio_file, filename);
+	audio_file->filename = filename;
+	return audio_file;
+    } else /* Use the main audio file library */
+#endif
+
 #if USE_LIBAUDIOFILE
+    {
     AFfilehandle af;
     int comptype;	/* Compression type */
 
@@ -87,8 +102,10 @@ open_audio_file(char *filename)
 	create_audio_cache();
 	break;
     }
+    }
 
 #elif USE_LIBSNDFILE
+    {
     SF_INFO info;
     SNDFILE *sndfile;
 
@@ -113,8 +130,10 @@ open_audio_file(char *filename)
 	no_audio_cache();
 	break;
     }
+    }
 
 #elif USE_LIBSOX
+    {
     sox_format_t *sf;
 
     sox_init();
@@ -139,6 +158,7 @@ open_audio_file(char *filename)
 	break;
     }
     sox_frame = 0;
+    }
 
 #elif USE_LIBAV
     libav_open_audio_file(&audio_file, filename);
@@ -226,6 +246,28 @@ read_audio_file(audio_file_t *audio_file, char *data,
         frames_to_read -= silence;
 	start = 0;	/* Read audio data from start of file */
     }
+
+#if USE_LIBMPG123
+    /* Decode MP3's with libmpg123 */
+    if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
+    		   ".mp3") == 0) {
+	if (libmpg123_seek(start) == FALSE) {
+	    fprintf(stderr, "Failed to seek in audio file.\n");
+	    return 0;
+	}
+	while (frames_to_read > 0) {
+	    int frames = libmpg123_read_frames(write_to, frames_to_read, format);
+	    if (frames > 0) {
+		total_frames += frames;
+		write_to += frames * framesize;
+		frames_to_read -= frames;
+	    } else {
+		/* We ask it to read past EOF so failure is normal */
+		break;
+	    }
+	}
+    } else {
+#endif
 
 #if USE_LIBSOX
     /* sox_seek() (in libsox-14.4.1) is broken:
@@ -390,6 +432,10 @@ read_audio_file(audio_file_t *audio_file, char *data,
 	    break;
         }
     }
+
+#if USE_LIBMPG123
+    }
+#endif
 
     /* If it stopped before reading all frames, fill the rest with silence */
     if (format == af_double && frames_to_read > 0) {
