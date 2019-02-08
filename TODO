@@ -122,4 +122,22 @@ Pressing the same overlay key again cycles through white, black, none.
 Idem for bar lines. So last_key_presssed?
 ------------------------------------------------------------------------
 Incorporate amp into spettro.
+"amp -c -q %s -", "filename.mp3" outputs 16-bit samples. How to find nchannels?
+------------------------------------------------------------------------
+Add failure return values from libav_open_audio_file() and libmpg123_*()
+------------------------------------------------------------------------
+In audio file reading, convert mono doubles to mono floats.
+------------------------------------------------------------------------
+Be able to tune A to a different frequency & up/down it via the GUI.
+Or cmdline --tune A4=440.
+If no octave given, --tune F#=710 retune the nearest F# to 710. (+ais aes)
+------------------------------------------------------------------------
+Implement status bar showing current settings:
+left time pos             disptime                 right time pos
+ppsec ppoct fftfreq window lbar rbar beats audio_length srate channels
+------------------------------------------------------------------------
+Show which bar lines are the left and right markers.
+------------------------------------------------------------------------
+Be able to drag bar lines with the mouse; the last-clicked one is the one
+that remains still. Or something. Do we need this or is LR enough?
 ------------------------------------------------------------------------

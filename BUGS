@@ -40,4 +40,10 @@ Capital command letters don't work in SDL CACA driver over ssh.
 ------------------------------------------------------------------------
 When it gets to the end of the piece, by playing or by [End],
 the green line disappears.
+
+The displayed area *is* 321 pixels wide, which is right for 0-320.
+At the last paint_column() of column 320, green_line_off is on.
+------------------------------------------------------------------------
+When you have set both bar lines and press '4', the beat lines don't appear
+unless you ctrl-R.
 ------------------------------------------------------------------------
