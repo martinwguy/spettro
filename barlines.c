@@ -93,9 +93,38 @@ set_right_bar_time(double when)
 }
 
 void
-set_beats_per_bar(int bpb)
+set_beats_per_bar(int new_bpb)
 {
-    beats_per_bar = bpb;
+    int old_bpb = beats_per_bar;
+
+    if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED) {
+	int col;
+	/* Clear/repaint existing bar lines */
+	for (col=min_x; col <= max_x; col++) {
+	    /* If there was a bar line here with the old settings,
+	     * repaint that column as it will be with the new settings */
+	    if (is_bar_line(col)) {	
+		beats_per_bar = new_bpb;
+		repaint_column(col, min_y, max_y, FALSE);
+		gui_update_column(col);
+		beats_per_bar = old_bpb;
+	    }
+	}
+
+	/* Paint the newly-appeared beat lines. This could be quicker
+	 * not repainting the bar lines, but only the beat lines.
+	 */
+	beats_per_bar = new_bpb;
+
+	for (col=min_x; col <= max_x; col++) {
+	    if (is_bar_line(col)) {
+		repaint_column(col, min_y, max_y, FALSE);
+		gui_update_column(col);
+	    }
+	}
+    }
+
+    beats_per_bar = new_bpb;
 }
 
 static void
@@ -104,7 +133,7 @@ set_bar_time(double *this_one, double *the_other_one, double when)
     /* If only this bar line is defined, show it */
     if (*the_other_one == UNDEFINED) {
         int new_col;
-	/* Move the sole left marker */
+	/* Move the sole marker */
 	if (*this_one != UNDEFINED) {
 	    int old_col = disp_offset + lrint((*this_one - disp_time) / step);
 	    *this_one = when;
