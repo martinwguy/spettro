@@ -141,3 +141,5 @@ Show which bar lines are the left and right markers.
 Be able to drag bar lines with the mouse; the last-clicked one is the one
 that remains still. Or something. Do we need this or is LR enough?
 ------------------------------------------------------------------------
+Make Defining the bar lines one pixel apart a synonym for no bar lines.
+------------------------------------------------------------------------
