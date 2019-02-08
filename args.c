@@ -355,11 +355,13 @@ q/Ctrl-C/Esc   Quit");
 	}
     }
 
+    /* Don't call set_*_bar_time becaue that would trigger repaints before
+     * the graphics system is up */
     if (bar_left_time != UNDEFINED) {
-	set_left_bar_time(bar_left_time);
+	left_bar_time = bar_left_time;
     }
     if (bar_right_time != UNDEFINED) {
-	set_right_bar_time(bar_right_time);
+	right_bar_time = bar_right_time;
     }
 
     *argcp = argc;
