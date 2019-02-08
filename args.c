@@ -298,6 +298,9 @@ usage:
 -a     Label the vertical frequency axes\n\
 -f n   Set the FFT frequency, default %gHz\n\
 -t n   Set the initial playing time in seconds\n\
+-l n   Set the position of the left bar line in seconds\n\
+-r n   Set the position of the right bar line in seconds\n\
+-b n   Set the number of beats per bar\n\
 -S n   Set the scrolling rate in frames per second\n\
 -P n   Set the number of pixel columns per second\n\
 -j n   Set maximum number of threads to use (default: the number of CPUs)\n\
