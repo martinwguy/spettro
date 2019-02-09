@@ -167,7 +167,10 @@ libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format)
 		    fprintf(stderr, "I can't determine the length of the MP3 file.\n");
 		    audio_file->frames = 0;
 		} else {
-		    audio_file->frames = length / channels;
+		    /* The docs say mpg123_length() return the number of samples
+		     * but it appears to return the number of frames so don't
+		     * divide it by the number of channels */
+		    audio_file->frames = length;
 		}
 
 		switch (format) {
