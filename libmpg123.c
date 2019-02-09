@@ -41,6 +41,7 @@ libmpg123_open(audio_file_t **afp, const char *filename)
 
     if ((ret = mpg123_param(m, MPG123_FLAGS,
 #ifdef MPG123_FORCE_SEEKABLE
+	/* Older versions (1.23.8) don't have this */
 					     MPG123_FORCE_SEEKABLE |
 #endif
     					     MPG123_GAPLESS |
@@ -49,7 +50,7 @@ libmpg123_open(audio_file_t **afp, const char *filename)
 	goto fail;
     }
 
-    // Let the seek index auto-grow and contain an entry for every frame
+    /* Let the seek index auto-grow and contain an entry for every frame */
     if ((ret = mpg123_param(m, MPG123_INDEX_SIZE, -1, 0)) != MPG123_OK) {
 	fprintf(stderr,"Unable to set index size: %s\n", mpg123_plain_strerror(ret));
 	goto fail;
@@ -61,7 +62,7 @@ libmpg123_open(audio_file_t **afp, const char *filename)
 	goto fail;
     }
 
-    // Use 16-bit signed output, right for the cache
+    /* Use 16-bit signed output, right for the cache */
     ret = mpg123_format(m, 44100, MPG123_MONO | MPG123_STEREO,  MPG123_ENC_SIGNED_16);
     if (ret != MPG123_OK) {
 	fprintf(stderr,"Unable to set float output formats: %s\n", mpg123_plain_strerror(ret));
@@ -69,7 +70,7 @@ libmpg123_open(audio_file_t **afp, const char *filename)
     }
 
     if ((ret = mpg123_open_feed(m)) != MPG123_OK) {
-	fprintf(stderr,"Unable open feed: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to open feed: %s\n", mpg123_plain_strerror(ret));
 	goto fail;
     }
 
@@ -79,12 +80,10 @@ libmpg123_open(audio_file_t **afp, const char *filename)
     }
 
     /* Tell libmpg123 how big the file is */
-    {
-    	if (fseek(in, 0, SEEK_END) == 0) {
-	    mpg123_set_filesize(m, ftell(in));
-	}
-    	(void) fseek(in, 0, SEEK_SET);
+    if (fseek(in, 0, SEEK_END) == 0) {
+	mpg123_set_filesize(m, ftell(in));
     }
+    (void) fseek(in, 0, SEEK_SET);
 
     /* sample rate and channels are set when we read the first frame */
     {
@@ -163,7 +162,7 @@ libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format)
 		audio_file->sample_rate = rate;
 		audio_file->channels = channels;
 		length = mpg123_length(m);
-		if (length == MPG123_ERR) {
+		if (length < 0) {
 		    fprintf(stderr, "I can't determine the length of the MP3 file.\n");
 		    audio_file->frames = 0;
 		} else {
