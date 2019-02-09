@@ -13,17 +13,14 @@
 #include <string.h>	/* for strerror() */
 #include <errno.h>
 
-#define INBUFF  16384 * 2 * 2
-
 static	long rate;
 static	int channels, enc;
 
-static	unsigned char buf[INBUFF];
 static	unsigned char *audio;
 static	FILE *in;
 static	mpg123_handle *m;
-static	int ret, state;
-static	off_t len, num;
+static	int ret;
+static	off_t num;
 static	size_t bytes;
 
 /* Open an MP3 file.
@@ -111,11 +108,13 @@ libmpg123_seek(int start)
     /* That condition is tricky... parentheses are crucial... */
     while ((ret = mpg123_feedseek(m, start, SEEK_SET, &inoffset)) == MPG123_NEED_MORE)
     {
-	len = fread(buf, sizeof(unsigned char), INBUFF, in);
-	if (len <= 0) break;
+	int c = getc(in);
+	unsigned char uc;
+	if (c == EOF) break;
+	uc = c;
 
-	if ((state = mpg123_feed(m, buf, len)) == MPG123_ERR) {
-	    fprintf(stderr, "Error: %s", mpg123_strerror(m));
+	if (mpg123_feed(m, &uc, 1) == MPG123_ERR) {
+	    fprintf(stderr, "Error feeding: %s", mpg123_strerror(m));
 	    return FALSE;
 	}
     }
@@ -148,101 +147,105 @@ libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format)
     static int framesize;
 
     while (frames_written < frames_to_read) {
-	len = fread(buf, sizeof(unsigned char), INBUFF, in);
-	if (len <= 0) break;	/* End of input file */
-	ret = mpg123_feed(m, buf, len);
+	while ((ret = mpg123_decode_frame(m, &num, &audio, &bytes)) == MPG123_NEED_MORE) {
+	    int c = getc(in);
+	    unsigned char uc;
+	    if (c == EOF) break;
+	    uc = c;
+	    ret = mpg123_feed(m, &uc, 1);
+	    if (ret != MPG123_OK) break;
+	}
 
-	while (frames_written < frames_to_read &&
-	       ret != MPG123_ERR && ret != MPG123_NEED_MORE) {
-	    ret = mpg123_decode_frame(m, &num, &audio, &bytes);
-	    if (ret == MPG123_NEW_FORMAT) {
-		off_t length;	/* of the MP3 file in samples */
+	/* Check return value from mpg123_decode_frame() */
+	
+	if (ret == MPG123_ERR) break;
 
-	    	mpg123_getformat(m, &rate, &channels, &enc);
-		audio_file->sample_rate = rate;
-		audio_file->channels = channels;
-		length = mpg123_length(m);
-		if (length < 0) {
-		    fprintf(stderr, "I can't determine the length of the MP3 file.\n");
-		    audio_file->frames = 0;
-		} else {
-		    /* The docs say mpg123_length() return the number of samples
-		     * but it appears to return the number of frames so don't
-		     * divide it by the number of channels */
-		    audio_file->frames = length;
-		}
+	if (ret == MPG123_NEW_FORMAT) {
+	    off_t length;	/* of the MP3 file in samples */
 
-		switch (format) {
-		case af_double: framesize = sizeof(double);	      break;
-		case af_signed: framesize = sizeof(short) * channels; break;
-		default: abort();
-		}
+	    mpg123_getformat(m, &rate, &channels, &enc);
+	    audio_file->sample_rate = rate;
+	    audio_file->channels = channels;
+	    length = mpg123_length(m);
+	    if (length < 0) {
+		fprintf(stderr, "I can't determine the length of the MP3 file.\n");
+		audio_file->frames = 0;
+	    } else {
+		/* The docs say mpg123_length() return the number of samples
+		 * but it appears to return the number of frames so don't
+		 * divide it by the number of channels */
+		audio_file->frames = length;
 	    }
 
-	    /* It returns a whole frame, which may be more than we want */
-	    if (bytes > (frames_to_read - frames_written) * framesize) {
-		bytes = (frames_to_read - frames_written) * framesize;
-	    }
-
-	    /* We make libmpg123 return samples as 16-bit mono or stereo */
 	    switch (format) {
-	    case af_signed:	/* Native-channels 16-bit signed */
-		memcpy(bp, audio, bytes);
-		bp += bytes;
-		frames_written += (bytes/2)/channels;
+	    case af_double: framesize = sizeof(double);	      break;
+	    case af_signed: framesize = sizeof(short) * channels; break;
+	    default: abort();
+	    }
+	}
+
+	/* It returns a whole frame, which may be more than we want */
+	if (bytes > (frames_to_read - frames_written) * framesize) {
+	    bytes = (frames_to_read - frames_written) * framesize;
+	}
+
+	/* We make libmpg123 return samples as 16-bit mono or stereo */
+	switch (format) {
+	case af_signed:	/* Native-channels 16-bit signed */
+	    memcpy(bp, audio, bytes);
+	    bp += bytes;
+	    frames_written += (bytes/2)/channels;
+	    break;
+	case af_double:	/* Want mono doubles */
+	    switch (channels) {
+	    case 1:
+		{	/* Convert 16-bit signeds to doubles */
+		    short *isp = (short *)audio;
+		    int shorts = bytes / 2;
+
+		    if (bytes % 2 != 0) {
+			fprintf(stderr,
+				"libmad123 returns odd byte count\n");
+			return 0;
+		    }
+
+		    while (shorts > 0) {
+			/* Convert [-32767..+32767] to -1..+1 */
+			*dp++ = (double)(*isp++) / 32767.0;
+			shorts--;
+			frames_written++;
+		    }
+		}
 		break;
-	    case af_double:	/* Want mono doubles */
-		switch (channels) {
-		case 1:
-		    {	/* Convert 16-bit signeds to doubles */
-			short *isp = (short *)audio;
-			int shorts = bytes / 2;
+	    case 2:
+		{	/* Convert pairs of 16-bit signeds to doubles */
+		    short *isp = (short *)audio;
+		    int shorts = bytes / 2;
 
-			if (bytes % 2 != 0) {
-			    fprintf(stderr,
-			    	    "libmad123 returns odd byte count\n");
-			    return 0;
-			}
+		    if (bytes % 2 != 0) {
+			fprintf(stderr,
+				"libmad123 returns odd byte count\n");
+			return 0;
+		    }
+		    if (shorts % 2 != 0) {
+			fprintf(stderr,
+				"libmad123 returns odd short count for stereo file.\n");
+			return 0;
+		    }
 
-			while (shorts > 0) {
-			    /* Convert [-32767..+32767] to -1..+1 */
-			    *dp++ = (double)(*isp++) / 32767.0;
-			    shorts--;
-			    frames_written++;
-			}
+		    while (shorts > 0) {
+			/* Convert 2 * [-32767..+32767] to -1..+1 */
+			*dp++ = ((double)isp[0] + (double)isp[1]) / 65534.0;
+			isp += 2; shorts -= 2;
+			frames_written++;
 		    }
 		    break;
-		case 2:
-		    {	/* Convert pairs of 16-bit signeds to doubles */
-			short *isp = (short *)audio;
-			int shorts = bytes / 2;
-
-			if (bytes % 2 != 0) {
-			    fprintf(stderr,
-			    	    "libmad123 returns odd byte count\n");
-			    return 0;
-			}
-			if (shorts % 2 != 0) {
-			    fprintf(stderr,
-			    	    "libmad123 returns odd short count for stereo file.\n");
-			    return 0;
-			}
-
-			while (shorts > 0) {
-			    /* Convert 2 * [-32767..+32767] to -1..+1 */
-			    *dp++ = ((double)isp[0] + (double)isp[1]) / 65534.0;
-			    isp += 2; shorts -= 2;
-			    frames_written++;
-			}
-			break;
-		    }
 		}
 	    }
 	}
-	if (ret == MPG123_ERR) {
-	    fprintf(stderr, "Error: %s", mpg123_strerror(m));
-	    break;
-	}
+    }
+    if (ret != MPG123_OK) {
+	fprintf(stderr, "Error: %s", mpg123_strerror(m));
     }
 
     return frames_written;
