@@ -67,7 +67,12 @@ open_audio_file(char *filename)
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(filename + strlen(filename)-4, ".mp3") == 0) {
 	libmpg123_open(&audio_file, filename);
-	audio_file->filename = filename;
+	if (audio_file == NULL) {
+	    fprintf(stderr, "Cannot open \"%s\n", filename);
+	} else {
+	    audio_file->filename = filename;
+	}
+	create_audio_cache();
 	return audio_file;
     } else /* Use the main audio file library */
 #endif
@@ -178,7 +183,7 @@ open_audio_file(char *filename)
 double
 audio_file_length(audio_file_t *audio_file)
 {
-    return audio_file->frames / audio_file->sample_rate;
+    return (double)(audio_file->frames) / audio_file->sample_rate;
 }
 
 /*
