@@ -143,3 +143,5 @@ that remains still. Or something. Do we need this or is LR enough?
 ------------------------------------------------------------------------
 Make Defining the bar lines one pixel apart a synonym for no bar lines.
 ------------------------------------------------------------------------
+Something to show how far through the file you are (like a scroll bar)
+------------------------------------------------------------------------
