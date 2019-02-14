@@ -1,5 +1,22 @@
 spettro - Show a moving log-frequency-axis spectrogram of music while it plays
 
+The best spectrogram program on the planet!
+
+All the others give you a linear-frequency-axis spectrogram, which dedicates
+the top half of the display to the top octave (10025Hz-22050Hz),
+the next quarter of the screen to the penultimate octive and so on,
+leaving all the musically useful information crushed into the
+bottom centimeter of the graphic.
+
+Spek, foobar2000, sox spectrogram, sndfile-spectrogram, all have linear
+frequency axis, leaving you seeing nothing.
+Only audacious has a log frequency axis option, but it's blocky.
+
+Spettro is different. It uses a logarithmic frequency axis, which allocates the
+same amount of space to each octave, the same as conventional score notation.
+
+Enough ranting.
+
 Spettro plays an audio file and shows a scrolling spectrogram of it
 with a vertical green one-pixel-wide line half way across the window to
 show the current playing position.
@@ -12,8 +29,8 @@ You can also:
 - Select from eight different FFT window functions
 - Change the colors it uses to represent sound energy
 - Show where the ten score lines, six guitar strings or 88 piano keys fall
-- Position bar lines to help determine the rhythm
-- Add a frequency axis
+- Position bar lines to help determine the rhythm and beats-per-bar
+- Add a (logarithmic!) frequency axis
 - Increase the playing volume above 100%
 
 There is a screencast of it at https://youtu.be/fGRsLX0Ec1E
@@ -23,7 +40,7 @@ To get it:
 	cd spettro
 	vi INSTALL
 
-Planned features and improvements are listed in TODO
-Known bugs are listed in BUGS
+Planned features and improvements are listed in TODO.
+Known bugs are listed in BUGS.
 
     Martin Guy <martinwguy@gmail.com>, December 2016 - November 2018.
