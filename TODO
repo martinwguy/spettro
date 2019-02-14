@@ -145,3 +145,8 @@ Make Defining the bar lines one pixel apart a synonym for no bar lines.
 ------------------------------------------------------------------------
 Something to show how far through the file you are (like a scroll bar)
 ------------------------------------------------------------------------
+Use floating-point decoder libraries MP3 files' mono-double output and
+see if the output is less noisy like http://i.imgur.com/DxnNBwM.jpg
+------------------------------------------------------------------------
+Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
+------------------------------------------------------------------------
