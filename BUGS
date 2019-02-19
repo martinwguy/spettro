@@ -48,3 +48,23 @@ This only seems to happen with swoop.wav, not with audio.wav
 ------------------------------------------------------------------------
 When it's STOPPED at the end, the "Home" key doesn't do anything.
 ------------------------------------------------------------------------
+When you go into or out of full-screen with Ctrl-F, it continues to
+think you're holding Ctrl down until you press and release it again.
+------------------------------------------------------------------------
+Playing MP3s on a slow processor results in discontinuous audio,
+probably because decoding the audio for the right hand edge of the screen
+is blockingthe audio-file thread for too long. If it always decodes in a
+straight line, could we launch it as a separate process?
+Shouldn't it get the decoded audio from the audio cache?
+
+Observation: Sometimes, when being lumpy, it takes
+Locked audio file in 224352 us.
+Locked audio file in 177735 us.
+Locked audio file in 194932 us.
+but not enough of these to match all the jumps in the audio;
+usuall it only takes max 2 us to lock the audio file, and locking
+the audio cache always takes max 1us.
+
+However, read_audio_file() is taking up to 12000 us, most commnly
+3500-4000 us, or 3 or 4 milliseconds.
+------------------------------------------------------------------------
