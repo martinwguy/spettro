@@ -193,7 +193,6 @@ set_playing_time(double when)
 double
 get_playing_time(void)
 {
-    if (playing == STOPPED) return audio_file_length(audio_file);
 #if EMOTION_AUDIO
     return emotion_object_position_get(em);
 #elif SDL_AUDIO

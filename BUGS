@@ -46,8 +46,6 @@ At the last paint_column() of column 320, green_line_off is on.
 
 This only seems to happen with swoop.wav, not with audio.wav
 ------------------------------------------------------------------------
-When it's STOPPED at the end, the "Home" key doesn't do anything.
-------------------------------------------------------------------------
 When you go into or out of full-screen with Ctrl-F, it continues to
 think you're holding Ctrl down until you press and release it again.
 ------------------------------------------------------------------------
