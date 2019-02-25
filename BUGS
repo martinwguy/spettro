@@ -66,3 +66,24 @@ the audio cache always takes max 1us.
 However, read_audio_file() is taking up to 12000 us, most commnly
 3500-4000 us, or 3 or 4 milliseconds.
 ------------------------------------------------------------------------
+On ciccio1, playing a Common Swift wav, the audio and graphics get out of sync
+
+spettro -w 1280 -h 800 ~martin/rec/rondoni/*ll.wav
+
+Spectrogram of Rondone #3 10-second call.wav
+min_freq=178.696 max_freq=91492.1 fft_freq=40 dyn_range=100 speclen=550
+Stopped at 9.89685 disp_time=9.89 step=0.01 from=3.49 to=16.29 audio_length=9.89685
+
+and it also says
+
+ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
+ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
+ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
+ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
+ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
+------------------------------------------------------------------------
+The 'o' key's save file name doesn't encode the right position in time.
+
+We need -t (set playing time) and -P (pixels per second), from
+the playing position and the graphic's width.
+------------------------------------------------------------------------

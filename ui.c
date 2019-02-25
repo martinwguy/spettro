@@ -85,12 +85,12 @@ int disp_offset; 	/* Crosshair is in which display column? */
  * 22050- == Space, Five * (digit + blank column) + 2 pixels for tick.
  * Will be increased if 100000 or 0.00001 are displayed
  */
-unsigned frequency_axis_width = 1 + 5 * (3 + 1) + 2;
+unsigned frequency_axis_width = 1 + 5 * (3 + 1) + 2;	/* == 23 */
 
 /* Frequency axis of note names on the right.
  * -A0 == Two pixels for tick, a space, two * (letter + blank column)
  */
-unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);
+unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);	/* == 11 */
 
 /* Space above and below for other axes/info. None yet. */
 unsigned top_margin = 0;

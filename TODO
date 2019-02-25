@@ -150,3 +150,15 @@ see if the output is less noisy like http://i.imgur.com/DxnNBwM.jpg
 ------------------------------------------------------------------------
 Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
+Ctrl-x and Ctrl-Shift-X to zoom by one pixel
+------------------------------------------------------------------------
+Option to turn the green line off for screencaps of nicely positioned
+spectrograms (ok, there is -o too)
+------------------------------------------------------------------------
+On frequency axis, add single digit 8 or whatever at the unnumbered ticks
+and/or increse the number of numbers according to the height of the graph.
+------------------------------------------------------------------------
+Scroll the graphic up and down when they scroll the mouse wheel.
+------------------------------------------------------------------------
+When adding staff/guitar/key lines, just paint them instead of redrawing.
+------------------------------------------------------------------------
