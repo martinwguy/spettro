@@ -46,6 +46,7 @@ dump_screenshot()
     if (DELTA_NE(fps, DEFAULT_FPS))           add(s, " -S %g", fps);
     if (DELTA_NE(ppsec, DEFAULT_PPSEC))       add(s, " -P %g", ppsec);
     if (DELTA_NE(fft_freq, DEFAULT_FFT_FREQ)) add(s, " -f %g", fft_freq);
+    if (DELTA_NE(disp_time, 0.0))             add(s, " -t %g", disp_time);
     if (piano_lines)      add(s, " %s", "-k");
     if (staff_lines)      add(s, " %s", "-s");
     if (guitar_lines)     add(s, " %s", "-g");

@@ -70,9 +70,9 @@ However, read_audio_file() is taking up to 12000 us, most commnly
 
 ============================ Other ======================================
 
-The 'o' key's save file name doesn't encode the right position in time.
-We need to add -t (set playing time) and -P (pixels per second) to the
-file name.
+On startup, the graphic is displayed a little too bright.
+Repeat-by: ./spettro audio.wav
+then press [Ctrl-L], and the image darkens slightly.
 ------------------------------------------------------------------------
 On ciccio1, playing a Common Swift wav, the audio and graphics get out of sync
 
