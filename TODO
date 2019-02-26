@@ -5,25 +5,29 @@ and also move it with Alt-Left/Right arrow, Home, End?
 Be able to display audio from a live source, presumably with the green
 line on the right edge.
 ------------------------------------------------------------------------
-Improve result cache so that we precalculate ahead of right screen edge
-and so that we can cancel scheduled calculations that are no longer in
-the time period we cache.
--> Keep track of scheduled calculations (in a double linked list in time
-order with associated calc structure.
+Precalculate ahead in time to eliminate the flickering grey right hand
+side.  The calc needs to be scheduled far enough ahead that the calc
+threads have the time necessary to have it ready before that column
+appears in the display area.
+------------------------------------------------------------------------
+Cancel scheduled calculations that are no longer in the area of interest
+------------------------------------------------------------------------
+Keep track of which calculations are in-flight, to avoid duplicate calcs.
 ------------------------------------------------------------------------
 Make playing multiple audio files work
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
-------------------------------------------------------------------------
-Do subpixel positioning of bar lines / antialiasing.
-------------------------------------------------------------------------
-Do note lines and the 0 1 2 3 4 5 stuff to say how many beats per bar.
-------------------------------------------------------------------------
+-or-
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated?
 ------------------------------------------------------------------------
-Add -m mute flag to be able to test emotion graphics.
-This needs scrolling by regular timer, not by audio position.
+Do subpixel positioning of bar lines / antialiasing.
+------------------------------------------------------------------------
+Option to synch scrolling to real time not playing-time (--smooth)
+Synch is good if I remember, with the reposition-ELF-on-resume tweak,
+------------------------------------------------------------------------
+Add -m mute flag to be able to test emotion graphics when sound is broken.
+This needs scrolling by regular timer instead of by audio position.
 ------------------------------------------------------------------------
 Try playing sound with SDL_Mixer (Ogg, MP3)
 Mix_RewindMusic(); Mix_SetMusicPosition(double position)
@@ -33,15 +37,7 @@ Mix_SetMusicCMD("mpg123")
 ------------------------------------------------------------------------
 When adding score lines when there were none, just draw them on the display
 instead of redisplaying the columns' spectral data.
-When removing/changing such lines, repaint(all) is probably safest.
-------------------------------------------------------------------------
-Implement --smooth to synch scrolling to real time not playing-time.
-Synch is good if I remember, with the reposition-ELF-on-resume tweak,
-------------------------------------------------------------------------
-Precalculate ahead in time to eliminate the flickering grey right hand
-side.  The calc needs to be scheduled far enough ahead that the calc
-threads have the time necessary to have it ready before that column
-appears in the display area.
+When removing/changing such lines, just repaint the appropriate rows
 ------------------------------------------------------------------------
 Try scaling magnitudes with frequency to unweight its bottom-heaviness.
 ------------------------------------------------------------------------
@@ -69,19 +65,14 @@ Be able to increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------
-Decode MP3s from start to finish, preferably buffered with readahead.
-------------------------------------------------------------------------
 Does adding an axis change what it prints for "Displaying" with 'p'?
 ------------------------------------------------------------------------
 Give the failure reason in an exit status
 ------------------------------------------------------------------------
 Convert html to man page
 ------------------------------------------------------------------------
-Instead of a scrolling time scale, just mark 3 points and use rest of
-bottom/top line for status info.
-------------------------------------------------------------------------
 Be able to set spectrogram size in pixels or in seconds/frequency range.
-there's already min-max freq, allow min/max, min/range max/range or
+There's already min-max freq, allow min/max, min/range max/range or
 center/range.
 ------------------------------------------------------------------------
 Recognise note names A0 in -n -x and the above.
@@ -91,15 +82,11 @@ Make a ui struct of the parameters visible in main.c
 When zoomed in a lot, print enough digits on frequency axis to reveal
 the digit that changes per tick.
 ------------------------------------------------------------------------
-Add fine control of h-zoom with Ctrl.
+Add fine control of h-zoom with Ctrl-x and Ctrl-Shift-X
 ------------------------------------------------------------------------
 Make the desktop icon appear in the window manager.
 ------------------------------------------------------------------------
 Make Ctrl-left click play from here.
-------------------------------------------------------------------------
-Mouse wheel does x-zoom?
-------------------------------------------------------------------------
-Add P to dump the whole thing to a file.
 ------------------------------------------------------------------------
 Decode compressed audio front-to-back without seeking
 ------------------------------------------------------------------------
@@ -120,9 +107,6 @@ Compile the Enlightenment port for Android, iOS and Windows!
 ------------------------------------------------------------------------
 Pressing the same overlay key again cycles through white, black, none.
 Idem for bar lines. So last_key_presssed?
-------------------------------------------------------------------------
-Incorporate amp into spettro.
-"amp -c -q %s -", "filename.mp3" outputs 16-bit samples. How to find nchannels?
 ------------------------------------------------------------------------
 Add failure return values from libav_open_audio_file() and libmpg123_*()
 ------------------------------------------------------------------------
@@ -150,8 +134,6 @@ see if the output is less noisy like http://i.imgur.com/DxnNBwM.jpg
 ------------------------------------------------------------------------
 Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
-Ctrl-x and Ctrl-Shift-X to zoom by one pixel
-------------------------------------------------------------------------
 Option to turn the green line off for screencaps of nicely positioned
 spectrograms (ok, there is -o too)
 ------------------------------------------------------------------------
@@ -159,6 +141,4 @@ On frequency axis, add single digit 8 or whatever at the unnumbered ticks
 and/or increse the number of numbers according to the height of the graph.
 ------------------------------------------------------------------------
 Scroll the graphic up and down when they scroll the mouse wheel.
-------------------------------------------------------------------------
-When adding staff/guitar/key lines, just paint them instead of redrawing.
 ------------------------------------------------------------------------
