@@ -1,22 +1,30 @@
-------------------------------------------------------------------------
-Panning up and down the Y axis doesn't get it quite right.
-Most easily seen if you overlay the score lines and pan up/down while playing.
-It looks like the screen get scrolled slightly too little.
-------------------------------------------------------------------------
-Key-repeat forward scrolling in EMOTION is lumpy.
-Strangely, reverse key-repeat scrolling isn't!
-------------------------------------------------------------------------
-libaudiofile returns half the audio data we asked for followed by half
-silence, and the audio fragments it gives us is the requested sample
-halved in time and doubled in frequency.
-------------------------------------------------------------------------
+============================ GUI =======================================
+
 SDL2: SDL always turns numlock off on startup but if it was on, the light
       remains on so its action appears inverted.
 ------------------------------------------------------------------------
-libsox: MP3 decoding via MAD is noisy. Both audio and the graphic are bad.
-This may be because it is seeking to the beginning/end of a frame instead
-of to a sample, like libav.
+SDL2: If you press Ctrl-F to switch to fullscreen and release Ctrl before
+it has refreshed (usual case), it continues to think that Ctrl is held
+until you press and release it again.
+SDL1 works OK so this is an SDL2 bug - make a workaround?
 ------------------------------------------------------------------------
+When key-repeating a slow operation, the Shift state is measured when
+the event is processed, not when the key was pressed.
+------------------------------------------------------------------------
+Capital command letters didn't used to work in SDL1 CACA driver over ssh.
+Now, on a plain text console it fails:
+Couldn't initialize SDL: Unable to open a console terminal.
+and over ssh it fails:
+Couldn't initialize SDL: Unable to open mouse.
+------------------------------------------------------------------------
+When it gets to the end of the piece, by playing or by [End],
+the green line sometimes disappears.
+The displayed area *is* 321 pixels wide, which is correct for 0-320.
+At the last paint_column() of column 320, green_line_off is on.
+This only seems to happen with swoop.wav, not with audio.wav
+
+============================ Calc ======================================
+
 It schedules some columns that are already present.
 e.g. spettro 440.wav and press space a few times
 e.g. spettro swoop.wav and press ^L
@@ -28,30 +36,24 @@ the work from the queue, a scroll happens and the same columns
 results unrefreshable because there is no work item for it, but there
 is no result in the result cache either.
 Solution: Keep track of which results are being calculated.
+
+============================ Audio file ================================
+
+libaudiofile returns half the audio data we asked for followed by half
+silence, and the audio fragments it gives us is the requested sample
+halved in time and doubled in frequency.
+------------------------------------------------------------------------
+libsox: MP3 decoding via MAD is noisy. Both audio and the graphic are bad.
+This may be because it is seeking to the beginning/end of a frame instead
+of to a sample, like libav.
 ------------------------------------------------------------------------
 libav seeks to packet boundaries on MP3,FLAC,Ogg
 ------------------------------------------------------------------------
 libav plays AAC and mp4 at one sixth of the speed.
 ------------------------------------------------------------------------
-When key-repeating a slow operation, the Shift state is measured when
-the event is processed, not when the key was pressed. This may be better.
-------------------------------------------------------------------------
-Capital command letters don't work in SDL CACA driver over ssh.
-------------------------------------------------------------------------
-When it gets to the end of the piece, by playing or by [End],
-the green line disappears.
-
-The displayed area *is* 321 pixels wide, which is right for 0-320.
-At the last paint_column() of column 320, green_line_off is on.
-
-This only seems to happen with swoop.wav, not with audio.wav
-------------------------------------------------------------------------
-When you go into or out of full-screen with Ctrl-F, it continues to
-think you're holding Ctrl down until you press and release it again.
-------------------------------------------------------------------------
-Playing MP3s on a slow processor results in discontinuous audio,
+Playing MP3s with libmpg123 on a slow processor results in discontinuous audio,
 probably because decoding the audio for the right hand edge of the screen
-is blockingthe audio-file thread for too long. If it always decodes in a
+is blocking the audio-file thread for too long. If it always decodes in a
 straight line, could we launch it as a separate process?
 Shouldn't it get the decoded audio from the audio cache?
 
@@ -59,12 +61,18 @@ Observation: Sometimes, when being lumpy, it takes
 Locked audio file in 224352 us.
 Locked audio file in 177735 us.
 Locked audio file in 194932 us.
-but not enough of these to match all the jumps in the audio;
+but there are not enough of these to match all the jumps in the audio;
 usuall it only takes max 2 us to lock the audio file, and locking
 the audio cache always takes max 1us.
 
 However, read_audio_file() is taking up to 12000 us, most commnly
 3500-4000 us, or 3 or 4 milliseconds.
+
+============================ Other ======================================
+
+The 'o' key's save file name doesn't encode the right position in time.
+We need to add -t (set playing time) and -P (pixels per second) to the
+file name.
 ------------------------------------------------------------------------
 On ciccio1, playing a Common Swift wav, the audio and graphics get out of sync
 
@@ -81,9 +89,3 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-------------------------------------------------------------------------
-The 'o' key's save file name doesn't encode the right position in time.
-
-We need -t (set playing time) and -P (pixels per second), from
-the playing position and the graphic's width.
-------------------------------------------------------------------------
