@@ -234,11 +234,39 @@ audio file name:
 <DL>
  <DT>-p / --autoplay
   <DD>Starts playing the audio file as soon as the program starts up.
- <DT>-t x / --start-at x
-  <DD>Fast-forwards to time "x" into the audio file, where "x" is a
-      floating-point number measured in seconds.
  <DT>-e / --exit-at-end
   <DD>Exits when the audio file has finished playing.
+ <DT>-w <I>n</I> / --width <I>n</I>
+  <DD>Sets the displayed window's width to <I>n</I> pixels.
+      This determines (along with --ppsec or the x and X horizontal zoom keys)
+      the amount of time that is visible.
+      The default width is 640. The maximum with SDL2 seems to be 4090.
+ <DT>-h <I>n</I> / --height <I>n</I>
+  <DD>Sets the displayed window's height to <I>n</I> pixels.
+      The resolution of the spectrogram in the frequency direction is determined
+      by this and the size of the FFT in samples, which is set with
+      -f / -fft-freq and changed with the 'f' and 'F' keys.
+      The default is 480. The maximum with SDL2 seems to be 4064.
+ <DT>-F / --fullscreen
+  <DD>Starts up in full-screen mode.
+      The spectrogram is calculated at the width and height given above,
+      then scaled to the size of the screen. If you want it pixel-per-pixel
+      you also need use -w and -h to specify the screen's width and height.
+      The command "xrandr" will tell you these.
+ <DT>-o <I>filename.png</I>
+  <DD>Starts up, calculates the visible part of the spectrogram and dumps it
+      into the named file, then exits. With this and -w 4000 -h 1000 you can
+      obtain high-quality images to print or for publication.
+ <DT>-j n / --jobs n
+  <DD>Sets the number of FFT calculation threads
+      (default: the same as the number of CPUs.)
+ <DT>-t x / --start-at x
+  <DD>Starts playing at "x" seconds into the audio file, where "x"
+      is a floating-point number.
+ <DT>-n f / --min-freq f
+  <DD>Sets the frequency centered on the bottom pixel row, default %gHz (A0)\n\
+ <DT>-x f / --max-freq f
+  <DD>Sets the frequency centered on the top pixel row, default %gHz (A9)\n\
  <DT>--heatmap / --gray / --print
   <DD>Selects the palette as a colored heatmap from blue through red and yellow
       to white, in shades of gray as white on black (for screens)
@@ -287,30 +315,6 @@ audio file name:
     For more info on the different window functions' peculiarities and merits,
     see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
     or experiment with <B>spettro</B> and see for yourself :)
- <DT>-w <I>n</I> / --width <I>n</I>
-  <DD>Sets the displayed window's width to <I>n</I> pixels.
-      This determines (along with --ppsec or the x and X horizontal zoom keys)
-      the amount of time that is visible.
-      The default width is 640. The maximum with SDL2 seems to be 4090.
- <DT>-h <I>n</I> / --height <I>n</I>
-  <DD>Sets the displayed window's height to <I>n</I> pixels.
-      The resolution of the spectrogram in the frequency direction is determined
-      by this and the size of the FFT in samples, which is set with
-      -f / -fft-freq and changed with the 'f' and 'F' keys.
-      The default is 480. The maximum with SDL2 seems to be 4064.
- <DT>-F / --fullscreen
-  <DD>Starts up in full-screen mode.
-      The spectrogram is calculated at the width and height given above,
-      then scaled to the size of the screen. If you want it pixel-per-pixel
-      you also need use -w and -h to specify the screen's width and height.
-      The command "xrandr" will tell you these.
- <DT>-j n / --jobs n
-  <DD>Sets the number of FFT calculation threads
-      (default: the same as the number of CPUs.)
- <DT>-n f / --min-freq f
-  <DD>Sets the frequency centered on the bottom pixel row, default %gHz (A0)\n\
- <DT>-x f / --max-freq f
-  <DD>Sets the frequency centered on the top pixel row, default %gHz (A9)\n\
  <DT>-k / --piano
   <DD>Overlays black and white lines showing where 88-note piano keys are.
  <DT>-s / --score
