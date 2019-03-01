@@ -291,13 +291,13 @@ audio file name:
   <DD>Sets the displayed window's width to <I>n</I> pixels.
       This determines (along with --ppsec or the x and X horizontal zoom keys)
       the amount of time that is visible.
-      The default width  is 640.
+      The default width is 640. The maximum with SDL2 seems to be 4090.
  <DT>-h <I>n</I> / --height <I>n</I>
   <DD>Sets the displayed window's height to <I>n</I> pixels.
       The resolution of the spectrogram in the frequency direction is determined
       by this and the size of the FFT in samples, which is set with
       -f / -fft-freq and changed with the 'f' and 'F' keys.
-      The default is 480.
+      The default is 480. The maximum with SDL2 seems to be 4064.
  <DT>-F / --fullscreen
   <DD>Starts up in full-screen mode.
       The spectrogram is calculated at the width and height given above,
