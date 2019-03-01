@@ -35,7 +35,7 @@ dump_screenshot()
     char s[1024];
     char *filename = strdup(audio_file->filename);;
 
-    sprintf(s, "spettro");
+    strcpy(s, filename);
     /* Add any parameters that they've changed */
 #define add(s, fmt, val) sprintf(s + strlen(s), fmt, val)
     if (disp_width != DEFAULT_DISP_WIDTH)     add(s, " -w %d", disp_width);
@@ -51,7 +51,7 @@ dump_screenshot()
     if (staff_lines)      add(s, " %s", "-s");
     if (guitar_lines)     add(s, " %s", "-g");
     if (show_axes)        add(s, " %s", "-a");
-    add(s, " %s.png", basename(filename));
+    add(s, ".png", 0);
 #undef add
     gui_output_png_file(s);
     free(filename);
