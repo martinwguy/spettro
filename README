@@ -15,11 +15,11 @@ Only audacious has a log frequency axis option, but it's blocky.
 Spettro is different. It uses a logarithmic frequency axis, which allocates the
 same amount of space to each octave, the same as conventional score notation.
 
-Enough ranting.
+= WHAT IT DOES =
 
-Spettro plays an audio file and shows a scrolling spectrogram of it
-with a vertical green one-pixel-wide line half way across the window to
-show the current playing position.
+Spettro plays an audio file (WAV, OGG, FLAC and most MP3s) and shows
+a scrolling spectrogram of it with a vertical green one-pixel-wide line
+half way across the window to show the current playing position.
 
 You can also:
 - Pause, continue, rewind and seek back and forth in the audio
@@ -34,6 +34,9 @@ You can also:
 - Increase the playing volume above 100%
 
 There is a screencast of it at https://youtu.be/fGRsLX0Ec1E
+
+It is known to run on GNU/Linux and should be portable to
+Windows, Mac, Android, iOS and Tizen.
 
 To get it:
 	git clone https://github.com/martinwguy/spettro
