@@ -142,3 +142,9 @@ and/or increse the number of numbers according to the height of the graph.
 ------------------------------------------------------------------------
 Scroll the graphic up and down when they scroll the mouse wheel.
 ------------------------------------------------------------------------
+Make Ctrl-O read in a new audio file from disc.
+------------------------------------------------------------------------
+Make Ctrl-N or > make it skip to the next file.
+------------------------------------------------------------------------
+Respond to stdin keystrokes as well - maybe solves the CAPS and CACA probs.
+------------------------------------------------------------------------
