@@ -37,6 +37,7 @@ e.g. spettro 440.wav and press space a few times
 e.g. spettro swoop.wav and press ^L
 ------------------------------------------------------------------------
 It calculates duplicate results.
+
 They seem mostly to be columns near the right hand side.
 Hypothesis: a calc thread takes a pending column to calculate, removes
 the work from the queue, a scroll happens and the same columns
@@ -52,13 +53,15 @@ halved in time and doubled in frequency.
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy. Both audio and the graphic are bad.
 This may be because it is seeking to the beginning/end of a frame instead
-of to a sample, like libav.
+of to a sample, There's code to take audio from halfway through a frame
+in libav.c
 ------------------------------------------------------------------------
 libav seeks to packet boundaries on MP3,FLAC,Ogg
 ------------------------------------------------------------------------
 libav plays AAC and mp4 at one sixth of the speed.
 ------------------------------------------------------------------------
-Playing MP3s with libmpg123 on a slow processor results in discontinuous audio,
+Playing MP3s with libmpg123 on a slow processor results in discontinuous audio
+
 probably because decoding the audio for the right hand edge of the screen
 is blocking the audio-file thread for too long. If it always decodes in a
 straight line, could we launch it as a separate process?
@@ -69,10 +72,10 @@ Locked audio file in 224352 us.
 Locked audio file in 177735 us.
 Locked audio file in 194932 us.
 but there are not enough of these to match all the jumps in the audio;
-usuall it only takes max 2 us to lock the audio file, and locking
+usually it only takes max 2 us to lock the audio file, and locking
 the audio cache always takes max 1us.
 
-However, read_audio_file() is taking up to 12000 us, most commnly
+However, read_audio_file() is taking up to 12000 us, most commonly
 3500-4000 us, or 3 or 4 milliseconds.
 
 ============================ Other ======================================
@@ -80,6 +83,7 @@ However, read_audio_file() is taking up to 12000 us, most commnly
 On startup, the graphic is displayed a little too bright.
 Repeat-by: ./spettro audio.wav
 then press [Ctrl-L], and the image darkens slightly.
+Put logmax code into ui.c as it affects the image.
 ------------------------------------------------------------------------
 On ciccio1, playing a Common Swift wav, the audio and graphics get out of sync
 
@@ -96,3 +100,4 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
+------------------------------------------------------------------------
