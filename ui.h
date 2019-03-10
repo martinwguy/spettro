@@ -38,6 +38,7 @@ extern double min_freq, max_freq;
 /* Dynamic range of color map (values below this are black) */
 extern double min_db;
 #define DEFAULT_MIN_DB		(-100.0)
+extern double logmax;
 
 /* Screen-scroll frequency and number of pixel columns per second of audio */
 extern double fps;

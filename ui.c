@@ -40,6 +40,8 @@ double max_freq	= DEFAULT_MAX_FREQ;
 
 /* Dynamic range of color map (values below this are black) */
 double min_db	= DEFAULT_MIN_DB;
+double logmax = 0.0;	/* Highest value seen so far in spectrogram data.
+			 * 0 = log10(1.0) */
 
 /* How many video output frames to generate per second while playing
  * and how many pixel columns to generate per second of the audio file.

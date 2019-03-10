@@ -111,7 +111,6 @@ free_interpolate_cache()
 double
 interpolate(float* logmag, const float *spec, const int from_y, const int to_y)
 {
-    static double logmax = 0.0;	/* Highest value seen so far. 0 = log10(1.0) */
     int y;
 
     /* Map each output coordinate to where it depends on in the input array.
