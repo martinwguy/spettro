@@ -23,6 +23,9 @@
  * - libsndfile, which can read ogg but not mp3.
  * - libsox, with more formats but sox_seek() is broken for
  *	linear audio formats and mp3 gets corrupt data if you seek.
+ * - libav, but only FLAC and WAV are known to work but it may decode
+ *	many formats including films.
+ * - libmpg123, because none of the above get MP3s right.
  *
  * Identifier names containing "audiofile" are libaudiofile library functions,
  * and those containing "audio_file" refer to this lib-independent layer.
