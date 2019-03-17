@@ -121,6 +121,7 @@ int
 main(int argc, char **argv)
 {
     char *filename;
+    audio_file_t *af;
 
     process_args(&argc, &argv);
 
@@ -147,7 +148,7 @@ main(int argc, char **argv)
      * and doesn't know the file length until the "open_done" event arrives
      * so we use libsndfile, libaudiofile or libsox for that.
      */
-    if ((audio_file = open_audio_file(filename)) == NULL) {
+    if ((af = open_audio_file(filename)) == NULL) {
     	gui_quit();
 	exit(1);
     }
@@ -158,7 +159,7 @@ main(int argc, char **argv)
     /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
     gui_init(filename);
 
-    init_audio(audio_file, filename);
+    init_audio(af, filename);
 
     /* Apply the -p flag */
     if (disp_time != 0.0) set_playing_time(disp_time);
@@ -187,7 +188,7 @@ main(int argc, char **argv)
     free_interpolate_cache();
     free_row_overlay();
     free_windows();
-    close_audio_file(audio_file);
+    close_audio_file(af);
 
     return exit_status;
 }

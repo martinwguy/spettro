@@ -349,7 +349,7 @@ static int libav_stream_index;
 void
 libav_open_audio_file(audio_file_t **afp, const char *filename)
 {
-    audio_file_t *audio_file = *afp;
+    audio_file_t *af = *afp;
     char *filter_descr;
 
     if (!libav_is_initialized) {
@@ -366,15 +366,15 @@ libav_open_audio_file(audio_file_t **afp, const char *filename)
     filter_descr = "aformat=sample_fmts=s16";
     if (init_filters(filter_descr, dec_ctx->sample_rate, af_signed) != 0) goto fail;
 
-    audio_file->sample_rate = dec_ctx->sample_rate;
-    audio_file->channels = dec_ctx->channels;
-    audio_file->frames = lrint(((double)(fmt_ctx->duration) / AV_TIME_BASE)
+    af->sample_rate = dec_ctx->sample_rate;
+    af->channels = dec_ctx->channels;
+    af->frames = lrint(((double)(fmt_ctx->duration) / AV_TIME_BASE)
     			       * (double)(dec_ctx->sample_rate));
  
     return;
 
 fail:
-    free(audio_file);
+    free(af);
     *afp = NULL;
     return;
 }

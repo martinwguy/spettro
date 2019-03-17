@@ -47,7 +47,7 @@ static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
 enum playing playing = PAUSED;
 
 void
-init_audio(audio_file_t *audio_file, char *filename)
+init_audio(audio_file_t *af, char *filename)
 {
 #if EMOTION_AUDIO
     /* Set audio player callbacks */
@@ -64,14 +64,14 @@ init_audio(audio_file_t *audio_file, char *filename)
     evas_object_show(em);
 #elif SDL_AUDIO
     {
-	double sample_rate = audio_file->sample_rate;
+	double sample_rate = af->sample_rate;
 	SDL_AudioSpec wavspec;
 
 	wavspec.freq = lrint(sample_rate);
 	wavspec.format = AUDIO_S16SYS;
-	wavspec.channels = audio_file->channels;
+	wavspec.channels = af->channels;
 	/* 4096 makes for a visible lag between audio and video, as the video
-	 * follows the next audio_file-reading position, which is 0-4096 samples
+	 * follows the next af-reading position, which is 0-4096 samples
 	 * ahead of what's playing now.
 	 * Set it to "step" so that we should never get more than one column
 	 * behind.
@@ -84,9 +84,9 @@ init_audio(audio_file_t *audio_file, char *filename)
 	    fprintf(stderr, "Internal error: init_audio() was called before \"sample_rate\" was initialized.\n");
 	    exit(1);
 	}
-	wavspec.samples = lrint(step * sample_rate * audio_file->channels);
+	wavspec.samples = lrint(step * sample_rate * af->channels);
 	wavspec.callback = sdl_fill_audio;
-	wavspec.userdata = audio_file;
+	wavspec.userdata = af;
 
 	if (SDL_OpenAudio(&wavspec, NULL) < 0) {
 	    fprintf(stderr, "Couldn't initialize SDL audio: %s.\n", SDL_GetError());
@@ -211,13 +211,13 @@ get_playing_time(void)
 static void
 sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 {
-    audio_file_t *audio_file = (audio_file_t *)userdata;
-    int channels = audio_file->channels;
+    audio_file_t *af = (audio_file_t *)userdata;
+    int channels = af->channels;
     int frames_to_read = len / (sizeof(short) * channels);
     int frames_read;	/* How many were read from the file */
 
     /* SDL has no "playback finished" callback, so spot it here */
-    if (sdl_start >= audio_file->frames) {
+    if (sdl_start >= af->frames) {
         stop_playing();
 	/* This may be called by the audio-fill thread,
 	 * so don't quit here; tell the main event loop to do so */
@@ -229,7 +229,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	fprintf(stderr, "Cannot lock audio file\n");
 	exit(1);
     }
-    frames_read = read_cached_audio(audio_file, (char *)stream,
+    frames_read = read_cached_audio(af, (char *)stream,
 				    af_signed, channels,
 				    sdl_start, frames_to_read);
     if (!unlock_audio_file()) {
