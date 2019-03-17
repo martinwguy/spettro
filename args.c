@@ -330,6 +330,7 @@ b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
 M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\
+w          Cycle through the above window functions\n\
 a          Toggle the frequency axis legend\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
 s          Toggle the overlay of conventional staff lines\n\
