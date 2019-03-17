@@ -51,7 +51,7 @@ dump_screenshot()
     if (staff_lines)      add(s, " %s", "-s");
     if (guitar_lines)     add(s, " %s", "-g");
     if (show_axes)        add(s, " %s", "-a");
-    add(s, ".png", 0);
+    add(s, "%s.png", "");
 #undef add
     gui_output_png_file(s);
     free(filename);
