@@ -207,6 +207,11 @@ get_playing_time(void)
 /*
  * SDL audio callback function to fill the buffer at "stream" with
  * "len" bytes of audio data. We assume they want 16-bit ints.
+ *
+ * SDL seems to ask for 2048 bytes at a time for a 48kHz mono wav file
+ * which is (2048/sizeof(short)) / 48000 = 0.0213, about a fiftieth of
+ * a second. Presumably, for stereo this would be a hundredth of a second
+ * which is close enough for UI purposes.
  */
 static void
 sdl_fill_audio(void *userdata, Uint8 *stream, int len)
