@@ -20,5 +20,5 @@
  */
 
 extern float interpolate(float *logmag, const float *spec,
-			 int from_y, int to_y, double sample_rate);
+			 int from_y, int to_y, double sample_rate, int speclen);
 void free_interpolate_cache();

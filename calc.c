@@ -30,6 +30,8 @@
 
 #include "spettro.h"
 
+#include "convert.h"
+
 #include <unistd.h>	/* for usleep() */
 
 #if ECORE_MAIN
@@ -54,28 +56,30 @@
 
 /* Helper functions */
 static void calc_result(result_t *result);
-static result_t *get_result(calc_t *calc, spectrum *spec);
+static result_t *get_result(calc_t *calc, spectrum *spec, int speclen);
 
 void
 calc(calc_t *calc)
 {
     spectrum *spec;
+    int speclen	= fft_freq_to_speclen(calc->fft_freq,
+    				      calc->audio_file->sample_rate);
 
     /* If parameters have changed since the work was queued, don't bother.
      * This should never happen because we clear the work queue when we
      * change these parameters */
-    if (calc->speclen != speclen || calc->window != window_function) {
+    if (calc->window != window_function || calc->fft_freq != fft_freq) {
 	free(calc);
 	return;
     }
 
-    spec = create_spectrum(calc->speclen, calc->window);
+    spec = create_spectrum(speclen, calc->window);
     if (spec == NULL) {
 	fprintf(stderr, "Can't create spectrum.\n");
 	return;
     }
 
-    calc_result(get_result(calc, spec));
+    calc_result(get_result(calc, spec, speclen));
 
     destroy_spectrum(spec);
 
@@ -105,18 +109,21 @@ calc_result(result_t *result)
 }
 
 /*
- * Calculate the magnitude spectrum for a column
+ * Calculate the magnitude spectrum for a column.
+ *
+ * speclen is precalculated by the caller from calc->fft_freq
  */
 static result_t *
-get_result(calc_t *calc, spectrum *spec)
+get_result(calc_t *calc, spectrum *spec, int speclen)
 {
         result_t *result;	/* The result structure */
-	int fftsize = calc->speclen * 2;
+	int fftsize = speclen * 2;
 
 	result = (result_t *) Malloc(sizeof(result_t));
 
 	result->t = calc->t;
-	result->speclen = calc->speclen;
+	result->fft_freq = calc->fft_freq;
+	result->speclen = speclen;
 	result->window = calc->window;
 	result->audio_file = calc->audio_file;
 #if ECORE_MAIN
@@ -145,7 +152,7 @@ get_result(calc_t *calc, spectrum *spec)
 	 * the already-allocated buffer and malloc a new one for next time.
 	 */
 	result->spec = spec->mag_spec;
-	spec->mag_spec = Malloc((calc->speclen+1) * sizeof(*(spec->mag_spec)));
+	spec->mag_spec = Malloc((speclen + 1) * sizeof(*(spec->mag_spec)));
 
 	return(result);
 }

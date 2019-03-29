@@ -19,7 +19,7 @@
 
 extern double v_pixel_freq_ratio(void);
 extern double magindex_to_frequency(int k);
-extern double frequency_to_specindex(double freq, double sample_rate);
+extern double frequency_to_specindex(double freq, double sample_rate, int speclen);
 extern int fft_freq_to_speclen(double fft_freq, double sample_rate);
 
 #define NOTE_A440	48  /* A above middle C */

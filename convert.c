@@ -45,7 +45,7 @@ magindex_to_frequency(int k)
 }
 
 double
-frequency_to_specindex(double freq, double sample_rate)
+frequency_to_specindex(double freq, double sample_rate, int speclen)
 {
     return freq * speclen / (sample_rate / 2);
 }

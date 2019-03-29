@@ -90,6 +90,5 @@ extern unsigned top_margin, bottom_margin; /* Top and bottom axes heights */
 
 /* Values derived from the above */
 extern double step;		/* time step per column = 1/ppsec */
-extern int speclen;		/* Size of linear spectral data */
 extern int maglen;		/* Size of logarithmic spectral data
 				 * == height of graph in pixels */

@@ -101,6 +101,5 @@ unsigned bottom_margin = 0;
 /* Values derived from the above */
 double step = 0.0;	/* time step per column = 1/ppsec
 			 * 0.0 means "not set yet" as a booby trap. */
-int speclen;		/* Size of linear spectral data */
 int maglen;		/* Size of logarithmic spectral data
 			 * == height of graph in pixels */

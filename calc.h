@@ -39,7 +39,7 @@
 typedef struct calc_t {
     audio_file_t *	audio_file; /* Our audio file handle */
     double		t;	/* FFT centred on  when? */
-    int			speclen;/* Size of spectrum == fftsize/2 */
+    double		fft_freq; /* FFT frequency when scheduled */
     window_function_t	window;
 #if ECORE_MAIN
     Ecore_Thread *	thread;
@@ -60,6 +60,7 @@ typedef struct calc_t {
 
 typedef struct result {
     double		t;		/* An FFT centred on what time in the piece? */
+    double		fft_freq;	/* The FFT frequency for this result */
     int			speclen;	/* The length of the required linear spectrum */
     window_function_t	window; 	/* Apply which window function to the audio data? */
     float *		spec;		/* The linear spectrum from [0..speclen]

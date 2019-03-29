@@ -25,6 +25,7 @@
 #include "audio.h"
 #include "barlines.h"
 #include "cache.h"
+#include "convert.h"
 #include "colormap.h"
 #include "gui.h"
 #include "interpolate.h"
@@ -192,14 +193,16 @@ repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
  * The GUI screen-updating function is called by whoever called us.
  */
 void
-repaint_column(int column, int from_y, int to_y, bool refresh_only)
+repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 {
     /* What time does this column represent? */
-    double t = disp_time + (column - disp_offset) * step;
+    double t = disp_time + (pos_x - disp_offset) * step;
     result_t *r;
+    audio_file_t *af;	/* Audio file for this column */
+    int speclen;
 
-    if (column < min_x || column > max_x) {
-	fprintf(stderr, "Repainting off-screen column %d\n", column);
+    if (pos_x < min_x || pos_x > max_x) {
+	fprintf(stderr, "Repainting off-screen column %d\n", pos_x);
 	abort();
 	return;
     }
@@ -211,13 +214,21 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
      * give it the background colour */
     if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_files_length())) {
 	if (!refresh_only)
-	    gui_paint_column(column, min_y, max_y, background);
+	    gui_paint_column(pos_x, min_y, max_y, background);
 	return;
     }
 
+    /* Find speclen for the audio file at this column */
+    if (!col_to_af_and_offset(pos_x, &af, NULL)) {
+	fprintf(stderr, "repaint_column: Can't find audio file for screen column %d\n", pos_x);
+	return;
+    }
+    speclen = fft_freq_to_speclen(fft_freq, af->sample_rate);
+
+
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
-	if (get_col_overlay(column, NULL)) {
+	if (get_col_overlay(pos_x, NULL)) {
 	return;
 	}
 
@@ -230,10 +241,10 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	    /* There's data for this column. */
 	    if (r->speclen == speclen && r->window == window_function) {
 		/* Bingo! It's the right result */
-		paint_column(column, from_y, to_y, r);
+		paint_column(pos_x, from_y, to_y, r);
 	    } else {
 		/* Bummer! It's for something else. Repaint it. */
-		repaint_column(column, from_y, to_y, FALSE);
+		repaint_column(pos_x, from_y, to_y, FALSE);
 	    }
 	} else {
 	    /* There are no results in-cache for this column,
@@ -241,19 +252,19 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	}
     } else {
 	color_t ov;
-	if (get_col_overlay(column, &ov)) {
-	    gui_paint_column(column, from_y, to_y, ov);
+	if (get_col_overlay(pos_x, &ov)) {
+	    gui_paint_column(pos_x, from_y, to_y, ov);
 	} else
 	/* If we have the right spectral data for this column, repaint it */
 	if ((r = recall_result(t, speclen, window_function)) != NULL) {
-	    paint_column(column, from_y, to_y, r);
+	    paint_column(pos_x, from_y, to_y, r);
 	} else {
 	    /* ...otherwise paint it with the background color */
-	    gui_paint_column(column, from_y, to_y, background);
+	    gui_paint_column(pos_x, from_y, to_y, background);
 
 	    /* and if it was for a valid time, schedule its calculation */
 	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_files_length())) {
-		calc_column(column);
+		calc_column(pos_x);
 	    }
 	}
     }
@@ -267,22 +278,29 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 void
 paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
+    audio_file_t *af;	/* audio file for this column */
     float *logmag;
     double logmax;	/* maximum log magnitude seen so far */
     int y;
     color_t ov;		/* Overlay color */
+    int speclen;
 
-    /*
-     * Apply column overlay
-     */
+    /* Apply column overlay */
     if (get_col_overlay(pos_x, &ov)) {
 	gui_paint_column(pos_x, from_y, to_y, ov);
 	return;
     }
 
+    /* Find speclen for the audio file at this column */
+    if (!col_to_af_and_offset(pos_x, &af, NULL)) {
+	fprintf(stderr, "paint_column: Can't find audio file for screen column %d\n", pos_x);
+	return;
+    }
+    speclen = fft_freq_to_speclen(fft_freq, af->sample_rate);
+
     assert(maglen == max_y - min_y + 1);
     logmag = Calloc(maglen, sizeof(*logmag));
-    logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate);
+    logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate, speclen);
 
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
@@ -323,7 +341,7 @@ static void
 calc_column(int col)
 {
     double t;		/* Time in seconds represented by col */
-    audio_file_t *af;	/* Which audio file sodes that time fall in? */
+    audio_file_t *af;	/* Which audio file does that time fall in? */
     double offset;	/* Time since the start of the specific audio file */
 
     calc_t *calc = Malloc(sizeof(calc_t));
@@ -336,7 +354,7 @@ calc_column(int col)
     }
 
     calc->audio_file = af;
-    calc->speclen    = speclen;
+    calc->fft_freq   = fft_freq;
     calc->window     = window_function;
     calc->t	     = offset;
 

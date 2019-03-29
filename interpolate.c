@@ -54,7 +54,7 @@ static double mtoscache_sample_rate = 0.0;
  * interpolator may use the row above the top one (is this right?).
  */
 static double
-magindex_to_specindex(int magindex, double sample_rate)
+magindex_to_specindex(int magindex, double sample_rate, int speclen)
 {
     /* Recalculate the array of values if any of the parameters changed */
     if (speclen != mtoscache_speclen
@@ -70,7 +70,7 @@ magindex_to_specindex(int magindex, double sample_rate)
 	for (k=0; k <= maglen; k++) {
 	    /* The actual conversion function */
 	    double freq = magindex_to_frequency(k);
-	    mtoscache[k] = frequency_to_specindex(freq, sample_rate);
+	    mtoscache[k] = frequency_to_specindex(freq, sample_rate, speclen);
 	}
 
 	mtoscache_speclen = speclen;
@@ -109,7 +109,7 @@ free_interpolate_cache()
  */
 
 double
-interpolate(float* logmag, const float *spec, const int from_y, const int to_y, double sample_rate)
+interpolate(float* logmag, const float *spec, const int from_y, const int to_y, double sample_rate, int speclen)
 {
     int y;
 
@@ -128,8 +128,8 @@ interpolate(float* logmag, const float *spec, const int from_y, const int to_y, 
 
     for (y = from_y; y <= to_y; y++) {
     	int k = y - min_y;	/* Index into magnitude array */
-	double this = magindex_to_specindex(k, sample_rate);
-	double next = magindex_to_specindex(k + 1, sample_rate);
+	double this = magindex_to_specindex(k, sample_rate, speclen);
+	double next = magindex_to_specindex(k + 1, sample_rate, speclen);
 
 	/* Range check: can happen if max_freq > sample_rate / 2 */
 	if (this > speclen) {

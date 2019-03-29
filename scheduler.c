@@ -49,6 +49,7 @@
 #include "audio.h"
 #include "cache.h"
 #include "calc.h"
+#include "convert.h"
 #include "gui.h"
 #include "lock.h"
 #include "paint.h"
@@ -251,8 +252,10 @@ schedule(calc_t *calc)
 {
     /* Add it to the list in time order */
     calc_t **cpp;	/* Pointer to the "next" field of the previous cell */
+    int speclen = fft_freq_to_speclen(calc->fft_freq,
+    				      calc->audio_file->sample_rate);
 
-    if (recall_result(calc->t, calc->speclen, calc->window)) {
+    if (recall_result(calc->t, speclen, calc->window)) {
 	fprintf(stderr, "scheduler drops calculation already in cache for time %g\n",
 		calc->t);
 	return;
@@ -421,12 +424,11 @@ DEBUG("List is empty after dropping after-screens\r");
 	 * hungry calculation thread. */
 	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
 
-	/* If speclen has changed since the work was scheduled,
+	/* If UI settings has changed since the work was scheduled,
 	 * drop this calc and continue searching. This never happens,
 	 * I guess because of calls to drop_all_work() when the params change.
 	 */
-	if (cp->speclen != speclen || cp->window != window_function) {
-	    calc_t *cp = *cpp;
+	if (cp->fft_freq != fft_freq || cp->window != window_function) {
 	    if (cp->next) cp->next->prev = cp->prev;
 	    if (cp->prev) cp->prev->next = cp->next;
 	    else list = cp->next;
@@ -466,10 +468,12 @@ DEBUG("Last cell is at time %g\n", cp->t);
 	print_list();
 	unlock_list();
 
-	if (cp->speclen != speclen || cp->window != window_function) {
+	/* If the calculation parameters hace changed since the work was
+	 * scheduled, don't bother */
+	if (cp->fft_freq != fft_freq || cp->window != window_function) {
 	    calc_t *cp = *cpp;
-fprintf(stderr, "Dropping work at %g/%d/%c for wrong parameters\n", 
-	cp->t, cp->speclen, window_key(cp->window));
+fprintf(stderr, "Dropping work at %g/%g/%c for wrong parameters\n", 
+	cp->t, cp->fft_freq, window_key(cp->window));
 	    if (cp->next) cp->next->prev = cp->prev;
 	    if (cp->prev) cp->prev->next = cp->next;
 	    else list = cp->next;
@@ -539,7 +543,7 @@ calc_notify(result_t *result)
 
     result = remember_result(result);
 
-    if (result->speclen != speclen || result->window != window_function) {
+    if (result->fft_freq != fft_freq || result->window != window_function) {
 	/* This is the result from an old call to schedule() before
 	 * the parameters changed.
 	 * Keep it in the cache in case they flip back to old parameters

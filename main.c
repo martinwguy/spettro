@@ -117,7 +117,7 @@
  */
 static int exit_status = 0;
 
-static audio_file_t *audio_file;	/* The one that's playing at the crosshairs */
+static audio_file_t *audio_file;       /* The one that's playing at the crosshairs */
 
 int
 main(int argc, char **argv)
@@ -156,8 +156,6 @@ main(int argc, char **argv)
     }
 
     audio_file = af;	/* For now, until we implement playing multiple files */
-
-    speclen = fft_freq_to_speclen(fft_freq, audio_file->sample_rate);
 
     /* Initialise the graphics subsystem. */
     /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
@@ -357,8 +355,8 @@ restart:
 		    min_freq /= vpfr;
 		}
 		/* Limit to fft_freq..Nyquist */
-		if (max_freq > audio_file->sample_rate / 2)
-		    max_freq = audio_file->sample_rate / 2;
+		if (max_freq > current_sample_rate() / 2)
+		    max_freq = current_sample_rate() / 2;
 		if (min_freq < fft_freq)
 		    min_freq = fft_freq;
 
@@ -466,10 +464,9 @@ restart:
 	    double left_bar_time = get_left_bar_time();
 	    double right_bar_time = get_right_bar_time();
 
-	    printf("Spectrogram of %s\n", audio_file->filename);
 	    printf(
-"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g speclen=%d\n",
- min_freq,   max_freq,   fft_freq,   -min_db,     speclen);
+"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g\n",
+ min_freq,   max_freq,   fft_freq,   -min_db);
 	    printf(
 "%s %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
 		playing == PLAYING ? "Playing" :
@@ -512,11 +509,11 @@ restart:
 	   /* Increase FFT size; decrease FFT frequency */
 	   fft_freq /= 2;
 	} else {
-	   /* Decrease FFT size: increase FFT frequency */
-	   if (speclen > 1)
-	   fft_freq *= 2;
+	    /* Decrease FFT size: increase FFT frequency */
+	    if (fft_freq_to_speclen(fft_freq, current_sample_rate()) > 1)
+		fft_freq *= 2;
 	}
-	speclen = fft_freq_to_speclen(fft_freq, audio_file->sample_rate);
+	// speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
 	drop_all_work();
 
 	/* Any calcs that are currently being performed will deliver
