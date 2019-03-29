@@ -202,10 +202,6 @@ int init_filters(const char *filters_descr, int sample_rate, af_format_t format)
      * Note: args buffer is reused to store channel layout string */
     outlink = buffersink_ctx->inputs[0];
     av_get_channel_layout_string(args, sizeof(args), -1, outlink->channel_layout);
-    av_log(NULL, AV_LOG_INFO, "Output: srate:%dHz fmt:%s chlayout:%s\n",
-           (int)outlink->sample_rate,
-           (char *)av_x_if_null(av_get_sample_fmt_name(outlink->format), "?"),
-           args);
 
 end:
     avfilter_inout_free(&inputs);
