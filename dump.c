@@ -30,10 +30,10 @@
 #include <string.h>
 
 void
-dump_screenshot()
+dump_screenshot(char *audio_filename)
 {
     char s[1024];
-    char *filename = strdup(audio_file->filename);;
+    char *filename = strdup(audio_filename);;
 
     strcpy(s, filename);
     /* Add any parameters that they've changed */

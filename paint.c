@@ -33,8 +33,8 @@
 #include "timer.h"	/* for scroll_event_pending */
 #include "ui.h"
 
-/* Helper function */
-static void calc_columns(int from, int to);
+/* Local function */
+static void calc_column(int col);
 
 /*
  * Really scroll the screen
@@ -55,8 +55,8 @@ do_scroll()
 
     if (DELTA_LE(new_disp_time, 0.0))
 	new_disp_time = 0.0;
-    if (DELTA_GE(new_disp_time, audio_file_length(audio_file)))
-	new_disp_time = audio_file_length(audio_file);
+    if (DELTA_GE(new_disp_time, audio_files_length()))
+	new_disp_time = audio_files_length();
 
     /* Align to a multiple of 1/ppsec so that times in cached results
      * continue to match. This is usually a no-op.
@@ -170,6 +170,7 @@ repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
 	}
 	repaint_column(x, min_y, max_y, refresh_only);
     }
+
     gui_update_rect(from_x, from_y, to_x, to_y);
 }
 
@@ -208,7 +209,7 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 
     /* If the column is before/after the start/end of the piece,
      * give it the background colour */
-    if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_file_length(audio_file))) {
+    if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_files_length())) {
 	if (!refresh_only)
 	    gui_paint_column(column, min_y, max_y, background);
 	return;
@@ -216,7 +217,9 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
-	if (get_col_overlay(column, NULL)) return;
+	if (get_col_overlay(column, NULL)) {
+	return;
+	}
 
 	/* If there's any result for this column in the cache, it should be
 	 * displaying something, but it might be for the wrong speclen/window.
@@ -249,8 +252,8 @@ repaint_column(int column, int from_y, int to_y, bool refresh_only)
 	    gui_paint_column(column, from_y, to_y, background);
 
 	    /* and if it was for a valid time, schedule its calculation */
-	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_file_length(audio_file))) {
-		calc_columns(column, column);
+	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_files_length())) {
+		calc_column(column);
 	    }
 	}
     }
@@ -279,7 +282,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 
     assert(maglen == max_y - min_y + 1);
     logmag = Calloc(maglen, sizeof(*logmag));
-    logmax = interpolate(logmag, result->spec, from_y, to_y);
+    logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate);
 
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
@@ -314,78 +317,28 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 #define min(a, b) ((a)<(b) ? (a) : (b))
 
 /*
- * Schedule the FFT thread(s) to calculate the results for these display columns
+ * Schedule the FFT thread(s) to calculate the result for a display columns
  */
 static void
-calc_columns(int from_col, int to_col)
+calc_column(int col)
 {
-    calc_t *calc;
-    /* The times represented by from_col and to_col */
-    double from = disp_time + (from_col - disp_offset) * step;
-    double to   = disp_time + (to_col - disp_offset) * step;;
+    double t;		/* Time in seconds represented by col */
+    audio_file_t *af;	/* Which audio file sodes that time fall in? */
+    double offset;	/* Time since the start of the specific audio file */
 
-    calc = Malloc(sizeof(calc_t));
-    calc->audio_file = audio_file;
-    calc->speclen= speclen;
-    calc->window = window_function;
+    calc_t *calc = Malloc(sizeof(calc_t));
 
-    /*
-     * Limit the range to the start and end of the audio file.
-     */
-    if (DELTA_LE(from, 0.0)) from = 0.0;
-    if (DELTA_LE(to, 0.0)) to = 0.0;
-    {
-	/* End of audio file as a multiple of step */
-	double last_time= floor(audio_file_length(audio_file) / step) * step;
-
-	if (DELTA_GE(from, last_time))	from = last_time;
-	if (DELTA_GE(to, last_time))	to = last_time;
+    /* Time represented by col, as number of seconds since the start of the first audio file */
+    t = disp_time + (col - disp_offset) * step;
+    if (!time_to_af_and_offset(t, &af, &offset)) {
+    	fprintf(stderr, "Can't convert overall time %g to audio file and offset\n", t);
+	return;
     }
 
-    /* If it's for a single column, just schedule it... */
-    if (from_col == to_col) {
-	calc->t = from;
-	schedule(calc);
-    } else {
-	/* ...otherwise, schedule each column from "from" to "to" individually
-	 * in the same order as get_work() will choose them to be calculated.
-	 * If we were to schedule them in time order, and some of them are
-	 * left of disp_time, then a thread calling get_work() before we have
-	 * finished scheduling them would calculate and display a lone column
-	 * in the left pane.
-	 */
+    calc->audio_file = af;
+    calc->speclen    = speclen;
+    calc->window     = window_function;
+    calc->t	     = offset;
 
-	/* Allow for descending ranges by putting "from" and "to"
-	 * into ascending order */
-	if (to < from) {
-	    double tmp = from;
-	    from = to;
-	    to = tmp;
-	}
-	/* get_work() does first disp_time to right edge,
-	 * then disp_time-1 to left edge.
-	 */
-	/* Columns >= disp_time */
-	if (DELTA_GE(to, disp_time)) {
-	    double t;
-	    for (t = max(from, disp_time); DELTA_LE(t, to); t += step) {
-		calc_t *new = Malloc(sizeof(calc_t));
-		memcpy(new, calc, sizeof(calc_t));
-		new->t = t;
-		schedule(new);
-	    }
-	}
-	/* Do any columns that are < disp_time in reverse order */
-	if (DELTA_LT(from, disp_time)) {
-	    double t;
-	    for (t=disp_time - step; DELTA_GE(t, from); t -= step) {
-		calc_t *new = Malloc(sizeof(calc_t));
-		memcpy(new, calc, sizeof(calc_t));
-		new->t = t;
-		schedule(new);
-	    }
-	}
-	/* For ranges, all calc_t's we scheduled were copies of calc */
-	free(calc);
-    }
+    schedule(calc);
 }

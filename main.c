@@ -117,6 +117,8 @@
  */
 static int exit_status = 0;
 
+static audio_file_t *audio_file;	/* The one that's playing at the crosshairs */
+
 int
 main(int argc, char **argv)
 {
@@ -153,7 +155,9 @@ main(int argc, char **argv)
 	exit(1);
     }
 
-    speclen = fft_freq_to_speclen(fft_freq);	/* Needs the sample rate */
+    audio_file = af;	/* For now, until we implement playing multiple files */
+
+    speclen = fft_freq_to_speclen(fft_freq, audio_file->sample_rate);
 
     /* Initialise the graphics subsystem. */
     /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
@@ -184,7 +188,7 @@ main(int argc, char **argv)
     /* Free memory to make valgrind happier */
     drop_all_work();
     drop_all_results();
-    no_audio_cache();
+    no_audio_cache(af);
     free_interpolate_cache();
     free_row_overlay();
     free_windows();
@@ -245,7 +249,7 @@ restart:
 	    break;
 
 	case PAUSED:
-	    if (DELTA_GE(get_playing_time(), audio_file_length(audio_file))) {
+	    if (DELTA_GE(get_playing_time(), audio_files_length())) {
 		/* They went "End" while it was paused. Restart from 0 */
 		goto restart;
 	    }
@@ -289,7 +293,7 @@ restart:
 #if ECORE_MAIN
     case KEY_NEXT:	/* Extended keyboard's >>| button (EMOTION only) */
 #endif
-	set_playing_time(audio_file_length(audio_file));
+	set_playing_time(audio_files_length());
 	break;
 
     /*
@@ -453,7 +457,7 @@ restart:
 
     case KEY_O:
 	/* o: Make a screen dump */
-	if (!Control && !Shift) dump_screenshot();
+	if (!Control && !Shift) dump_screenshot(audio_file->filename);
 	break;
 
     case KEY_P:
@@ -474,7 +478,7 @@ restart:
 		get_playing_time(), disp_time, step,
 		disp_time - disp_offset * step,
 		disp_time + (disp_width - disp_offset) * step,
-		audio_file_length(audio_file));
+		audio_files_length());
 	    if (left_bar_time != UNDEFINED)
 		printf("left bar line=%g", left_bar_time);
 	    if (right_bar_time != UNDEFINED) {
@@ -512,7 +516,7 @@ restart:
 	   if (speclen > 1)
 	   fft_freq *= 2;
 	}
-	speclen = fft_freq_to_speclen(fft_freq);
+	speclen = fft_freq_to_speclen(fft_freq, audio_file->sample_rate);
 	drop_all_work();
 
 	/* Any calcs that are currently being performed will deliver

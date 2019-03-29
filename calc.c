@@ -50,7 +50,6 @@
 
 /*
  * The compute-FFTs function
- *
  */
 
 /* Helper functions */
@@ -119,6 +118,7 @@ get_result(calc_t *calc, spectrum *spec)
 	result->t = calc->t;
 	result->speclen = calc->speclen;
 	result->window = calc->window;
+	result->audio_file = calc->audio_file;
 #if ECORE_MAIN
 	result->thread = calc->thread;
 #endif
@@ -131,7 +131,7 @@ get_result(calc_t *calc, spectrum *spec)
 	}
 	read_cached_audio(calc->audio_file, (char *) spec->time_domain,
 			  af_double, 1,
-			  lrint(calc->t * audio_file->sample_rate) - fftsize/2,
+			  lrint(calc->t * calc->audio_file->sample_rate) - fftsize/2,
 			  fftsize);
 	if (!unlock_audio_file()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");

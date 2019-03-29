@@ -37,15 +37,17 @@ v_pixel_freq_ratio()
 }
 
 /* What frequency does the centre of this magnitude index represent? */
-double magindex_to_frequency(int k)
+double
+magindex_to_frequency(int k)
 {
     return min_freq * pow(max_freq / min_freq,
     			  (double)k / (maglen - 1));
 }
 
-double frequency_to_specindex(double freq)
+double
+frequency_to_specindex(double freq, double sample_rate)
 {
-    return freq * speclen / (audio_file->sample_rate / 2);
+    return freq * speclen / (sample_rate / 2);
 }
 
 /*
@@ -57,9 +59,9 @@ static bool is_good_speclen(int n);
 static bool is_2357(int n);
 
 int
-fft_freq_to_speclen(double fft_freq)
+fft_freq_to_speclen(double fft_freq, double sample_rate)
 {
-    int speclen = (audio_file->sample_rate / fft_freq + 1) / 2;
+    int speclen = (sample_rate / fft_freq + 1) / 2;
     int d; /* difference between ideal speclen and preferred speclen */
 
     /* Find the nearest fast value for the FFT size. */

@@ -1,4 +1,20 @@
 ------------------------------------------------------------------------
+Make playing multiple audio files work.
+
+We'll do this by displaying all the files concatenated together into one
+long spectrogram, which means opening them all at startup to find the
+overall length
+TODO:
+- files with different sampling rates - impact on audio player
+- modify KEY_P to show time into the audio file if multiple.
+- eliminate global speclen
+  paint.c:336: presumably, speclen needs to be per-file due to different
+  sampling rates in different files.
+  It depends on the samping rate and fft_freq, so is different for each
+  audio file, even with the same fft_freq.
+  Speclen is already in calc_t and result_t, so needs to be calculated when
+  a calc is scheduled, to get rid of the global speclen.
+------------------------------------------------------------------------
 Be able to position the green line, disp_offset,
 and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
 ------------------------------------------------------------------------
@@ -14,8 +30,6 @@ Cancel scheduled calculations that are no longer in the area of interest
 ------------------------------------------------------------------------
 Keep track of which calculations are in-flight, to avoid duplicate calcs.
 Can we kill an in-flight FFT if it goes off-screen (and not in lookahead)?
-------------------------------------------------------------------------
-Make playing multiple audio files work
 ------------------------------------------------------------------------
 Add optional time axis at top and/or bottom
 -or-

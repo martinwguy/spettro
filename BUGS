@@ -77,6 +77,12 @@ the audio cache always takes max 1us.
 
 However, read_audio_file() is taking up to 12000 us, most commonly
 3500-4000 us, or 3 or 4 milliseconds.
+------------------------------------------------------------------------
+libmpg123 without an audio_cache clags when end-of-file appears on the screen.
+
+libmpg123_read_frames() is whizzing at 100%CPU and playing stops because
+the audio file is locked and hitting Space makes the main loop hang in
+pause_audio::SDL_PauseAudio()
 
 ============================ Other ======================================
 

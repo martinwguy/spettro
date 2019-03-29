@@ -39,7 +39,7 @@
 typedef struct calc_t {
     audio_file_t *	audio_file; /* Our audio file handle */
     double		t;	/* FFT centred on  when? */
-    int			speclen; /* Size of spectrum == fftsize/2 */
+    int			speclen;/* Size of spectrum == fftsize/2 */
     window_function_t	window;
 #if ECORE_MAIN
     Ecore_Thread *	thread;
@@ -59,15 +59,16 @@ typedef struct calc_t {
  */
 
 typedef struct result {
-    double t;		/* An FFT centred on what time in the piece? */
-    int speclen;	/* The length of the required linear spectrum */
-    window_function_t window; /* Apply which window function to the audio data? */
-    float *spec;	/* The linear spectrum from [0..speclen]
-    			 * representing 0Hz to sample_rate/2 */
+    double		t;		/* An FFT centred on what time in the piece? */
+    int			speclen;	/* The length of the required linear spectrum */
+    window_function_t	window; 	/* Apply which window function to the audio data? */
+    float *		spec;		/* The linear spectrum from [0..speclen]
+    					 * representing 0Hz to audio_file->sample_rate / 2 */
+    audio_file_t *	audio_file;	/* Which audio file this result came from */
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif
-    struct result *next; /* Linked list of results in time order */
+    struct result *	next; 		/* Linked list of results, in time order */
 } result_t;
 
 extern void calc(calc_t *data);

@@ -23,17 +23,17 @@ static	int ret;
 static	off_t num;
 static	size_t bytes;
 
-/* Open an MP3 file.
- * On failure, sets the supplied audio_file_t * to NULL.
+/* Open an MP3 file, setting (*afp)->{sample_rate,channels,frames}
+ * On failure, returns FALSE.
  */
-void
-libmpg123_open(audio_file_t **afp, const char *filename)
+bool
+libmpg123_open(const char *filename, audio_file_t *af)
 {
     mpg123_init();
 
     if ((m = mpg123_new(NULL, &ret)) == NULL) {
 	fprintf(stderr,"Unable to create mpg123 handle: %s\n", mpg123_plain_strerror(ret));
-	goto fail;
+	return FALSE;
     }
 
     if ((ret = mpg123_param(m, MPG123_FLAGS,
@@ -44,36 +44,36 @@ libmpg123_open(audio_file_t **afp, const char *filename)
     					     MPG123_GAPLESS |
 					     MPG123_QUIET, 0)) != MPG123_OK) {
 	fprintf(stderr,"Unable to set library options: %s\n", mpg123_plain_strerror(ret));
-	goto fail;
+	return FALSE;
     }
 
     /* Let the seek index auto-grow and contain an entry for every frame */
     if ((ret = mpg123_param(m, MPG123_INDEX_SIZE, -1, 0)) != MPG123_OK) {
 	fprintf(stderr,"Unable to set index size: %s\n", mpg123_plain_strerror(ret));
-	goto fail;
+	return FALSE;
     }
 
     ret = mpg123_format_none(m);
     if (ret != MPG123_OK) {
 	fprintf(stderr,"Unable to disable all output formats: %s\n", mpg123_plain_strerror(ret));
-	goto fail;
+	return FALSE;
     }
 
     /* Use 16-bit signed output, right for the cache */
     ret = mpg123_format(m, 44100, MPG123_MONO | MPG123_STEREO,  MPG123_ENC_SIGNED_16);
     if (ret != MPG123_OK) {
 	fprintf(stderr,"Unable to set float output formats: %s\n", mpg123_plain_strerror(ret));
-	goto fail;
+	return FALSE;
     }
 
     if ((ret = mpg123_open_feed(m)) != MPG123_OK) {
 	fprintf(stderr,"Unable to open feed: %s\n", mpg123_plain_strerror(ret));
-	goto fail;
+	return FALSE;
     }
 
     if ((in = fopen(filename, "rb")) == NULL) {
 	fprintf(stderr,"Unable to open input file %s\n", filename);
-	goto fail;
+	return FALSE;
     }
 
     /* Tell libmpg123 how big the file is */
@@ -85,16 +85,16 @@ libmpg123_open(audio_file_t **afp, const char *filename)
     /* sample rate and channels are set when we read the first frame */
     {
     	short samples[2];	/* Might be stereo */
-	if (libmpg123_read_frames((void *)samples, 1, af_signed) != 1) {
+	if (libmpg123_read_frames((void *)samples, 1, af_signed,
+				  &(af->sample_rate),
+				  &(af->channels),
+				  &(af->frames)) != 1) {
 	    fprintf(stderr, "Can't read the first frame.\n");
-	    goto fail;
+	    return FALSE;
 	}
     }
 
-    return;
-
-fail:
-    *afp = NULL;
+    return TRUE;
 }
 
 /* Seek to the "start"th sample from the MP3 file.
@@ -135,10 +135,14 @@ libmpg123_seek(int start)
  * Read samples from the MP3 file and convert them to the desired format
  * into the buffer "write_to".
  *
+ * The three pointers, if != NULL, are where to store the sample rate, the number of channels
+ * and the number of frames, when these change.
+ *
  * Returns the number of frames written, or 0 on errors.
  */
 int
-libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format)
+libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format,
+		      double *sample_rate_p, unsigned *channels_p, unsigned long *frames_p)
 {
     /* Where to write to next in the buffer */
     double *dp = (double *) write_to;	/* used when format == af_double */
@@ -164,17 +168,19 @@ libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format)
 	    off_t length;	/* of the MP3 file in samples */
 
 	    mpg123_getformat(m, &rate, &channels, &enc);
-	    audio_file->sample_rate = rate;
-	    audio_file->channels = channels;
+
+	    if (sample_rate_p)	*sample_rate_p = rate;
+	    if (channels_p)	*channels_p = channels;
+
 	    length = mpg123_length(m);
 	    if (length < 0) {
 		fprintf(stderr, "I can't determine the length of the MP3 file.\n");
-		audio_file->frames = 0;
+		if (frames_p) *frames_p = 0;
 	    } else {
 		/* The docs say mpg123_length() return the number of samples
 		 * but it appears to return the number of frames so don't
 		 * divide it by the number of channels */
-		audio_file->frames = length;
+		if (frames_p) *frames_p = length;
 	    }
 
 	    switch (format) {

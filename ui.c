@@ -78,8 +78,8 @@ char *output_file = NULL;	/* Image file to write to and quit. This is done
 				 * FFT threads, in calc_notify in scheduler.c */
 
 /* Where is time and space is the current playing position on the scren? */
-double disp_time = 0.0;	/* When in the audio file is the crosshair? */
-int disp_offset; 	/* Crosshair is in which display column? */
+double disp_time = 0.0;		/* When in the audio file is the crosshair? */
+int disp_offset; 		/* Crosshair is in which display column? */
 
 /* The size of the vertical axes, when they are present. */
 

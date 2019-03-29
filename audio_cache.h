@@ -19,10 +19,11 @@
 
 #include "audio_file.h"	/* for af_format_t and audio_file_t */
 
-extern void create_audio_cache(void);	/* Use a cache on the audio file */
-extern void no_audio_cache(void);	/* Don't use cache on audio file,
-					 * also, free the memory the cache
-					 * is using if it was created */
+/* Use a cache on the audio file */
+extern void create_audio_cache(audio_file_t *af);
+
+/* Don't use cache on audio file */
+extern void no_audio_cache(audio_file_t *af);
 
 /* Read audio from the audio file through the cache.
  * Same interface as read_audio_file

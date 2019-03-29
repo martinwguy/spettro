@@ -55,16 +55,14 @@ static void fill_hole(
 	long hole_size,		/* How many samples to fill in */
 	long start);		/* Frame offset in audio file to read from */
 
-static int cache = -1;
-
 /* Create the cache file and return a pointer to its FILE pointer or */
 void
-create_audio_cache()
+create_audio_cache(audio_file_t *af)
 {
     char tmpfilename[] = "/tmp/spettro-XXXXXX";
-    cache = mkstemp(tmpfilename);
+    af->cache = mkstemp(tmpfilename);
 
-    if (cache < 0) {
+    if (af->cache < 0) {
     	fprintf(stderr, "Cannot create decompressed audio cache file.\n");
 	return;
     }
@@ -75,16 +73,12 @@ create_audio_cache()
     }
 }
 
-static short *audio_buf = NULL;	/* The required audio data as 16-bit signed,
-    				 * with same number of channels as audio file */
-static int audio_buflen = 0;	/* Memory allocated to buf[], in samples */
-
 void
-no_audio_cache()
+no_audio_cache(audio_file_t *af)
 {
-    if (cache >= 0) close(cache);
-    cache = -1;
-    free(audio_buf);
+    if (af->cache >= 0) close(af->cache);
+    af->cache = -1;
+    free(af->audio_buf);
 }
 
 /* Read audio data using our cache. Same interface as read_audio_file().
@@ -107,7 +101,7 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
     int i;
     short *sp;
 
-    if (cache < 0) {
+    if (af->cache < 0) {
 	return read_audio_file(af, data, format, channels,
 				  start, frames_to_read);
     }
@@ -125,33 +119,36 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
     }
 
     /* Make sure our buffer is big enough */
-    if (audio_buflen < frames_to_read * af->channels) {
-	audio_buflen = frames_to_read * af->channels;
-    	audio_buf = Realloc(audio_buf, audio_buflen * sizeof(*audio_buf));
+    if (af->audio_buflen < frames_to_read * af->channels) {
+	af->audio_buflen = frames_to_read * af->channels;
+    	af->audio_buf = Realloc(af->audio_buf,
+				af->audio_buflen * sizeof(*(af->audio_buf)));
     }
     /* Set all to 0 so that reads past the end of the cache file leave the
      * data as "not cached yet" */
-    memset(audio_buf, 0, audio_buflen * sizeof(*audio_buf));
+    memset(af->audio_buf, 0, af->audio_buflen * sizeof(*(af->audio_buf)));
 
     /* Try to fetch cached data from the file. As it's read-write, a seek
      * past the end of the file should extend it silently. */
     offset = (long)start * af->channels * sizeof(short);
     off_t new_offset;
-    if ((new_offset = lseek(cache, offset, SEEK_SET)) != offset) {
+    if ((new_offset = lseek(af->cache, offset, SEEK_SET)) != offset) {
         fprintf(stderr, "Can't seek to offset %ld in cache file: lseek returns %ld\n",
 		new_offset, offset);
 	perror("lseek");	
 	return(0);
     } else {
-        int bytes_read = read(cache, (char *)audio_buf,
-	     frames_to_read * af->channels * sizeof(*audio_buf));
+        int bytes_read, frames_read;
+
+        bytes_read = read(af->cache, (char *)(af->audio_buf),
+	     frames_to_read * af->channels * sizeof(*(af->audio_buf)));
 	samples_in_buf = bytes_read / sizeof(short);
-	int frames_read = samples_in_buf / af->channels;
+	frames_read = samples_in_buf / af->channels;
         /* If the file read fails, is at-or-after EOF or is short, that leaves
 	 * zeroes in the buffer to be filled in from the real file.
 	 */
 	if (frames_read < frames_to_read) {
-	    fill_hole(af, audio_buf + samples_in_buf,
+	    fill_hole(af, af->audio_buf + samples_in_buf,
 		      (frames_to_read - frames_read) * af->channels,
 		      start + frames_read);
 	    samples_in_buf += (frames_to_read - frames_read) * af->channels;
@@ -163,7 +160,7 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
     /* Now check for zones of uncached samples in the cached data
      * and replace them with the real data */
     hole_start = NULL;
-    for (i=0, sp=audio_buf; i<samples_in_buf; i++, sp++) {
+    for (i=0, sp=af->audio_buf; i<samples_in_buf; i++, sp++) {
     	if (*sp == 0) {
 	    if (hole_start == NULL) {
 		hole_start = sp;
@@ -176,24 +173,25 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
 	    if (hole_start != NULL) {
 	    	/* This is the end of a hole. Fill it with data from the
 		 * audio file, converted to our funny format */
-		fill_hole(af, hole_start, hole_size, start + (hole_start - audio_buf));
+		fill_hole(af, hole_start, hole_size, start + (hole_start - af->audio_buf));
 	    }
 	    hole_start = NULL;
 	}
     }
     /* If the buffer ends with a hole, fill it */
     if (hole_start != NULL) {
-	fill_hole(af, hole_start, hole_size, start + (hole_start-audio_buf));
+	fill_hole(af, hole_start, hole_size,
+		  start + (hole_start - af->audio_buf));
     }
 
     /* Now convert our completed data to the required format, one of:
      * mono doubles or same-number-of-channels shorts */
     switch (format) {
     case af_signed:	/* 16-bit with the same number of channels */
-    	convert_cached_to_signed((short *)data, audio_buf, samples_in_buf);
+    	convert_cached_to_signed((short *)data, af->audio_buf, samples_in_buf);
         break;
     case af_double:
-        convert_cached_to_mono_double((double *)data, audio_buf, samples_in_buf,
+        convert_cached_to_mono_double((double *)data, af->audio_buf, samples_in_buf,
 				      af->channels);
         break;
     }
@@ -205,33 +203,33 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
  * in our funny 16-bit format and save the new data in the cache file.
  */
 static void
-fill_hole(audio_file_t *audio_file,
+fill_hole(audio_file_t *af,
 	  short *hole_start,	/* Where to write newly-cached data into */
 	  long hole_samples,	/* How many samples to fill */
 	  long start)		/* Frame offset in audio file to read from */
 {
-    long hole_frames = hole_samples / audio_file->channels;
+    long hole_frames = hole_samples / af->channels;
     long offset;
     int frames_read;
     int frames_to_read = hole_frames;
 
-    if (start + frames_to_read > audio_file->frames) {
-    	frames_to_read = audio_file->frames - start;
+    if (start + frames_to_read > af->frames) {
+    	frames_to_read = af->frames - start;
     }
 
     if (frames_to_read <= 0)
     	frames_read = 0;
     else
-        frames_read = read_audio_file(audio_file, (char *)hole_start,
-				      af_signed, audio_file->channels,
+        frames_read = read_audio_file(af, (char *)hole_start,
+				      af_signed, af->channels,
 				      start, frames_to_read);
 
     if (frames_read < hole_frames) {
         int i; short *sp;
 
 	/* Fill the missing data with silence */
-	for (i=0, sp=hole_start + frames_read * audio_file->channels;
-	     i<(hole_frames - frames_read) * audio_file->channels;
+	for (i=0, sp=hole_start + frames_read * af->channels;
+	     i<(hole_frames - frames_read) * af->channels;
 	     i++) {
 	    *sp++ = (short)0x8000;
 	}
@@ -239,16 +237,16 @@ fill_hole(audio_file_t *audio_file,
 
     /* Convert the new data in-place to our cached format */
     convert_signed_to_cached(hole_start, hole_start,
-    			     frames_read * audio_file->channels);
+    			     frames_read * af->channels);
 
     /* Save the new data in the cache file */
-    offset = start * audio_file->channels * sizeof(short);
-    if (lseek(cache, offset, SEEK_SET) != offset) {
+    offset = start * af->channels * sizeof(short);
+    if (lseek(af->cache, offset, SEEK_SET) != offset) {
 	fprintf(stderr, "Warning: Failed to seek to update cache file\n");
     } else {
-    	size_t size = frames_read * audio_file->channels * sizeof(short);
+    	size_t size = frames_read * af->channels * sizeof(short);
 
-	if (write(cache, (char *)hole_start, size) != size) {
+	if (write(af->cache, (char *)hole_start, size) != size) {
 	    fprintf(stderr, "Warning: Failed to update cache file\n");
 	    /* Mostly harmless */
 	}

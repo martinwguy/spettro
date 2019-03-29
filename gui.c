@@ -99,9 +99,13 @@ static void ecore_quitGUI(Ecore_Evas *ee EINA_UNUSED);
 void
 gui_init(char *filename)
 {
+    static char *last_filename = NULL;
 #if EVAS_VIDEO
     Evas *canvas;
 #endif
+
+    if (filename == NULL) filename = last_filename;
+    else last_filename = filename;
 
     /*
      * Initialise the various subsystems
@@ -479,7 +483,7 @@ get_next_SDL_event(SDL_Event *eventp)
 	    0	/* Terminator */
 	};
 	int i;
-	for (i=0; events[i]; i++)
+	for (i=0; i < sizeof(events)/sizeof(events[0]); i++)
 	    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, events[i], events[i]) == 1)
 	    	return 1;
     }
@@ -559,7 +563,7 @@ gui_fullscreen()
 #elif SDL_VIDEO
     gui_deinit();
     fullscreen = !fullscreen;
-    gui_init(audio_file->filename);
+    gui_init(NULL);	/* Reuse the same file name as title */
     draw_axes();
     repaint_display(FALSE);
 #endif

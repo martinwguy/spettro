@@ -170,7 +170,7 @@ continue_playing()
     emotion_object_play_set(em, EINA_TRUE);
 #endif
 #if SDL_AUDIO
-    sdl_start = lrint(disp_time * audio_file->sample_rate);
+    sdl_start = lrint(disp_time * current_sample_rate());
     SDL_PauseAudio(0);
 #endif
     playing = PLAYING;
@@ -186,7 +186,7 @@ set_playing_time(double when)
     emotion_object_position_set(em, when);
 #endif
 #if SDL_AUDIO
-    sdl_start = lrint(when * audio_file->sample_rate);
+    sdl_start = lrint(when * current_sample_rate());
 #endif
 }
 
@@ -199,7 +199,7 @@ get_playing_time(void)
     /* The current playing time is in sdl_start, counted in frames
      * since the start of the piece.
      */
-    return (double)sdl_start / audio_file->sample_rate;
+    return (double)sdl_start / current_sample_rate();
 #endif
 }
 

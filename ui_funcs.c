@@ -44,7 +44,7 @@ void
 time_pan_by(double by)
 {
     double playing_time;
-    double audio_length = audio_file_length(audio_file);
+    double audio_length = audio_files_length();
 
     playing_time = get_playing_time() + by;
 
@@ -81,7 +81,7 @@ time_pan_by(double by)
 void
 time_zoom_by(double by)
 {
-    if (ppsec * by > audio_file->sample_rate) {
+    if (ppsec * by > current_sample_rate()) {
     	fprintf(stderr, "Limiting time zoom to one sample per column\n");
 	return;
     }

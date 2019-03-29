@@ -23,7 +23,7 @@
 
 #include "spettro.h"
 
-#include "audio_file.h"		/* for audio_file->sample_rate */
+// #include "audio_file.h"		/* for audio_file->sample_rate */
 #include "convert.h"
 #include "ui.h"
 
@@ -54,14 +54,14 @@ static double mtoscache_sample_rate = 0.0;
  * interpolator may use the row above the top one (is this right?).
  */
 static double
-magindex_to_specindex(int magindex)
+magindex_to_specindex(int magindex, double sample_rate)
 {
     /* Recalculate the array of values if any of the parameters changed */
     if (speclen != mtoscache_speclen
      || maglen != mtoscache_maglen
      || min_freq != mtoscache_min_freq
      || max_freq != mtoscache_max_freq
-     || audio_file->sample_rate != mtoscache_sample_rate) {
+     || sample_rate != mtoscache_sample_rate) {
 	int k;
 
 	if (maglen != mtoscache_maglen)
@@ -70,14 +70,14 @@ magindex_to_specindex(int magindex)
 	for (k=0; k <= maglen; k++) {
 	    /* The actual conversion function */
 	    double freq = magindex_to_frequency(k);
-	    mtoscache[k] = frequency_to_specindex(freq);
+	    mtoscache[k] = frequency_to_specindex(freq, sample_rate);
 	}
 
 	mtoscache_speclen = speclen;
 	mtoscache_maglen = maglen;
 	mtoscache_min_freq = min_freq;
 	mtoscache_max_freq = max_freq;
-	mtoscache_sample_rate = audio_file->sample_rate;
+	mtoscache_sample_rate = sample_rate;
     }
 
     if (magindex < 0 || magindex > maglen) {
@@ -109,7 +109,7 @@ free_interpolate_cache()
  */
 
 double
-interpolate(float* logmag, const float *spec, const int from_y, const int to_y)
+interpolate(float* logmag, const float *spec, const int from_y, const int to_y, double sample_rate)
 {
     int y;
 
@@ -128,10 +128,10 @@ interpolate(float* logmag, const float *spec, const int from_y, const int to_y)
 
     for (y = from_y; y <= to_y; y++) {
     	int k = y - min_y;	/* Index into magnitude array */
-	double this = magindex_to_specindex(k);
-	double next = magindex_to_specindex(k + 1);
+	double this = magindex_to_specindex(k, sample_rate);
+	double next = magindex_to_specindex(k + 1, sample_rate);
 
-	/* Range check: can happen if max_freq > audio_file->sample_rate / 2 */
+	/* Range check: can happen if max_freq > sample_rate / 2 */
 	if (this > speclen) {
 	    logmag[k] = -INFINITY;
 	    continue;
