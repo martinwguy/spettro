@@ -94,27 +94,10 @@ spettro_SOURCES = main.c config.h spettro.h \
 
 filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 
-# The source files that depend on USE_* defines from config.h
-# One day, a proper "configure" will make these go away
-main.o: Makefile
-args.o: Makefile
-audio.o: Makefile
-audio_cache.o: Makefile	# Bcos includes audio_file.h
-audio_file.o: Makefile
-calc.o: Makefile
-convert.o: Makefile	# Bcos includes audio_file.h
-dump.o: Makefile	# Bcos includes audio_file.h
-filtering_audio.o: Makefile
-gui.o: Makefile
-interpolate.o: Makefile	# Bcos includes audio_file.h
-key.o: Makefile
-libav.o: Makefile
-libmpg123.o: Makefile
-lock.o: Makefile
-mouse.o: Makefile
-overlay.o: Makefile
-scheduler.o: Makefile
-timer.o: Makefile
+# If the Makefile.am changes, recompile everything to avoid using
+# the wrongly-compiled .o files.
+# One day, a proper "configure" will make this go away
+*.o: Makefile.am
 
 tags:
 	ctags $(spettro_SOURCES)
