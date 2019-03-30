@@ -83,6 +83,11 @@ libmpg123 without an audio_cache clags when end-of-file appears on the screen.
 libmpg123_read_frames() is whizzing at 100%CPU and playing stops because
 the audio file is locked and hitting Space makes the main loop hang in
 pause_audio::SDL_PauseAudio()
+------------------------------------------------------------------------
+libmpg123 fails to open "letter from home 64kbps.mp3"
+
+Error: Unable to set up output format! (code 1)Can't read the first frame.
+But mpg123 can play it, saying it's  MPEG 2.0 L III cbr64 22050 j-s
 
 ============================ Other ======================================
 
