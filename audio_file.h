@@ -33,6 +33,10 @@
 # error "Define one of USE_LIBAUDIOFILE USE_LIBSNDFILE USE_LIBSOX USE_LIBAV"
 #endif
 
+#if USE_LIBMPG123
+#include <mpg123.h>
+#endif
+
 typedef struct audio_file {
 	char *filename;
 #if USE_LIBAUDIOFILE
@@ -43,6 +47,11 @@ typedef struct audio_file {
 	sox_format_t *sf;
 #elif USE_LIBAV
 	/* keeps its private data as statics in libav.c */
+#endif
+#if USE_LIBMPG123
+	mpg123_handle *mh;
+	FILE *in;
+	int framesize;
 #endif
 	double sample_rate;
 	unsigned long frames;	/* The file has (frames*channels) samples */

@@ -82,7 +82,7 @@ open_audio_file(char *filename)
 #if USE_LIBMPG123
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(filename + strlen(filename)-4, ".mp3") == 0) {
-	if (!libmpg123_open(filename, af)) {
+	if (!libmpg123_open(af, filename)) {
 	    fprintf(stderr, "Cannot open \"%s\n", filename);
 	    free(af);
 	    return NULL;
@@ -352,12 +352,12 @@ read_audio_file(audio_file_t *af, char *data,
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(af->filename + strlen(af->filename) - 4,
     		   ".mp3") == 0) {
-	if (libmpg123_seek(start) == FALSE) {
+	if (libmpg123_seek(af, start) == FALSE) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
 	    return 0;
 	}
 	while (frames_to_read > 0) {
-	    int frames = libmpg123_read_frames(write_to, frames_to_read, format, NULL, NULL, NULL);
+	    int frames = libmpg123_read_frames(af, write_to, frames_to_read, format, NULL, NULL, NULL);
 	    if (frames > 0) {
 		total_frames += frames;
 		write_to += frames * framesize;
