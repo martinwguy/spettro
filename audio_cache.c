@@ -29,9 +29,10 @@
  * Stdio, unfortunately, doesn't seem able to create sparse files, as you
  * can't fseek past the end of the file.
  *
- * We keep a file descriptor, "cache", open to the teporary file and delete it
- * so no cleanup is necessary on exit (on Unix and Unix-alikes!).
- * If cache < 0 that means that no cache is in operation, which is used
+ * Each open audio_file_t keeps a file descriptor, "cache", open to its
+ * temporary file and delete it so no cleanup is necessary on exit
+ * (on Unix and Unix-alikes!).
+ * If af->cache < 0 that means that no cache is in operation, which is used
  * for uncompressed audio files.
  */
 

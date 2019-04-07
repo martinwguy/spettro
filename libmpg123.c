@@ -1,3 +1,20 @@
+/*	Copyright (C) 2018-2019 Martin Guy <martinwguy@gmail.com>
+ *
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
+
 /* libmpg123.c: Interface between spettro and libmpg123 for MP3 decoding
  *
  * Adapted from mpg123's example program feedseek.c, which is copyright 2008
@@ -135,14 +152,16 @@ libmpg123_seek(int start)
  * Read samples from the MP3 file and convert them to the desired format
  * into the buffer "write_to".
  *
- * The three pointers, if != NULL, are where to store the sample rate, the number of channels
- * and the number of frames, when these change.
+ * The three pointers, if != NULL, are where to store the sample rate,
+ * the number of channels and the number of frames, when these change.
  *
  * Returns the number of frames written, or 0 on errors.
  */
 int
 libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format,
-		      double *sample_rate_p, unsigned *channels_p, unsigned long *frames_p)
+		      double *sample_rate_p,
+		      unsigned *channels_p,
+		      unsigned long *frames_p)
 {
     /* Where to write to next in the buffer */
     double *dp = (double *) write_to;	/* used when format == af_double */
@@ -151,6 +170,16 @@ libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format,
     static int framesize;
 
     while (frames_written < frames_to_read) {
+	/*
+	 * int mpg123_decode_frame()
+	 * Decode next MPEG frame to internal buffer or read a frame and
+	 * return after setting a new format.
+	 * mh		handle
+	 * num		current frame offset gets stored there
+	 * audio	This pointer is set to the internal buffer
+	 *		to read the decoded audio from.
+	 * bytes	number of output bytes ready in the buffer 
+	 */
 	while ((ret = mpg123_decode_frame(m, &num, &audio, &bytes)) == MPG123_NEED_MORE) {
 	    int c = getc(in);
 	    unsigned char uc;
@@ -190,12 +219,17 @@ libmpg123_read_frames(void *write_to, int frames_to_read, af_format_t format,
 	    }
 	}
 
+	/* TODO: Cache the whole frame, even if we only return a part of it. */
+
 	/* It returns a whole frame, which may be more than we want */
 	if (bytes > (frames_to_read - frames_written) * framesize) {
 	    bytes = (frames_to_read - frames_written) * framesize;
 	}
 
-	/* We make libmpg123 return samples as 16-bit mono or stereo */
+	/* We make libmpg123 return samples as 16-bit mono or stereo,
+	 * which is also the format that the audio cache wants. */
+
+	/* Return the required portion of the frame in the required format */
 	switch (format) {
 	case af_signed:	/* Native-channels 16-bit signed */
 	    memcpy(bp, audio, bytes);
