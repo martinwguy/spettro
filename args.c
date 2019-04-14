@@ -338,7 +338,7 @@ g          Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
-o          Output (save) the current screen into a PNG file\n\
+o          Output (save) the current screenful into a PNG file\n\
 p          Show the playing time and settings on stdout\n\
 Crtl-l     Redraw the display from cached FFT results\n\
 Crtl-r     Empty the result cache and redraw the display from the audio data\n\
