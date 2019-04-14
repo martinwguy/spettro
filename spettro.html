@@ -20,8 +20,8 @@ leaving most of the musical information crushed into the bottom few lines
 of the graphic.
 <P>
 Spettro is different. Having a logarithmic frequency axis, every
-octave is the same height, like a conventional musical score, revealing
-far more musically-interesting detail.
+octave has the same height, like a conventional musical score, revealing
+more musically-interesting detail.
 
 <H2>Keyboard commands</H2>
 
@@ -29,26 +29,26 @@ far more musically-interesting detail.
 <DL>
  <DT>Space
   <DD>The space bar makes spettro play the file, scrolling the graphic
-      leftwards in time with the audio. Press it again and it pauses,
+      to the left, in time with the audio. Press it again and it pauses,
       press it again and it continues playing. WHen it gets to the end
       of the piece, it stops automatically; pressing Space again makes it
       start playing again from the beginning.<BR>
-      If spettro was built to use the Enlightenment toolkit instead of SDL,
-      the Play/Pause media button has the same effect
-      and the Stop media button pauses playing.
+      If your version of spettro was built to use the Enlightenment toolkit
+      instead of SDL, the Play/Pause media button will have the same effect
+      and the Stop media button will pause playing.
  <DT>&larr; &rarr;
   <DD>Left arrow skips back one tenth of a screenful in the audio file.
-      If a Shift key was held down, it skips back a whole screenful, and
+      If a Shift key is held down, it skips back a whole screenful, while
       holding down Control scrolls by one pixel; with both, by one second.
   <BR>Right arrow works similarly but skips forward in time instead of back.
  <DT>Home End
   <DD>Home moves you to the start of the piece, End to the end.<BR>
       If spettro was built to use the Enlightenment toolkit instead of SDL,
-      the |<< ad >>| keys also do these.
+      the |<< ad >>| keys also do this.
  <DT>&uarr; &darr;
   <DD>The Up Arrow key moves you up the frequency axis by a tenth of the height
       of the spectrogram; similarly, Down Arrow pans down to reveal more of the
-      lower frequencies. With Shift, the view pans by exactly one screenful;
+      lower frequencies. With Shift, the view pans by the height of the graph,
       with Ctrl, by one pixel.
  <DT>PgUp PgDown
   <DD>Moves up/down the frequency axis by the height of the graph
@@ -59,8 +59,8 @@ far more musically-interesting detail.
       Shift-'X' zooms in, enlarging the central half of the display to fit
       the whole window.
       <P>
-      If you zoom in enough while playing, spettro will be unable to calculate
-      enough FFTs per second to keep the screen updated.
+      If you zoom in enough while playing the audio, spettro will be
+      unable to calculate enough FFTs per second to keep the screen updated.
  <DT>y Y
   <DD>Similarly, 'y' zooms out on the frequency axis,
       showing twice the frequency range as before and compressing
@@ -80,20 +80,22 @@ far more musically-interesting detail.
 
 <DL>
  <DT>c
-  <DD>Cycle through alternate color maps: sox, sndfile-spectrogram,
+  <DD>Cycle through alternate color maps: a colored heat map (the default),
       gray (white on black), print (grayscale, black on white).
       You can also select an initial color map with the <B>-c</B> option.
- <DT>* /
-  <DD>Star and slash adjust the dynamic range of the color values and act
-      like a contrast control.
-      The Star key increases the dynamic range by 6dB
+ <DT>b d
+  <DD>The 'b' and 'd' keys adjust the dynamic range of the color values and act
+      like a contrast control to make the image brighter or darker.
+      'b' increases the dynamic range by 6dB,
       brightening the darker areas to reveal detail,
-      and the Slash key decreases the dynamic range by 6dB,
-      darkening the graphic to hide noise and make the main events stand out.
+      'd' decreases the dynamic range by 6dB,
+      darkening the graphic to hide background noise and
+      to make the main sonic events stand out more.
       <BR>
       The loudest moments in any piece are always shown at maximum brightness
-      (white) and by changing the dynamic range, you change which sound energy
-      value is represented by the dimmest color.
+      (usually white) and by changing the dynamic range, you change which
+      sound energy value is represented by the dimmest visible color
+      (usually dark blue).
  <DT>f F
   <DD>These keys change the size of tha audio sample used to calculate each
       column of the spectrogram.
@@ -102,23 +104,18 @@ far more musically-interesting detail.
       in the frequency direction, while
       'F' doubles it, which smears time but increases the frequency resolution.
       <BR>
-      The starting value is 1/5th of a second, equivalent to "-f&nbsp;5",
+      The starting value is 1/5th of a second,
       which resolves frequencies with a resolution of 5Hz
       and shows about five distinct musical events per second.
-      <BR>
-      Lower values use a larger sample for each FFT,
-      resolving frequencies more finely (a narrow-band spectrogram)
-      but time more coarsely and
-      improving the vertical "focus" but smearing it horizontally,
-      while higher values use a shorter sample giving
-      crisper time definition at the price of
-      fuzzier frequency definition (a wide-band spectrogram.)
       <BR>You can also set the initial FFT frequency with the <B>-f</B> option.
  <DT>R K H N M B L D
-  <DD>These keys, when pressed with Shift, select a Rectangular, Kaiser,
-      Nuttall, Hann, Hamming, Bartlett, Blackman of Dolph window
-      as the pre-FFT convolution function. The default is Dolph.
-      There are corresponding command-line options <B>-[RKHNMBLD]</B>.
+  <DD>These keys, when pressed with Shift hald, select
+      the pre-FFT convolution function to a Rectangular, Kaiser,
+      Nuttall, Hann, Hamming, Bartlett, Blackman or Dolph (the default) window,
+      There is a corresponding command-line option <B>-W</B>.
+ <DT>w
+  <DD>The 'w'> key cycles through the eight window functions
+      in the order shown above.
  <DT>o
   <DD>The 'o' key outputs a copy of the current screen into a PNG file
       and prints the name of the file that it generated.
@@ -282,48 +279,48 @@ audio file name:
  <DT>-a / --show-axes
   <DD>Shows a frequency scale in Hz on the left side of the graph
       and the note names on the right.
- / <DT>-R / -K / -N / -H / -M / -B / -L / -D
-  <DD>Selects the convolution function to apply to the audio fragments
-      before feeding them to the FFT function, one of:
+ / <DT>-W <I>which</I> / --window <I>which</I>
+  <DD>Selects the convolution function to apply to audio fragments
+      before feeding them to the frequency analysis function, one of:
     <DL>
-     <DT>-R / --rectangular
+     <DT>-WR / --rectangular
        <DD>Rectangular. The sample's edges are not trimmed, resulting in
 	floral artifacts in the spectrogram, most easily seen at
 	high magnification.
 	It is the fastest of the window functions because it does nothing.
-     <DT>-K / --kaiser
-      <DD>Kaiser window
-     <DT>-N / --nuttall
+     <DT>-WK / --kaiser
+      <DD>Kaiser window, "sndile-spectrogram"'s default.
+     <DT>-WN / --nuttall
       <DD>Nuttall window
-     <DT>-H / --hann
-      <DD>Hann (a.k.a. "Hanning") window
-     <DT>-M / --hamming
+     <DT>-WH / --hann
+      <DD>Hann (a.k.a. "Hanning") window, "sox spectrogram"'s default.
+     <DT>-WM / --hamming
       <DD>Hamming window
-     <DT>-B / --bartlett
+     <DT>-WB / --bartlett
       <DD>Bartlett window
-     <DT>-L / --blackman
+     <DT>-WL / --blackman
       <DD>Blackman window
-     <DT>-D / --dolph
-      <DD>Dolph window, the default, giving the best slot filter
+     <DT>-WD / --dolph
+      <DD>Dolph window, our default, giving the best slot filter in the
+          frequency domain.
     </DL>
     There are corresponding keystroke commands
     <B>R</B>, <B>K</B>, <B>N</B>, <B>H</B>,
     <B>N</B>, <B>B</B>, <B>L</B> and <B>D</B>,
     the <B>w</B> key cycles through the eight window functions,
-    and a command-line option <B>-W</B> / <B>--window</B> recognizes
-    single-letter and full window names.
+    the single-letter and the full window names.
     <P>
     For more info on the different window functions' peculiarities and merits,
     see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
     or experiment with <B>spettro</B> and see for yourself :)
  <DT>-k / --piano
-  <DD>Overlays black and white lines showing where 88-note piano keys are.
+  <DD>Overlays black and green lines showing where 88-note piano's black and white keys are.
  <DT>-s / --score
-  <DD>Overlays the conventional score notation pentagrams.
+  <DD>Overlays conventional score notation's five-line staves.
  <DT>-g / --guitar
   <DD>Overlays lines showing the positions of a classical guitar's strings.
  <DT>-v n / --softvol n
-  <DD>Sets the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
+  <DD>Sets the softvolume level to N (>1.0 is louder than 100%, <1.0 softer)\n\
  <DT>--help
   <DD>Shows a summary of all option flags and keys.
 </DL>
