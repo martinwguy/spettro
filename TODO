@@ -38,11 +38,14 @@ seek to any position in a click and see which parts have been calculated?
 ------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
-Option to synch scrolling to real time not playing-time (--smooth)
+Option to synch scrolling to real time not playing-time (--smooth option?)
+by scrolling the graphics in response to a periodic timer instead of
+by the sound player's current position.
 Synch is good if I remember, with the reposition-ELF-on-resume tweak,
 ------------------------------------------------------------------------
-Add -m mute flag to be able to test emotion graphics when sound is broken.
-This needs scrolling by regular timer instead of by audio position.
+Add -m mute flag to be able to test emotion graphics when sound is broken
+or to give just the graphics if initializing the audio output fails.
+This needs the above "synch scrolling".
 ------------------------------------------------------------------------
 Try playing sound with SDL_Mixer (Ogg, MP3)
 Mix_RewindMusic(); Mix_SetMusicPosition(double position)
