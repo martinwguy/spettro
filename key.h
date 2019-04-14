@@ -47,8 +47,10 @@ enum key {
     KEY_Y,
     KEY_PLUS,
     KEY_MINUS,
+#if 0
     KEY_STAR,
     KEY_SLASH,
+#endif
     KEY_K,
     KEY_S,
     KEY_G,

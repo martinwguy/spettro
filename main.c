@@ -383,23 +383,23 @@ restart:
 	break;
 
     /* Change dynamic range of color spectrum, like a brightness control.
-     * Star should brighten the dark areas, which is achieved by increasing
+     * 'b' should brighten the dark areas, which is achieved by increasing
      * the dynrange;
-     * Slash instead darkens them to reduce visibility of background noise.
+     * 'd' instead darkens them to reduce visibility of background noise.
      */
     case KEY_B:
-    	if (Shift && !Control) { set_window_function(BARTLETT); break; }
-    case KEY_STAR:
-	if (Shift || Control) break;
-	change_dyn_range(6.0);
-	repaint_display(TRUE);
+    	if (Shift && !Control) set_window_function(BARTLETT);
+	else if (!Shift && !Control) {
+	    change_dyn_range(6.0);
+	    repaint_display(TRUE);
+	}
 	break;
     case KEY_D:
-	if (Shift && !Control) { set_window_function(DOLPH); break; }
-    case KEY_SLASH:
-	if (Shift || Control) break;
-	change_dyn_range(-6.0);
-	repaint_display(TRUE);
+	if (Shift && !Control) set_window_function(DOLPH);
+	else if (!Shift && !Control) {
+	    change_dyn_range(-6.0);
+	    repaint_display(TRUE);
+	}
 	break;
 
     case KEY_A:				/* Toggle frequency axis */

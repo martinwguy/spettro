@@ -170,58 +170,52 @@ positions of the guitar strings.
 <H3>Bar line indicators</H3>
 
 To help you pick out the rhythm, you can overlay evenly-spaced vertical white
-lines on the graphic to show where each bar (or beat) begins.
+lines onto the graphic to show where each bar (or beat) begins.
 <P>
 To do this, you mark two pixel columns to say where some bar
 starts and ends.
 When you set the first of the two bar line markers, a single vertical
 line appears at that position you marked and when you set the other one,
-bar lines appear at that position and evenly throughout the piece.
+bar lines appear at that position and evenly spaced throughout the piece.
 <P>
 There are three ways to mark the bar line positions:
 <UL>
  <LI>The command-line flags <B>-l</B> and <B>-r</B> set the left and right
      bar line position, measured in seconds from the start of the piece.
  <LI>You can position the graphic so that the green line is at the start of a
-     bar, press 'l' or '[', move it to the end of the bar and press 'r' or ']'.
-     For more precise positioning, zoom in on the time axis with 'X' and use
-     Control-Leftarrow and Control-Rightarrow to shift the graphic by one pixel
-     at a time.
+     bar, press 'l', move it to the end of the bar and press 'r'.
+     For more precise positioning, zoom in on the time axis with 'X',
+     hold down the Ctrl key and use the left and right arrow keys to
+     shift the graphic by one pixel at a time.
  <LI>If you hold down Control, you can position the left bar line by clicking
      the left mouse button and the right bar line by clicking the right button.
 </UL>
 You can also set the "left" marker to the right of the "right" marker
 and it still works.
-
-you position the graphic so that the central green line
-is at the start of one bar, and press '[', then move right until the
-green line is at the start of the following bar and press ']'. Evenly-spaced
-bar lines will appear throughout the piece.
-<BR>To position the bar lines precisely in time with the music,
-you can zoom in on the start of a bar using 'X', then hold down the 'Ctrl' key
-and use the Left and Right arrow keys to scroll the graphic by a single pixel.
-<DL>
- <DT>l
-  <DD>Pressing L positions the left bar line at the green line.
- <DT>r
-  <DD>Pressing R positions the right bar line at the green line.
-</DL>
+<P>
+Once you have both bar line markers set, you can use the number keys from 1 to 8
+to show none or from two to eight beats in each bar. The F1 to F12 keys do the
+same, in case you are analysing a piece with eleven beats to the bar.
 
 <H3>System control</H3>
 
 <DL>
- <DT>Esc Ctrl-C Q
+ <DT>Esc Ctrl-C Q Ctrl-Q
   <DD>These all make spettro quit.
- <DT>Ctrl-R
-  <DD>Control R redraws the graphic display from the results already
-      computed. This can be necessary if the display becomes garbled due to
-      CPU overload, refreshing the display from spettro's internal data.
+ <DT>Ctrl-L / Ctrl-R
+  <DD>Ctrl-L redraws the graphic display from the results already computed
+      while Ctrl-R also recalculates every column.
+      These can be useful if the display becomes garbled for some reason.
+ <DT>Ctrl-F
+  <DD>Toggles fullscreen mode.
  <DT>t
   <DD>Prints the current playing time on stdout.
+ <DT>p
  <DT>9 0
-  <DD>Spettro has a soft volume control, like mplayer and VLC, except that
-      spettro's has no maximum and it reduces it automatically if it would have
-      made the audio output clip.
+  <DD>Spettro has a soft volume control allowing you to increase the volume
+      above 100%, like mplayer and VLC, except that spettro's has no maximum
+      and it reduces the volume automatically if it would have made the
+      audio output clip.
 </DL>
 
 <H2>Startup options</H2>
@@ -240,10 +234,7 @@ audio file name:
       The default width is 640. The maximum with SDL2 seems to be 4090.
  <DT>-h <I>n</I> / --height <I>n</I>
   <DD>Sets the displayed window's height to <I>n</I> pixels.
-      The resolution of the spectrogram in the frequency direction is determined
-      by this and the size of the FFT in samples, which is set with
-      -f / -fft-freq and changed with the 'f' and 'F' keys.
-      The default is 480. The maximum with SDL2 seems to be 4064.
+      The default is 480 and the maximum when built with SDL2 seems to be 4064.
  <DT>-F / --fullscreen
   <DD>Starts up in full-screen mode.
       The spectrogram is calculated at the width and height given above,
@@ -253,7 +244,7 @@ audio file name:
  <DT>-o <I>filename.png</I>
   <DD>Starts up, calculates the visible part of the spectrogram and dumps it
       into the named file, then exits. With this and -w 4000 -h 1000 you can
-      obtain high-quality images to print or for publication.
+      obtain high-quality images to print.
  <DT>-j n / --jobs n
   <DD>Sets the number of FFT calculation threads
       (default: the same as the number of CPUs.)
@@ -261,9 +252,9 @@ audio file name:
   <DD>Starts playing at "x" seconds into the audio file, where "x"
       is a floating-point number.
  <DT>-n f / --min-freq f
-  <DD>Sets the frequency centered on the bottom pixel row, default %gHz (A0)\n\
+  <DD>Sets the frequency centered on the bottom pixel row, default 27.5Hz (A0)\n\
  <DT>-x f / --max-freq f
-  <DD>Sets the frequency centered on the top pixel row, default %gHz (A9)\n\
+  <DD>Sets the frequency centered on the top pixel row, default 14080Hz (A9)\n\
  <DT>--heatmap / --gray / --print
   <DD>Selects the palette as a colored heatmap from blue through red and yellow
       to white, in shades of gray as white on black (for screens)
@@ -271,11 +262,12 @@ audio file name:
  <DT>-d n / --dyn-range n
   <DD>Sets the dynamic range of the color map. Default: 100dB.
  <DT>-f n / --fft-freq n
-  <DD>Sets the FFT frequency in Hz. Default: 5 (one fifth of a second.)
- <DT>-S n / --fps n
-  <DD>Scrolls the graphic n times per second. Default: 25 frames per second.
- <DT>-P n / --ppsec n
-  <DD>Displays n pixel columns per second. Default: 25.
+  <DD>Sets the FFT frequency in Hz. Default: 5 (using samples of one fifth of a second.)
+ <DT>-S n / --fps <I>n</I>
+  <DD>Scrolls the graphic <I>n</I> times per second.
+      Default: 25 frames per second.
+ <DT>-P n / --ppsec <I>n</I>
+  <DD>Displays <I>n</I> pixel columns per second, default: 25.
  <DT>-a / --show-axes
   <DD>Shows a frequency scale in Hz on the left side of the graph
       and the note names on the right.

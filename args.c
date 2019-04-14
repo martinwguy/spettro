@@ -290,20 +290,24 @@ usage:
 -p:    Autoplay the file on startup\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set the window's height to n pixels, default %u\n\
--w n   Set the window's width to n pixels, default %u\n\
+-w n   Set the window's width to n pixels, default %u\n",
+				disp_width, disp_height); printf("\
 -F     Play in fullscreen mode\n\
--n min Set the minimum displayed frequency in Hz\n\
--x min Set the maximum displayed frequency in Hz\n\
--d n   Set the dynamic range of the color map in decibels, default %gdB\n\
+-n min Set the minimum displayed frequency in Hz, default %g\n\
+-x min Set the maximum displayed frequency in Hz, default %g\n",
+				DEFAULT_MIN_FREQ, DEFAULT_MAX_FREQ); printf("\
+-d n   Set the dynamic range of the color map in decibels, default %g dB\n",
+				-min_db); printf("\
 -a     Label the vertical frequency axes\n\
--f n   Set the FFT frequency, default %gHz\n\
+-f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
 -t n   Set the initial playing time in seconds\n\
 -l n   Set the position of the left bar line in seconds\n\
 -r n   Set the position of the right bar line in seconds\n\
 -b n   Set the number of beats per bar\n\
--S n   Set the scrolling rate in frames per second\n\
--P n   Set the number of pixel columns per second\n\
--j n   Set maximum number of threads to use (default: the number of CPUs)\n\
+-P n   Set how many pixel columns to display per second of audio, default %g\n",
+				DEFAULT_PPSEC); printf("\
+-S n   Set the scrolling rate in frames per second, default %g\n",
+				DEFAULT_FPS); printf("\
 -k     Overlay black and green lines showing frequencies of an 88-note keyboard\n\
 -s     Overlay conventional score notation pentagrams as white lines\n\
 -g     Overlay lines showing the positions of a classical guitar's strings\n\
@@ -325,32 +329,26 @@ X/x        Zoom in/out on the time axis\n\
 Y/y        Zoom in/out on the frequency axis\n\
 Plus/Minus Zoom both axes\n\
 c          Flip between color maps: heat map - grayscale - gray for printing\n\
-Star/Slash Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
-b/d        The same as star/slash (meaning \"brighter\" and \"darker\")\n\
+b/d        Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
 M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\
-w          Cycle through the above window functions\n\
-a          Toggle the frequency axis legend\n\
+w          Cycle through the eight window functions\n\
+a          Toggle the frequency axis\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
 s          Toggle the overlay of conventional staff lines\n\
 g          Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
+1-8/F1-F12 Set the nuumber of beats per bar (1/F1 means \"no beat lines\")\n\
 9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
 o          Output (save) the current screenful into a PNG file\n\
 p          Show the playing time and settings on stdout\n\
-Crtl-l     Redraw the display from cached FFT results\n\
-Crtl-r     Empty the result cache and redraw the display from the audio data\n\
-", disp_width, disp_height,-min_db, fft_freq);
-#if SDL_VIDEO
-# if SDL1
-puts("\
-Ctrl-f     Flip full-screen mode");
-# endif
-#endif
-puts("\
-q/Ctrl-C/Esc   Quit");
+Crtl-L     Redraw the display from cached FFT results\n\
+Crtl-R     Redraw the display by recalculating from the audio data\n\
+Ctrl-F     Flip full-screen mode\n\
+q/Ctrl-C/Esc   Quit\n");
+
 	    exit(1);
 	  }
 	}

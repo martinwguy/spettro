@@ -150,8 +150,10 @@ sdl_keydown(SDL_Event *eventp)
 	case '9': key = KEY_9;			break;
         case '+': key = KEY_PLUS;		break;
         case '-': key = KEY_MINUS;		break;
+#if 0
         case '*': key = KEY_STAR;		break;
         case '/': key = KEY_SLASH;		break;
+#endif
 	/* SDL2 TEXTINPUT sends " " for space, but KEYDOWN send "space" too
 	 * so we use the latter rather than get two. */
 	case ' ': break;
@@ -197,10 +199,12 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "kp_prior"))			key = KEY_PGUP;
     else if (!strcmp(name, "kp_add"))			key = KEY_PLUS;
     else if (!strcmp(name, "kp_subtract"))		key = KEY_MINUS;
+#if 0
     else if (!strcmp(name, "kp_multiply"))		key = KEY_STAR;
     else if (!strcmp(name, "kp_divide"))		key = KEY_SLASH;
     else if (!strcmp(name, "asterisk"))			key = KEY_STAR;
     else if (!strcmp(name, "slash"))			key = KEY_SLASH;
+#endif
     else if (!strcmp(name, "xf86audioplay"))		key = KEY_PLAY;
     else if (!strcmp(name, "xf86audiostop"))		key = KEY_STOP;
     else if (!strcmp(name, "xf86audioprev"))		key = KEY_PREV;
@@ -222,8 +226,10 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "[9]"))			key = KEY_PGUP;
     else if (!strcmp(name, "[+]"))			key = KEY_PLUS;
     else if (!strcmp(name, "[-]"))			key = KEY_MINUS;
+#if 0
     else if (!strcmp(name, "[*]"))			key = KEY_STAR;
     else if (!strcmp(name, "[/]"))			key = KEY_SLASH;
+#endif
 # elif SDL2
     else if (!strcmp(name, "pageup"))			key = KEY_PGUP;
     else if (!strcmp(name, "pagedown"))			key = KEY_PGDN;
