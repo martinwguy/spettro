@@ -23,7 +23,6 @@
 
 #include "spettro.h"
 
-// #include "audio_file.h"		/* for audio_file->sample_rate */
 #include "convert.h"
 #include "ui.h"
 

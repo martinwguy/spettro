@@ -513,7 +513,6 @@ restart:
 	    if (fft_freq_to_speclen(fft_freq, current_sample_rate()) > 1)
 		fft_freq *= 2;
 	}
-	// speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
 	drop_all_work();
 
 	/* Any calcs that are currently being performed will deliver
