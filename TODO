@@ -166,3 +166,17 @@ Make Ctrl-N or > make it skip to the next file.
 ------------------------------------------------------------------------
 Respond to stdin keystrokes as well - maybe solves the CAPS and CACA probs.
 ------------------------------------------------------------------------
+Make the score lines (optionally?) 3 pixels wide
+------------------------------------------------------------------------
+Make 'Y' and 'y' zoom in by less than a factor of two, say a tenth of
+the screen height, like the default time pan, or buy one octave like the
+frequency pan.
+------------------------------------------------------------------------
+Make Ctrl 'x' and 'X' zoom by one pixel.
+------------------------------------------------------------------------
+Make shift-W cycle backwards in the window functions.
+------------------------------------------------------------------------
+Make windw function change say which window it's now using
+------------------------------------------------------------------------
+make 'p' say which window function is chosen.
+------------------------------------------------------------------------
