@@ -392,12 +392,18 @@ restart:
 	else if (!Shift && !Control) {
 	    change_dyn_range(6.0);
 	    repaint_display(TRUE);
+	} else if (!Shift && Control) {
+	    change_dyn_range(1.0);
+	    repaint_display(TRUE);
 	}
 	break;
     case KEY_D:
 	if (Shift && !Control) set_window_function(DOLPH);
 	else if (!Shift && !Control) {
 	    change_dyn_range(-6.0);
+	    repaint_display(TRUE);
+	} else if (!Shift && Control) {
+	    change_dyn_range(-1.0);
 	    repaint_display(TRUE);
 	}
 	break;

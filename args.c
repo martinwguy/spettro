@@ -296,8 +296,8 @@ usage:
 -n min Set the minimum displayed frequency in Hz, default %g\n\
 -x min Set the maximum displayed frequency in Hz, default %g\n",
 				DEFAULT_MIN_FREQ, DEFAULT_MAX_FREQ); printf("\
--d n   Set the dynamic range of the color map in decibels, default %g dB\n",
-				-min_db); printf("\
+-d n   Set the dynamic range of the color map in decibels, default %gdB\n",
+				-DEFAULT_MIN_DB); printf("\
 -a     Label the vertical frequency axes\n\
 -f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
 -t n   Set the initial playing time in seconds\n\
@@ -323,13 +323,13 @@ Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by a tenth of a screenful\n\
            Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
 Up/Down    Pan up/down the frequency axis by a tenth of the graph's height\n\
-           (by a screenful if Shift is held; by one pixel if Control is held)\n\
+           (by a screenful if Shift is held; by one pixel if Ctrl is held)\n\
 PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
 X/x        Zoom in/out on the time axis\n\
 Y/y        Zoom in/out on the frequency axis\n\
 Plus/Minus Zoom both axes\n\
 c          Flip between color maps: heat map - grayscale - gray for printing\n\
-b/d        Change the dynamic range by 6dB to brighten/darken the quiet areas\n\
+b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
 M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\

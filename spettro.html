@@ -84,18 +84,26 @@ more musically-interesting detail.
       gray (white on black), print (grayscale, black on white).
       You can also select an initial color map with the <B>-c</B> option.
  <DT>b d
-  <DD>The 'b' and 'd' keys adjust the dynamic range of the color values and act
-      like a contrast control to make the image brighter or darker.
-      'b' increases the dynamic range by 6dB,
-      brightening the darker areas to reveal detail,
-      'd' decreases the dynamic range by 6dB,
+  <DD>The 'b' and 'd' keys brighten and darken the graphic, like a
+      contrast control, by adjusting the range of loudnesses that the
+      color scale covers.
+      <BR>
+      'b' increases the dynamic range by 6dB (by 1dB if Ctrl is held),
+      brightening the darker areas to reveal detail;
+      'd' decreases the dynamic range by 6dB (by 1dB if Ctrl is held),
       darkening the graphic to hide background noise and
-      to make the main sonic events stand out more.
+      make the main sonic events stand out.
       <BR>
       The loudest moments in any piece are always shown at maximum brightness
       (usually white) and by changing the dynamic range, you change which
       sound energy value is represented by the dimmest visible color
       (usually dark blue).
+      <BR>
+      By default, the dynamic range starts at 96dB and the minimum it goes
+      down to is 1 decibel, which shows only the very loudest areas.
+      <BR>
+      You can also set the initial dynamic range with the <B>-d</B>
+      command line argument.
  <DT>f F
   <DD>These keys change the size of tha audio sample used to calculate each
       column of the spectrogram.

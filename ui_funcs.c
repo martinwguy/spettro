@@ -193,6 +193,6 @@ change_dyn_range(double by)
     /* As min_db is negative, subtracting from it makes it bigger */
     min_db -= by;
 
-    /* min_db should not go positive */
-    if (min_db > -6.0) min_db = -6.0;
+    /* min_db should not go positive, so set minimum of 1dB */
+    if (DELTA_GT(min_db, -1.0)) min_db = -1.0;
 }
