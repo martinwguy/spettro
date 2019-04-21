@@ -174,8 +174,8 @@ frequency pan.
 ------------------------------------------------------------------------
 Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
-Embolden all command keys in spettro.html
-------------------------------------------------------------------------
 Turn the huge switch in do_key() into a table of key and four functions:
 { KEY_X, plain, shift, ctrl, ctrl-shift }
+------------------------------------------------------------------------
+Make score and guitar lines three pixels thick again.
 ------------------------------------------------------------------------
