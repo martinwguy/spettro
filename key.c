@@ -27,7 +27,7 @@
 
 static void map_to_lower_case(char *s);
 
-bool Shift, Control;
+bool Shift, Ctrl;
 
 /*
  * Keypress events
@@ -44,7 +44,7 @@ bool Shift, Control;
  *	We enable both types of events for SDL2 and jockey between them
  *	hoping to get all keypresses but no duplicates!
  *	The TEXTINPUT event ignores the keypad, the arrow keys and
- *	Control-X combinations.
+ *	Ctrl-X combinations.
  *
  * Other Ecore key names seen by Emotion:
  *	"XF86HomePage"	|^|
@@ -93,10 +93,10 @@ sdl_keydown(SDL_Event *eventp)
 
 #if ECORE_MAIN
     Shift = evas_key_modifier_is_set(mods, "Shift");
-    Control = evas_key_modifier_is_set(mods, "Control");
+    Ctrl = evas_key_modifier_is_set(mods, "Ctrl");
 #elif SDL_MAIN
     Shift = !!(SDL_GetModState() & KMOD_SHIFT);
-    Control = !!(SDL_GetModState() & KMOD_CTRL);
+    Ctrl = !!(SDL_GetModState() & KMOD_CTRL);
 # if SDL2
     numlock = !!(SDL_GetModState() & KMOD_NUM);
 # endif
@@ -112,8 +112,8 @@ sdl_keydown(SDL_Event *eventp)
     /* Single-character presses are handled best by TEXTINPUT,
      * but named characters and control characters only come by KEYDOWN
      */
-    if (name[1] == '\0' && (eventp->type == SDL_KEYDOWN && !Control)) return;
-    if (eventp->type == SDL_TEXTINPUT || Control)
+    if (name[1] == '\0' && (eventp->type == SDL_KEYDOWN && !Ctrl)) return;
+    if (eventp->type == SDL_TEXTINPUT || Ctrl)
 #endif
     if (name[1] == '\0') switch (name[0]) {
 	case 'q': key = KEY_Q;			break;

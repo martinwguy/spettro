@@ -384,13 +384,13 @@ gui_main()
 	    /* SDL's event.key.keysym.mod reflects the state of the modifiers
 	     * at initial key-down. SDL_GetModState seems to reflect now. */
 	    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
-	    Control = !!(SDL_GetModState() & KMOD_CTRL);
+	    Ctrl  = !!(SDL_GetModState() & KMOD_CTRL);
 	    sdl_keydown(&event);
 	    break;
 # if SDL2
 	case SDL_TEXTINPUT:
 	    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
-	    Control = !!(SDL_GetModState() & KMOD_CTRL);
+	    Ctrl  = !!(SDL_GetModState() & KMOD_CTRL);
 	    sdl_keydown(&event);
 	    break;
 # endif
@@ -398,7 +398,7 @@ gui_main()
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
 	    {
-		/* To detect Shift and Control states, it looks like we have to
+		/* To detect Shift and Ctrl states, it looks like we have to
 		 * examine the keys ourselves */
 # if SDL1
 		SDLMod
@@ -407,7 +407,7 @@ gui_main()
 # endif
 			   state = SDL_GetModState();
 		Shift = !!(state & KMOD_SHIFT);
-		Control = !!(state & KMOD_CTRL);
+		Ctrl = !!(state & KMOD_CTRL);
 
 		switch (event.button.button) {
 		case SDL_BUTTON_LEFT:
@@ -551,7 +551,7 @@ gui_deinit()
 }
 
 /*
- * Flip between windowed and full-screen mode in response to the Control-F key.
+ * Flip between windowed and full-screen mode in response to the Ctrl-F key.
  * "fullscreen" in ui.c knows whether we are in fullscreen mode already or not.
  */
 void

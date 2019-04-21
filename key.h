@@ -88,7 +88,7 @@ enum key {
     KEY_NEXT,
 #endif
 };
-extern bool Shift, Control;
+extern bool Shift, Ctrl;
 
 /* Functions supplied by key.c */
 #if ECORE_MAIN

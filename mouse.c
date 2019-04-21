@@ -23,8 +23,8 @@
 
 #include "mouse.h"
 
-#include "barlines.h"	/* for Shift and Control */
-#include "key.h"	/* for Shift and Control */
+#include "barlines.h"	/* for Shift and Ctrl */
+#include "key.h"	/* for Shift and Ctrl */
 #include "overlay.h"	/* for set_*_bar_time() */
 #include "paint.h"
 #include "ui_funcs.h"
@@ -33,9 +33,9 @@
 
 /*
  * They can click and release the mouse of the same point.
- * If Control, this means o set ehe left/right bar lines.
+ * If Ctrl, this means o set ehe left/right bar lines.
  *
- * If they move the mouse between Control-clock and contol-release,
+ * If they move the mouse between Ctrl-clock and contol-release,
  * this means to place/reposition the left/right bar line marker.
  *
  * If they move the mouse while holding a button down without ctrl,
@@ -76,7 +76,7 @@ mouseAnything(void *data, Evas *evas, Evas_Object *obj, void *einfo, bool down)
     Evas_Modifier *modifiers = ev->modifiers;
 
     Shift = evas_key_modifier_is_set(modifiers, "Shift");
-    Control = evas_key_modifier_is_set(modifiers, "Control");
+    Ctrl = evas_key_modifier_is_set(modifiers, "Ctrl");
 
     if (down) {
 	mouse_down_x = where->x;
@@ -101,7 +101,7 @@ mouseMove(void *data, Evas *evas, Evas_Object *obj, void *einfo)
     Evas_Event_Mouse_Move *ev = einfo;
     Evas_Modifier *modifiers = ev->modifiers;
     Shift = evas_key_modifier_is_set(modifiers, "Shift");
-    Control = evas_key_modifier_is_set(modifiers, "Control");
+    Ctrl = evas_key_modifier_is_set(modifiers, "Ctrl");
 
     do_mouse_move(ev->cur.canvas.x, ev->cur.canvas.y);
 }
@@ -121,7 +121,7 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
 	mouse_down_x = screen_x;
 	mouse_down_y = screen_y;
 	mouse_down_shift = Shift;
-	mouse_down_ctrl = Control;
+	mouse_down_ctrl = Ctrl;
 
 	switch (button) {
 	    case LEFT_BUTTON:	left_button_is_down = TRUE;	break;
@@ -130,7 +130,7 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
     }
 
     /* Mouse up while setting bar line position: set it. */
-    if (!down && Control) switch (button) {
+    if (!down && Ctrl) switch (button) {
     case LEFT_BUTTON:	set_left_bar_time(when);	break;
     case RIGHT_BUTTON:	set_right_bar_time(when);	break;
     }
@@ -145,7 +145,7 @@ void
 do_mouse_move(int screen_x, int screen_y)
 {
     /* Dragging the mouse left/right while setting a bar line */
-    if (Control) {
+    if (Ctrl) {
 	double when = disp_time + (screen_x - disp_offset) * step;
 
 	if (left_button_is_down) set_left_bar_time(when);
@@ -154,7 +154,7 @@ do_mouse_move(int screen_x, int screen_y)
 
     /* Plain dragging while holding left button:
      * pan the display by N pixels */
-    if (!Control && !Shift && left_button_is_down) {
+    if (!Ctrl && !Shift && left_button_is_down) {
 	if (screen_x != mouse_down_x) {
 	    time_pan_by((mouse_down_x - screen_x) * step);
 	}
