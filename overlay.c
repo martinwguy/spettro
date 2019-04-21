@@ -83,7 +83,7 @@ make_row_overlay()
 
 	    /* If in screen range, write it to the overlay */
 	    if (magindex >= 0 && magindex < len) {
-		overlay_row(magindex, color[note % 12] == 0 ? green : black);
+		overlay_row(magindex, color[note % 12] == 0 ? white : black);
 	    }
 	}
     }
@@ -100,6 +100,8 @@ make_row_overlay()
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
 	    overlay_row(magindex, white);
+	    overlay_row(magindex+1, white);
+	    overlay_row(magindex-1, white);
 	}
     }
 
@@ -114,6 +116,8 @@ make_row_overlay()
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
 	    overlay_row(magindex, white);
+	    overlay_row(magindex+1, white);
+	    overlay_row(magindex-1, white);
         }
     }
 }
