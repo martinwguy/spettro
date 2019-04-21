@@ -111,6 +111,18 @@ mrproper: clean
 	rm -f swoop.wav
 	dh_clean		# Debian stuff
 
-# Some test files
-swoop.wav:
-	sox -n -b 16 -e signed $@ synth 10 sine 27.5-14080
+# A test file
+#
+# Generate a tone sweep from min_freq to max_freq (27.5 to 14080) with an
+# amplitude inversely proportional to the frequency. The frequency range is
+#	14080/27.5 == 512
+# so in 10s the amplitude needs to go down to
+#	10*Log10(14080/27.5)dB == 27.0927dB
+# Sox fades logarithmically by 100dB in the time you specify so we extend
+# this so that it'll be 27.0927dB down after 10 seconds:
+# total fade length = 10s * 100/27.0927 == 36.91s
+# Sox, with a fade longer than the piece, adds silence, which we then trim.
+
+audio.wav:
+	sox -V1 -n -b 16 -e signed $@ synth 10 sine 27.5-14080 \
+				  fade l 0 36.91 36.91 trim 0 10
