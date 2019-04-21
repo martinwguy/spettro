@@ -470,11 +470,13 @@ restart:
 	break;
 
     case KEY_W:
-	if (Shift || Ctrl) { bad_key("Shift/Ctrl-W"); break; }
+	if (Ctrl) { bad_key("Ctrl-W"); break; }
 
-	/* w: Cycle through window functions */
-	next_window_function();
-	printf("Using %s window\n", window_name(window_function));
+	/* w: Cycle through window functions;
+	 * W: cycle backwards */
+	if (!Shift) next_window_function();
+	if (Shift) prev_window_function();
+	printf("Using a %s window\n", window_name(window_function));
 	repaint_display(TRUE);
 	break;
 

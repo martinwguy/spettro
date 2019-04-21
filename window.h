@@ -37,6 +37,7 @@ extern void free_windows(void);
 extern const char *window_name(window_function_t wfunc);
 extern const char window_key(window_function_t wfunc);
 extern void next_window_function(void);
+extern void prev_window_function(void);
 
 #define WINDOW_H
 #endif

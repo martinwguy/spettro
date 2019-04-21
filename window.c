@@ -145,6 +145,14 @@ next_window_function(void)
     repaint_display(TRUE);
 }
 
+void
+prev_window_function(void)
+{
+    window_function = (window_function + NUMBER_OF_WINDOW_FUNCTIONS - 1)
+    		      % NUMBER_OF_WINDOW_FUNCTIONS;
+    repaint_display(TRUE);
+}
+
 static void
 kaiser(double *data, int datalen)
 {
