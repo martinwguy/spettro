@@ -176,7 +176,3 @@ Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
 Make shift-W cycle backwards in the window functions.
 ------------------------------------------------------------------------
-Make windw function change say which window it's now using
-------------------------------------------------------------------------
-make 'p' say which window function is chosen.
-------------------------------------------------------------------------

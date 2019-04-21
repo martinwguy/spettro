@@ -208,6 +208,7 @@ set_window_function(window_function_t new_fn)
 	window_function = new_fn;
 	drop_all_work();
 	repaint_display(FALSE);
+	fprintf(stderr, "Using a %s window\n", window_name(new_fn));
     }
 }
 
@@ -517,8 +518,8 @@ restart:
 	    double right_bar_time = get_right_bar_time();
 
 	    printf(
-"min_freq=%g max_freq=%g fft_freq=%g dyn_range=%g\n",
- min_freq,   max_freq,   fft_freq,   -min_db);
+"min_freq=%g max_freq=%g dyn_range=%g fft_freq=%g window=%s\n",
+ min_freq,   max_freq,   -min_db,     fft_freq,   window_name(window_function));
 	    printf(
 "%s %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
 		playing == PLAYING ? "Playing" :
