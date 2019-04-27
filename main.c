@@ -122,8 +122,6 @@ static void bad_key(const char *key_name);
  */
 static int exit_status = 0;
 
-static audio_file_t *audio_file;       /* The one that's playing at the crosshairs */
-
 int
 main(int argc, char **argv)
 {
@@ -159,8 +157,6 @@ main(int argc, char **argv)
     	gui_quit();
 	exit(1);
     }
-
-    audio_file = af;	/* For now, until we implement playing multiple files */
 
     /* Initialise the graphics subsystem. */
     /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
@@ -509,7 +505,7 @@ restart:
     case KEY_O:
 	/* o: Make a screen dump */
 	if (Shift || Ctrl) { bad_key("Shift/Ctrl-O"); break; }
-	dump_screenshot(audio_file->filename);
+	dump_screenshot();
 	break;
 
     case KEY_P:

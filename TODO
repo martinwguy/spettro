@@ -177,3 +177,7 @@ Make Ctrl 'x' and 'X' zoom by one pixel.
 Turn the huge switch in do_key() into a table of key and four functions:
 { KEY_X, plain, shift, ctrl, ctrl-shift }
 ------------------------------------------------------------------------
+Be able to make score lines black as well as white (s-s-s?
+------------------------------------------------------------------------
+Be able to make score lines 1 or 3 pixels thick
+------------------------------------------------------------------------

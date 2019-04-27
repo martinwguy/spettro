@@ -30,10 +30,10 @@
 #include <string.h>
 
 void
-dump_screenshot(char *audio_filename)
+dump_screenshot()
 {
     char s[1024];
-    char *filename = strdup(audio_filename);;
+    char *filename = "spettro";	/* Used to be the audio filename */
 
     strcpy(s, filename);
     /* Add any parameters that they've changed */
@@ -54,5 +54,4 @@ dump_screenshot(char *audio_filename)
     add(s, "%s.png", "");
 #undef add
     gui_output_png_file(s);
-    free(filename);
 }
