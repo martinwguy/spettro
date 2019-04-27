@@ -169,13 +169,11 @@ Respond to stdin keystrokes as well - maybe solves the CAPS and CACA probs.
 Make the score lines (optionally?) 3 pixels wide
 ------------------------------------------------------------------------
 Make 'Y' and 'y' zoom in by less than a factor of two, say a tenth of
-the screen height, like the default time pan, or buy one octave like the
+the screen height, like the default time pan, or by one octave like the
 frequency pan.
 ------------------------------------------------------------------------
 Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
 Turn the huge switch in do_key() into a table of key and four functions:
 { KEY_X, plain, shift, ctrl, ctrl-shift }
-------------------------------------------------------------------------
-Make score and guitar lines three pixels thick again.
 ------------------------------------------------------------------------
