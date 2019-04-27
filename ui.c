@@ -16,11 +16,10 @@
  */
 
 /*
- * ui.h - Header for the ui.c and its callers
- *        and default values of its settings.
+ * ui.c - The current state of the user interface - all that determines
+ *	  what the screen looks like.
  *
- * Herein should be all variables that determine
- * what the screen view looks like.
+ *	  One day this will probably all be in a struct.
  */
 
 #include "spettro.h"
