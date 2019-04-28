@@ -28,7 +28,12 @@ extern void keyDown(void *data, Evas *evas, Evas_Object *obj, void *einfo);
 extern void sdl_keydown(SDL_Event *eventp);
 #endif
 
-/* Driver-independent keypress names and modifiers */
+/*
+ * Driver-independent keypress names
+ *
+ * This table must have the same entries in the same order as
+ * the key_fns[] table in do_key.c
+ */
 enum key {
     KEY_NONE,
     KEY_Q,
@@ -64,30 +69,26 @@ enum key {
     KEY_D,
     KEY_A,
     KEY_W,
-    /* Unclaimed window functions */
     KEY_H,
     KEY_N,
     KEY_M,
-    /* Soft volume control */
     KEY_0,
     KEY_9,
-    /* Number of bar lines */
-    KEY_1, KEY_F1,
-    KEY_2, KEY_F2,
-    KEY_3, KEY_F3,
-    KEY_4, KEY_F4,
-    KEY_5, KEY_F5,
-    KEY_6, KEY_F6,
-    KEY_7, KEY_F7,
-    KEY_8, KEY_F8,
-    KEY_F9, KEY_F10, KEY_F11, KEY_F12,
+    KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8,
+    KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
+    KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12,
 #if ECORE_MAIN
-    KEY_PLAY,	/* Extended keyboard's >/|| [] |<< and >>| buttons */
+    /* Extended keyboard's >/|| [] |<< and >>| buttons */
+    KEY_PLAY,
     KEY_STOP,
     KEY_PREV,
     KEY_NEXT,
 #endif
 };
+
+/* typedef key_t is already used by sys/types.h */
+#define key_t enum key
+
 extern bool Shift, Ctrl;
 
 /* Functions supplied by key.c */

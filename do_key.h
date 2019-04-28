@@ -21,7 +21,7 @@
 
 #include "key.h"
 
-extern void do_key(enum key key);
+extern void do_key(key_t key);
 
 #define DO_KEY_H
 #endif
