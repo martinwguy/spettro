@@ -14,6 +14,7 @@ TODO:
   audio file, even with the same fft_freq.
   Speclen is already in calc_t and result_t, so needs to be calculated when
   a calc is scheduled, to get rid of the global speclen.
+- Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
 ------------------------------------------------------------------------
 Be able to position the green line, disp_offset,
 and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
