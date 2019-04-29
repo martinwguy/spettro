@@ -308,9 +308,10 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     gui_lock();		/* Allow pixel-writing access */
     for (y=from_y; y <= to_y; y++) {
         int k = y - min_y;
-	/* Apply row overlay, if any, otherwise paint the pixel */
+	/* Apply row overlay, if any, otherwise paint the pixel
+	 * but don't overlay the green line */
 	gui_putpixel(pos_x, y,
-		     get_row_overlay(y, &ov)
+		     (green_line_off || pos_x != disp_offset) && get_row_overlay(y, &ov)
 		     ? ov :
 		     /* OR in the green line if it's on */
 		     ((!green_line_off && pos_x == disp_offset) ? green : 0)
