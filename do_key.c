@@ -564,7 +564,7 @@ static key_fn key_fns[] = {
     { KEY_O,	"O",    k_screendump,	k_bad,		k_bad,		k_bad },
     { KEY_P,	"P",    k_print_params,	k_bad,		k_bad,		k_bad },
     { KEY_T,	"T",    k_print_time,	k_bad,		k_bad,		k_bad },
-    { KEY_F,	"F",    k_fft_size,	k_fullscreen,	k_fft_size,	k_bad },
+    { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
     { KEY_L,	"L",    k_left_barline,	k_set_window,	k_refresh,	k_bad },
     { KEY_R,	"R",    k_right_barline,k_set_window,	k_redraw,	k_bad },
     { KEY_B,	"B",    k_brighter,	k_set_window,	k_brighter,	k_bad },
