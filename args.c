@@ -55,11 +55,15 @@ process_args(int *argcp, char ***argvp)
     for (argv++, argc--;	/* Skip program name */
 	 argc > 0 && argv[0][0] == '-';
 	 argv++, argc--) {
-	int letter = argv[0][1];
+	int letter;
 
-switchagain:
-	switch (letter) {
+switch_again:
+fprintf(stderr, "argv[0] = \"%s\"\n", argv[0]);
+	switch (letter = argv[0][1]) {
 	case '-':	/* Handle long args */
+	    /* but avoid triggering in "-p--width" */
+	    if (argv[0][0] != '-') goto usage;
+
 	    if (!strcmp(argv[0], "--width")) argv[0] = "-w";
 	    else if (!strcmp(argv[0], "--height")) argv[0] = "-h";
 	    else if (!strcmp(argv[0], "--jobs")) argv[0] = "-j";
@@ -103,9 +107,7 @@ switchagain:
 	    }
 	    else goto usage;
 
-	    letter = argv[0][1];
-
-	    goto switchagain;
+	    goto switch_again;
 
 	/* For flags that take an argument, advance argv[0] to point to it */
 	case 'n': case 'x':
@@ -129,26 +131,33 @@ switchagain:
 	 */
 	case 'p':
 	    autoplay = TRUE;
-	    break;
+	    goto another_letter;
 	case 'e':
 	    exit_when_played = TRUE;
-	    break;
+	    goto another_letter;
 	case 'F':
 	    fullscreen = TRUE;
-	    break;
+	    goto another_letter;
 	case 'k':	/* Draw black and white lines where piano keys fall */
 	    piano_lines = TRUE;
-	    break;
+	    goto another_letter;
 	case 's':	/* Draw conventional score notation staff lines? */
 	    staff_lines = TRUE;
 	    guitar_lines = FALSE;
-	    break;
+	    goto another_letter;
 	case 'g':	/* Draw guitar string lines? */
 	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
-	    break;
+	    goto another_letter;
 	case 'a':
 	    show_axes = TRUE;
+
+another_letter:
+	    /* Allow multiple flags in the same command like argument */
+	    if (argv[0][2] != '\0') {
+		argv[0]++;
+		goto switch_again;
+	    }
 	    break;
 
 	/*
