@@ -123,7 +123,6 @@ main(int argc, char **argv)
 	max_y -= top_margin;
     }
     maglen = (max_y - min_y) + 1;
-    make_row_overlay();
 
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.
@@ -139,6 +138,9 @@ main(int argc, char **argv)
     /* Initialise the graphics subsystem. */
     /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
     gui_init(filename);
+
+    /* Must happen after colors (green,white) are defined */
+    make_row_overlay();	
 
     init_audio(af, filename);
 

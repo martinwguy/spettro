@@ -58,7 +58,6 @@ process_args(int *argcp, char ***argvp)
 	int letter;
 
 switch_again:
-fprintf(stderr, "argv[0] = \"%s\"\n", argv[0]);
 	switch (letter = argv[0][1]) {
 	case '-':	/* Handle long args */
 	    /* but avoid triggering in "-p--width" */
@@ -98,7 +97,7 @@ fprintf(stderr, "argv[0] = \"%s\"\n", argv[0]);
 	    else if (!strcmp(argv[0], "--score")) argv[0] = "-s";
 	    else if (!strcmp(argv[0], "--show-axes")) argv[0] = "-a";
 	    /* Those environment variables */
-	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-S";
+	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-R";
 	    else if (!strcmp(argv[0], "--ppsec")) argv[0] = "-P";
 	    /* Flags with no single-letter equivalent */
 	    else if (!strcmp(argv[0], "--version")) {
@@ -112,7 +111,7 @@ fprintf(stderr, "argv[0] = \"%s\"\n", argv[0]);
 	/* For flags that take an argument, advance argv[0] to point to it */
 	case 'n': case 'x':
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
-	case 'o': case 'W': case 'c': case 'v': case 'd': case 'S': case 'P':
+	case 'o': case 'W': case 'c': case 'v': case 'd': case 'R': case 'P':
 	case 'b':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
@@ -141,16 +140,25 @@ fprintf(stderr, "argv[0] = \"%s\"\n", argv[0]);
 	case 'k':	/* Draw black and white lines where piano keys fall */
 	    piano_lines = TRUE;
 	    goto another_letter;
-	case 's':	/* Draw conventional score notation staff lines? */
-	    staff_lines = TRUE;
+	case 's':	/* Draw conventional score notation staff lines */
+	    staff_line_width = 1;
+	    goto staff2;
+	case 'S':	/* Same, three pixels thick */
+	    staff_line_width = 3;
+staff2:	    staff_lines = TRUE;
 	    guitar_lines = FALSE;
 	    goto another_letter;
-	case 'g':	/* Draw guitar string lines? */
-	    guitar_lines = TRUE;
+	case 'g':	/* Draw guitar string lines */
+	    guitar_line_width = 1;
+	    goto guitar2;
+	case 'G':	/* Same, three pixels thick */
+	    guitar_line_width = 3;
+guitar2:    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    goto another_letter;
 	case 'a':
 	    show_axes = TRUE;
+	    goto another_letter;
 
 another_letter:
 	    /* Allow multiple flags in the same command like argument */
@@ -198,7 +206,7 @@ another_letter:
 	case 'f':	/* Set FFT frequency */
 	case 'v':	/* Set software volume control */
 	case 'd':	/* Set dynamic range */
-	case 'S':	/* Set scrolling rate */
+	case 'R':	/* Set scrolling rate */
 	case 'P':	/* Set pixel columns per second */
 	    errno = 0;
 	    {
@@ -244,7 +252,7 @@ another_letter:
 		case 'f': fft_freq = arg;	break;
 		case 'v': softvol = arg;	break;
 		case 'd': min_db = -arg;	break;
-		case 'S': fps = arg;		break;
+		case 'R': fps = arg;		break;
 		case 'P': ppsec = arg;		break;
 		}
 	    }
@@ -315,11 +323,11 @@ usage:
 -b n   Set the number of beats per bar\n\
 -P n   Set how many pixel columns to display per second of audio, default %g\n",
 				DEFAULT_PPSEC); printf("\
--S n   Set the scrolling rate in frames per second, default %g\n",
+-R n   Set the scrolling rate in frames per second, default %g\n",
 				DEFAULT_FPS); printf("\
--k     Overlay black and green lines showing frequencies of an 88-note keyboard\n\
--s     Overlay conventional score notation pentagrams as white lines\n\
--g     Overlay lines showing the positions of a classical guitar's strings\n\
+-k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
+-s/-S  Overlay score notation pentagrams as 1- or 3-pixel-thick white lines\n\
+-g/-G  Overlay 1- or 3-pixel-thick lines showing a classical guitar's strings\n\
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
        r for rectangular, k for Kaiser, n for Nuttall, h for Hann\n\
@@ -345,10 +353,10 @@ M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n
 w/W        Cycle forward/backward through the window functions\n\
 a          Toggle the frequency axis\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
-s          Toggle the overlay of conventional staff lines\n\
-g          Toggle the overlay of classical guitar strings' frequencies\n\
+s/S        Toggle the overlay of conventional staff lines\n\
+g/G        Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
-1-8/F1-F12 Set the nuumber of beats per bar (1/F1 means \"no beat lines\")\n\
+1-8/F1-F12 Set the number of beats per bar (1 or F1 means \"no beat lines\")\n\
 9/0        Decrease/increase the soft volume control\n\
 t          Show the current playing time on stdout\n\
 o          Output (save) the current screenful into a PNG file\n\

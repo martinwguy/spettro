@@ -342,17 +342,49 @@ k_overlay(key_t key)
 {
     switch (key) {
     case KEY_K:
-	piano_lines = !piano_lines;
+	/* Cycle white keys through white-green-none */
+	if (!piano_lines) {
+	    piano_lines = TRUE;
+	    piano_line_color = white;
+	} else {
+	    if (piano_line_color == white) {
+		piano_line_color = green;
+	    } else {
+		piano_lines = FALSE;
+	    }
+	}
 	break;
     case KEY_S:
-	staff_lines = !staff_lines;
+	staff_line_width = Shift ? 3 : 1;
+	/* Cycle through white-black-none */
+	if (!staff_lines) {
+	    staff_lines = TRUE;
+	    staff_line_color = white;
+	} else {
+	    if (staff_line_color == white) {
+		staff_line_color = black;
+	    } else {
+		staff_lines = FALSE;
+	    }
+	}
 	if (staff_lines) guitar_lines = FALSE;
 	break;
     case KEY_G:
-	guitar_lines = !guitar_lines;
+	guitar_line_width = Shift ? 3 : 1;
+	/* Cycle through white-black-none */
+	if (!guitar_lines) {
+	    guitar_lines = TRUE;
+	    guitar_line_color = white;
+	} else {
+	    if (guitar_line_color == white) {
+		guitar_line_color = black;
+	    } else {
+		guitar_lines = FALSE;
+	    }
+	}
 	if (guitar_lines) staff_lines = FALSE;
 	break;
-    default:	/* Silence compier warnings */
+    default:	/* Silence compiler warnings */
     	break;
     }
     make_row_overlay();
@@ -559,8 +591,8 @@ static key_fn key_fns[] = {
     { KEY_SLASH,"slash",k_bad		k_bad,		k_bad,		k_bad },
 #endif
     { KEY_K,	"K",    k_overlay,	k_set_window,	k_bad,		k_bad },
-    { KEY_S,	"S",    k_overlay,	k_bad,		k_bad,		k_bad },
-    { KEY_G,	"G",    k_overlay,	k_bad,		k_bad,		k_bad },
+    { KEY_S,	"S",    k_overlay,	k_overlay,	k_bad,		k_bad },
+    { KEY_G,	"G",    k_overlay,	k_overlay,	k_bad,		k_bad },
     { KEY_O,	"O",    k_screendump,	k_bad,		k_bad,		k_bad },
     { KEY_P,	"P",    k_print_params,	k_bad,		k_bad,		k_bad },
     { KEY_T,	"T",    k_print_time,	k_bad,		k_bad,		k_bad },

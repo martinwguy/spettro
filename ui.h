@@ -19,6 +19,7 @@
  * and default values of its settings.
  */
 
+#include "gui.h"	/* for color_t */
 #include "window.h"
 
 /* UI state variables */
@@ -57,6 +58,14 @@ extern window_function_t window_function;
 extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */
 extern bool guitar_lines;	/* Draw guitar string lines? */
+extern color_t piano_line_color; /* Color to draw piano lines' white keys */
+#define DEFAULT_PIANO_LINE_COLOR white
+extern color_t staff_line_color; /* Color to draw staff lines */
+#define DEFAULT_STAFF_LINE_COLOR white
+extern color_t guitar_line_color;/* Color to draw guitar lines */
+#define DEFAULT_GUITAR_LINE_COLOR white
+extern int staff_line_width;	/* Thickness of staff lines (1 or 3) */
+extern int guitar_line_width;	/* Thickness of guitar lines (1 or 3) */
 extern bool show_axes;		/* Are we to show/showing the axes? */
 
 /* Markers for the start and end of one bar, measured in seconds from

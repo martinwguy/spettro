@@ -167,18 +167,11 @@ Make Ctrl-N or > make it skip to the next file.
 ------------------------------------------------------------------------
 Respond to stdin keystrokes as well - maybe solves the CAPS and CACA probs.
 ------------------------------------------------------------------------
-Make the score lines (optionally?) 3 pixels wide
-------------------------------------------------------------------------
 Make 'Y' and 'y' zoom in by less than a factor of two, say a tenth of
 the screen height, like the default time pan, or by one octave like the
 frequency pan.
 ------------------------------------------------------------------------
 Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
-Turn the huge switch in do_key() into a table of key and four functions:
-{ KEY_X, plain, shift, ctrl, ctrl-shift }
-------------------------------------------------------------------------
-Be able to make score lines black as well as white (s-s-s?
-------------------------------------------------------------------------
-Be able to make score lines 1 or 3 pixels thick
+Add command-line flag to set staff or guitar line color.
 ------------------------------------------------------------------------

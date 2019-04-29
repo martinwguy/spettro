@@ -22,10 +22,12 @@
 typedef unsigned color_t;
 typedef unsigned char primary_t;
 extern const color_t gray, green, white, black;
+#define no_color (0x00000000)	/* EVAS colors are 0xFFRRGGBB */
 #elif SDL_VIDEO
 typedef unsigned color_t;
 typedef unsigned char primary_t;
 extern color_t gray, green, white, black;
+#define no_color 0xFF000000	/* SDL colors are 0x00RRGGBB */
 #endif
 #define background gray
 

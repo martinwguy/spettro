@@ -50,9 +50,10 @@ static int       row_overlay_maglen = 0;
 
 /* and we remember what parameters we calculated it for so as to recalculate it
  * automatically if anything changes.
+ * -1.0 forces a call to make_row_overlay() in first call to get_row_overlay()
  */
-static double row_overlay_min_freq;
-static double row_overlay_max_freq;
+static double row_overlay_min_freq = -1.0;
+static double row_overlay_max_freq = -1.0;
 
 /*
  * Calculate the overlays
@@ -74,6 +75,10 @@ make_row_overlay()
     memset(row_is_overlaid, 0, len * sizeof(*row_is_overlaid));
 
     if (piano_lines) {
+	/* Initialization deferred until "white" is defined */
+	if (piano_line_color == no_color)
+	    piano_line_color = DEFAULT_PIANO_LINE_COLOR;
+
 	/* Run up the piano keyboard blatting the pixels they hit */
 	for (note = 0; note < 88; note++) {
 	    /* Colour of notes in octave,  starting from A */
@@ -83,12 +88,17 @@ make_row_overlay()
 
 	    /* If in screen range, write it to the overlay */
 	    if (magindex >= 0 && magindex < len) {
-		overlay_row(magindex, color[note % 12] == 0 ? white : black);
+		overlay_row(magindex, color[note % 12] == 0 ? piano_line_color
+							    : black);
 	    }
 	}
     }
 
     if (staff_lines) {
+	/* Initialization deferred until "white" is defined */
+	if (staff_line_color == no_color)
+	    staff_line_color = DEFAULT_STAFF_LINE_COLOR;
+
 	/* Which note numbers do the staff lines fall on? */
 	static int notes[] = {
 	    22, 26, 29, 32, 36,	/* G2 B2 D3 F3 A3 */
@@ -99,13 +109,19 @@ make_row_overlay()
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
-	    overlay_row(magindex, white);
-	    overlay_row(magindex+1, white);
-	    overlay_row(magindex-1, white);
+	    overlay_row(magindex, staff_line_color);
+	    if (staff_line_width == 3) {
+		overlay_row(magindex+1, staff_line_color);
+		overlay_row(magindex-1, staff_line_color);
+	    }
 	}
     }
 
     if (guitar_lines) {
+	/* Initialization deferred until "white" is defined */
+	if (guitar_line_color == no_color)
+	    guitar_line_color = DEFAULT_GUITAR_LINE_COLOR;
+
 	/* Which note numbers do the guitar strings fall on? */
 	static int notes[] = {
 	    19, 24, 29, 34, 38, 43  /* Classical guitar: E2 A2 D3 G3 B3 E4 */
@@ -115,9 +131,11 @@ make_row_overlay()
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
-	    overlay_row(magindex, white);
-	    overlay_row(magindex+1, white);
-	    overlay_row(magindex-1, white);
+	    overlay_row(magindex, guitar_line_color);
+	    if (guitar_line_width == 3) {
+		overlay_row(magindex+1, guitar_line_color);
+		overlay_row(magindex-1, guitar_line_color);
+	    }
         }
     }
 }

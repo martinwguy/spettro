@@ -152,21 +152,27 @@ piano keys, staff lines and guitar strings.
       overlays the spectrogram with 88 horizontal lines,
       some black, some white, showing the frequencies of the keys
       of a grand piano from A0(27.5Hz) to C8(4186Hz).
-      <BR>Pressing '<B>k</B>' again removes the keyboard overlay.
- <DT><B>s</B>
+      <BR>Pressing '<B>k</B>' again makes the staff lines
+          green instead of white and pressing it again removes them.
+ <DT><B>s S</B>
   <DD>The '<B>s</B>' key (or the <B>-s</B> command-line flag)
-      overlays two five-line pentagrams, as used in
-      manuscript, making it look more like a conventional musical score.
+      overlays two white five-line pentagrams, as used in manuscript,
+      making it look more like a conventional musical score.
       <BR>From top to bottom, the score lines are centered on:
       <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
       <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz)
-      <BR>Pressing '<B>s</B>' again removes the score lines.
- <DT><B>g</B>
+      <BR>'<B>s</B>' makes the lines one pixel thick,
+          '<B>S</B>' three pixels thick.
+      <BR>Pressing '<B>s</B>' or '<B>S</B>' again makes the staff lines
+          black instead of white and pressing it again removes them.
+ <DT><B>g G</B>
   <DD>The '<B>g</B>' key (or the <B>-g</B> command-line flag)
       overlays the frequencies of the six strings
       of the classical guitar, centered on:
       <BR>E2(82.4Hz) A2(110Hz) D3(146.8Hz) G3(196.0Hz) B3(246.9Hz) E4 (329.6Hz)
-      <BR>Pressing '<B>g</B>' again removes them.
+      <BR><B>g</B> makes the lines one pixel thick, <B>G</B> three pixels thick.
+      <BR>Pressing '<B>g</B>' or '<B>G</B>' again makes the guitar lines
+          black instead of white and pressing it again removes them.
  <DT><B>a</B>
   <DD>The '<B>a</B>' key toggles a frequency axis on the left side of the graph.
 </DL>
@@ -275,7 +281,7 @@ audio file name:
   <DD>Sets the dynamic range of the color map. Default: 100dB.
  <DT><B>-f</B> n / <B>--fft-freq</B> <I>n</I>
   <DD>Sets the FFT frequency in Hz. Default: 5 (using samples of one fifth of a second.)
- <DT><B>-S</B> n / <B>--fps</B> <I>n</I>
+ <DT><B>-R</B> n / <B>--fps</B> <I>n</I>
   <DD>Scrolls the graphic <I>n</I> times per second.
       Default: 25 frames per second.
  <DT><B>-P</B> n / <B>--ppsec</B> <I>n</I>
