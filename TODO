@@ -173,5 +173,14 @@ frequency pan.
 ------------------------------------------------------------------------
 Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
-Add command-line flag to set staff or guitar line color.
+Add command-line flag to set overlay colors.
+------------------------------------------------------------------------
+Be able to change A440 to A432 etc witn -A 432
+------------------------------------------------------------------------
+Add finer FFT frequency control with Ctrl (and change the Fullscreen key)
+------------------------------------------------------------------------
+When scrolling to playing position, take into account the timer interval
+to position the display at the middle of the forthcoming timer interval.
+Currently it syncs to the playing time, which then moves ahead so it
+lags a little.
 ------------------------------------------------------------------------
