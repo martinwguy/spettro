@@ -102,9 +102,9 @@ unsigned frequency_axis_width = 1 + 5 * (3 + 1) + 2;	/* == 23 */
  */
 unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);	/* == 11 */
 
-/* Space above and below for other axes/info. None yet. */
-unsigned top_margin = 0;
-unsigned bottom_margin = 0;
+/* Space above and below for status info at the top, time index at the bottom */
+unsigned top_margin = (1 + 5 + 1);	/* space above, text, space below */
+unsigned bottom_margin = (1 + 5 + 1);	/* space below, text, space above */
 
 /* Values derived from the above */
 double step = 0.0;	/* time step per column = 1/ppsec

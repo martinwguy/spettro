@@ -23,6 +23,7 @@
 #include "paint.h"
 
 #include "audio.h"
+#include "axes.h"
 #include "barlines.h"
 #include "cache.h"
 #include "convert.h"
@@ -124,6 +125,8 @@ do_scroll()
 	    repaint_column(x, min_y, max_y, FALSE);
 	}
     }
+
+    if (show_axes) draw_time_axis();
 
     /* The whole screen has changed (well, unless there's background) */
     gui_update_display();

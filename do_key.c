@@ -180,7 +180,6 @@ k_freq_pan(key_t key)
     	break;	/* Shut up compiler warnings */
     }
 
-    if (show_axes) draw_frequency_axes();
     gui_update_display();
 }
 
@@ -248,9 +247,9 @@ k_set_window(key_t key)
 
     if (new_fn != window_function) {
 	window_function = new_fn;
+	if (show_axes) draw_status_line();
 	drop_all_work();
 	repaint_display(FALSE);
-	fprintf(stderr, "Using a %s window\n", window_name(new_fn));
     }
 }
 
@@ -281,6 +280,7 @@ k_toggle_axes(key_t key)
     if (show_axes) {
 	/* Remove frequency axis */
 	min_x = 0; max_x = disp_width - 1;
+	/* Remove time axis and status information */
 	min_y = 0; max_y = disp_height - 1;
 	maglen = (max_y - min_y) + 1;
     } else {
@@ -307,7 +307,7 @@ k_cycle_window(key_t key)
 {
     if (!Shift) next_window_function();
     if (Shift) prev_window_function();
-    printf("Using a %s window\n", window_name(window_function));
+    if (show_axes) draw_status_line();
     repaint_display(TRUE);
 }
 
@@ -396,9 +396,10 @@ min_freq,   max_freq,   -min_db,     fft_freq,   window_name(window_function));
 	printf("right bar line=%g", right_bar_time);
     }
     if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED)
-	printf(" interval=%g bpm=%g",
+	printf(" interval=%g bpm=%g, beats_per_bar=%d",
 	    fabs(right_bar_time - left_bar_time),
-	    60.0 / fabs(right_bar_time - left_bar_time));
+	    60.0 / fabs(right_bar_time - left_bar_time),
+	    beats_per_bar);
     if (left_bar_time != UNDEFINED || right_bar_time != UNDEFINED)
 	printf("\n");
 }
@@ -432,6 +433,8 @@ k_fft_size(key_t key)
 	    fft_freq *= 2;
     }
     drop_all_work();
+
+    if (show_axes) draw_status_line();
 
     /* Any calcs that are currently being performed will deliver
      * a result for the old speclen, which will be ignored (or cached)

@@ -93,6 +93,11 @@ time_zoom_by(double by)
 
     /* Zooming by < 1.0 increases the step size */
     if (by < 1.0) reschedule_for_bigger_step();
+
+    if (show_axes) {
+	draw_time_axis();
+	draw_status_line();
+    }
 }
 
 /* Pan the display on the vertical axis by changing min_freq and max_freq
@@ -135,6 +140,10 @@ freq_pan_by(double by)
 		repaint_column(x, min_y, min_y + (-by_pixels - 1), TRUE);
 	    }
 	}
+    }
+    if (show_axes) {
+	draw_frequency_axes();
+	draw_status_line();
     }
 }
 
@@ -181,7 +190,10 @@ freq_zoom_by(double by)
 	return;
     }
 
-    if (show_axes) draw_frequency_axes();
+    if (show_axes) {
+    	draw_frequency_axes();
+    	draw_status_line();
+    }
 }
 
 /* Change the color scale's dynamic range, thereby changing the brightness
@@ -195,4 +207,6 @@ change_dyn_range(double by)
 
     /* min_db should not go positive, so set minimum of 1dB */
     if (DELTA_GT(min_db, -1.0)) min_db = -1.0;
+
+    if (show_axes) draw_status_line();
 }

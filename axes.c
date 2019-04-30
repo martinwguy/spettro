@@ -31,10 +31,13 @@
 #include "spettro.h"
 #include "axes.h"
 
+#include "audio.h"
+#include "barlines.h"
 #include "convert.h"
 #include "gui.h"
 #include "text.h"
 #include "ui.h"
+#include "window.h"
 
 #include <string.h>
 
@@ -73,7 +76,8 @@ void
 draw_axes(void)
 {
     draw_frequency_axes();
-    draw_time_axes();
+    draw_status_line();
+    draw_time_axis();
 }
 
 void
@@ -374,13 +378,68 @@ calculate_log_ticks(double min, double max, double distance)
 }
 
 /* Stuff for axes along the top and bottom edges of the screen */
+
+/* Draw the status line along the top of the graph */
 void
-draw_time_axes(void)
+draw_status_line(void)
 {
-    /* clear bottom */
-    gui_paint_rect(min_x, 0,         max_x, min_y - 1, black);
-    gui_update_rect(min_x, 0,         max_x, min_y - 1);
-    /* clear top */
-    gui_paint_rect(min_x, max_y + 1, max_x, disp_height - 1, black);
+    char s[128];
+
+    /* First, blank it */
+    gui_paint_rect(min_x, max_y+1, max_x, disp_height-1, black);
+
+    gui_lock();
+    sprintf(s, "%g - %g Hz   %g octaves",
+	    min_freq, max_freq,
+    	    log(max_freq / min_freq) / log(2.0));
+    draw_text(s, min_x, max_y + 2, LEFT, BOTTOM);
+
+    sprintf(s, "%g pixels per second   %g cents per pixel",
+    	    ppsec, (log(v_pixel_freq_ratio()) / log(2.0)) * 1200);
+    draw_text(s, disp_offset, max_y + 2, CENTER, BOTTOM);
+
+    sprintf(s, "%g dB DYNAMIC RANGE", -min_db);
+    draw_text(s, (max_x + disp_offset / 2), max_y + 2, CENTER, BOTTOM);
+
+    sprintf(s, "%s WINDOW AT %g HZ", window_name(window_function), fft_freq);
+    draw_text(s, max_x, max_y + 2, RIGHT, BOTTOM);
+    gui_unlock();
+
     gui_update_rect(min_x, max_y + 1, max_x, disp_height - 1);
+}
+
+/* Draw the times along the bottom of the graph */
+void
+draw_time_axis(void)
+{
+    char s[128];
+
+    /* Time of left- and rightmost pixel columns */
+    double min_time = disp_time - (disp_offset - min_x) * step;
+    double max_time = disp_time + (max_x - disp_offset) * step;
+
+    /* First, blank it */
+    gui_paint_rect(min_x, 0, max_x, min_y-1, black);
+
+    gui_lock();
+
+    /* Current playing time */
+    sprintf(s, "%.2f", disp_time);
+    draw_text(s, disp_offset, 1, CENTER, BOTTOM);
+
+    /* From */
+    if (DELTA_GE(min_time, 0.0)) {
+	sprintf(s, "%.2f", min_time);
+	draw_text(s, min_x, 1, LEFT, BOTTOM);
+    }
+
+    /* To */
+    if (DELTA_LE(max_time, audio_files_length())) {
+	sprintf(s, "%.2f", max_time);
+	draw_text(s, max_x, 1, RIGHT, BOTTOM);
+    }
+
+    gui_unlock();
+
+    gui_update_rect(min_x, 0, max_x, min_y - 1);
 }

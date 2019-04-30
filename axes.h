@@ -19,4 +19,5 @@
 
 extern void draw_axes(void);
 extern void draw_frequency_axes(void);
-extern void draw_time_axes(void);
+extern void draw_status_line(void);
+extern void draw_time_axis(void);
