@@ -37,14 +37,30 @@ static char *digits[] = {
 };
 static const int digit_stride = 10;
 
-static char *letters[] = {
+static char *lettersAG[] = {
     " 0 ", "00 ", " 00", "00 ", "000", "000", " 00",
     "0 0", "0 0", "0  ", "0 0", "0  ", "0  ", "0  ",
     "0 0", "00 ", "0  ", "0 0", "00 ", "00 ", "0 0",
     "000", "0 0", "0  ", "0 0", "0  ", "0  ", "0 0",
     "0 0", "00 ", " 00", "00 ", "000", "0  ", " 0 ",
 };
-static const int letter_stride = 7;
+static const int AG_stride = 7;
+static char *lettersHQ[] = {
+    "0 0", "000", "000", "0 0", "0  ", "0 0", "   ", " 0 ", "00 ", " 0 ",
+    "0 0", " 0 ", "  0", "00 ", "0  ", "000", "00 ", "0 0", "0 0", "0 0",
+    "000", " 0 ", "  0", "0  ", "0  ", "0 0", "0 0", "0 0", "00 ", "0 0",
+    "0 0", " 0 ", "  0", "00 ", "0  ", "0 0", "0 0", "0 0", "0  ", "0 0",
+    "0 0", "000", "00 ", "0 0", "000", "0 0", "0 0", " 0 ", "0  ", " 00",
+};
+static const int HQ_stride = 10;
+static char *lettersRZ[] = {
+    "00 ", " 00", "000", "0 0", "0 0", "0 0", "0 0", "0 0", "000",
+    "0 0", "0  ", " 0 ", "0 0", "0 0", "0 0", "0 0", "0 0", "  0",
+    "00 ", " 0 ", " 0 ", "0 0", "0 0", "0 0", " 0 ", " 0 ", " 0 ",
+    "0 0", "  0", " 0 ", "0 0", "0 0", "000", "0 0", " 0 ", "0  ",
+    "0 0", "00 ", " 0 ", "000", " 0 ", "0 0", "0 0", "0  ", "000",
+};
+static const int RZ_stride = 9;
 
 /*
  * Return the width of a text in pixels
@@ -60,8 +76,11 @@ text_width(const char *text)
     	char c = toupper(text[x]);
 	if (isdigit(c) || isupper(c)) width += 4;
 	else if (c == '.') width += 2;
+	else if (c == ':') width += 2;
 	else if (c == '+') width += 4;
 	else if (c == '-') width += 4;
+	else if (c == '=') width += 4;
+	else if (c == ' ') width += 2;
     }
     if (width > 0) width--; /* Not including the trailing blank column */
 
@@ -73,6 +92,8 @@ text_width(const char *text)
  * Alignment TOP put the top pixel of the text at that y coordinat
  * Alignment LEFT puts the leftmost pixel of the text at that x coordinat
  * CENTER centers the text on that coordinate value.
+ *
+ * gui_lock() and gui_unlock() must be placed around calls to this.
  */
 void
 draw_text(const char *text, int at_x, int at_y,
@@ -96,11 +117,15 @@ draw_text(const char *text, int at_x, int at_y,
     }
 
     /* Draw text at that position */
-    gui_lock();
     for (x=0; text[x]; x++) {
 	char c = toupper(text[x]);
+
 	if (c == '.') {
 	    gui_putpixel(at_x, at_y - 4, green);
+	    at_x += 2;
+	} else if (c == ':') {
+	    gui_putpixel(at_x, at_y - 3, green);
+	    gui_putpixel(at_x, at_y - 1, green);
 	    at_x += 2;
 	} else if (c == '+') {
 	    gui_putpixel(at_x+1, at_y - 1, green);	/* top */
@@ -114,6 +139,16 @@ draw_text(const char *text, int at_x, int at_y,
 	    gui_putpixel(at_x+1, at_y - 2, green);
 	    gui_putpixel(at_x+2, at_y - 2, green);
 	    at_x += 4;
+	} else if (c == '=') {
+	    gui_putpixel(at_x,   at_y - 1, green);	
+	    gui_putpixel(at_x+1, at_y - 1, green);
+	    gui_putpixel(at_x+2, at_y - 1, green);
+	    gui_putpixel(at_x,   at_y - 3, green);	
+	    gui_putpixel(at_x+1, at_y - 3, green);
+	    gui_putpixel(at_x+2, at_y - 3, green);
+	    at_x += 4;
+	} else if (c == ' ') {
+	    at_x += 2;
 	} else if (isdigit(c) || isupper(c)) {
 	    char **glyphs;
 	    int stride;
@@ -124,10 +159,22 @@ draw_text(const char *text, int at_x, int at_y,
 		glyphs = digits;
 		stride = digit_stride;
 		digit = c - '0';
-	    } else {
-		glyphs = letters;
-		stride = letter_stride;
+	    } else if (c >= 'A' && c <= 'G') {
+		glyphs = lettersAG;
+		stride = AG_stride;
 		digit = c - 'A';
+	    } else if (c >= 'H' && c <= 'Q') {
+		glyphs = lettersHQ;
+		stride = HQ_stride;
+		digit = c - 'H';
+	    } else if (c >= 'R' && c <= 'Z') {
+		glyphs = lettersRZ;
+		stride = RZ_stride;
+		digit = c - 'R';
+	    } else {
+	    	fprintf(stderr, "Unknown text character '%c'\n", c);
+    		gui_unlock();
+		return;
 	    }
 	    /* Paint the character */
 	    for (col = 0; col<3; col++)
@@ -138,5 +185,4 @@ draw_text(const char *text, int at_x, int at_y,
 	    at_x += 4;
 	}
     }
-    gui_unlock();
 }
