@@ -49,7 +49,6 @@ const char *
 window_name(window_function_t w)
 {
     switch (w) {
-    case ANY:		return "any";
     case RECTANGULAR:	return "rectangular";
     case KAISER:	return "Kaiser";
     case NUTTALL:	return "Nuttall";
