@@ -63,24 +63,6 @@ static int is_bar_line(int x);
  * ones and redraw the new ones.
  */
 
-double
-get_left_bar_time(void)
-{
-    return left_bar_time;
-}
-
-double
-get_right_bar_time(void)
-{
-    return right_bar_time;
-}
-
-int
-get_beats_per_bar()
-{
-    return beats_per_bar;
-}
-
 static void set_bar_time(double *this_one, double *the_other_one, double when);
 
 void

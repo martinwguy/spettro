@@ -377,9 +377,6 @@ k_screendump(key_t key)
 static void
 k_print_params(key_t key)
 {
-    double left_bar_time = get_left_bar_time();
-    double right_bar_time = get_right_bar_time();
-
     printf(
 "min_freq=%g max_freq=%g dyn_range=%g fft_freq=%g window=%s\n",
 min_freq,   max_freq,   -min_db,     fft_freq,   window_name(window_function));
