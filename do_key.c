@@ -201,35 +201,10 @@ k_time_zoom(key_t key)
 static void
 k_freq_zoom(key_t key)
 {
-    double by = 2.0;	/* Normally we double/halve */
-    if (Ctrl) {
-#if 0
-	by = v_pixel_freq_ratio();
-	by = by * by;	/* the new range includes 2 more pixels */
-#else
-	/* I can't figure out how to make freq_zoom_by() get it right
-	 * so do the one-pixel zoom in a way that works.
-	 * This reproduces what freq_zoom_by() does.
-	 */
-	double vpfr = v_pixel_freq_ratio();
-	if (Shift) {	/* Zoom in */
-	    max_freq /= vpfr;
-	    min_freq *= vpfr;
-	} else {	/* Zoom out */
-	    max_freq *= vpfr;
-	    min_freq /= vpfr;
-	}
-	/* Limit to fft_freq..Nyquist */
-	if (max_freq > current_sample_rate() / 2)
-	    max_freq = current_sample_rate() / 2;
-	if (min_freq < fft_freq)
-	    min_freq = fft_freq;
+    double by;	/* How much to zoom in by: >1 = zoom in, <1 = zoom out */
 
-	if (show_axes) draw_frequency_axes();
-	repaint_display(TRUE);
-	return;
-#endif
-    }
+    if (Ctrl) by = (double)(max_y - min_y) / (double)((max_y-1) - (min_y+1));
+    else by = 2.0;
     freq_zoom_by(Shift ? by : 1.0/by);
     repaint_display(TRUE);
 }
