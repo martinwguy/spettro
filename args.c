@@ -245,7 +245,7 @@ another_letter:
 		}
 		switch (letter) {
 		case 'n': min_freq = arg;	break;
-		case 'm': max_freq = arg;	break;
+		case 'x': max_freq = arg;	break;
 		case 't': disp_time = arg;	break;
 		case 'l': bar_left_time = arg;	break;
 		case 'r': bar_right_time = arg; break;
@@ -254,6 +254,7 @@ another_letter:
 		case 'd': min_db = -arg;	break;
 		case 'R': fps = arg;		break;
 		case 'P': ppsec = arg;		break;
+		default: fprintf(stderr, "Undecoded FP parameter %c\n", letter);
 		}
 	    }
 	    break;
