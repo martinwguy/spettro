@@ -121,12 +121,13 @@ libmpg123_seek(audio_file_t *af, int start)
 {
     off_t inoffset;
     int ret;
+    int c = '\0';
 
     /* That condition is tricky... parentheses are crucial... */
     while ((ret = mpg123_feedseek(af->mh, start, SEEK_SET, &inoffset)) == MPG123_NEED_MORE)
     {
-	int c = getc(af->in);
 	unsigned char uc;
+	c = getc(af->in);
 	if (c == EOF) break;
 	uc = c;
 
@@ -135,7 +136,7 @@ libmpg123_seek(audio_file_t *af, int start)
 	    return FALSE;
 	}
     }
-    if (ret == MPG123_ERR) {
+    if (c == EOF || ret == MPG123_ERR) {
 	fprintf(stderr, "Feedseek failed: %s\n", mpg123_strerror(af->mh));
 	return FALSE;
     }
@@ -173,6 +174,7 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 	off_t num;
 	unsigned char *audio;
 	size_t bytes;
+	int c = '\0';
 
 	/*
 	 * int mpg123_decode_frame()
@@ -185,8 +187,8 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 	 * bytes	number of output bytes ready in the buffer 
 	 */
 	while ((ret = mpg123_decode_frame(af->mh, &num, &audio, &bytes)) == MPG123_NEED_MORE) {
-	    int c = getc(af->in);
 	    unsigned char uc;
+	    c = getc(af->in);
 	    if (c == EOF) break;
 	    uc = c;
 	    ret = mpg123_feed(af->mh, &uc, 1);
@@ -195,7 +197,7 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 
 	/* Check return value from mpg123_decode_frame() */
 	
-	if (ret == MPG123_ERR) break;
+	if (c == EOF || ret == MPG123_ERR) break;
 
 	if (ret == MPG123_NEW_FORMAT) {
 	    off_t length;	/* of the MP3 file in samples */
