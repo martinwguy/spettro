@@ -39,6 +39,84 @@
 
 static void print_version(void);
 
+/* Print usage message and quit */
+static void
+usage(void)
+{
+    printf(
+"Usage: spettro [options] [file]\n\
+-p:    Autoplay the file on startup\n\
+-e:    Exit when the audio file has played\n\
+-h n   Set the window's height to n pixels, default %u\n\
+-w n   Set the window's width to n pixels, default %u\n",
+				disp_width, disp_height); printf("\
+-F     Play in fullscreen mode\n\
+-n min Set the minimum displayed frequency in Hz, default %g\n\
+-x min Set the maximum displayed frequency in Hz, default %g\n",
+				DEFAULT_MIN_FREQ, DEFAULT_MAX_FREQ); printf("\
+-d n   Set the dynamic range of the color map in decibels, default %gdB\n",
+				-DEFAULT_MIN_DB); printf("\
+-a     Label the vertical frequency axes\n\
+-f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
+-t n   Set the initial playing time in seconds\n\
+-l n   Set the position of the left bar line in seconds\n\
+-r n   Set the position of the right bar line in seconds\n\
+-b n   Set the number of beats per bar\n\
+-P n   Set how many pixel columns to display per second of audio, default %g\n",
+				DEFAULT_PPSEC); printf("\
+-R n   Set the scrolling rate in frames per second, default %g\n",
+				DEFAULT_FPS); printf("\
+-k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
+-s/-S  Overlay score notation pentagrams as 1- or 3-pixel-thick white lines\n\
+-g/-G  Overlay 1- or 3-pixel-thick lines showing a classical guitar's strings\n\
+-v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
+-W x   Use FFT window function x where x starts with\n\
+       r for rectangular, k for Kaiser, n for Nuttall, h for Hann\n\
+       m for Hamming, b for Bartlett, l for Blackman or d for Dolph, the default\n\
+-c map Select a color map: heatmap, gray or print\n\
+-o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
+If no filename is supplied, it opens \"audio.wav\"\n\
+== Keyboard commands ==\n\
+Space      Play/Pause/Resume/Restart the audio player\n\
+Left/Right Skip back/forward by a tenth of a screenful\n\
+           Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
+Up/Down    Pan up/down the frequency axis by a tenth of the graph's height\n\
+           (by a screenful if Shift is held; by one pixel if Ctrl is held)\n\
+PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
+X/x        Zoom in/out on the time axis\n\
+Y/y        Zoom in/out on the frequency axis\n\
+Plus/Minus Zoom both axes\n\
+c          Flip between color maps: heat map - grayscale - gray for printing\n\
+b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
+f/F        Halve/double the length of the sample taken to calculate each column\n\
+R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
+M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\
+w/W        Cycle forward/backward through the window functions\n\
+a          Toggle the frequency axis\n\
+k          Toggle the overlay of 88 piano key frequencies\n\
+s/S        Toggle the overlay of conventional staff lines\n\
+g/G        Toggle the overlay of classical guitar strings' frequencies\n\
+l/r        Set the left/right bar markers for an overlay of bar lines\n\
+1-8/F1-F12 Set the number of beats per bar (1 or F1 means \"no beat lines\")\n\
+9/0        Decrease/increase the soft volume control\n\
+t          Show the current playing time on stdout\n\
+o          Output (save) the current screenful into a PNG file\n\
+p          Show the playing time and settings on stdout\n\
+Crtl-L     Redraw the display from cached FFT results\n\
+Crtl-R     Redraw the display by recalculating from the audio data\n\
+Ctrl-F     Flip full-screen mode\n\
+q/Ctrl-C/Esc   Quit\n");
+
+    exit(1);
+}
+
+static void
+badarg(char *arg)
+{
+    fprintf(stderr, "Unknown flag: \"%s\". spettro --help gives a list of valid command-line flags.\n", arg);
+    exit(1);
+}
+
 /*
  * Process command-line options, leaving argv pointing at the first filename
  */
@@ -60,8 +138,8 @@ process_args(int *argcp, char ***argvp)
 switch_again:
 	switch (letter = argv[0][1]) {
 	case '-':	/* Handle long args */
-	    /* but avoid triggering in "-p--width" */
-	    if (argv[0][0] != '-') goto usage;
+	    /* but avoid triggering in the "-p--width" case */
+	    if (argv[0][0] != '-') badarg(argv[0] - 1);
 
 	    if (!strcmp(argv[0], "--width")) argv[0] = "-w";
 	    else if (!strcmp(argv[0], "--height")) argv[0] = "-h";
@@ -103,9 +181,12 @@ switch_again:
 	    else if (!strcmp(argv[0], "--version")) {
 		print_version();
 		exit(0);
+	    } else {
+	    	/* --help and everything else */
+		usage();
 	    }
-	    else goto usage;
 
+	    /* Switch on the short-form argument letter */
 	    goto switch_again;
 
 	/* For flags that take an argument, advance argv[0] to point to it */
@@ -300,75 +381,8 @@ D = Dolph (the default)\n");
 	    }
 	    break;
 
-	default:	/* Print Usage message */
-	  {
-usage:
-	    printf(
-"Usage: spettro [options] [file]\n\
--p:    Autoplay the file on startup\n\
--e:    Exit when the audio file has played\n\
--h n   Set the window's height to n pixels, default %u\n\
--w n   Set the window's width to n pixels, default %u\n",
-				disp_width, disp_height); printf("\
--F     Play in fullscreen mode\n\
--n min Set the minimum displayed frequency in Hz, default %g\n\
--x min Set the maximum displayed frequency in Hz, default %g\n",
-				DEFAULT_MIN_FREQ, DEFAULT_MAX_FREQ); printf("\
--d n   Set the dynamic range of the color map in decibels, default %gdB\n",
-				-DEFAULT_MIN_DB); printf("\
--a     Label the vertical frequency axes\n\
--f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
--t n   Set the initial playing time in seconds\n\
--l n   Set the position of the left bar line in seconds\n\
--r n   Set the position of the right bar line in seconds\n\
--b n   Set the number of beats per bar\n\
--P n   Set how many pixel columns to display per second of audio, default %g\n",
-				DEFAULT_PPSEC); printf("\
--R n   Set the scrolling rate in frames per second, default %g\n",
-				DEFAULT_FPS); printf("\
--k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
--s/-S  Overlay score notation pentagrams as 1- or 3-pixel-thick white lines\n\
--g/-G  Overlay 1- or 3-pixel-thick lines showing a classical guitar's strings\n\
--v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
--W x   Use FFT window function x where x starts with\n\
-       r for rectangular, k for Kaiser, n for Nuttall, h for Hann\n\
-       m for Hamming, b for Bartlett, l for Blackman or d for Dolph, the default\n\
--c map Select a color map: heatmap, gray or print\n\
--o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
-If no filename is supplied, it opens \"audio.wav\"\n\
-== Keyboard commands ==\n\
-Space      Play/Pause/Resume/Restart the audio player\n\
-Left/Right Skip back/forward by a tenth of a screenful\n\
-           Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
-Up/Down    Pan up/down the frequency axis by a tenth of the graph's height\n\
-           (by a screenful if Shift is held; by one pixel if Ctrl is held)\n\
-PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
-X/x        Zoom in/out on the time axis\n\
-Y/y        Zoom in/out on the frequency axis\n\
-Plus/Minus Zoom both axes\n\
-c          Flip between color maps: heat map - grayscale - gray for printing\n\
-b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
-f/F        Halve/double the length of the sample taken to calculate each column\n\
-R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
-M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\
-w/W        Cycle forward/backward through the window functions\n\
-a          Toggle the frequency axis\n\
-k          Toggle the overlay of 88 piano key frequencies\n\
-s/S        Toggle the overlay of conventional staff lines\n\
-g/G        Toggle the overlay of classical guitar strings' frequencies\n\
-l/r        Set the left/right bar markers for an overlay of bar lines\n\
-1-8/F1-F12 Set the number of beats per bar (1 or F1 means \"no beat lines\")\n\
-9/0        Decrease/increase the soft volume control\n\
-t          Show the current playing time on stdout\n\
-o          Output (save) the current screenful into a PNG file\n\
-p          Show the playing time and settings on stdout\n\
-Crtl-L     Redraw the display from cached FFT results\n\
-Crtl-R     Redraw the display by recalculating from the audio data\n\
-Ctrl-F     Flip full-screen mode\n\
-q/Ctrl-C/Esc   Quit\n");
-
-	    exit(1);
-	  }
+	default:
+	    badarg(argv[0]);
 	}
     }
 
