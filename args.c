@@ -74,6 +74,8 @@ usage(void)
        K for Kaiser, D for Dolph, N for Nuttall, B for Blackman, H for Hann\n\
 -c map Select a color map: heatmap, gray or print\n\
 -o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
+--version  Which version of spettro is this, and which libraries does it use?\n\
+--help This!\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
@@ -145,6 +147,7 @@ switch_again:
 	    else if (!strcmp(argv[0], "--jobs")) argv[0] = "-j";
 	    else if (!strcmp(argv[0], "--left")) argv[0] = "-l";
 	    else if (!strcmp(argv[0], "--right")) argv[0] = "-r";
+	    else if (!strcmp(argv[0], "--beats")) argv[0] = "-b";
 	    else if (!strcmp(argv[0], "--fft-freq")) argv[0] = "-f";
 	    else if (!strcmp(argv[0], "--start")) argv[0] = "-t";
 	    else if (!strcmp(argv[0], "--output")) argv[0] = "-o";
