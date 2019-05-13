@@ -109,6 +109,8 @@ mouseMove(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 
 /*
  * Process a mouse button click or release and mouse movements
+ *
+ * "down" is TRUE if this is a mouse-down event, FALSE if a mouse up.
  */
 void
 do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, bool down)
@@ -130,7 +132,7 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
     }
 
     /* Mouse up while setting bar line position: set it. */
-    if (!down && Ctrl) switch (button) {
+    if (down && Ctrl) switch (button) {
     case LEFT_BUTTON:	set_left_bar_time(when);	break;
     case RIGHT_BUTTON:	set_right_bar_time(when);	break;
     }
