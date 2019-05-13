@@ -38,7 +38,7 @@ double min_freq	= DEFAULT_MIN_FREQ;
 double max_freq	= DEFAULT_MAX_FREQ;	
 
 /* Dynamic range of color map (values below this are black) */
-double min_db	= DEFAULT_MIN_DB;
+double dyn_range	= DEFAULT_DYN_RANGE;
 double logmax = 0.0;	/* Highest value seen so far in spectrogram data.
 			 * 0 = log10(1.0) */
 

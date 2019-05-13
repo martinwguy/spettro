@@ -23,6 +23,7 @@
 #include "colormap.h"
 
 #include "gui.h"
+#include "ui.h"		/* for dyn_range */
 
 
 /* Which elements of *_map[] represent which primary colors? */
@@ -34,7 +35,7 @@
 typedef unsigned char primary_t;
 
 /* color maps run from the RGB color of the brightest value (0.0) to
- * the colors for a value of min_db */
+ * the darkest color for a value of -dyn_range */
 
 /* Heatmap from sox spectrogram */
 static primary_t sox_map[][3] = {
@@ -87,14 +88,14 @@ static primary_t sox_map[][3] = {
 /* White marks on a black background */
 static primary_t gray_map[][3] = {
     { 255, 255, 255 },	/* -0dB */
-    {   0,   0,   0 },  /* min_db */
+    {   0,   0,   0 },  /* -dyn_range */
 };
 #define gray_map_len (sizeof(gray_map) / sizeof(gray_map[0]))
 
 /* Black marks on a white background */
 static primary_t print_map[][3] = {
     {   0,   0,   0 },	/* -0dB */
-    { 255, 255, 255 },  /* min_db */
+    { 255, 255, 255 },  /* -dyn_range */
 };
 #define print_map_len (sizeof(print_map) / sizeof(print_map[0]))
 
@@ -125,16 +126,17 @@ change_colormap()
  * Map a magnitude value to a color.
  *
  * "value" is a negative value in decibels, with maximum of 0.0.
- * "min_db" is the negative decibel value for the bottom of the color range.
- * The resulting color is deposited in color[B,G,R].
+ * The decibel value for the bottom of the color range is -dyn_range.
+ * Returns the resulting color.
  */
 color_t
-colormap(double value, double min_db)
+colormap(double value)
 {
     double findx;  /* floating-point version of indx */
     int indx;	/* Index into colormap for a value <= the current one */
     double rem; /* How far does this fall between one index and another
     		 * 0.0 <= rem < 1.0 */
+    double min_db = -dyn_range;
 
     /* Map over-bright values to the brightest color */
     if (DELTA_GE(value, 0.0))	 return RGB_to_color(map[0][R],

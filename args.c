@@ -55,7 +55,7 @@ usage(void)
 -x min Set the maximum displayed frequency in Hz, default %g\n",
 				DEFAULT_MIN_FREQ, DEFAULT_MAX_FREQ); printf("\
 -d n   Set the dynamic range of the color map in decibels, default %gdB\n",
-				-DEFAULT_MIN_DB); printf("\
+				DEFAULT_DYN_RANGE); printf("\
 -a     Label the vertical frequency axes\n\
 -f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
 -t n   Set the initial playing time in seconds\n\
@@ -329,7 +329,7 @@ another_letter:
 		case 'r': bar_right_time = arg; break;
 		case 'f': fft_freq = arg;	break;
 		case 'v': softvol = arg;	break;
-		case 'd': min_db = -arg;	break;
+		case 'd': dyn_range = arg;	break;
 		case 'R': fps = arg;		break;
 		case 'P': ppsec = arg;		break;
 		default: fprintf(stderr, "Undecoded FP parameter %c\n", letter);

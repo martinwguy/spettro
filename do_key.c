@@ -376,7 +376,7 @@ k_print_params(key_t key)
 {
     printf(
 "min_freq=%g max_freq=%g dyn_range=%g fft_freq=%g window=%s\n",
-min_freq,   max_freq,   -min_db,     fft_freq,   window_name(window_function));
+min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
     printf(
 "%s %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
 	playing == PLAYING ? "Playing" :

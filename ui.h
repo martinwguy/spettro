@@ -36,9 +36,9 @@ extern double min_freq, max_freq;
 #define DEFAULT_MIN_FREQ	27.5
 #define DEFAULT_MAX_FREQ	14080.0
 
-/* Dynamic range of color map (values below this are black) */
-extern double min_db;
-#define DEFAULT_MIN_DB		(-96.0)
+/* Dynamic range of color map (values below minus this are black) */
+extern double dyn_range;
+#define DEFAULT_DYN_RANGE	(96.0)
 extern double logmax;
 
 /* Screen-scroll frequency and number of pixel columns per second of audio */

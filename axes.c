@@ -392,14 +392,14 @@ draw_status_line(void)
     sprintf(s, "%g - %g Hz   %g octaves   %g dB",
 	    min_freq, max_freq,
     	    log(max_freq / min_freq) / log(2.0),
-	    -min_db);
+	    dyn_range);
     draw_text(s, min_x, max_y + 2, LEFT, BOTTOM);
 
     sprintf(s, "%g pixels per second   %g cents per pixel",
     	    ppsec, (log(v_pixel_freq_ratio()) / log(2.0)) * 1200);
     draw_text(s, disp_offset, max_y + 2, CENTER, BOTTOM);
 
-    sprintf(s, "%g dB DYNAMIC RANGE", -min_db);
+    sprintf(s, "%g dB DYNAMIC RANGE", dyn_range);
     draw_text(s, (max_x + disp_offset / 2), max_y + 2, CENTER, BOTTOM);
 
     sprintf(s, "%s WINDOW AT %g HZ", window_name(window_function), fft_freq);

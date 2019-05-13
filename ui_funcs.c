@@ -202,11 +202,10 @@ freq_zoom_by(double by)
 void
 change_dyn_range(double by)
 {
-    /* As min_db is negative, subtracting from it makes it bigger */
-    min_db -= by;
+    dyn_range += by;
 
-    /* min_db should not go positive, so set minimum of 1dB */
-    if (DELTA_GT(min_db, -1.0)) min_db = -1.0;
+    /* dyn_range should not go zero or negative, so set minimum of 1dB */
+    if (DELTA_LT(dyn_range, 1.0)) dyn_range = 1.0;
 
     if (show_axes) draw_status_line();
 }

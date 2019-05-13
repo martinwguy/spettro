@@ -43,7 +43,7 @@ dump_screenshot()
     if (disp_height != DEFAULT_DISP_HEIGHT)   add(s, " -h %d", disp_height);
     if (DELTA_NE(min_freq, DEFAULT_MIN_FREQ)) add(s, " -n %g", min_freq);
     if (DELTA_NE(max_freq, DEFAULT_MAX_FREQ)) add(s, " -x %g", max_freq);
-    if (DELTA_NE(min_db, DEFAULT_MIN_DB))     add(s, " -d %g", -min_db);
+    if (DELTA_NE(dyn_range,DEFAULT_DYN_RANGE))add(s, " -d %g", dyn_range);
     if (DELTA_NE(fps, DEFAULT_FPS))           add(s, " -S %g", fps);
     if (DELTA_NE(ppsec, DEFAULT_PPSEC))       add(s, " -P %g", ppsec);
     if (DELTA_NE(fft_freq, DEFAULT_FFT_FREQ)) add(s, " -f %g", fft_freq);
