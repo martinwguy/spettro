@@ -53,7 +53,7 @@ extern double fft_freq;
 
 /* Which window functions to apply to each audio sample before FFt-ing it */
 extern window_function_t window_function;
-#define DEFAULT_WINDOW_FUNCTION DOLPH
+#define DEFAULT_WINDOW_FUNCTION KAISER
 
 extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */

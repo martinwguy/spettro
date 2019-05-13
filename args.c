@@ -71,8 +71,7 @@ usage(void)
 -g/-G  Overlay 1- or 3-pixel-thick lines showing a classical guitar's strings\n\
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
-       r for rectangular, k for Kaiser, n for Nuttall, h for Hann\n\
-       m for Hamming, b for Bartlett, l for Blackman or d for Dolph, the default\n\
+       K for Kaiser, D for Dolph, N for Nuttall, B for Blackman, H for Hann\n\
 -c map Select a color map: heatmap, gray or print\n\
 -o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
 If no filename is supplied, it opens \"audio.wav\"\n\
@@ -89,8 +88,7 @@ Plus/Minus Zoom both axes\n\
 c          Flip between color maps: heat map - grayscale - gray for printing\n\
 b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
-R/K/N/H    Set the FFT window function to Rectangular, Kaiser, Nuttall or Hann\n\
-M/B/L/D    Set the FFT window function to Hamming, Bartlett, Blackman or Dolph\n\
+K/D/N/B/H  Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann,\n\
 w/W        Cycle forward/backward through the window functions\n\
 a          Toggle the frequency axis\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
@@ -150,14 +148,11 @@ switch_again:
 	    else if (!strcmp(argv[0], "--start")) argv[0] = "-t";
 	    else if (!strcmp(argv[0], "--output")) argv[0] = "-o";
 	    else if (!strcmp(argv[0], "--window")) argv[0] = "-W";
-	    else if (!strcmp(argv[0], "--rectangular")) argv[0] = "-WR";
 	    else if (!strcmp(argv[0], "--kaiser")) argv[0] = "-WK";
-	    else if (!strcmp(argv[0], "--nuttall")) argv[0] = "-WN";
-	    else if (!strcmp(argv[0], "--hann")) argv[0] = "-WH";
-	    else if (!strcmp(argv[0], "--hamming")) argv[0] = "-WM";
-	    else if (!strcmp(argv[0], "--bartlett")) argv[0] = "-WB";
-	    else if (!strcmp(argv[0], "--blackman")) argv[0] = "-WL";
 	    else if (!strcmp(argv[0], "--dolph")) argv[0] = "-WD";
+	    else if (!strcmp(argv[0], "--nuttall")) argv[0] = "-WN";
+	    else if (!strcmp(argv[0], "--blackman")) argv[0] = "-WB";
+	    else if (!strcmp(argv[0], "--hann")) argv[0] = "-WH";
 	    else if (!strcmp(argv[0], "--heat")) argv[0] = "-ch";
 	    else if (!strcmp(argv[0], "--gray")) argv[0] = "-cg";
 	    else if (!strcmp(argv[0], "--grey")) argv[0] = "-cg";
@@ -348,24 +343,13 @@ another_letter:
 
 	case 'W':
 	    switch (tolower(argv[0][0])) {
-	    case 'r': window_function = RECTANGULAR; break;
 	    case 'k': window_function = KAISER; break;
 	    case 'n': window_function = NUTTALL; break;
 	    case 'h': window_function = HANN; break;
-	    case 'm': window_function = HAMMING; break;
-	    case 'b': window_function = BARTLETT; break;
-	    case 'l': window_function = BLACKMAN; break;
+	    case 'b': window_function = BLACKMAN; break;
 	    case 'd': window_function = DOLPH; break;
 	    default:
-		fprintf(stderr, "-W which_window_function?\n\
-R = Rectangular\n\
-K = Kaiser\n\
-N = Nuttall\n\
-H = Hann\n\
-M = Hamming\n\
-B = Bartlett\n\
-L = Blackman\n\
-D = Dolph (the default)\n");
+		fprintf(stderr, "-W which? Kaiser, Dolph, Nuttall, Blackman or Hann?\n");
 		exit(1);
 	    }
 	    break;

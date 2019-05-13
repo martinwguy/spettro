@@ -27,12 +27,10 @@
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
 
 static void kaiser(double *data, int datalen);
-static void nuttall(double *data, int datalen);
-static void hann(double *data, int datalen);
-static void hamming(double *data, int datalen);
-static void bartlett(double *data, int datalen);
-static void blackman(double *data, int datalen);
 static void dolph(double *data, int datalen);
+static void nuttall(double *data, int datalen);
+static void blackman(double *data, int datalen);
+static void hann(double *data, int datalen);
 
 static double besseli0(double x);
 
@@ -49,14 +47,11 @@ const char *
 window_name(window_function_t w)
 {
     switch (w) {
-    case RECTANGULAR:	return "rectangular";
     case KAISER:	return "Kaiser";
-    case NUTTALL:	return "Nuttall";
-    case HANN:	 	return "Hann";
-    case HAMMING:	return "Hamming";
-    case BARTLETT:	return "Bartlett";
-    case BLACKMAN:	return "Blackman";
     case DOLPH:		return "Dolph";
+    case NUTTALL:	return "Nuttall";
+    case BLACKMAN:	return "Blackman";
+    case HANN:	 	return "Hann";
     default:	 	return "invalid";
     }
 }
@@ -64,15 +59,13 @@ window_name(window_function_t w)
 const char
 window_key(window_function_t w)
 {
-    return "RKNHMBLD?"[w];
+    return "KNHBD?"[w];
 }
 
 double *
 get_window(window_function_t wfunc, int datalen)
 {
     double *new_window;	/* data to return */
-
-    if (wfunc == RECTANGULAR) return NULL;
 
     lock_window();
 
@@ -91,12 +84,10 @@ get_window(window_function_t wfunc, int datalen)
 
     switch (wfunc) {
     case KAISER:	kaiser(new_window, datalen);	break;
-    case NUTTALL:	nuttall(new_window, datalen);	break;
-    case HANN:		hann(new_window, datalen);	break;
-    case HAMMING:	hamming(new_window, datalen);	break;
-    case BARTLETT:	bartlett(new_window, datalen);	break;
-    case BLACKMAN:	blackman(new_window, datalen);	break;
     case DOLPH:		dolph(new_window, datalen);	break;
+    case NUTTALL:	nuttall(new_window, datalen);	break;
+    case BLACKMAN:	blackman(new_window, datalen);	break;
+    case HANN:		hann(new_window, datalen);	break;
     default:
 	fprintf(stderr, "Internal error: Unknown window_function.\n");
 	exit(1);
@@ -218,28 +209,6 @@ hann(double *data, int datalen)
 
     for (k = 0; k < datalen ; k++)
 	data[k] = 0.5 * (1.0 - cos(2.0 * M_PI * k / (datalen - 1)));
-}
-
-static void
-hamming(double *data, int datalen)
-{
-    int k;
-    double m = datalen - 1;
-
-    /* From sox spectrogram */
-    for (k = 0; k < datalen ; k++)
-	data[k] = .53836 - .46164 * cos(2 * M_PI * (double)k / m);
-}
-
-static void
-bartlett(double *data, int datalen)
-{
-    int k;
-    double m = datalen - 1;
-
-    /* From sox spectrogram */
-    for (k = 0; k < datalen ; k++)
-	data[k] = 2.0 / m * (m/2 - fabs(k - m/2));
 }
 
 static void

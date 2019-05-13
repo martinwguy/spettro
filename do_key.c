@@ -232,14 +232,11 @@ k_set_window(key_t key)
     window_function_t new_fn;
 
     switch (key) {
-    case KEY_R: new_fn = RECTANGULAR;	break;
     case KEY_K: new_fn = KAISER;	break;
-    case KEY_B: new_fn = BARTLETT;	break;
-    case KEY_D: new_fn = DOLPH;		break;
-    case KEY_L: new_fn = BLACKMAN;	break;
-    case KEY_H: new_fn = HANN;		break;
-    case KEY_M: new_fn = HAMMING;	break;
     case KEY_N: new_fn = NUTTALL;	break;
+    case KEY_H: new_fn = HANN;		break;
+    case KEY_B: new_fn = BLACKMAN;	break;
+    case KEY_D: new_fn = DOLPH;		break;
     default:
 	fprintf(stderr, "Internal error: Impossible window key %d\n", key);
     	return;
@@ -572,15 +569,14 @@ static key_fn key_fns[] = {
     { KEY_P,	"P",    k_print_params,	k_bad,		k_bad,		k_bad },
     { KEY_T,	"T",    k_print_time,	k_bad,		k_bad,		k_bad },
     { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
-    { KEY_L,	"L",    k_left_barline,	k_set_window,	k_refresh,	k_bad },
-    { KEY_R,	"R",    k_right_barline,k_set_window,	k_redraw,	k_bad },
+    { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
+    { KEY_R,	"R",    k_right_barline,k_bad,		k_redraw,	k_bad },
     { KEY_B,	"B",    k_brighter,	k_set_window,	k_brighter,	k_bad },
     { KEY_D,	"D",    k_darker,	k_set_window,	k_darker,	k_bad },
     { KEY_A,	"A",    k_toggle_axes,	k_bad,		k_bad,		k_bad },
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_set_window,	k_bad,		k_bad },
     { KEY_N,	"N",	k_bad,		k_set_window,	k_bad,		k_bad },
-    { KEY_M,	"M",	k_bad,		k_set_window,	k_bad,		k_bad },
     { KEY_0,	"0",	k_softvol_up,	k_bad,		k_bad,		k_bad },
     { KEY_9,	"9",	k_softvol_down,	k_bad,		k_bad,		k_bad },
     { KEY_1,	"1",	k_beats_per_bar,k_bad,		k_bad,		k_bad },

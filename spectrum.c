@@ -99,9 +99,8 @@ calc_magnitude_spectrum(spectrum *spec)
 
     freqlen = 2 * speclen;
 
-    if (spec->wfunc != RECTANGULAR)
-	for (k = 0; k < 2 * speclen; k++)
-	    spec->time_domain[k] *= spec->window[k];
+    for (k = 0; k < 2 * speclen; k++)
+	spec->time_domain[k] *= spec->window[k];
 
     fftw_execute(spec->plan);
 

@@ -213,7 +213,5 @@ Make a command-line flag for beats-per-bar.
 ------------------------------------------------------------------------
 In -o filename, include left, right and beats per bar.
 ------------------------------------------------------------------------
-Drop crappy window functions: rectangular, bartlett, hamming.
-------------------------------------------------------------------------
 Add dyn range (and logmax? to status bar.
 ------------------------------------------------------------------------

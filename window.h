@@ -20,14 +20,11 @@
 #ifndef WINDOW_H
 
 typedef enum {
-    RECTANGULAR = 0,
-    KAISER,
-    NUTTALL,
-    HANN,
-    HAMMING,
-    BARTLETT,
-    BLACKMAN,
+    KAISER = 0,
     DOLPH,
+    NUTTALL,
+    BLACKMAN,
+    HANN,
     NUMBER_OF_WINDOW_FUNCTIONS
 } window_function_t;
 
