@@ -269,6 +269,8 @@ another_letter:
 		fprintf(stderr, "-b beats_per_bar must be >= 0\n");
 		exit(1);
 	    }
+	    /* Let them say 0 to mean "no beats" (which should be 1) */
+	    if (beats_per_bar == 0) beats_per_bar = DEFAULT_BEATS_PER_BAR;
 	    break;
 
 	/*

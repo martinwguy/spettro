@@ -23,6 +23,7 @@
 #include "dump.h"
 
 #include "audio_file.h"		/* for audio_file */
+#include "barlines.h"
 #include "gui.h"
 #include "ui.h"
 
@@ -53,6 +54,9 @@ dump_screenshot()
     if (staff_lines)      add(s, " %s", "-s");
     if (guitar_lines)     add(s, " %s", "-g");
     if (show_axes)        add(s, " %s", "-a");
+    if (left_bar_time != UNDEFINED)  add(s, " -l %g", left_bar_time);
+    if (right_bar_time != UNDEFINED) add(s, " -r %g", right_bar_time);
+    if (beats_per_bar != DEFAULT_BEATS_PER_BAR) add(s, " -b %d", beats_per_bar);
     add(s, "%s.png", "");
 #undef add
     gui_output_png_file(s);

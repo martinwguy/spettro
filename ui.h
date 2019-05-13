@@ -71,9 +71,9 @@ extern bool show_axes;		/* Are we to show/showing the axes? */
 /* Markers for the start and end of one bar, measured in seconds from
  * the start of the piece. */
 extern double left_bar_time, right_bar_time;
-/* Number of beats per bar. If >=1, the bar lines become 3 pixels wide. */
+/* Number of beats per bar. If >1, the bar lines become 3 pixels wide. */
 extern int beats_per_bar;
-#define DEFAULT_BEATS_PER_BAR 0
+#define DEFAULT_BEATS_PER_BAR 1
 
 /* Other option flags */
 extern bool autoplay;		/* -p  Start playing on startup */

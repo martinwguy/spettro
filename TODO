@@ -209,9 +209,5 @@ Remove Ctrl from mouse-bar-line setting, bcos on a mousepad they will want
 one finger to hold the button pressed and the other to move the pointer.
 Ctrl needs three fingers instad of two.
 ------------------------------------------------------------------------
-Make a command-line flag for beats-per-bar.
-------------------------------------------------------------------------
-In -o filename, include left, right and beats per bar.
-------------------------------------------------------------------------
 Add dyn range (and logmax? to status bar.
 ------------------------------------------------------------------------
