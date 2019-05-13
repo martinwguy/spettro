@@ -12,87 +12,133 @@
 Spettro plays a sound file and displays a scrolling
 spectrogram as it plays.
 <P>
-"Normal" spectrograms have a linear frequency axis,
-which means that the top half of the graphic represents the
-top octave of the sound, the next octave down occupies
-the next quarter of the screen, the following one the next eighth and so on,
+Most spectrograms have a linear frequency axis, which is no good for music
+because the top half of the graphic represents the top octave of the sound,
+the octave below occupies the next quarter of the screen,
+the following one the next eighth and so on,
 leaving most of the musical information crushed into the bottom few lines
-of the graphic.
+of the picture.
 <P>
-Spettro is different. Having a logarithmic frequency axis, every
-octave has the same height, like a conventional musical score, revealing
-more musically-interesting detail.
+Spettro is different. Its logarithmic frequency axis gives each
+octave the same height, much like a conventional musical score and
+more more similar to the response of the cochlea in our ears,
+revealing more musically-interesting detail to our eyes.
 
-<H2>Keyboard commands</H2>
+<H2>How to use it</H2>
 
-<H3>Keys to position the graphic</H3>
+At present, you have to start <B>spettro</B> from the command line prompt,
+telling it the name of the audio file that it should display.
+<P>
+Then you press buttons on the keyboard to make everything else happen.
+
+<H2>Playing the music, watching the lights</H2>
 <DL>
  <DT><B>Space</B>
   <DD>The space bar makes spettro play the file, scrolling the graphic
-      to the left, in time with the audio. Press it again and it pauses,
+      to the left in time with the audio. Press it again and it pauses,
       press it again and it continues playing. When it gets to the end
-      of the piece, it stops automatically; pressing Space again makes it
-      start playing again from the beginning.<BR>
-      If your version of spettro was built to use the Enlightenment toolkit
-      instead of SDL, the Play/Pause media button will have the same effect
-      and the Stop media button will pause playing.
+      of the piece, it stops automatically; press Space again and it
+      starts playing again from the beginning.
+      <BR>If your keyboard has <B>Play/Pause</B> and <B>Stop</B> media buttons,
+      these may also work.
+</DL>
+The <B>-p</B> or <B>--autoplay</B> command-line flag makes it start playing immediately, and
+the <B>-e</B> or <B>--exit</B> flag makes it quit when it reaches the end of the audio file.
+
+<H2>Moving around</H2>
+
+<DL>
  <DT><B>&larr; &rarr;</B>
-  <DD>Left arrow skips back one tenth of a screenful in the audio file.
+  <DD><B>Left Arrow</B> skips back one tenth of a screenful in the audio file.
       If a <B>Shift</B> key is held down, it skips back a whole screenful, while
-      holding down Control scrolls by one pixel; with both, by one second.
-  <BR>Right arrow works similarly but skips forward in time instead of back.
+      holding down <B>Ctrl</B> scrolls by one pixel; with both, by one second.
+  <BR><B>Right Arrow</B> works similarly but skips forward in time
+      instead of back.
  <DT><B>Home End</B>
-  <DD>Home moves you to the start of the piece, End to the end.<BR>
-      If spettro was built to use the Enlightenment toolkit instead of SDL,
-      the |<< and >>| keys also do this.
+  <DD>The <B>Home</B> key moves you to the start of the piece,
+      the <B>End</B> key to the end.
+      <BR>The <B>|&lt;&lt;</B> and <B>&gt;&gt;|</B> media keys may also do this.
  <DT><B>&uarr; &darr;</B>
-  <DD>The Up Arrow key moves you up the frequency axis by a tenth of the height
-      of the spectrogram; similarly, Down Arrow pans down to reveal more of the
-      lower frequencies. With <B>Shift</B>, the view pans by the height of the graph,
-      with <B>Ctrl</B>, by one pixel.
- <DT><B>PgUp PgDown</B>
-  <DD>Moves up/down the frequency axis by the height of the graph
-      (the same as <B>Shift-Up</B> and <B>Shift-Down</B>).
+  <DD>The <B>Up Arrow</B> key moves you up the frequency axis by a tenth of the height
+      of the spectrogram; similarly, <B>Down Arrow</B> pans down to reveal more of the
+      lower frequencies. With <B>Shift</B>, the view pans by the height of the
+      graphic, with <B>Ctrl</B>, by one pixel.
+ <DT><B>PgUp PgDn</B>
+  <DD><B>Page Up</B> and <B>Page Down</B> move up/down the frequency axis
+      by the height of the graphic
+      (the same as <B>Shift-UpArrow</B> and <B>Shift-DownArrow</B>).
+</DL>
+
+<H2>Zooming in and out</H2>
+
+<DL>
  <DT><B>x X</B>
   <DD>Pressing a lower case '<B>x</B>' zooms out by a factor of two on the time
-      axis, so that twice as much of the audio becomes visible;
+      axis, so that twice as much of the sound becomes visible, while
       upper case '<B>X</B>' zooms in, enlarging the central half of the display
       to the width of the graph.
       <P>
-      If you zoom in enough while playing the audio, spettro will be
-      unable to calculate enough FFTs per second to keep the screen updated.
+      If you zoom in enough while playing the audio, spettro will eventually be
+      unable to calculate fast enough to keep the screen properly updated.
  <DT><B>y Y</B>
   <DD>Similarly, '<B>y</B>' zooms out on the frequency axis,
       showing twice the frequency range as before and compressing
-      the graphic in the vertical direction; '<B>Y</B>' zooms in by a factor of
+      the graphic in the vertical direction,
+      and '<B>Y</B>' zooms in by a factor of
       two so that what was the central half of the graphic now fills the
       whole height. If <B>Ctrl</B> is held down, it zooms out/in by two pixels,
-      revealing or hiding one row of pixels at the top and one at the bottom.
+      revealing or hiding one more row of pixels at the top and at the bottom.
       <BR>
       The maximum permitted zoom out is when the frequency at the top of
       the graph is 9 x 10^307 times the one at the bottom
       (half the value of the largest 64-bit floating-point number.)
  <DT><B>+ -</B>
   <DD>Either of the Plus keys zooms in on both axes, like X and Y
-      simultaneously, and the Minus keys zoom out in both directions.
+      at the same time, and the Minus keys make it zoom out both ways.
 </DL>
 
-<H3>Brightness, contrast and image quality</H3>
+<H2>Command-line panning and zooming</H2>
+
+The command-line options to set the initial position and zoom are:
+<DL>
+ <DT><B>-t</B> <I>x</I> / <B>--start</B> <I>x</I>
+  <DD>Starts with the playing position set to <I>x</I> seconds from the
+      beginning of the audio file. <I>x</I> is a floating-point number.
+ <DT><B>-P</B> <I>n</I> / <B>--ppsec</B> <I>n</I>
+  <DD>The pixels-per-second value determines the horizontal zoom.
+      Specifically, it says how many pixels of screen each second of audio
+      occupies. By default it starts at 25 pixels per second;
+      higher values stretch the image wider, and lower values show more
+      of the song in the window.
+ <DT><B>-n</B> <I>f</I> / <B>--min-freq</B> <I>f</I>
+  <DD>Sets the frequency represented by the bottom pixel row,
+      by default 27.5Hz (A0).
+ <DT><B>-x</B> <I>f</I> / <B>--max-freq</B> <I>f</I>
+  <DD>Sets the frequency represented by the top pixel row,
+      by default 14080Hz (A9).
+</DL>
+
+<H2>Changing colors and contrast</H2>
 
 <DL>
  <DT><B>c</B>
-  <DD>Cycle through alternate color maps: a colored heat map (the default),
-      gray (white on black), print (grayscale, black on white).
-      You can also select an initial color map with the <B>-c</B> option.
+  <DD>Cycles through the alternate color maps: the default colored heat map
+      running from blue through red and yellow to white,
+      grayscale (white on black) and for printing (grayscale, black on white).
+      <BR>The <B>-ch</B>, <B>-cg</B> and <B>-cp</B>, or
+          <B>--heat</B>, <B>--gray</B> and <B>--print</B>
+      command-line options select a color scheme.
  <DT><B>b d</B>
   <DD>The '<B>b</B>' and '<B>d</B>' keys brighten and darken the graphic, like a
       contrast control, by adjusting the range of loudnesses that the
       color scale covers.
       <BR>
-      '<B>b</B>' increases the dynamic range by 6dB (by 1dB if <B>Ctrl</B> is held),
+      '<B>b</B>' increases the dynamic range by 6dB
+      (by 1dB if <B>Ctrl</B> is held),
       brightening the darker areas to reveal detail;
       <BR>
-      '<B>d</B>' decreases the dynamic range by 6dB (by 1dB if <B>Ctrl</B> is held),
+      '<B>d</B>' decreases the dynamic range by 6dB
+      (by 1dB if <B>Ctrl</B> is held),
       darkening the graphic to hide background noise and
       make the main sonic events stand out.
       <BR>
@@ -104,240 +150,264 @@ more musically-interesting detail.
       By default, the dynamic range starts at 96dB and the minimum it goes
       down to is 1 decibel, which shows only the very loudest areas.
       <BR>
-      You can also set the initial dynamic range with the <B>-d</B>
-      command line argument.
- <DT><B>f F</B>
-  <DD>These keys change the size of tha audio sample used to calculate each
-      column of the spectrogram.
-      <BR>
-      '<B>f</B>' halves it, improving the graph's time resolution but losing focus
-      in the frequency direction, while
-      '<B>F</B>' doubles it, which smears time but increases the frequency resolution.
-      <BR>
-      The starting value is 1/5th of a second,
-      which resolves frequencies with a resolution of 5Hz
-      and shows about five distinct musical events per second.
-      <BR>You can also set the initial FFT frequency with the <B>-f</B> option.
- <DT><B>R K H N M B L D</B>
-  <DD>These keys, when pressed with <B>Shift</B> held, select
-      the pre-FFT convolution function to a Rectangular, Kaiser,
-      Nuttall, Hann, Hamming, Bartlett, Blackman or Dolph (the default) window,
-      There is a corresponding command-line option <B>-W</B>.
- <DT><B>w</B>
-  <DD>The '<B>w</B>' and '<B>W</B>' keys cycle forward/backwards
-      through the eight window functions in the order shown above.
- <DT><B>o</B>
-  <DD>The '<B>o</B>' key outputs a copy of the current screen into a PNG file
-      whose name includes the command-line options necessary to recreate
-      the view that is being saved.
- <DT><B>t</B>
-  <DD>The '<B>t</B>' key shows the current playing time on stdout.
- <DT><B>p</B>
-  <DD>Prints the current audio and user interface setting on stdout.
- <DT><B>Ctrl-L</B>
-  <DD>Control-L redraws the display from the FFT result cache.
- <DT><B>Ctrl-R</B>
-  <DD>Control-R redraws the display, first throwing away all cached FFT results
-      so it is recalculated from the audio data.
+      The <B>-d</B>&nbsp;<I>r</I> or <B>--dyn-range</B>&nbsp;<I>r</I>
+      command line option can be used to set the initial dynamic range to <I>r</I>.
 </DL>
 
-<H3>Frequency markers</H3>
+<H2>Image size and full-screen mode</H2>
 
-Spettro can overlay the graphic with various sets of horizontal lines:
-piano keys, staff lines and guitar strings.
+Spettro doesn't yet support changing the image's size while it is running
+(in fact, you can't "resize" its window with the mouse); instead, you can
+set the window's size with teo command-line options:
+<DL>
+ <DT><B>-w</B> <I>x</I> / <B>--width</B> <I>x</I>
+  <DD>sets the window's width to <I>x</I> pixels.
+  The default is 640 and the maximum, with SDL2, seems to be 4090.
+ <DT><B>-h</B> <I>y</I> / <B>--height</B> <I>y</I>
+  <DD>sets the window's height to <I>y</I> pixels.
+  The default is 480 and the maximum, with SDL2, seems to be 4064.
+</DL>
+Fullscreen mode fills the whole screen with the picture but it does not
+change the size of the underlying image; it scales it to the size of the
+screen (so the pixels appear bigger).
+<DL>
+ <DT><B>Ctrl-F</B>
+  <DD>This key switches between the windowed and full-screen modes.
+ <DT><B>-F</B>
+  <DD>The <B>-F</B> or <B>--fullscreen</B> command-line flag
+      makes it start up in full-screen mode.
+</DL>
+To obtain the highest-definition spectrogram that your screen is capable
+of displaying, you need to set the size of the image to the same size as
+your screen and go into fullscreen mode, for example:
+<BLOCKQUOTE><TT>
+spettro -w 1024 -h 768 -F whatever.wav
+</TT></BLOCKQUOTE>
+If you don't know your screen's exact size,
+the Unix command <B>xrandr</B> will tell you.
+
+<H2>Frequency/time resolution</H2>
+
+Spettro works by taking short samples of the audio file, centered on different
+moments in the audio file, and converts each sample to a column of pixels
+whose colors represent the energy in the sound at each frequency.
+<P>
+By default, the FFT frequency is 5Hz, which takes a fifth of a second sample
+for each column, eabling it to distinguish frequencies that are only 5Hz apart
+and being able to separate about five distinct musical events per second.
+<P>
+A higher FFT frequency (using shorter samples) improves the graph's 
+definition in the time direction but loses focus in the frequency direction,
+while a lower FFT frequency (using a longer sample for each column)
+improves detail in the frequency direction (vertically),
+but smears it in the time direction (horizontally).
+<DL>
+ <DT><B>f F</B>
+  <DD>These keys change the size of the audio sample used for each column.
+      <BR>
+      '<B>f</B>' halves it and '<B>F</B>' doubles it.
+</DL>
+The <B>-f</B>&nbsp;<I>freq</I> or <B>--fft-freq</B>&nbsp;<I>freq</I>
+command-line option sets the FFT frequency to start with.
+
+<H2>FFT window functions</H2>
+
+The other factor affecting the fine-grain quality of the image is the choice of
+window function used to smooth the edges of each sample
+removing the implicit "click" at the start and end of the sample
+before applying the sound-to-frequencies transform.
+<P>
+Spettro has eight window functions, selectable with eight capital letter keys
+or at the command line:
+<DL>
+ <DT><B>R</B> / <B>-WR</B> / <B>--rectangular</B>
+  <DD>Rectangular. The sample's edges are not rounded at all, resulting in
+      a lot of noise throughout the spectrogram.
+ <DT><B>K</B> / <B>-WK</B> / <B>--kaiser</B>
+  <DD>Kaiser window, "sndfile-spectrogram"'s default.
+ <DT><B>N</B> / <B>-WN</B> / <B>--nuttall</B>
+  <DD>Nuttall window
+ <DT><B>H</B> / <B>-WH</B> / <B>--hann</B>
+  <DD>Hann window, "sox spectrogram"'s default.
+ <DT><B>M</B> / <B>-WM</B> / <B>--hamming</B>
+  <DD>Hamming window, a classic window function that turns out to be
+      rather noisy when used to producing spectrograms.
+ <DT><B>B</B> / <B>-WB</B> / <B>--bartlett</B>
+  <DD>Bartlett window
+ <DT><B>L</B> / <B>-WL</B> / <B>--blackman</B>
+  <DD>Blackman window
+ <DT><B>D</B> / <B>-WD</B> / <B>--dolph</B>
+  <DD>Dolph window, our default, giving the tightest slot filter in the
+      frequency domain.
+ <DT><B>w</B> / <B>W</B>
+  <DD>The '<B>w</B>' and '<B>W</B>' keys cycle forward/backwards
+      through the eight window functions in the order shown above.
+</DL>
+<P>
+For more info on the different window functions' peculiarities and merits,
+see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
+or experiment with <B>spettro</B> and see for yourself!
+
+<H2>Frequency scales and overlays</H2>
+
+Spettro can add a frequency scale to the left and right edges of the picture,
+and can overlay it with various sets of horizontal lines to show the positions
+of the 88 piano keys, the six open strings of a classical guitar, and
+the staff lines of a conventional score.
 
 <DL>
+ <DT><B>a</B>
+  <DD>The '<B>a</B>' key adds a frequency axis on the left side of the graph,
+      and the positions of the conventional scoring notes, from A0 to G9,
+      on the right.
+      <BR>The <B>-a</B> or <B>--axes</B> command-line flag
+      make it start up showing the frequency scales.
  <DT><B>k</B>
-  <DD>The '<B>k</B>' key (or the <B>-k</B> command-line flag)
+  <DD>The '<B>k</B>' key
       overlays the spectrogram with 88 horizontal lines,
       some black, some white, showing the frequencies of the keys
-      of a grand piano from A0(27.5Hz) to C8(4186Hz).
-      <BR>Pressing '<B>k</B>' again makes the staff lines
-          green instead of white and pressing it again removes them.
+      of a grand piano from A0(27.5Hz) to C7(4186Hz).
+      <BR>Pressing '<B>k</B>' again makes the white keys green instead of white,
+      and pressing it again removes the overlay.
+      <BR>The <B>-k</B> or <B>--piano</B> command-line flag
+      makes it start up with the piano key lines visible.
+ <DT><B>g G</B>
+  <DD>The '<B>g</B>' key overlays the frequencies of the six open strings
+      of a classical guitar, centered on:
+      <BR>E2(82.4Hz) A2(110Hz) D3(146.8Hz) G3(196.0Hz) B3(246.9Hz) E4 (329.6Hz)
+      <BR><B>g</B> makes the lines one pixel thick, <B>G</B> three pixels thick.
+      <BR>Pressing '<B>g</B>' or '<B>G</B>' again makes the guitar lines
+          black instead of white and pressing it again removes them.
+      <BR>The <B>-g</B> or <B>--guitar</B> command-line flag also
+      makes it show the guitar strings lines.
  <DT><B>s S</B>
-  <DD>The '<B>s</B>' key (or the <B>-s</B> command-line flag)
-      overlays two white five-line pentagrams, as used in manuscript,
-      making it look more like a conventional musical score.
-      <BR>From top to bottom, the score lines are centered on:
+  <DD>The '<B>s</B>' key overlays two five-line staves
+      like those in a conventional musical score.
+      <BR>From top to bottom, the staff lines are centered on:
       <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
       <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz)
       <BR>'<B>s</B>' makes the lines one pixel thick,
           '<B>S</B>' three pixels thick.
       <BR>Pressing '<B>s</B>' or '<B>S</B>' again makes the staff lines
           black instead of white and pressing it again removes them.
- <DT><B>g G</B>
-  <DD>The '<B>g</B>' key (or the <B>-g</B> command-line flag)
-      overlays the frequencies of the six strings
-      of the classical guitar, centered on:
-      <BR>E2(82.4Hz) A2(110Hz) D3(146.8Hz) G3(196.0Hz) B3(246.9Hz) E4 (329.6Hz)
-      <BR><B>g</B> makes the lines one pixel thick, <B>G</B> three pixels thick.
-      <BR>Pressing '<B>g</B>' or '<B>G</B>' again makes the guitar lines
-          black instead of white and pressing it again removes them.
- <DT><B>a</B>
-  <DD>The '<B>a</B>' key toggles a frequency axis on the left side of the graph.
+      <BR>The <B>-s</B> or <B>--score</B> command-line flag also makes
+      it start up with staff lines.
 </DL>
-While piano key lines are one pixel thick, staff lines and guitar lines
-are both three pixels thick.
+Turning the staff lines on turns the guitar lines off and vice versa
+(because they overlap)
+but you can display the piano keys at the same time as either of them,
+to identify notes above the top or below the bottom staff line,
+or to see the fretted positions between the open guitar strings,
+in which case the staff or guitar lines are three pixels thick.
 <P>
-Only one of Staff and Guitar lines displays at a time (because they overlap)
-but you can display the piano keys together with either of them
-to identify notes above the top score line or to see the fretted
-positions of the guitar strings.
+There is, as yet, no command line flag to make the overlays green or black
+instead of white.
 
-<H3>Bar line indicators</H3>
+<H2>Bar lines and beat lines</H2>
 
-To help you pick out the rhythm, you can overlay evenly-spaced vertical white
-lines onto the graphic to show where each bar (or beat) begins.
+To help you pick out the rhythm, spettro can overlay evenly-spaced vertical
+lines onto the graphic to show where each bar of teh music begins and ends.
 <P>
-To do this, you mark two pixel columns to say where some bar
-starts and ends.
-When you set the first of the two bar line markers, a single vertical
-line appears at that position you marked and when you set the other one,
-bar lines appear at that position and evenly spaced throughout the piece.
+To do this, you mark two pixel columns to say where some bar starts and ends,
+and spettro will show bar lines at the same spacing throughout the piece.
 <P>
-There are three ways to mark the bar line positions:
+To get a useful result, precise positioning of the bar lines is crucial.
+<P>
+There are three ways to set the position of the bar line markers:
 <UL>
- <LI>The command-line flags <B>-l</B> and <B>-r</B> set the left and right
-     bar line position, measured in seconds from the start of the piece.
  <LI>You can position the graphic so that the green line is at the start of a
      bar, press '<B>l</B>', move it to the end of the bar and press '<B>r</B>'.
      For more precise positioning, zoom in on the time axis with '<B>X</B>',
      hold down the <B>Ctrl</B> key and use the left and right arrow keys to
      shift the graphic by one pixel at a time.
- <LI>If you hold down Control, you can position the left bar line by clicking
-     the left mouse button and the right bar line by clicking the right button.
+ <LI>If you hold down the Ctrl key, you can position the left bar line by
+     putting the mouse pointer at the start of a bar and clicking the left
+     mouse button. Similarly you can position the right bar line with
+     the right mouse button.
+ <LI>The <B>-l</B> and <B>-r</B> (or <B>--left</B> and <B>--right</B>)
+     command-line flags set the left and right bar line's positions to the
+     following number of seconds from the start of the piece.
 </UL>
-You can also set the "left" marker to the right of the "right" marker
-and it still works.
+If you set the "left" bar line marker to the right of the "right" one,
+it will still work.
 <P>
-Once you have both bar line markers set, you can use the number keys from 1 to 8
-to show none or from two to eight beats in each bar. The F1 to F12 keys do the
-same, in case you are analysing a piece with eleven beats to the bar.
+Once you have both bar line markers set, you can make it show lines dividing
+each bar into from 2 to 12 beats by pressing the number keys
+from <B>2</B> to <B>8</B> or the function keys <B>F2</B> to <B>F12</B>.
+<P>
+The <B>1</B> and <B>F1</B> keys remove the beat lines, leaving just the bars.
 
-<H3>System control</H3>
-
+<H2>Quit</H2>
 <DL>
  <DT><B>Esc Ctrl-C Q Ctrl-Q</B>
-  <DD>These all make spettro quit.
+  <DD>These key combinations all make spettro
+      quit-exit-close-terminate-finish-stop.
+</DL>
+
+<H2>Redraw</H2>
+<DL>
  <DT><B>Ctrl-L</B> / <B>Ctrl-R</B>
-  <DD><B>Ctrl-L</B> redraws the graphic display from the results already computed
-      while <B>Ctrl-R</B> also recalculates every column.
+  <DD><B>Ctrl-L</B> redraws the display from the results already computed
+      while <B>Ctrl-R</B> recalculates every column from the audio.
       These can be useful if the display becomes garbled for some reason.
- <DT><B>Ctrl-F</B>
-  <DD>Toggles fullscreen mode.
+</DL>
+
+<H2>Diagnostics</H2>
+<DL>
  <DT><B>t</B>
   <DD>Prints the current playing time on stdout.
  <DT><B>p</B>
   <DD>Prints the current user-interface settings on stdout.
- <DT><B>9 0</B>
-  <DD>Spettro has a soft volume control allowing you to increase the volume
-      above 100%, like mplayer and VLC, except that spettro's has no maximum
-      and it reduces the volume automatically if it would have made the
-      audio output clip.
 </DL>
 
-<H2>Startup options</H2>
-
-On spettro's command line you can supply various option flags before the
-audio file name:
+<H2>Soft volume control</H2>
+Spettro has a software volume control, which multiplies the sound by some
+value before sending it to the audio-playing system, usually used to
+increase the volume above 100%. There is no upper limit to the volume you
+can increase it to, but it reduces the volume automatically if it would
+have made the audio output clip.
 <DL>
- <DT><B>-p</B> / <B>--autoplay</B>
-  <DD>Starts playing the audio file as soon as the program starts up.
- <DT><B>-e</B> / <B>--exit-at-end</B>
-  <DD>Exits when the audio file has finished playing.
- <DT><B>-w</B> <I>n</I> / <B>--width</B> <I>n</I>
-  <DD>Sets the displayed window's width to <I>n</I> pixels.
-      This determines (along with --ppsec or the x and X horizontal zoom keys)
-      the amount of time that is visible.
-      The default width is 640. The maximum with SDL2 seems to be 4090.
- <DT><B>-h</B> <I>n</I> / <B>--height</B> <I>n</I>
-  <DD>Sets the displayed window's height to <I>n</I> pixels.
-      The default is 480 and the maximum when built with SDL2 seems to be 4064.
- <DT><B>-F</B> / <B>--fullscreen</B>
-  <DD>Starts up in full-screen mode.
-      The spectrogram is calculated at the width and height given above,
-      then scaled to the size of the screen. If you want it pixel-per-pixel
-      you also need use -w and -h to specify the screen's width and height.
-      The command "xrandr" will tell you these.
- <DT><B>-o</B> <I>filename.png</I>
-  <DD>Starts up, calculates the visible part of the spectrogram and dumps it
-      into the named file, then exits. With this and -w 4000 -h 1000 you can
-      obtain high-quality images to print.
+ <DT><B>9 0</B>
+  <DD>Nine and Zero are spettro's volume-down and volume-up player,
+      the same as with the <B>mplayer</B> media player.
+      If your keyboard has volume-up and volume-down media buttons,
+      they may also work.
+</DL>
+The <B>-v</B>&nbsp;<I>N</I> commmand-line flag sets the initial softvolume
+level to <I>N</I>, where values above 1.0 are louder than 100% and values
+lower than 1.0 are softer than usual.
+
+<H2>Dumping the screen image to a file</H2>
+<DL>
+ <DT><B>o</B>
+  <DD>The '<B>o</B>' key outputs a copy of the current screen into a PNG file
+      whose name includes the command-line options necessary to recreate
+      the same view that is being saved.
+</DL>
+The <B>-o</B> <I>file.png</I> (or <B>--output</B>) command-line option, instead, makes spettro
+start up, calculate the spectrogram, dump the image into a named file and
+quit without playing it or giving you the chance to press any buttons.
+<P>
+This is one reason why the file name generated by the <B>o</B> key includes the
+command line options necessary to regenerate the view saved in that file.
+<P>
+With this and, for example, <TT>-w&nbsp;4000&nbsp;-h&nbsp;1000</TT>,
+you can print out higher-definition images than the screen is capable of.
+
+<H2>Other command-line options</H2>
+
+<DL>
  <DT><B>-j</B> <I>n</I> / <B>--jobs</B> <I>n</I>
   <DD>Sets the number of FFT calculation threads
       (default: the same as the number of CPUs.)
- <DT><B>-t</B> <I>x</I> / <B>--start-at</B> <I>x</I>
-  <DD>Starts playing at <I>x</I> seconds into the audio file.
-      <I>x</I> is a floating-point number.
- <DT><B>-n</B> f / <B>--min-freq</B> <I>f</I>
-  <DD>Sets the frequency centered on the bottom pixel row, default 27.5Hz (A0)\n\
- <DT><B>-x</B> f / <B>--max-freq</B> <I>f</I>
-  <DD>Sets the frequency centered on the top pixel row, default 14080Hz (A9)\n\
- <DT><B>--heatmap</B> / <B>--gray</B> / <B>--print</B>
-  <DD>Selects the palette as a colored heatmap from blue through red and yellow
-      to white, in shades of gray as white on black (for screens)
-      or in shades of gray as black on white (for printers.)
- <DT><B>-d</B> n / <B>--dyn-range</B> <I>n</I>
-  <DD>Sets the dynamic range of the color map. Default: 100dB.
- <DT><B>-f</B> n / <B>--fft-freq</B> <I>n</I>
-  <DD>Sets the FFT frequency in Hz. Default: 5 (using samples of one fifth of a second.)
- <DT><B>-R</B> n / <B>--fps</B> <I>n</I>
-  <DD>Scrolls the graphic <I>n</I> times per second.
-      Default: 25 frames per second.
- <DT><B>-P</B> n / <B>--ppsec</B> <I>n</I>
-  <DD>Displays <I>n</I> pixel columns per second, default: 25.
- <DT><B>-a</B> / <B>--show-axes</B>
-  <DD>Shows a frequency scale in Hz on the left side of the graph
-      and the note names on the right.
-  <DT><B>-W</B> <I>which</I> / <B>--window</B> <I>which</I>
-  <DD>Selects the convolution function to apply to audio fragments
-      before feeding them to the frequency analysis function, one of:
-    <DL>
-     <DT><B>-WR</B> / <B>--rectangular</B>
-       <DD>Rectangular. The sample's edges are not trimmed, resulting in
-	floral artifacts in the spectrogram, most easily seen at
-	high magnification.
-	It is the fastest of the window functions because it does nothing.
-     <DT><B>-WK</B> / <B>--kaiser</B>
-      <DD>Kaiser window, "sndile-spectrogram"'s default.
-     <DT><B>-WN</B> / <B>--nuttall</B>
-      <DD>Nuttall window
-     <DT><B>-WH</B> / <B>--hann</B>
-      <DD>Hann (a.k.a. "Hanning") window, "sox spectrogram"'s default.
-     <DT><B>-WM</B> / <B>--hamming</B>
-      <DD>Hamming window
-     <DT><B>-WB</B> / <B>--bartlett</B>
-      <DD>Bartlett window
-     <DT><B>-WL</B> / <B>--blackman</B>
-      <DD>Blackman window
-     <DT><B>-WD</B> / <B>--dolph</B>
-      <DD>Dolph window, our default, giving the best slot filter in the
-          frequency domain.
-    </DL>
-    There are corresponding keystroke commands
-    <B>R</B>, <B>K</B>, <B>N</B>, <B>H</B>,
-    <B>N</B>, <B>B</B>, <B>L</B> and <B>D</B>,
-    the '<B>w</B>' and '<B>W</B>' keys cycle forwards or backwards
-    through the eight window functions.
-    <P>
-    For more info on the different window functions' peculiarities and merits,
-    see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
-    or experiment with <B>spettro</B> and see for yourself :)
- <DT><B>-k</B> / <B>--piano</B>
-  <DD>Overlays black and green lines showing where 88-note piano's black and white keys are.
- <DT><B>-s</B> / <B>--score</B>
-  <DD>Overlays conventional score notation's five-line staves.
- <DT><B>-g</B> / <B>--guitar</B>
-  <DD>Overlays lines showing the positions of a classical guitar's strings.
- <DT><B>-v</B> <I>N</I> / <B>--softvol</B> <I>N</I>
-  <DD>Sets the softvolume level to <I>N</I>
-      (>1.0 is louder than 100%, <1.0 softer)\n\
+ <DT><B>-R</B> <I>n</I> / <B>--fps</B> <I>n</I>
+  <DD>Scrolls the graphic, at maximum, <I>n</I> times per second,
+      instad of its usual 25 frames per second.
  <DT><B>--help</B>
   <DD>Shows a summary of all option flags and keys.
 </DL>
-If no filename is supplied, it opens "audio.wav".
 
 <HR>
-Martin Guy &lt;martinwguy&#64;gmail.com>, August-December 2018.
+Martin Guy &lt;martinwguy&#64;gmail.com>, August 2018 - May 2019.
 </BODY>
 </HTML>
