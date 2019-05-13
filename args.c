@@ -144,11 +144,11 @@ switch_again:
 	    if (!strcmp(argv[0], "--width")) argv[0] = "-w";
 	    else if (!strcmp(argv[0], "--height")) argv[0] = "-h";
 	    else if (!strcmp(argv[0], "--jobs")) argv[0] = "-j";
-	    else if (!strcmp(argv[0], "--left-bar-line")) argv[0] = "-l";
-	    else if (!strcmp(argv[0], "--right-bar-line")) argv[0] = "-r";
+	    else if (!strcmp(argv[0], "--left")) argv[0] = "-l";
+	    else if (!strcmp(argv[0], "--right")) argv[0] = "-r";
 	    else if (!strcmp(argv[0], "--fft-freq")) argv[0] = "-f";
-	    else if (!strcmp(argv[0], "--start-at")) argv[0] = "-t";
-	    else if (!strcmp(argv[0], "--output-png")) argv[0] = "-o";
+	    else if (!strcmp(argv[0], "--start")) argv[0] = "-t";
+	    else if (!strcmp(argv[0], "--output")) argv[0] = "-o";
 	    else if (!strcmp(argv[0], "--window")) argv[0] = "-W";
 	    else if (!strcmp(argv[0], "--rectangular")) argv[0] = "-WR";
 	    else if (!strcmp(argv[0], "--kaiser")) argv[0] = "-WK";
@@ -158,7 +158,7 @@ switch_again:
 	    else if (!strcmp(argv[0], "--bartlett")) argv[0] = "-WB";
 	    else if (!strcmp(argv[0], "--blackman")) argv[0] = "-WL";
 	    else if (!strcmp(argv[0], "--dolph")) argv[0] = "-WD";
-	    else if (!strcmp(argv[0], "--heatmap")) argv[0] = "-ch";
+	    else if (!strcmp(argv[0], "--heat")) argv[0] = "-ch";
 	    else if (!strcmp(argv[0], "--gray")) argv[0] = "-cg";
 	    else if (!strcmp(argv[0], "--grey")) argv[0] = "-cg";
 	    else if (!strcmp(argv[0], "--print")) argv[0] = "-cp";
@@ -168,12 +168,12 @@ switch_again:
 	    else if (!strcmp(argv[0], "--max-freq")) argv[0] = "-x";
 	    /* Boolean flags */
 	    else if (!strcmp(argv[0], "--autoplay")) argv[0] = "-p";
-	    else if (!strcmp(argv[0], "--exit-at-end")) argv[0] = "-e";
+	    else if (!strcmp(argv[0], "--exit")) argv[0] = "-e";
 	    else if (!strcmp(argv[0], "--fullscreen")) argv[0] = "-F";
 	    else if (!strcmp(argv[0], "--piano")) argv[0] = "-k";
 	    else if (!strcmp(argv[0], "--guitar")) argv[0] = "-g";
 	    else if (!strcmp(argv[0], "--score")) argv[0] = "-s";
-	    else if (!strcmp(argv[0], "--show-axes")) argv[0] = "-a";
+	    else if (!strcmp(argv[0], "--axes")) argv[0] = "-a";
 	    /* Those environment variables */
 	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-R";
 	    else if (!strcmp(argv[0], "--ppsec")) argv[0] = "-P";
