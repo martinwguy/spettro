@@ -79,13 +79,14 @@ If no filename is supplied, it opens \"audio.wav\"\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by a tenth of a screenful\n\
            Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by one second\n\
-Up/Down    Pan up/down the frequency axis by a tenth of the graph's height\n\
-           (by a screenful if Shift is held; by one pixel if Ctrl is held)\n\
+Up/Down    Pan up/down the frequency axis by a tenth of a screenful\n\
+           Shift: by a screenful; Ctrl: by one pixel; Shift-Ctrl: by a semitone\n\
 PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
-X/x        Zoom in/out on the time axis\n\
-Y/y        Zoom in/out on the frequency axis\n\
+X/x        Zoom in/out by a factor of two on the time axis\n\
+Y/y        Zoom in/out by a factor of two on the frequency axis\n\
+           With Ctrl, zooms in/out by two pixels.\n\
 Plus/Minus Zoom both axes\n\
-c          Flip between color maps: heat map - grayscale - gray for printing\n\
+c          Flip between color maps: heatmap - grayscale - gray for printing\n\
 b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 K/D/N/B/H  Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann,\n\

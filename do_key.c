@@ -152,7 +152,7 @@ k_next(key_t key)
 
 /*
  * Arrow Up/Down: Pan the frequency axis by a tenth of the screen height.
- * With Shift: by a screenful. With Ctrl, by a pixel.
+ * With Shift: by a screenful. With Ctrl, by a pixel, with both by a semitone.
  * The argument to freq_pan_by() multiplies min_freq and max_freq.
  * Page Up/Down: Pan the frequency axis by a screenful
  */
@@ -161,13 +161,15 @@ k_freq_pan(key_t key)
 {
     switch (key) {
     case KEY_UP:
-	freq_pan_by(Ctrl ? v_pixel_freq_ratio():
-		    Shift ? max_freq / min_freq :
+	freq_pan_by((Ctrl && !Shift) ? v_pixel_freq_ratio():
+		    (Shift && !Ctrl) ? max_freq / min_freq :
+		    (Shift && Ctrl) ? pow(2, 1/12.0) :
 		    pow(max_freq / min_freq, 1/10.0));
 	break;
     case KEY_DOWN:
-	freq_pan_by(Ctrl ? 1.0 / v_pixel_freq_ratio() :
-		    Shift ? min_freq / max_freq :
+	freq_pan_by((Ctrl && !Shift) ? 1.0 / v_pixel_freq_ratio() :
+		    (Shift && !Ctrl) ? min_freq / max_freq :
+		    (Shift && Ctrl) ? 1.0 / pow(2, 1/12.0) :
 		    pow(min_freq / max_freq, 1/10.0));
 	break;
     case KEY_PGUP:
@@ -550,8 +552,8 @@ static key_fn key_fns[] = {
     { KEY_RIGHT,"Right",k_left_right,	k_left_right,	k_left_right,	k_left_right },
     { KEY_HOME,	"Home",	k_home,		k_bad,		k_bad,		k_bad },
     { KEY_END,	"End",  k_end,		k_bad,		k_bad,		k_bad },
-    { KEY_UP,	"Up",   k_freq_pan,	k_freq_pan,	k_freq_pan,	k_bad },
-    { KEY_DOWN,	"Down", k_freq_pan,	k_freq_pan,	k_freq_pan,	k_bad },
+    { KEY_UP,	"Up",   k_freq_pan,	k_freq_pan,	k_freq_pan,	k_freq_pan },
+    { KEY_DOWN,	"Down", k_freq_pan,	k_freq_pan,	k_freq_pan,	k_freq_pan },
     { KEY_PGUP,	"PageUp",  k_freq_pan,	k_bad,		k_bad,		k_bad },
     { KEY_PGDN,	"PageDown",k_freq_pan,	k_bad,		k_bad,		k_bad },
     { KEY_X,	"X",    k_time_zoom,	k_time_zoom,	k_bad,		k_bad },
@@ -571,8 +573,8 @@ static key_fn key_fns[] = {
     { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
     { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
     { KEY_R,	"R",    k_right_barline,k_bad,		k_redraw,	k_bad },
-    { KEY_B,	"B",    k_brighter,	k_set_window,	k_brighter,	k_bad },
-    { KEY_D,	"D",    k_darker,	k_set_window,	k_darker,	k_bad },
+    { KEY_B,	"B",    k_brighter,	k_set_window,	k_bad,	 	k_bad },
+    { KEY_D,	"D",    k_darker,	k_set_window,	k_bad,		k_bad },
     { KEY_A,	"A",    k_toggle_axes,	k_bad,		k_bad,		k_bad },
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_set_window,	k_bad,		k_bad },

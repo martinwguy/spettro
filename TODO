@@ -207,5 +207,3 @@ Remove Ctrl from mouse-bar-line setting, bcos on a mousepad they will want
 one finger to hold the button pressed and the other to move the pointer.
 Ctrl needs three fingers instad of two.
 ------------------------------------------------------------------------
-Make Ctrl-Shift-up/down scroll by less, like left and right.
-------------------------------------------------------------------------
