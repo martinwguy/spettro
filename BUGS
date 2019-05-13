@@ -29,6 +29,16 @@ Control-L (redraw from cache) corrects the color balance to be the same.
 Suspect: logmax
 Remedy: include logmax in ui.c - either use logmax and dyn_range or
 logmin and logmax. Or dynamic range for external use, min/max for internal.
+------------------------------------------------------------------------
+If you zoom the frequency axis in a huge amount, you eventually get several
+frequency-axis ticks with the same label. Extend the precision to include the
+changing or extra digit.
+------------------------------------------------------------------------
+If you have beat lines displayed and move the mouse while holding Crtl
+and a mouse button, and then drag (say) the left bar line into the
+gray area left of the start,
+the still-on-graphic right bar line reverts to one pixel thick, the same
+as the beat lines.
 
 ============================ Calc ======================================
 
