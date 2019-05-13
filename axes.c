@@ -389,9 +389,10 @@ draw_status_line(void)
     gui_paint_rect(min_x, max_y+1, max_x, disp_height-1, black);
 
     gui_lock();
-    sprintf(s, "%g - %g Hz   %g octaves",
+    sprintf(s, "%g - %g Hz   %g octaves   %g dB",
 	    min_freq, max_freq,
-    	    log(max_freq / min_freq) / log(2.0));
+    	    log(max_freq / min_freq) / log(2.0),
+	    -min_db);
     draw_text(s, min_x, max_y + 2, LEFT, BOTTOM);
 
     sprintf(s, "%g pixels per second   %g cents per pixel",
