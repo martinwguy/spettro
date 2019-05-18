@@ -8,28 +8,39 @@
 <H1 ALIGN=CENTER>SPETTRO</H1>
 <P ALIGN=CENTER>Visualize music as it plays</P>
 <HR>
-<IMG SRC="screenshot.png" ALIGN=RIGHT>
-Spettro plays a sound file and displays a scrolling
-spectrogram as it plays.
+Spettro shows a scrolling spectrogram of music as it plays.
 <P>
+<IMG SRC="screenshot.png" ALIGN=RIGHT>
+<IMG SRC="sox-spectrogram.png" ALIGN=RIGHT>
 Most spectrograms have a linear frequency axis, which is no good for music
 because the top half of the graphic represents the top octave of the sound,
 the octave below occupies the next quarter of the screen,
 the following one the next eighth and so on,
-leaving most of the musical information crushed into the bottom few lines
-of the picture.
+leaving most of the musical information crushed into the bottom few rows.
 <P>
-Spettro is different. Its logarithmic frequency axis gives each
-octave the same height, much like a conventional musical score and
-more more similar to the response of the cochlea in our ears,
-revealing more musically-interesting detail to our eyes.
+Spettro's logarithmic frequency axis gives makes each
+octave the same height, much like a conventional musical score
+(and closer to the response of the cochlea in our ears),
+revealing a greater amount of musically-interesting detail to our eyes.
+<P>
+The playing position is the green line in the middle of the screen,
+so you can see musical events in arrival, hear them,
+and contemplate them as they recede to the left.
+<P>
+You can see/hear it playing this short piece
+<A HREF="https://www.youtube.com/watch?v=fGRsLX0Ec1E">on YouTube</A>.
+
+<H2>Where to get it</H2>
+
+<B>Spettro</B> is under development <A HREF="https://github.com/martinwguy/spettro">on Github</A>, is known to work when compiled on GNU/Linux, and it should be
+portable to Windows, Mac, Android, iOS and Tizen.
 
 <H2>How to use it</H2>
 
-At present, you have to start <B>spettro</B> from the command line prompt,
+At the moment, you have to start <B>spettro</B> from the command line prompt,
 telling it the name of the audio file that it should display.
 <P>
-Then you press buttons on the keyboard to make everything else happen.
+Then you can press buttons on the keyboard to make everything else happen.
 
 <H2>Playing the music, watching the lights</H2>
 <DL>
