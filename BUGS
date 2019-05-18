@@ -45,10 +45,6 @@ When piano and guitar lines are displayed, the guitar lines should become
 
 ============================ Calc ======================================
 
-It schedules some columns that are already present.
-e.g. spettro 440.wav and press space a few times
-e.g. spettro swoop.wav and press ^L
-------------------------------------------------------------------------
 It calculates duplicate results.
 
 They seem mostly to be columns near the right hand side.
