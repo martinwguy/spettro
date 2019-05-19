@@ -77,7 +77,7 @@ bin_PROGRAMS = spettro filtering_audio
 desktopdir = $(datadir)/applications
 desktop_DATA = spettro.desktop
 icondir = $(datadir)/icons
-icon_DATA = spettro.png
+icon_DATA = icon.png
 
 spettro_SOURCES = main.c config.h spettro.h \
 	alloc.c args.c audio.c audio_cache.c audio_file.c axes.c \
