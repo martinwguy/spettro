@@ -23,13 +23,6 @@ The displayed area *is* 321 pixels wide, which is correct for 0-320.
 At the last paint_column() of column 320, green_line_off is on.
 This only seems to happen with swoop.wav, not with audio.wav
 ------------------------------------------------------------------------
-When you 'o' to dump a PNG file, then rerun spettro with the args in the
-file's name, the graphic comes out lighter than the original. Pressing
-Control-L (redraw from cache) corrects the color balance to be the same.
-Suspect: logmax
-Remedy: include logmax in ui.c - either use logmax and dyn_range or
-logmin and logmax. Or dynamic range for external use, min/max for internal.
-------------------------------------------------------------------------
 If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label. Extend the precision to include the
 changing or extra digit.

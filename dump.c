@@ -50,6 +50,7 @@ dump_screenshot()
     if (DELTA_NE(window_function, DEFAULT_WINDOW_FUNCTION))
     					      add(s, " -W%c", window_key(window_function));
     if (DELTA_NE(disp_time, 0.0))             add(s, " -t %g", disp_time);
+    if (DELTA_NE(logmax, DEFAULT_LOGMAX))     add(s, " -M %g", logmax);
     if (piano_lines)      add(s, " %s", "-k");
     if (staff_lines)      add(s, " %s", "-s");
     if (guitar_lines)     add(s, " %s", "-g");

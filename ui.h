@@ -40,6 +40,7 @@ extern double min_freq, max_freq;
 extern double dyn_range;
 #define DEFAULT_DYN_RANGE	(96.0)
 extern double logmax;
+#define DEFAULT_LOGMAX		(0.0)	/* 0 = log10(1.0) */
 
 /* Screen-scroll frequency and number of pixel columns per second of audio */
 extern double fps;

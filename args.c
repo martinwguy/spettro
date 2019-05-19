@@ -56,6 +56,8 @@ usage(void)
 				DEFAULT_MIN_FREQ, DEFAULT_MAX_FREQ); printf("\
 -d n   Set the dynamic range of the color map in decibels, default %gdB\n",
 				DEFAULT_DYN_RANGE); printf("\
+-M n   Set the magnitude of the brightest pixel, default %gdB\n",
+				DEFAULT_LOGMAX); printf("\
 -a     Label the vertical frequency axes\n\
 -f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
 -t n   Set the initial playing time in seconds\n\
@@ -192,7 +194,7 @@ switch_again:
 	case 'n': case 'x':
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
 	case 'o': case 'W': case 'c': case 'v': case 'd': case 'R': case 'P':
-	case 'b':
+	case 'b': case 'M':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
 	    } else {
@@ -290,6 +292,7 @@ another_letter:
 	case 'd':	/* Set dynamic range */
 	case 'R':	/* Set scrolling rate */
 	case 'P':	/* Set pixel columns per second */
+	case 'M':	/* Set logmax */
 	    errno = 0;
 	    {
 		char *endptr;
@@ -336,7 +339,8 @@ another_letter:
 		case 'd': dyn_range = arg;	break;
 		case 'R': fps = arg;		break;
 		case 'P': ppsec = arg;		break;
-		default: fprintf(stderr, "Undecoded FP parameter %c\n", letter);
+		case 'M': logmax = arg;		break;
+		default: fprintf(stderr, "Internal error: Unknown numeric argument -%c\n", letter);
 		}
 	    }
 	    break;
