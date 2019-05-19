@@ -17,12 +17,6 @@ Couldn't initialize SDL: Unable to open a console terminal.
 and over ssh it fails:
 Couldn't initialize SDL: Unable to open mouse.
 ------------------------------------------------------------------------
-When it gets to the end of the piece, by playing or by [End],
-the green line sometimes disappears.
-The displayed area *is* 321 pixels wide, which is correct for 0-320.
-At the last paint_column() of column 320, green_line_off is on.
-This only seems to happen with swoop.wav, not with audio.wav
-------------------------------------------------------------------------
 If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label. Extend the precision to include the
 changing or extra digit.
