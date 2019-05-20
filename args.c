@@ -93,7 +93,8 @@ Plus/Minus Zoom both axes\n\
 c          Flip between color maps: heatmap - grayscale - gray for printing\n\
 b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
-K/D/N/B/H  Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann,\n\
+Ctrl-K/D/N/B/H\n\
+           Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann\n\
 w/W        Cycle forward/backward through the window functions\n\
 a          Toggle the frequency axis\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
