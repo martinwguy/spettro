@@ -139,8 +139,9 @@ The command-line options to set the initial position and zoom are:
       <BR>The <B>-ch</B>, <B>-cg</B> and <B>-cp</B>, or
           <B>--heat</B>, <B>--gray</B> and <B>--print</B>
       command-line options select a color scheme.
+
  <DT><B>c C</B>
-  <DD>The '<B>c</B>' and '<B>C</B>' adjust the contrast by changing
+  <DD>The '<B>c</B>' and '<B>C</B>' keys adjust the contrast by changing
       the range of loudnesses that the color scale covers.
       <BR>
       '<B>C</B>' increases the dynamic range by 6dB
@@ -158,23 +159,29 @@ The command-line options to set the initial position and zoom are:
       The <B>-d</B>&nbsp;<I>r</I> or <B>--dyn-range</B>&nbsp;<I>r</I>
       command line option sets the initial dynamic range to
       <I>r</I> decibels.
-</DL>
-Spettro automatically adjusts the color scale so that the loudest pixel
-that is has seen so far is displayed as the brightest color (usually white).
-When a new, louder maximum value is seen, any further
-pixel columns that are painted will be dimmed to keep the maximum value at
-white, though that leaves any existing columns brighter than the new ones.
-(It used to repaint previously-painted lines when this happens,
-but it was too slow); if this is important, pressing Ctrl-L will repaint the
-entire display with the new scale of colors.
-<P>
-The <B>-M</B>&nbsp;<I>logmax</I> flag lets you start with the brightest color
-representing a pixl energy of <I>logmax</I> deciels.
-Values above 0 make it start out darker, and
-values below 0 make it start out brighter.
-<P>
-The current value of <I>logmax</I> can be found out by pressing '<B>p</B>' and llooking at the text console,
-and it is included in the name of the '<B>o</B>' key's screendump file.
+
+ <DT><B>b B</B>
+  <DD>The '<B>b</B>' and '<B>B</B>' keys adjust the brightness by changing
+      the volume represented by the brightest pixel in the color map.
+      <B>b</B> makes the graphic 10% darker, and <B>B</B> makes it 10% brighter.
+      <BR>
+      When spettro encounters a pixel louder than the current maximum,
+      it automatically lowers the brightness so that the loudest pixel
+      is displayed at the brightest color (usually white).
+      When this happens, all newly-painted pixel columns will be dimmer than the
+      already-displayed ones, causing a color discontinutity when the new,
+      louder pixels enter the displayed area.
+      (It used to repaint previously-painted lines when this happens,
+      but that turned out to be too slow.)
+      To repaint the whole display at the new brightness, press Ctrl-L.
+      <BR>
+      The <B>-M</B>&nbsp;<I>logmax</I> flag lets you start with the brightest
+      color representing a pixel energy of <I>logmax</I> decibels.
+      Values above 0 make it start out darker, and
+      values below 0 make it start out brighter.
+      <BR>
+      The current value of <I>logmax</I> can be found out by pressing '<B>p</B>'
+      and it is included in the name of the '<B>o</B>' key's screendump file.
 
 <H2>Image size and full-screen mode</H2>
 

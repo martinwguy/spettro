@@ -209,3 +209,10 @@ change_dyn_range(double by)
 
     if (show_axes) draw_status_line();
 }
+
+/* Change the maximum brightness */
+void
+change_logmax(double by)
+{
+    logmax *= by;
+}

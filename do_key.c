@@ -252,11 +252,11 @@ k_set_window(key_t key)
     }
 }
 
-/* b and d change the dynamic range of color spectrum by 6dB.
- * 'b' brightens the dark areas, which is achieved by increasing
+/* C and c change the dynamic range of color spectrum by 6dB.
+ * 'C' brightens the dark areas, which is achieved by increasing
  * the dynamic range;
- * 'd' darkens them to reduce visibility of background noise.
- * With Ctrl held, b and d brighten/darken by 1dB.
+ * 'c' darkens them to reduce visibility of background noise.
+ * With Ctrl held, they brighten/darken by 1dB.
  */
 static void
 k_contrast(key_t key)
@@ -264,6 +264,15 @@ k_contrast(key_t key)
     double by = Ctrl ? 1.0 : 6.0;
 
     change_dyn_range(Shift ? by : -by);
+    repaint_display(TRUE);
+}
+
+static void
+k_brightness(key_t key)
+{
+    double by = 1.10;	/* by 10% */
+
+    change_logmax(Shift ? 1/by : by);
     repaint_display(TRUE);
 }
 
@@ -568,7 +577,7 @@ static key_fn key_fns[] = {
     { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
     { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
     { KEY_R,	"R",    k_right_barline,k_bad,		k_redraw,	k_bad },
-    { KEY_B,	"B",    k_bad,		k_bad,		k_set_window, 	k_bad },
+    { KEY_B,	"B",    k_brightness,	k_brightness,	k_set_window, 	k_bad },
     { KEY_D,	"D",    k_bad,		k_bad,		k_set_window,	k_bad },
     { KEY_A,	"A",    k_toggle_axes,	k_bad,		k_bad,		k_bad },
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
