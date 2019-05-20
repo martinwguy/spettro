@@ -259,16 +259,11 @@ k_set_window(key_t key)
  * With Ctrl held, b and d brighten/darken by 1dB.
  */
 static void
-k_brighter(key_t key)
+k_contrast(key_t key)
 {
-    change_dyn_range(Ctrl ? 1.0 : 6.0);
-    repaint_display(TRUE);
-}
+    double by = Ctrl ? 1.0 : 6.0;
 
-static void
-k_darker(key_t key)
-{
-    change_dyn_range(Ctrl ? -1.0 : -6.0);
+    change_dyn_range(Shift ? by : -by);
     repaint_display(TRUE);
 }
 
@@ -545,7 +540,7 @@ static key_fn key_fns[] = {
     /* KEY	Name    plain		Shift		Ctrl		ShiftCtrl */
     { KEY_NONE,	"None", k_none,		k_none,		k_none,		k_none },
     { KEY_Q,	"Q",	k_quit,		k_quit,		k_quit,		k_quit },
-    { KEY_C,	"C",    k_change_color,	k_bad,		k_quit,		k_bad },
+    { KEY_C,	"C",    k_contrast,	k_contrast,	k_contrast,	k_contrast },
     { KEY_ESC,	"Esc",  k_quit,		k_bad,		k_bad,		k_bad },
     { KEY_SPACE,"Space",k_space,	k_bad,		k_bad,		k_bad },
     { KEY_LEFT, "Left", k_left_right,	k_left_right,	k_left_right,	k_left_right },
@@ -573,10 +568,11 @@ static key_fn key_fns[] = {
     { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
     { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
     { KEY_R,	"R",    k_right_barline,k_bad,		k_redraw,	k_bad },
-    { KEY_B,	"B",    k_brighter,	k_bad,		k_set_window, 	k_bad },
-    { KEY_D,	"D",    k_darker,	k_bad,		k_set_window,	k_bad },
+    { KEY_B,	"B",    k_bad,		k_bad,		k_set_window, 	k_bad },
+    { KEY_D,	"D",    k_bad,		k_bad,		k_set_window,	k_bad },
     { KEY_A,	"A",    k_toggle_axes,	k_bad,		k_bad,		k_bad },
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
+    { KEY_M,	"M",    k_change_color,	k_bad,		k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_bad,		k_set_window,	k_bad },
     { KEY_N,	"N",	k_bad,		k_bad,		k_set_window,	k_bad },
     { KEY_0,	"0",	k_softvol_up,	k_bad,		k_bad,		k_bad },

@@ -132,37 +132,31 @@ The command-line options to set the initial position and zoom are:
 <H2>Colors, contrast and brightness</H2>
 
 <DL>
- <DT><B>c</B>
+ <DT><B>m</B>
   <DD>Cycles through the alternate color maps: the default colored heat map
       running from blue through red and yellow to white,
       grayscale (white on black) and for printing (grayscale, black on white).
       <BR>The <B>-ch</B>, <B>-cg</B> and <B>-cp</B>, or
           <B>--heat</B>, <B>--gray</B> and <B>--print</B>
       command-line options select a color scheme.
- <DT><B>b d</B>
-  <DD>The '<B>b</B>' and '<B>d</B>' keys brighten and darken the graphic, like a
-      contrast control, by adjusting the range of loudnesses that the
-      color scale covers.
+ <DT><B>c C</B>
+  <DD>The '<B>c</B>' and '<B>C</B>' adjust the contrast by changing
+      the range of loudnesses that the color scale covers.
       <BR>
-      '<B>b</B>' increases the dynamic range by 6dB
+      '<B>C</B>' increases the dynamic range by 6dB
       (by 1dB if <B>Ctrl</B> is held),
       brightening the darker areas to reveal detail;
       <BR>
-      '<B>d</B>' decreases the dynamic range by 6dB
+      '<B>c</B>' decreases the dynamic range by 6dB
       (by 1dB if <B>Ctrl</B> is held),
       darkening the graphic to hide background noise and
       make the main sonic events stand out.
-      <BR>
-      The loudest moments in any piece are always shown at maximum brightness
-      (usually white) and by changing the dynamic range, you change which
-      sound energy value is represented by the dimmest visible color
-      (usually dark blue).
       <BR>
       By default, the dynamic range starts at 96dB and the minimum it goes
       down to is 1 decibel, which shows only the very loudest areas.
       <BR>
       The <B>-d</B>&nbsp;<I>r</I> or <B>--dyn-range</B>&nbsp;<I>r</I>
-      command line option can be used to set the initial dynamic range to
+      command line option sets the initial dynamic range to
       <I>r</I> decibels.
 </DL>
 Spettro automatically adjusts the color scale so that the loudest pixel

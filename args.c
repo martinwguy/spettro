@@ -90,8 +90,8 @@ X/x        Zoom in/out by a factor of two on the time axis\n\
 Y/y        Zoom in/out by a factor of two on the frequency axis\n\
            With Ctrl, zooms in/out by two pixels.\n\
 Plus/Minus Zoom both axes\n\
-c          Flip between color maps: heatmap - grayscale - gray for printing\n\
-b/d        Brighten/Darken the graphic by 6dB (by 1dB if Ctrl is held down)\n\
+m          Cycle through the color maps: heatmap/grayscale/gray for printers\n\
+c/C        Increase/decrease the contrast by 6dB (by 1dB if Ctrl is held down)\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 Ctrl-K/D/N/B/H\n\
            Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann\n\
