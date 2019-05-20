@@ -104,12 +104,13 @@ free_interpolate_cache()
  * from_y and to_y limit the range of diplay rows to fill
  * (== min_y and max_y-1 to paint the whole column).
  *
- * Returns the maximum value seen so far.
+ * Returns the maximum value in the column.
  */
 
 double
 interpolate(float* logmag, const float *spec, const int from_y, const int to_y, double sample_rate, int speclen)
 {
+    double column_logmax = -INFINITY;
     int y;
 
     /* Map each output coordinate to where it depends on in the input array.
@@ -165,9 +166,9 @@ interpolate(float* logmag, const float *spec, const int from_y, const int to_y, 
 	    logmag[k] = log10(spec[(int) this] * (1.0 - (this - floor (this)))
 		              + spec[(int) this + 1] * (this - floor (this)));
 	}
-	if (logmag[k] > logmax) {
-	    logmax = logmag[k];
+	if (logmag[k] > column_logmax) {
+	    column_logmax = logmag[k];
 	}
     }
-    return(logmax);
+    return(column_logmax);
 }

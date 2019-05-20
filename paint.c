@@ -283,7 +283,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
     audio_file_t *af;	/* audio file for this column */
     float *logmag;
-    double logmax;	/* maximum log magnitude seen so far */
+    double col_logmax;	/* maximum log magnitude in the column */
     int y;
     color_t ov;		/* Overlay color */
     int speclen;
@@ -303,7 +303,10 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 
     assert(maglen == max_y - min_y + 1);
     logmag = Calloc(maglen, sizeof(*logmag));
-    logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate, speclen);
+    col_logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate, speclen);
+
+    /* Auto-adjust brightness if some pixel is brighter than current maximum */
+    if (col_logmax > logmax) logmax = col_logmax;
 
     /* For now, we just normalize each column to the maximum seen so far.
      * Really we need to add max_db and have brightness/contast control.
