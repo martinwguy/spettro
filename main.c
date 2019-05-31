@@ -161,7 +161,11 @@ main(int argc, char **argv)
     if (output_file) {
 	while (there_is_work()) {abort(); sleep(1); }
 	while (jobs_in_flight > 0) {abort(); usleep(100000); }
+	green_line_off = TRUE;
+	repaint_column(disp_offset, min_y, max_y, FALSE);
+	gui_update_column(disp_offset);
 	gui_output_png_file(output_file);
+	green_line_off = FALSE;
     }
 
     gui_quit();
