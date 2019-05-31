@@ -87,11 +87,6 @@ But mpg123 can play it, saying it's  MPEG 2.0 L III cbr64 22050 j-s
 
 ============================ Other ======================================
 
-On startup, the graphic is displayed a little too bright.
-Repeat-by: ./spettro audio.wav
-then press [Ctrl-L], and the image darkens slightly.
-Put logmax code into ui.c as it affects the image.
-------------------------------------------------------------------------
 On ciccio1, playing a Common Swift wav, the audio and graphics get out of sync
 
 spettro -w 1280 -h 800 ~martin/rec/rondoni/*ll.wav

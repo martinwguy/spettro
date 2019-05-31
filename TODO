@@ -203,8 +203,6 @@ Be able to give command-line time parameters as 1:30.62
 ------------------------------------------------------------------------
 Be able to set the colour of the staff/guitar/piano lines at startup.
 ------------------------------------------------------------------------
-After "lr", the green line remains white.
-------------------------------------------------------------------------
 Remove Ctrl from mouse-bar-line setting, bcos on a mousepad they will want
 one finger to hold the button pressed and the other to move the pointer.
 Ctrl needs three fingers instad of two.

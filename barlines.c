@@ -47,11 +47,12 @@ static int is_bar_line(int x);
 #define BAR_LINE 1
 #define BEAT_LINE 2
 
-/* The same bar positions converted to a pixel index measured from 
- * the start of the piece.
+/* The bar positions converted to a pixel index measured from 
+ * the start of the piece. Truncation is right, not rounding, because
+ * pixel 0 covers from time 0 to (step).
  */
-#define left_bar_ticks (lrint(left_bar_time / step))
-#define right_bar_ticks (lrint(right_bar_time / step))
+#define left_bar_ticks ((int)(left_bar_time / step))
+#define right_bar_ticks ((int)(right_bar_time / step))
 
 /* Set start and end of marked bar.
  * If neither is defined, we display nothing.
@@ -169,7 +170,11 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 
     /* Defining both bar lines at the same time is how you remove them */
     if (left_bar_ticks == right_bar_ticks) {
+	int col = disp_offset + (int)((left_bar_time - disp_time)/step);
+
 	left_bar_time = right_bar_time = UNDEFINED;
+	repaint_column(col, min_y, max_y, FALSE);
+	gui_update_column(col);
 	return;
     }
 
