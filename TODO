@@ -213,7 +213,7 @@ Print logmax and dynrange
 ------------------------------------------------------------------------
 Detect MP3 format from file hdr, not file name.
 ------------------------------------------------------------------------
---light, not print
+Add a white-backgrounded heat map for color printers.
 ------------------------------------------------------------------------
 Use red and green as real and imaginary
 ------------------------------------------------------------------------
