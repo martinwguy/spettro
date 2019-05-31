@@ -217,8 +217,6 @@ Detect MP3 format from file hdr, not file name.
 ------------------------------------------------------------------------
 Drop green lie with -o
 ------------------------------------------------------------------------
-Enable time axis separately from freq. A?
-------------------------------------------------------------------------
 Use red and green as real and imaginary
 ------------------------------------------------------------------------
 Be able to load a spectrogram

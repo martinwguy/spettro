@@ -246,7 +246,7 @@ k_set_window(key_t key)
 
     if (new_fn != window_function) {
 	window_function = new_fn;
-	if (show_axes) draw_status_line();
+	if (show_time_axes) draw_status_line();
 	drop_all_work();
 	repaint_display(FALSE);
     }
@@ -280,26 +280,39 @@ k_brightness(key_t key)
 static void
 k_toggle_axes(key_t key)
 {
-    if (show_axes) {
-	/* Remove frequency axis */
-	min_x = 0; max_x = disp_width - 1;
-	/* Remove time axis and status information */
-	min_y = 0; max_y = disp_height - 1;
-	maglen = (max_y - min_y) + 1;
-    } else {
-	/* Add frequency axis */
-	min_x = frequency_axis_width;
-	max_x = disp_width - 1 - note_name_axis_width;
-	/* Add time axis */
-	min_y = bottom_margin;
-	max_y = disp_height - 1 - top_margin;
-	maglen = (max_y - min_y) + 1;
-	draw_axes();
+    if (!Shift) {	/* 'a': toggle frequency axes */
+	if (show_freq_axes) {
+	    /* Remove frequency axis */
+	    min_x = 0; max_x = disp_width - 1;
+	    show_freq_axes = FALSE;
+	    repaint_columns(0, frequency_axis_width - 1, min_y, max_y, FALSE);
+	    repaint_columns(max_x - note_name_axis_width, max_x, min_y, max_y, FALSE);
+	} else {
+	    /* Add frequency axis */
+	    min_x = frequency_axis_width;
+	    max_x = disp_width - 1 - note_name_axis_width;
+	    show_freq_axes = TRUE;
+	}
+    } else {		/* 'A': Toggle time axis and status line */
+	if (show_time_axes) {
+	    /* Remove time axis and status information */
+	    min_y = 0; max_y = disp_height - 1;
+	    maglen = (max_y - min_y) + 1;
+	    show_time_axes = FALSE;
+	} else {
+	    /* Add time axis */
+	    min_y = bottom_margin;
+	    max_y = disp_height - 1 - top_margin;
+	    maglen = (max_y - min_y) + 1;
+	    show_time_axes = TRUE;
+	}
+	/* Adding/removing the top and bottom axes scales the graph vertically
+	 * so repaint. We only need to repaint unpainted columns if we are
+	 * removing the axes, so that background color columns overwrite where
+	 * the axes were. */
+	repaint_columns(min_x, max_x, min_y, max_y, show_time_axes);
     }
-    show_axes = !show_axes;
-    /* Adding/removing the top and bottom axes scales the graph vertically
-     * so repaint all */
-    repaint_columns(min_x, max_x, min_y, max_y, FALSE);
+    draw_axes();
 }
 
 /* w: Cycle through window functions;
@@ -310,7 +323,7 @@ k_cycle_window(key_t key)
 {
     if (!Shift) next_window_function();
     if (Shift) prev_window_function();
-    if (show_axes) draw_status_line();
+    if (show_time_axes) draw_status_line();
     repaint_display(TRUE);
 }
 
@@ -437,7 +450,7 @@ k_fft_size(key_t key)
     }
     drop_all_work();
 
-    if (show_axes) draw_status_line();
+    if (show_time_axes) draw_status_line();
 
     /* Any calcs that are currently being performed will deliver
      * a result for the old speclen, which will be ignored (or cached)
@@ -579,7 +592,7 @@ static key_fn key_fns[] = {
     { KEY_R,	"R",    k_right_barline,k_bad,		k_redraw,	k_bad },
     { KEY_B,	"B",    k_brightness,	k_brightness,	k_set_window, 	k_bad },
     { KEY_D,	"D",    k_bad,		k_bad,		k_set_window,	k_bad },
-    { KEY_A,	"A",    k_toggle_axes,	k_bad,		k_bad,		k_bad },
+    { KEY_A,	"A",    k_toggle_axes,	k_toggle_axes,	k_bad,		k_bad },
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
     { KEY_M,	"M",    k_change_color,	k_bad,		k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_bad,		k_set_window,	k_bad },

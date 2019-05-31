@@ -54,7 +54,8 @@ dump_screenshot()
     if (piano_lines)      add(s, " %s", "-k");
     if (staff_lines)      add(s, " %s", "-s");
     if (guitar_lines)     add(s, " %s", "-g");
-    if (show_axes)        add(s, " %s", "-a");
+    if (show_freq_axes)   add(s, " %s", "-a");
+    if (show_time_axes)   add(s, " %s", "-A");
     if (left_bar_time != UNDEFINED)  add(s, " -l %g", left_bar_time);
     if (right_bar_time != UNDEFINED) add(s, " -r %g", right_bar_time);
     if (beats_per_bar != DEFAULT_BEATS_PER_BAR) add(s, " -b %d", beats_per_bar);

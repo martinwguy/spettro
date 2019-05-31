@@ -94,7 +94,7 @@ time_zoom_by(double by)
     /* Zooming by < 1.0 increases the step size */
     if (by < 1.0) reschedule_for_bigger_step();
 
-    if (show_axes) {
+    if (show_time_axes) {
 	draw_time_axis();
 	draw_status_line();
     }
@@ -141,10 +141,8 @@ freq_pan_by(double by)
 	    }
 	}
     }
-    if (show_axes) {
-	draw_frequency_axes();
-	draw_status_line();
-    }
+    if (show_freq_axes) draw_freq_axes();
+    if (show_time_axes) draw_status_line();
 }
 
 /* Zoom the frequency axis by a factor, staying centred on the centre.
@@ -190,10 +188,8 @@ freq_zoom_by(double by)
 	return;
     }
 
-    if (show_axes) {
-    	draw_frequency_axes();
-    	draw_status_line();
-    }
+    if (show_freq_axes) draw_freq_axes();
+    if (show_time_axes) draw_status_line();
 }
 
 /* Change the color scale's dynamic range, thereby changing the brightness
@@ -207,7 +203,7 @@ change_dyn_range(double by)
     /* dyn_range should not go zero or negative, so set minimum of 1dB */
     if (DELTA_LT(dyn_range, 1.0)) dyn_range = 1.0;
 
-    if (show_axes) draw_status_line();
+    if (show_time_axes) draw_status_line();
 }
 
 /* Change the maximum brightness */

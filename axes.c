@@ -69,27 +69,38 @@ static int decimal_places_to_print;
 
 static int calculate_ticks(double min, double max, double distance, int log_scale);
 static int calculate_log_ticks(double min, double max, double distance);
-static void draw_frequency_axis(void);
+static void draw_freq_axis(void);
 static void draw_note_names(void);
 
 void
 draw_axes(void)
 {
-    draw_frequency_axes();
+    if (show_freq_axes)
+	draw_freq_axes();
+
+    if (show_time_axes) {
+	draw_status_line();
+	draw_time_axis();
+    }
+}
+
+void
+draw_freq_axes(void)
+{
+    draw_freq_axis();
+    draw_note_names();
+}
+
+void
+draw_time_axes(void)
+{
     draw_status_line();
     draw_time_axis();
 }
 
-void
-draw_frequency_axes(void)
-{
-    draw_frequency_axis();
-    draw_note_names();
-}
-
 /* Put ticks on Frequency axis. Only called when show_axes is TRUE. */
 static void
-draw_frequency_axis()
+draw_freq_axis()
 {
     int tick_count = calculate_ticks(min_freq, max_freq, max_y - min_y, 1);
     int i;
@@ -112,7 +123,7 @@ draw_frequency_axis()
 	    if ((width = 1 + text_width(s) + 1 + 2) > frequency_axis_width) {
 	    	min_x = frequency_axis_width = width;
     		gui_unlock();
-		draw_frequency_axis();
+		draw_freq_axis();
 		return;
 	    }
 

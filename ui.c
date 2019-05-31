@@ -67,7 +67,8 @@ color_t staff_line_color  = no_color;	/* Color of staff lines */
 color_t guitar_line_color = no_color;	/* Color of guitar lines */
 int staff_line_width;			/* Thickness of staff lines (1 or 3) */
 int guitar_line_width;			/* Thickness of guitar lines (1 or 3) */
-bool show_axes = FALSE;		/* Are we to show/showing the axes? */
+bool show_freq_axes = FALSE;		/* Are we to show/showing the v axes? */
+bool show_time_axes = FALSE;		/* Are we to show/showing the h axes? */
 
 double left_bar_time = UNDEFINED;
 double right_bar_time = UNDEFINED;

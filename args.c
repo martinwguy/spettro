@@ -58,7 +58,8 @@ usage(void)
 				DEFAULT_DYN_RANGE); printf("\
 -M n   Set the magnitude of the brightest pixel, default %gdB\n",
 				DEFAULT_LOGMAX); printf("\
--a     Label the vertical frequency axes\n\
+-a     Show the frequency axes\n\
+-A     Show the time axis and status line\n\
 -f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
 -t n   Set the initial playing time in seconds\n\
 -l n   Set the position of the left bar line in seconds\n\
@@ -97,7 +98,8 @@ f/F        Halve/double the length of the sample taken to calculate each column\
 Ctrl-K/D/N/B/H\n\
            Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann\n\
 w/W        Cycle forward/backward through the window functions\n\
-a          Toggle the frequency axis\n\
+a          Toggle the frequency axes\n\
+A          Toggle the time axis and status line\n\
 k          Toggle the overlay of 88 piano key frequencies\n\
 s/S        Toggle the overlay of conventional staff lines\n\
 g/G        Toggle the overlay of classical guitar strings' frequencies\n\
@@ -176,7 +178,8 @@ switch_again:
 	    else if (!strcmp(argv[0], "--piano")) argv[0] = "-k";
 	    else if (!strcmp(argv[0], "--guitar")) argv[0] = "-g";
 	    else if (!strcmp(argv[0], "--score")) argv[0] = "-s";
-	    else if (!strcmp(argv[0], "--axes")) argv[0] = "-a";
+	    else if (!strcmp(argv[0], "--freq_axis")) argv[0] = "-a";
+	    else if (!strcmp(argv[0], "--time_axis")) argv[0] = "-A";
 	    /* Those environment variables */
 	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-R";
 	    else if (!strcmp(argv[0], "--ppsec")) argv[0] = "-P";
@@ -241,7 +244,10 @@ guitar2:    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    goto another_letter;
 	case 'a':
-	    show_axes = TRUE;
+	    show_freq_axes = TRUE;
+	    goto another_letter;
+	case 'A':
+	    show_time_axes = TRUE;
 	    goto another_letter;
 
 another_letter:

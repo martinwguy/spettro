@@ -116,9 +116,11 @@ main(int argc, char **argv)
     step = 1 / ppsec;
     min_x = 0; max_x = disp_width - 1;
     min_y = 0; max_y = disp_height - 1;
-    if (show_axes) {
+    if (show_freq_axes) {
 	min_x += frequency_axis_width;
 	max_x -= note_name_axis_width;
+    }
+    if (show_time_axes) {
 	min_y += bottom_margin;
 	max_y -= top_margin;
     }
@@ -149,7 +151,7 @@ main(int argc, char **argv)
 
     start_scheduler(max_threads);
 
-    if (show_axes) draw_axes();
+    draw_axes();
 
     repaint_display(FALSE); /* Schedules the initial screen refresh */
 

@@ -126,7 +126,7 @@ do_scroll()
 	}
     }
 
-    if (show_axes) draw_time_axis();
+    if (show_time_axes) draw_time_axis();
 
     /* The whole screen has changed (well, unless there's background) */
     gui_update_display();
