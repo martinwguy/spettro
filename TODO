@@ -209,8 +209,6 @@ Remove Ctrl from mouse-bar-line setting, bcos on a mousepad they will want
 one finger to hold the button pressed and the other to move the pointer.
 Ctrl needs three fingers instad of two.
 ------------------------------------------------------------------------
-Print logmax and dynrange
-------------------------------------------------------------------------
 Detect MP3 format from file hdr, not file name.
 ------------------------------------------------------------------------
 Add a white-backgrounded heat map for color printers.

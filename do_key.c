@@ -396,6 +396,7 @@ k_print_params(key_t key)
     printf(
 "min_freq=%g max_freq=%g dyn_range=%g fft_freq=%g window=%s\n",
 min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
+
     printf(
 "%s %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
 	playing == PLAYING ? "Playing" :
@@ -405,6 +406,11 @@ min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
 	disp_time - disp_offset * step,
 	disp_time + (disp_width - disp_offset) * step,
 	audio_files_length());
+
+    printf(
+"logmax=%.3g\n",
+	logmax);
+
     if (left_bar_time != UNDEFINED)
 	printf("left bar line=%g", left_bar_time);
     if (right_bar_time != UNDEFINED) {
