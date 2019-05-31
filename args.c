@@ -75,7 +75,7 @@ usage(void)
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
        K for Kaiser, D for Dolph, N for Nuttall, B for Blackman, H for Hann\n\
--c map Select a color map: heatmap, gray or print\n\
+-m map Select a color map: heatmap, gray or print\n\
 -o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
 --version  Which version of spettro is this, and which libraries does it use?\n\
 --help This!\n\
@@ -198,7 +198,7 @@ switch_again:
 	/* For flags that take an argument, advance argv[0] to point to it */
 	case 'n': case 'x':
 	case 'w': case 'h': case 'j': case 'l': case 'r': case 'f': case 't':
-	case 'o': case 'W': case 'c': case 'v': case 'd': case 'R': case 'P':
+	case 'o': case 'W': case 'm': case 'v': case 'd': case 'R': case 'P':
 	case 'b': case 'M':
 	    if (argv[0][2] == '\0') {
 		argv++, argc--;		/* -j3 */
@@ -372,13 +372,13 @@ another_letter:
 	    }
 	    break;
 
-	case 'c':			     /* Choose color palette */
+	case 'm':			     /* Choose color map */
 	    switch (tolower(argv[0][0])) {
 	    case 'h': set_colormap(HEAT_MAP); break;
 	    case 'g': set_colormap(GRAY_MAP); break;
 	    case 'p': set_colormap(PRINT_MAP); break;
 	    default:
-		fprintf(stderr, "-c: Which colormap? (heat/gray/print)\n");
+		fprintf(stderr, "-m: Which colormap? (heat/gray/print)\n");
 		exit(1);
 	    }
 	    break;
