@@ -222,4 +222,3 @@ result-calculated when required and cached in each entry in the
 gram. Changing PPSEC would have to rewrite the gram data structure,
 throwing away no-longer-coincident results.
 This enables loading and saving the whole spectrogram.
-------------------------------------------------------------------------
