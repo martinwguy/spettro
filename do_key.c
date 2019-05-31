@@ -412,16 +412,16 @@ min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
 	logmax);
 
     if (left_bar_time != UNDEFINED)
-	printf("left bar line=%g", left_bar_time);
+	printf("left bar=%.3g", left_bar_time);
     if (right_bar_time != UNDEFINED) {
 	if (left_bar_time != UNDEFINED) printf(" ");
-	printf("right bar line=%g", right_bar_time);
+	printf("right bar=%.3g", right_bar_time);
     }
     if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED)
-	printf(" interval=%g bpm=%g, beats_per_bar=%d",
-	    fabs(right_bar_time - left_bar_time),
-	    60.0 / fabs(right_bar_time - left_bar_time),
-	    beats_per_bar);
+	printf(" interval=%.3g beats_per_bar=%d bpm=%ld,",
+	       fabs(right_bar_time - left_bar_time), beats_per_bar,
+	       lrint(60.0 / fabs(right_bar_time - left_bar_time)
+			       * beats_per_bar));
     if (left_bar_time != UNDEFINED || right_bar_time != UNDEFINED)
 	printf("\n");
 }
