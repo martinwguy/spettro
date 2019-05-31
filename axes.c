@@ -406,8 +406,9 @@ draw_status_line(void)
 	    dyn_range);
     draw_text(s, min_x, max_y + 2, LEFT, BOTTOM);
 
-    sprintf(s, "%g pixels per second   %g cents per pixel",
-    	    ppsec, (log(v_pixel_freq_ratio()) / log(2.0)) * 1200);
+    sprintf(s, "%g pixels per second   %g pixels per octave",
+    	    ppsec, rint(log(2.0) / log(v_pixel_freq_ratio())));
+
     draw_text(s, disp_offset, max_y + 2, CENTER, BOTTOM);
 
     sprintf(s, "%g dB DYNAMIC RANGE", dyn_range);
