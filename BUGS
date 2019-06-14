@@ -32,6 +32,9 @@ When piano and guitar lines are displayed, the guitar lines should become
 ------------------------------------------------------------------------
 Beat lines can get slightly too largely spaced (or bar lines too little)
 and skew.
+------------------------------------------------------------------------
+Pressing 'l' or 'r' while it's playing doesn't make a single bar line
+appear, about half of the times you press it.
 
 ============================ Calc ======================================
 

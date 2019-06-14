@@ -222,3 +222,8 @@ result-calculated when required and cached in each entry in the
 gram. Changing PPSEC would have to rewrite the gram data structure,
 throwing away no-longer-coincident results.
 This enables loading and saving the whole spectrogram.
+------------------------------------------------------------------------
+If 0.0 or audio_length is on-screen, add time legend.
+------------------------------------------------------------------------
+If bar left or right are on-screen, add time legend.
+------------------------------------------------------------------------
