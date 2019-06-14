@@ -48,13 +48,6 @@ static int is_bar_line(int x);
 #define BAR_LINE 1
 #define BEAT_LINE 2
 
-/* The bar positions converted to a pixel index measured from 
- * the start of the piece. Truncation is right, not rounding, because
- * pixel 0 covers from time 0 to (step).
- */
-#define left_bar_ticks ((int)(left_bar_time / step))
-#define right_bar_ticks ((int)(right_bar_time / step))
-
 /* Set start and end of marked bar.
  * If neither is defined, we display nothing.
  * If only one is defined, display a marker at that point.
@@ -150,6 +143,8 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 	return;
     }
 
+    /* From here on, we know that *the_other_one is not UNDEFINED */
+
     /* If both were already defined, clear existing bar lines */
     if (*this_one != UNDEFINED) {
 	double old_this_one = *this_one;
@@ -170,12 +165,15 @@ set_bar_time(double *this_one, double *the_other_one, double when)
     *this_one = when;
 
     /* Defining both bar lines at the same time is how you remove them */
-    if (left_bar_ticks == right_bar_ticks) {
+    if (time_to_piece_column(left_bar_time) ==
+	time_to_piece_column(right_bar_time)) {
 	int col = time_to_screen_column(left_bar_time);
 
 	left_bar_time = right_bar_time = UNDEFINED;
-	repaint_column(col, min_y, max_y, FALSE);
-	gui_update_column(col);
+	if (col >= min_x && col <= max_x) {
+	    repaint_column(col, min_y, max_y, FALSE);
+	    gui_update_column(col);
+	}
 	return;
     }
 
@@ -239,18 +237,31 @@ get_col_overlay(int x, color_t *colorp)
 static int
 is_bar_line(int pos_x)
 {
-    int bar_width;	/* How long is the bar in pixels? */
     int x;		/* Column index into the whole piece */
+
+    /* The bar positions in pixel columns since the start of the piece. */
+    int left_bar_ticks = -1;
+    int right_bar_ticks = -1;
+    int bar_width = -1;	/* How long is the bar in pixels? -1: there is no bar */
 
     /* If neither of the bar positions is defined, there are none displayed */
     if (left_bar_time == UNDEFINED &&
 	right_bar_time == UNDEFINED) return FALSE;
 
-    bar_width = right_bar_ticks - left_bar_ticks;
-    /* They can set the "left" and "right" bar lines the other way round too */
-    if (bar_width < 0) bar_width = -bar_width;
-
     x = time_to_piece_column(screen_column_to_start_time(pos_x));
+
+    if (left_bar_time != UNDEFINED)
+	left_bar_ticks = time_to_piece_column(left_bar_time);
+    if (right_bar_time != UNDEFINED)
+	right_bar_ticks = time_to_piece_column(right_bar_time);
+
+    if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED) {
+	bar_width = right_bar_ticks - left_bar_ticks;
+	if (bar_width < 0) {
+	    /* left bar line is right of right bar line */
+	    bar_width = -bar_width;
+	}
+    }
 
     /* If only one of the bar positions is defined, only that one is displayed.
      * Idem if they've defined both bar lines in the same pixel column.
@@ -260,7 +271,7 @@ is_bar_line(int pos_x)
      */
     if (left_bar_time == UNDEFINED ||
 	right_bar_time == UNDEFINED ||
-	left_bar_ticks == right_bar_ticks) {
+	bar_width == 0) {
 
 	if (x == left_bar_ticks || x == right_bar_ticks) return BAR_LINE;
 	return FALSE;
