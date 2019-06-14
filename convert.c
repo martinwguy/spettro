@@ -24,6 +24,9 @@
 #include "audio_file.h"		/* for audio_file->sample_rate */
 #include "ui.h"
 
+/*
+ * Vertical position (frequency domain) convertion functions
+ */
 
 /* Return the frequency ratio between one pixel row and the one above,
  * used to scroll/zoom by one pixel.
@@ -48,6 +51,43 @@ double
 frequency_to_specindex(double freq, double sample_rate, int speclen)
 {
     return freq * speclen / (sample_rate / 2);
+}
+
+/* Convert an audio frequency to its index in the magnitude spectrum.
+ * To get the screen pixel row it falls in, add min_y.
+ */
+int
+freq_to_magindex(double freq)
+{
+    return lrint((log(freq) - log(min_freq)) /
+		 (log(max_freq) - log(min_freq)) *
+		 (max_y - min_y));
+}
+
+/* Take "A0" or whatever and return the frequency it represents */
+double
+note_name_to_freq(const char *note)
+{
+    static int semitones[7] = { 0, 2, 3, 5, 7, 8, 10 }; /* A-G */
+
+    if (note[0] < 'A' || note[0] > 'G' || note[1] < '0' || note[1] > '9')
+        return NAN;
+
+    return A0_FREQUENCY *
+    	   pow(2.0, note[1] - '0') * 
+	   pow(2.0, (1/12.0) * semitones[note[0] - 'A']);
+}
+
+/* Convert a note number of the piano keyboard to the frequency it represents.
+ * It's the note of an 88-note piano: 0 = Bottom A, 87 = top C
+ */
+double
+note_number_to_freq(const int n)
+{
+    static double cache[88];	/* Init to 0.0 */
+    if (cache[n] == 0.0)
+	cache[n] = A0_FREQUENCY * pow(2.0, (1/12.0) * n);
+    return cache[n];
 }
 
 /*
@@ -120,41 +160,4 @@ is_2357(int n)
     while (n % 5 == 0) n /= 5;
     while (n % 7 == 0) n /= 7;
     return (n == 1);
-}
-
-/* Take "A0" or whatever and return the frequency it represents */
-double
-note_name_to_freq(const char *note)
-{
-    static int semitones[7] = { 0, 2, 3, 5, 7, 8, 10 }; /* A-G */
-
-    if (note[0] < 'A' || note[0] > 'G' || note[1] < '0' || note[1] > '9')
-        return NAN;
-
-    return A0_FREQUENCY *
-    	   pow(2.0, note[1] - '0') * 
-	   pow(2.0, (1/12.0) * semitones[note[0] - 'A']);
-}
-
-/* Convert a note number of the piano keyboard to the frequency it represents.
- * It's the note of an 88-note piano: 0 = Bottom A, 87 = top C
- */
-double
-note_number_to_freq(const int n)
-{
-    static double cache[88];	/* Init to 0.0 */
-    if (cache[n] == 0.0)
-	cache[n] = A0_FREQUENCY * pow(2.0, (1/12.0) * n);
-    return cache[n];
-}
-
-/* Convert an audio frequency to its index in the magnitude spectrum.
- * To get the screen pixel row it falls in, add min_y.
- */
-int
-freq_to_magindex(double freq)
-{
-    return lrint((log(freq) - log(min_freq)) /
-		 (log(max_freq) - log(min_freq)) *
-		 (max_y - min_y));
 }

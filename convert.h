@@ -17,14 +17,20 @@
 
 /* convert.h: Declarations for convert.c */
 
+#define NOTE_A440	48  /* Note number of A above middle C */
+#define A0_FREQUENCY	27.5
+
+/*
+ * Vertical position (frequency domain) convertion functions
+ */
 extern double v_pixel_freq_ratio(void);
 extern double magindex_to_frequency(int k);
 extern double frequency_to_specindex(double freq, double sample_rate, int speclen);
-extern int fft_freq_to_speclen(double fft_freq, double sample_rate);
-
-#define NOTE_A440	48  /* A above middle C */
-#define A0_FREQUENCY	27.5
-
+extern int freq_to_magindex(double freq);
 extern double note_name_to_freq(const char *note);
 extern double note_number_to_freq(const int note);
-extern int freq_to_magindex(double freq);
+
+/*
+ * Choose a good FFT size for the given FFT frequency
+ */
+extern int fft_freq_to_speclen(double fft_freq, double sample_rate);
