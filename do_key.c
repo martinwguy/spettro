@@ -394,11 +394,11 @@ static void
 k_print_params(key_t key)
 {
     printf(
-"min_freq=%g max_freq=%g dyn_range=%g fft_freq=%g window=%s\n",
-min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
+"min_freq=%g max_freq=%g dyn_range=%g logmax=%.3g fft_freq=%g window=%s\n",
+min_freq,   max_freq,    dyn_range,   logmax,     fft_freq,   window_name(window_function));
 
     printf(
-"%s %g disp_time=%g step=%g from=%g to=%g audio_length=%g\n",
+"%s %.3f disp_time=%.3f step=%.3f Showing %.3f to %.3f audio_length=%.3f\n",
 	playing == PLAYING ? "Playing" :
 	playing == STOPPED ? "Stopped at" :
 	playing == PAUSED  ? "Paused at" : "Doing what? at",
@@ -407,18 +407,14 @@ min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
 	screen_column_to_start_time(max_x + 1),
 	audio_files_length());
 
-    printf(
-"logmax=%.3g\n",
-	logmax);
-
     if (left_bar_time != UNDEFINED)
-	printf("left bar=%.3g", left_bar_time);
+	printf("left bar=%.3f", left_bar_time);
     if (right_bar_time != UNDEFINED) {
 	if (left_bar_time != UNDEFINED) printf(" ");
-	printf("right bar=%.3g", right_bar_time);
+	printf("right bar=%.3f", right_bar_time);
     }
     if (left_bar_time != UNDEFINED && right_bar_time != UNDEFINED)
-	printf(" interval=%.3g beats_per_bar=%d bpm=%ld,",
+	printf(" interval=%.3f beats_per_bar=%d bpm=%ld,",
 	       fabs(right_bar_time - left_bar_time), beats_per_bar,
 	       lrint(60.0 / fabs(right_bar_time - left_bar_time)
 			       * beats_per_bar));
