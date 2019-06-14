@@ -26,6 +26,9 @@
 
 /*
  * Vertical position (frequency domain) convertion functions
+ *
+ * The bottom pixel row (min_y) should be centered on the minimum frequency,
+ * min_freq, and the top pixel row (max_y) on the maximum frequency, max_freq.
  */
 
 /* Return the frequency ratio between one pixel row and the one above,
@@ -88,6 +91,41 @@ note_number_to_freq(const int n)
     if (cache[n] == 0.0)
 	cache[n] = A0_FREQUENCY * pow(2.0, (1/12.0) * n);
     return cache[n];
+}
+
+/*
+ * Horizontal position (time domain) convertion functions
+ *
+ * We divide time into steps, one for each pixel column, starting from the
+ * start of the piece of audio, with column 0 of the piece representing
+ * what happens from 0.0 to 1/ppsec (==step) seconds.
+ * The audio for the FFT for a given column should therefore be centered
+ * on 
+ *
+ * disp_time, instead, is the exact time that we should be displaying at the
+ * green line, in such a way that that exact time falls within the time
+ * covered by that pixel column.
+ */
+
+/* Convert a time in seconds to the screen column in the whole piece that
+ * contains this moment. */
+int
+time_to_piece_column(double t)
+{
+    return (int) floor(t / step + DELTA);
+}
+
+int
+time_to_screen_column(double t)
+{
+    return time_to_piece_column(t - disp_time) + disp_offset;
+}
+
+/* What time does the left edge of this screen column represent? */
+double
+screen_column_to_start_time(int col)
+{
+    return disp_time + (col - disp_offset) * step;
 }
 
 /*

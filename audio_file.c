@@ -44,6 +44,7 @@
 #include "audio_file.h"		/* Our header file */
 
 #include "audio_cache.h"
+#include "convert.h"
 #include "libmpg123.h"
 #include "lock.h"
 #include "ui.h"			/* for disp_time, disp_offset and step */
@@ -219,8 +220,8 @@ audio_files_length()
 /* Map a playing time in the whole piece (all audio files concatenated)
  * to the specific audio file and the offset in seconds into it.
  *
- * If all goes well, it fills in the last two parameters with the audio file and offset into it
- * and returns TRUE.  If not, it returns FALSE.
+ * If all goes well, it fills in the last two parameters with the audio file
+ * and offset into it and returns TRUE.  If not, it returns FALSE.
  */
 bool
 time_to_af_and_offset(double when,
@@ -262,7 +263,7 @@ time_to_af_and_offset(double when,
 bool
 col_to_af_and_offset(int col, audio_file_t **audio_file_p, double *offset_p)
 {
-    return time_to_af_and_offset(disp_time + (col - disp_offset) * step,
+    return time_to_af_and_offset(screen_column_to_start_time(col),
     				 audio_file_p, offset_p);
 }
 

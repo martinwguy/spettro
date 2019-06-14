@@ -27,6 +27,9 @@
  */
 
 #include "spettro.h"
+#include "cache.h"
+
+#include "convert.h"	/* for result_t */
 #include "calc.h"	/* for result_t */
 #include "window.h"
 #include "ui.h"
@@ -46,7 +49,9 @@ result_t *
 remember_result(result_t *result)
 {
     /* Drop any stored results more than a screenful before the display */
-    while (results != NULL && DELTA_LT(results->t, disp_time - (disp_offset + disp_width) * step)) {
+    double earliest = screen_column_to_start_time(min_x - disp_width);
+
+    while (results != NULL && DELTA_LT(results->t, earliest)) {
 	result_t *r = results;
 	results = results->next;
 	destroy_result(r);

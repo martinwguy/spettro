@@ -65,7 +65,8 @@ do_scroll()
      */
     new_disp_time = floor(new_disp_time / step + DELTA) * step;
 
-    scroll_by = lrint((new_disp_time - disp_time) * ppsec);
+    scroll_by = time_to_piece_column(new_disp_time) -
+		time_to_piece_column(disp_time);
 
     /*
      * Scroll the display sideways by the correct number of pixels
@@ -200,7 +201,7 @@ void
 repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 {
     /* What time does this column represent? */
-    double t = disp_time + (pos_x - disp_offset) * step;
+    double t = screen_column_to_start_time(pos_x);
     result_t *r;
     audio_file_t *af;	/* Audio file for this column */
     int speclen;
@@ -355,7 +356,7 @@ calc_column(int col)
     calc_t *calc = Malloc(sizeof(calc_t));
 
     /* Time represented by col, as number of seconds since the start of the first audio file */
-    t = disp_time + (col - disp_offset) * step;
+    t = screen_column_to_start_time(col);
     if (!time_to_af_and_offset(t, &af, &offset)) {
     	fprintf(stderr, "Can't convert overall time %g to audio file and offset\n", t);
 	return;

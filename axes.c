@@ -428,8 +428,8 @@ draw_time_axis(void)
     char s[128];
 
     /* Time of left- and rightmost pixel columns */
-    double min_time = disp_time - (disp_offset - min_x) * step;
-    double max_time = disp_time + (max_x - disp_offset) * step;
+    double min_time = screen_column_to_start_time(min_x);
+    double max_time = screen_column_to_start_time(max_x);
 
     /* First, blank it */
     gui_paint_rect(min_x, 0, max_x, min_y-1, black);

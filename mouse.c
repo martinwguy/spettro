@@ -23,9 +23,10 @@
 
 #include "mouse.h"
 
-#include "barlines.h"	/* for Shift and Ctrl */
+#include "barlines.h"
+#include "convert.h"
 #include "key.h"	/* for Shift and Ctrl */
-#include "overlay.h"	/* for set_*_bar_time() */
+#include "overlay.h"
 #include "paint.h"
 #include "ui_funcs.h"
 #include "ui.h"
@@ -115,7 +116,7 @@ mouseMove(void *data, Evas *evas, Evas_Object *obj, void *einfo)
 void
 do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, bool down)
 {
-    double when = disp_time + (screen_x - disp_offset) * step;
+    double when = screen_column_to_start_time(screen_x);
 
     if (down) {
 	/* For mouse drag, Remember where it went down and what
@@ -148,7 +149,7 @@ do_mouse_move(int screen_x, int screen_y)
 {
     /* Dragging the mouse left/right while setting a bar line */
     if (Ctrl) {
-	double when = disp_time + (screen_x - disp_offset) * step;
+	double when = screen_column_to_start_time(screen_x);
 
 	if (left_button_is_down) set_left_bar_time(when);
 	if (right_button_is_down) set_right_bar_time(when);

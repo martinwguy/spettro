@@ -374,13 +374,17 @@ DEBUG("List is empty\r");
     }
 
     /* First, drop any list items that are off the left side of the screen */
-    while (list != NULL && DELTA_LT(list->t, disp_time - disp_offset*step)) {
-	calc_t *old_cp = list;
-	old_cp = list;	/* Remember cell to free */
-	list = list->next;
-	/* New first cell , if any, has no previous one */
-	if (list != NULL) list->prev = NULL;
-	free(old_cp);
+    {
+	double earliest = screen_column_to_start_time(min_x);
+
+	while (list != NULL && DELTA_LT(list->t, earliest)) {
+	    calc_t *old_cp = list;
+	    old_cp = list;	/* Remember cell to free */
+	    list = list->next;
+	    /* New first cell , if any, has no previous one */
+	    if (list != NULL) list->prev = NULL;
+	    free(old_cp);
+	}
     }
 
     if (list == NULL) {
@@ -401,15 +405,18 @@ DEBUG("List is empty after dropping before-screens\r");
     }
     /* If the first one >= disp_time is off the right side of the screen,
      * remove it and anything after it */
-    if (*cpp != NULL &&
-	DELTA_GT((*cpp)->t, disp_time + (disp_width-1-disp_offset)*step)) {
-	calc_t *cp = *cpp;	/* List pointer to free unwanted cells */
-	while (cp != NULL) {
-	    calc_t *old_cp = cp;
-	    cp = cp->next;
-	    free(old_cp);
+    {
+	double right_edge_time = screen_column_to_start_time(max_x + 1);
+
+	if (*cpp != NULL && DELTA_GT((*cpp)->t, right_edge_time)) {
+	    calc_t *cp = *cpp;	/* List pointer to free unwanted cells */
+	    while (cp != NULL) {
+		calc_t *old_cp = cp;
+		cp = cp->next;
+		free(old_cp);
+	    }
+	    *cpp = NULL;
 	}
-	*cpp = NULL;
     }
 
     if (list == NULL) {
@@ -552,7 +559,7 @@ calc_notify(result_t *result)
     }
 
     /* What screen coordinate does this result correspond to? */
-    pos_x = lrint(disp_offset + (result->t - disp_time) * ppsec);
+    pos_x = time_to_screen_column(result->t);
 
     /* Update the display if the column is in the displayed region
      * and isn't at the green line's position

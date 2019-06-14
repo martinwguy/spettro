@@ -37,6 +37,7 @@
 #include "spettro.h"
 #include "barlines.h"
 
+#include "convert.h"
 #include "gui.h"
 #include "paint.h"
 #include "ui.h"
@@ -134,7 +135,7 @@ set_bar_time(double *this_one, double *the_other_one, double when)
         int new_col;
 	/* Move the sole marker */
 	if (*this_one != UNDEFINED) {
-	    int old_col = disp_offset + lrint((*this_one - disp_time) / step);
+	    int old_col = time_to_screen_column(*this_one);
 	    *this_one = when;
 	    if (old_col >= min_x && old_col <= max_x) {
 		repaint_column(old_col, min_y, max_y, FALSE);
@@ -142,7 +143,7 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 	    }
 	}
 	*this_one = when;
-	new_col = disp_offset + floor((when - disp_time) / step);
+	new_col = time_to_screen_column(when);
 	repaint_column(new_col, min_y, max_y, FALSE);
 	gui_update_column(new_col);
 
@@ -170,7 +171,7 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 
     /* Defining both bar lines at the same time is how you remove them */
     if (left_bar_ticks == right_bar_ticks) {
-	int col = disp_offset + (int)((left_bar_time - disp_time)/step);
+	int col = time_to_screen_column(left_bar_time);
 
 	left_bar_time = right_bar_time = UNDEFINED;
 	repaint_column(col, min_y, max_y, FALSE);
@@ -236,12 +237,10 @@ get_col_overlay(int x, color_t *colorp)
  * FALSE (0)	if there is neither at this column.
  */
 static int
-is_bar_line(int x)
+is_bar_line(int pos_x)
 {
     int bar_width;	/* How long is the bar in pixels? */
-
-    /* Convert screen-x to column index into the whole piece */
-    x += lrint(disp_time / step) - disp_offset;
+    int x;		/* Column index into the whole piece */
 
     /* If neither of the bar positions is defined, there are none displayed */
     if (left_bar_time == UNDEFINED &&
@@ -250,6 +249,8 @@ is_bar_line(int x)
     bar_width = right_bar_ticks - left_bar_ticks;
     /* They can set the "left" and "right" bar lines the other way round too */
     if (bar_width < 0) bar_width = -bar_width;
+
+    x = time_to_piece_column(screen_column_to_start_time(pos_x));
 
     /* If only one of the bar positions is defined, only that one is displayed.
      * Idem if they've defined both bar lines in the same pixel column.

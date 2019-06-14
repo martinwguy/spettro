@@ -403,8 +403,8 @@ min_freq,   max_freq,    dyn_range,   fft_freq,   window_name(window_function));
 	playing == STOPPED ? "Stopped at" :
 	playing == PAUSED  ? "Paused at" : "Doing what? at",
 	get_playing_time(), disp_time, step,
-	disp_time - disp_offset * step,
-	disp_time + (disp_width - disp_offset) * step,
+	screen_column_to_start_time(min_x),
+	screen_column_to_start_time(max_x + 1),
 	audio_files_length());
 
     printf(

@@ -31,6 +31,13 @@ extern double note_name_to_freq(const char *note);
 extern double note_number_to_freq(const int note);
 
 /*
+ * Horizontal position (time domain) convertion functions
+ */
+extern int time_to_piece_column(double t);
+extern int time_to_screen_column(double t);
+extern double screen_column_to_start_time(int col);
+
+/*
  * Choose a good FFT size for the given FFT frequency
  */
 extern int fft_freq_to_speclen(double fft_freq, double sample_rate);
