@@ -32,8 +32,6 @@ When piano and guitar lines are displayed, the guitar lines should become
 ------------------------------------------------------------------------
 Beat lines can get slightly too largely spaced (or bar lines too little)
 and skew.
-------------------------------------------------------------------------
-Shift left and right doesn't update playing time legend.
 
 ============================ Calc ======================================
 

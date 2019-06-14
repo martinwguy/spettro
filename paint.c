@@ -82,6 +82,7 @@ do_scroll()
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
 	repaint_display(FALSE);
+	if (show_time_axes) draw_time_axis();
 	return;
     }
 
