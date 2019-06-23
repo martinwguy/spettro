@@ -385,42 +385,14 @@ DEBUG("List is empty after dropping before-screens\r");
 	return NULL;
     }
 
-    /* Search the list to find the first calculation that is >= disp_time.
-     * We include disp_time itself because it will need to be repainted
-     * as soon as the next scroll happens, so having it ready is preferable.
+    /* Refresh the screen left-to-right. This tends to make it decode
+     * compressed audio files in time order.
      */
-    for (cpp = &list; (*cpp) != NULL; cpp = &((*cpp)->next)) {
-	if (DELTA_GE((*cpp)->t, disp_time)) {
-	    /* Found the first time >= disp_time */
-	    break;
-	}
-    }
-    /* If the first one >= disp_time is off the right side of the screen,
-     * remove it and anything after it */
-    {
-	double right_edge_time = screen_column_to_start_time(max_x + 1);
-
-	if (*cpp != NULL && DELTA_GT((*cpp)->t, right_edge_time)) {
-	    calc_t *cp = *cpp;	/* List pointer to free unwanted cells */
-	    while (cp != NULL) {
-		calc_t *old_cp = cp;
-		cp = cp->next;
-		free(old_cp);
-	    }
-	    *cpp = NULL;
-	}
-    }
-
-    if (list == NULL) {
-DEBUG("List is empty after dropping after-screens\r");
-	unlock_list();
-	return NULL;
-    }
-
+    cpp = &list;
     while (*cpp != NULL) {
-	/* We have a column after disp_time that's on-screen so
-	 * remove this calc_t from the list and hand it to the
-	 * hungry calculation thread. */
+	/* We have the first column that's on-screen so remove this calc_t
+	 + from the list and hand it to the hungry calculation thread.
+	 */
 	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
 
 	/* If UI settings has changed since the work was scheduled,
@@ -449,38 +421,6 @@ DEBUG("Picked %g/%d/%c from list\n", cp->t, cp->speclen,
 	return cp;
     }
 
-    if (*cpp == NULL && cpp != &list) {
-	/* We got to the end of the list and all work is <= disp_time */
-	calc_t *cp;
-	static calc_t calc;	/* Used for measuring the structure layout */
-
-	/* Get address of pointer to last cell in the list */
-	cp = (calc_t *)((char *)cpp - (((char *)&calc.next - (char *)&calc)));
-
-DEBUG("Last cell is at time %g\n", cp->t);
-
-	/* Remove the last element and tell FFT to calculate it */
-	if (cp->prev == NULL) list = NULL;
-	else cp->prev->next = NULL;
-	cp->prev = cp->next = NULL;	/* Not necessary but */
-	jobs_in_flight++;
-	print_list();
-	unlock_list();
-
-	/* If the calculation parameters hace changed since the work was
-	 * scheduled, don't bother */
-	if (cp->fft_freq != fft_freq || cp->window != window_function) {
-	    calc_t *cp = *cpp;
-fprintf(stderr, "Dropping work at %g/%g/%c for wrong parameters\n", 
-	cp->t, cp->fft_freq, window_key(cp->window));
-	    if (cp->next) cp->next->prev = cp->prev;
-	    if (cp->prev) cp->prev->next = cp->next;
-	    else list = cp->next;
-	    free(cp);
-	    return NULL;	/* Should continue searching really */
-	}
-	return cp;
-    }
 DEBUG("List is empty after all\r");
 
     unlock_list();
