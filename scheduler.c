@@ -15,27 +15,18 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/*
- * scheduler.c - Maintain a list of columns to be refreshed with the same
- * number of FFT calculation threads as there are CPUs, not zillions of
- * threads as before.
- *
- * The scheduler runs in its own thread; when main.c asks for a column to be
- * refreshed, it adds an item to the list of FFTs to perform.
- * When an FFT thread wants work, it asks the scheduler for an FFT to
- * perform, the scheduler removes a calc_t structure from the list of
- * pending column refreshes, kept in time order, and hands it to the
- * FFT thread that asked for it. The FFT thread fetches the appropriate
- * audio fragment, applies he window function, performs the FFT and
- * returns the result to the notify_cb() callback, which refreshes the
- * appropriate screen column applying the color map and logarithmic frequency
- * axis distortion.
- */
 
-/* The list of FFTs to do consists of single-column refreshes, not a range of
- * columns as before. This improves multi-CPU rendition bcos with ranges, a
- * single CPU would calculate the initial display instead of all of them.
- * The list is kept in time order since the beginning of the piece.
+/*
+ * scheduler.c - Maintain a list of columns to be refreshed, probably
+ * using the same number of FFT calculation threads as there are CPUs.
+ *
+ * The main code calls start_scheduler() initially, then calls schedule()
+ * to ask for a FFT to be done,
+ * The FFT threads call get_work() repeatedly, perform the FFT and send an
+ * event to * tha main loop, and that calls calc_notify() with the new result,
+ * and refreshes some column of the display.
+ *
+ * The list of pending columns to refresh is kept in time order.
  *
  * The list can contain work that is no longer relevant, either because the
  * columns are no longer on-screen or because the calculation parameters
@@ -88,14 +79,7 @@ static void print_list(void);
 /* The list of moments to calculate */
 static calc_t *list = NULL;
 
-/* start_scheduler(): Launch the scheduler. Returns TRUE on success.
- *
- * It turns out we don't need a separate thread for the scheduler:
- * the FFT threads just call get_work() repeatedly.
- *
- * "nthreads" says how many FFT threads to start; 0 means the same number
- * as there are CPUs.
- */
+/* Statics for scheduler */
 
 static int threads = 0;		/* The number of threads we have started */
 #if ECORE_MAIN
@@ -111,6 +95,14 @@ static void ecore_calc_heavy(void *data, Ecore_Thread *thread);
 static int sdl_calc_heavy(void *data);
 #endif
 
+/* start_scheduler(): Start the FFT calculation threads and
+ *		      initialize anything the scheduler needs.
+ *
+ * nthreads: How many FFT threads to start;
+ *	     0 means the same number as there are CPUs.
+ *
+ * Returns TRUE on success.
+ */
 void
 start_scheduler(int nthreads)
 {
