@@ -16,7 +16,7 @@
  */
 
 /*
- * calc.h - header for interface to calc.c
+ * calc.h - header for calc.c
  *
  * Calc performs FFTs for the whole file, calling the "notify" function
  * for each one it completes.
@@ -37,10 +37,13 @@
  * Also, an element of the list of FFTs to perform used by the scheduler.
  */
 typedef struct calc_t {
+    /* These items define what calculation was perforned */
     audio_file_t *	audio_file; /* Our audio file handle */
     double		t;	/* FFT centred on  when? */
     double		fft_freq; /* FFT frequency when scheduled */
     window_function_t	window;
+
+    /* Other data */
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif
@@ -59,17 +62,24 @@ typedef struct calc_t {
  */
 
 typedef struct result {
-    double		t;		/* An FFT centred on what time in the piece? */
-    double		fft_freq;	/* The FFT frequency for this result */
-    int			speclen;	/* The length of the required linear spectrum */
-    window_function_t	window; 	/* Apply which window function to the audio data? */
-    float *		spec;		/* The linear spectrum from [0..speclen]
-    					 * representing 0Hz to audio_file->sample_rate / 2 */
-    audio_file_t *	audio_file;	/* Which audio file this result came from */
+    /* These items define what calculation was perforned */
+    audio_file_t *	audio_file;/* Which audio file this result came from */
+    double		t;	 /* An FFT centred on what time in the piece? */
+    double		fft_freq;/* The FFT frequency for this result */
+    window_function_t	window;  /* Apply which window function to the audio data? */
+
+    /* This is derived from fft_freq, audio sampling rate and fudge factors */
+    int			speclen; /* Length of the linear spectrum */
+
+    /* This is the result */
+    float *		spec;	 /* The linear spectrum from [0..speclen]
+    				  * for 0Hz to audio_file->sample_rate / 2 */
+    /* Other data */
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif
-    struct result *	next; 		/* Linked list of results, in time order */
+    struct result *	next; 	 /* Linked list of results in the result cache,
+    				  * in time order */
 } result_t;
 
 extern void calc(calc_t *data);
