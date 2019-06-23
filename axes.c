@@ -444,12 +444,47 @@ draw_time_axis(void)
     if (DELTA_GE(min_time, 0.0)) {
 	sprintf(s, "%.2f", min_time);
 	draw_text(s, min_x, 1, LEFT, BOTTOM);
+    } else {
+    	/* Draw 0.0 at wherever it is on-screen */
+	int x = time_to_screen_column(0.0);
+	sprintf(s, "%.2f", 0.0);
+	/* We center it on the left edge but stop it overflowing into
+	 * the frequency axis.
+	 */
+	if (text_width(s) % 2 != 1) {
+	    fprintf(stderr, "Warning: Leftmost time's text is of even width. Label may be misaligned.\n");
+	    fprintf(stderr, "         Check axes.c::draw_time_axis()\n");
+	}
+	if (x < min_x + text_width(s)/2) x = min_x + text_width(s)/2;
+	draw_text(s, x, 1, CENTER, BOTTOM);
     }
 
     /* To */
     if (DELTA_LE(max_time, audio_files_length())) {
 	sprintf(s, "%.2f", max_time);
 	draw_text(s, max_x, 1, RIGHT, BOTTOM);
+    } else {
+    	/* Draw max_time wherever it is on-screen.
+	 * We mark the start time of each column we label so truncate end time
+	 * to step size
+	 */
+	double column_start_time = trunc(audio_files_length() / step) * step;
+	int x = time_to_screen_column(column_start_time);
+	sprintf(s, "%.2f", column_start_time);
+	/*
+	 * We center it on the rightmost column but stop the text
+	 * overflowing the right edge into the note name axis.
+	 * This simple formula works for odd values of text_width(s), and
+	 * numeric strings always have odd width at present, as for "0.00"
+	 * above.
+	 */
+	if (text_width(s) % 2 != 1) {
+	    fprintf(stderr, "Warning: Rightmost time's text is of even width. Label may be misaligned.\n");
+	    fprintf(stderr, "         Check axes.c::draw_time_axis()\n");
+	}
+	if (x + text_width(s)/2 > max_x)
+	    x = max_x - text_width(s)/2;
+	draw_text(s, x, 1, CENTER, BOTTOM);
     }
 
     gui_unlock();
