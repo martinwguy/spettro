@@ -227,3 +227,15 @@ If 0.0 or audio_length is on-screen, add time legend.
 ------------------------------------------------------------------------
 If bar left or right are on-screen, add time legend.
 ------------------------------------------------------------------------
+For a file selector in Enlightenment, it needs to use ELM not just EVAS.
+docs.enlightenment.org/elementary/1.15.0/fileselector_example_8c-example.html
+------------------------------------------------------------------------
+Always decode compressed files from start to finish.
+------------------------------------------------------------------------
+Ass Ctrl-x and Ctrl-Shirt-X to do fine zooming
+------------------------------------------------------------------------
+Add --fit to fit the audio to the whole window in length with
+playing position half way.
+------------------------------------------------------------------------
+Option: keep graohic still (e.g. --fit) and only move green line.
+------------------------------------------------------------------------
