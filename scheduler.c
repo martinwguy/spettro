@@ -482,6 +482,8 @@ calc_notify(result_t *result)
 
     result = remember_result(result);
 
+    jobs_in_flight--;
+
     if (result->fft_freq != fft_freq || result->window != window_function) {
 	/* This is the result from an old call to schedule() before
 	 * the parameters changed.
@@ -500,8 +502,6 @@ calc_notify(result_t *result)
 	paint_column(pos_x, min_y, max_y, result);
 	gui_update_column(pos_x);
     }
-
-    jobs_in_flight--;
 
     /* We can output the PNG file for the -o option when all work is complete */
 

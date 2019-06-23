@@ -86,3 +86,10 @@ extern void calc(calc_t *data);
 
 #define CALC_H
 #endif
+
+/* How many columns to precalculate off the right edge of the screen:
+ * A tenth of a screen width make normal operation seamless and
+ * right-arrow-key motions immediate.
+ * A screen's width makes it sluggish.
+ */
+#define LOOKAHEAD ((max_x - min_x + 9) / 10)

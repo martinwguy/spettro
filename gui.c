@@ -720,7 +720,9 @@ gui_paint_rect(int from_x, int from_y, int to_x, int to_y, color_t color)
 void
 gui_paint_column(int pos_x, int from_y, int to_y, unsigned int color)
 {
-    gui_paint_rect(pos_x, from_y, pos_x, to_y, color);
+    /* gui_paint_column is only called for the display area */
+    if (pos_x >= min_x && pos_x <= max_x)
+	gui_paint_rect(pos_x, from_y, pos_x, to_y, color);
 }
 
 void

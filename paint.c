@@ -117,7 +117,7 @@ do_scroll()
     if (scroll_forward) {
 	/* Repaint the right edge */
 	int x;
-	for (x = max_x - scroll_by; x <= max_x; x++) {
+	for (x = max_x - scroll_by; x <= max_x + LOOKAHEAD; x++) {
 	    repaint_column(x, min_y, max_y, FALSE);
 	}
     } else {
@@ -159,7 +159,9 @@ do_scroll()
 void
 repaint_display(bool refresh_only)
 {
-    repaint_columns(min_x, max_x, min_y, max_y, refresh_only);
+    /* repaint_display is what paremeter-changing functions call to
+     * repaint with the new parameters, so also recalculate the lookahead */
+    repaint_columns(min_x, max_x + LOOKAHEAD, min_y, max_y, refresh_only);
 
     gui_update_display();
 }
@@ -206,7 +208,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
     audio_file_t *af;	/* Audio file for this column */
     int speclen;
 
-    if (pos_x < min_x || pos_x > max_x) {
+    if (pos_x < min_x || pos_x > max_x + LOOKAHEAD) {
 	fprintf(stderr, "Repainting off-screen column %d\n", pos_x);
 	abort();
 	return;
@@ -289,6 +291,9 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     int y;
     color_t ov;		/* Overlay color */
     int speclen;
+
+    /* Can happen when results for lookahead calculations arrive */
+    if (pos_x > max_x) return;
 
     /* Apply column overlay */
     if (get_col_overlay(pos_x, &ov)) {
