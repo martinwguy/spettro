@@ -300,14 +300,13 @@ is_bar_line(int pos_x)
 	/* See if any beat's time falls within the time covered by this column.
 	 * This is true if left_bar_time + N*beat_step is within .5*step of
 	 * the time represented by the center of the column.
-	 * The column centre time in the piece is (double)x * step.
-	 * - Convert the time the column represents to the nearest beat time,
-	 *   and if that's within step/2 of the column time, say yes.
+	 * Convert the time represented by the center of the column to the
+	 * nearest beat, and if it's within step/2 of the center, say yes.
 	 */
-        double column_time = x * step;
+        double column_center_time = x * step + step/2;
         double beat_period = fabs(right_bar_time - left_bar_time) / beats_per_bar;
-	double nearest_beat = lrint((column_time - left_bar_time) / beat_period) * beat_period + left_bar_time;
-	if (fabs(column_time - nearest_beat) < step/2) return BEAT_LINE;
+	double nearest_beat = lrint((column_center_time - left_bar_time) / beat_period) * beat_period + left_bar_time;
+	if (fabs(column_center_time - nearest_beat) < step/2) return BEAT_LINE;
     }
     return FALSE;
 }
