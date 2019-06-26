@@ -245,7 +245,14 @@ gui_init(char *filename)
 	    fprintf(stderr, "Image too big for SDL.\n");
 	    exit(1);
 	}
+	/* Going into fullscreen sometimes changes the screen dimensions */
 	disp_width = w; disp_height = h;
+	max_x = disp_width - 1;
+	if (show_freq_axes) max_x -= frequency_axis_width;
+	max_y = disp_height - 1;
+	if (show_time_axes) max_y -= top_margin;
+	/* maglen depends on max_y */
+	maglen = (max_y - min_y) + 1;
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
