@@ -240,9 +240,9 @@ is_bar_line(int pos_x)
     int x;		/* Column index into the whole piece */
 
     /* The bar positions in pixel columns since the start of the piece. */
-    int left_bar_ticks = -1;
-    int right_bar_ticks = -1;
-    int bar_width = -1;	/* How long is the bar in pixels? -1: there is no bar */
+    int left_bar_ticks = -disp_width;  /* impossible value, surely off-screen */
+    int right_bar_ticks = -disp_width;
+    int bar_width = 0;	/* How long is the bar in pixels? 0: there is no bar */
 
     /* If neither of the bar positions is defined, there are none displayed */
     if (left_bar_time == UNDEFINED &&
@@ -278,6 +278,14 @@ is_bar_line(int pos_x)
     }
 
     /* Both bar positions are defined. See if this column falls on one. */
+
+    /* Left_bar_ticks can be negative if they mouse drag the bar line
+     * into the gray area before the graphic. Make the "% bar_width" checks
+     * below work anyway - it's not used for amythint else.
+     */
+    if (left_bar_ticks < 0)
+	left_bar_ticks += (disp_width / bar_width) * bar_width;
+
     if (beats_per_bar < 2)
 	return x % bar_width == left_bar_ticks % bar_width;
     else if (x % bar_width == left_bar_ticks % bar_width)

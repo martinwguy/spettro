@@ -20,7 +20,7 @@
 #include "gui.h"	/* for color_t */
 
 /* Value for when a bar line is not set */
-#define UNDEFINED (-1.0)
+#define UNDEFINED (-INFINITY)
 
 extern void set_left_bar_time(double when);
 extern void set_right_bar_time(double when);
