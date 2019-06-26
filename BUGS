@@ -26,9 +26,6 @@ and a mouse button, and then drag (say) the left bar line into the
 gray area left of the start,
 the still-on-graphic right bar line reverts to one pixel thick, the same
 as the beat lines.
-------------------------------------------------------------------------
-When piano and guitar lines are displayed, the guitar lines should become
-3 pixels thick, score lines idem.
 
 ============================ Calc ======================================
 
