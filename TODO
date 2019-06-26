@@ -193,8 +193,6 @@ Make Ctrl-Plus and Ctrl-Shift-Plus and -Minus work by two pixels too.
 ------------------------------------------------------------------------
 Make Ctrl-g/G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
-Make the freq and time axes separately-actuable ('a' and 's' for scale?)
-------------------------------------------------------------------------
 Show the time of the end of the piece on the time scale
 ------------------------------------------------------------------------
 Be able to display times as 1:30.62
@@ -237,5 +235,5 @@ Ass Ctrl-x and Ctrl-Shirt-X to do fine zooming
 Add --fit to fit the audio to the whole window in length with
 playing position half way.
 ------------------------------------------------------------------------
-Option: keep graohic still (e.g. --fit) and only move green line.
+Option: keep graphic still (e.g. --fit) and only move green line.
 ------------------------------------------------------------------------
