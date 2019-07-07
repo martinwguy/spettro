@@ -90,12 +90,12 @@ PgUp/PgDn  Pan up/down the frequency axis by a screenful, like Shift-Up/Down\n\
 X/x        Zoom in/out by a factor of two on the time axis\n\
 Y/y        Zoom in/out by a factor of two on the frequency axis\n\
            With Ctrl, zooms in/out by two pixels.\n\
-Plus/Minus Zoom both axes\n\
+Ctrl +/-   Zoom both axes\n\
 m          Cycle through the color maps: heatmap/grayscale/gray for printers\n\
 c/C        Decrease/increase the contrast by 6dB (by 1dB if Ctrl is held down)\n\
 b/B        Decrease/increase the brightness by 10%%\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
-Ctrl-K/D/N/B/H\n\
+Ctrl K/D/N/B/H\n\
            Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann\n\
 w/W        Cycle forward/backward through the window functions\n\
 a          Toggle the frequency axes\n\
@@ -104,15 +104,16 @@ k          Toggle the overlay of 88 piano key frequencies\n\
 s/S        Toggle the overlay of conventional staff lines\n\
 g/G        Toggle the overlay of classical guitar strings' frequencies\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
-1-8/F1-F12 Set the number of beats per bar (1 or F1 means \"no beat lines\")\n\
-9/0        Decrease/increase the soft volume control\n\
+1-9/F1-F12 Set the number of beats per bar (1 or F1 means \"no beat lines\")\n\
+0          Remove the bar lines\n\
++/-        Increase/decrease the soft volume control\n\
 t          Show the current playing time on stdout\n\
 o          Output (save) the current screenful into a PNG file\n\
 p          Show the playing time and settings on stdout\n\
-Crtl-L     Redraw the display from cached FFT results\n\
-Crtl-R     Redraw the display by recalculating from the audio data\n\
-Ctrl-F     Flip full-screen mode\n\
-q/Ctrl-C/Esc   Quit\n");
+Crtl L     Redraw the display from cached FFT results\n\
+Crtl R     Redraw the display by recalculating from the audio data\n\
+Ctrl F     Flip full-screen mode\n\
+q/Ctrl C/Esc   Quit\n");
 
     exit(1);
 }

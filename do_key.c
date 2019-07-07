@@ -473,6 +473,14 @@ k_right_barline(key_t key)
     set_right_bar_time(disp_time);
 }
 
+static void
+k_no_barlines(key_t key)
+{
+    /* Defining both bar lines at the same time is how you remove them */
+    if (left_bar_time != UNDEFINED) set_right_bar_time(left_bar_time);
+    else if (right_bar_time != UNDEFINED) set_left_bar_time(right_bar_time);
+}
+
 /* Refresh the display from the result cache */
 static void
 k_refresh(key_t key)
@@ -521,7 +529,7 @@ k_beats_per_bar(key_t key)
     case KEY_6: case KEY_F6:	set_beats_per_bar(6);	break;
     case KEY_7: case KEY_F7:	set_beats_per_bar(7);	break;
     case KEY_8: case KEY_F8:	set_beats_per_bar(8);	break;
-		case KEY_F9:	set_beats_per_bar(9);	break;
+    case KEY_9:	case KEY_F9:	set_beats_per_bar(9);	break;
 		case KEY_F10:	set_beats_per_bar(10);	break;
 		case KEY_F11:	set_beats_per_bar(11);	break;
 		case KEY_F12:	set_beats_per_bar(12);	break;
@@ -577,8 +585,8 @@ static key_fn key_fns[] = {
     { KEY_PGDN,	"PageDown",k_freq_pan,	k_bad,		k_bad,		k_bad },
     { KEY_X,	"X",    k_time_zoom,	k_time_zoom,	k_bad,		k_bad },
     { KEY_Y,	"Y",    k_freq_zoom,	k_freq_zoom,	k_freq_zoom,	k_freq_zoom },
-    { KEY_PLUS,	"Plus", k_both_zoom_in,	k_bad,		k_bad,		k_bad },
-    { KEY_MINUS,"Minus",k_both_zoom_out,k_bad,		k_bad,		k_bad },
+    { KEY_PLUS,	"Plus", k_softvol_up,	k_bad,		k_both_zoom_in,	k_bad },
+    { KEY_MINUS,"Minus",k_softvol_down,	k_bad,		k_both_zoom_out,k_bad },
 #if 0
     { KEY_STAR, "Star", k_bad		k_bad,		k_bad,		k_bad },
     { KEY_SLASH,"slash",k_bad		k_bad,		k_bad,		k_bad },
@@ -599,8 +607,8 @@ static key_fn key_fns[] = {
     { KEY_M,	"M",    k_change_color,	k_bad,		k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_bad,		k_set_window,	k_bad },
     { KEY_N,	"N",	k_bad,		k_bad,		k_set_window,	k_bad },
-    { KEY_0,	"0",	k_softvol_up,	k_bad,		k_bad,		k_bad },
-    { KEY_9,	"9",	k_softvol_down,	k_bad,		k_bad,		k_bad },
+    { KEY_0,	"0",	k_no_barlines,	k_bad,		k_bad,		k_bad },
+    { KEY_9,	"9",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_1,	"1",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_2,	"2",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_3,	"3",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
