@@ -23,20 +23,13 @@ and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
 Be able to display audio from a live source, presumably with the green
 line on the right edge.
 ------------------------------------------------------------------------
-Precalculate ahead in time to eliminate the flickering grey right hand
-side.  The calc needs to be scheduled far enough ahead that the calc
-threads have the time necessary to have it ready before that column
-appears in the display area.
-------------------------------------------------------------------------
 Cancel scheduled calculations that are no longer in the area of interest
 ------------------------------------------------------------------------
 Keep track of which calculations are in-flight, to avoid duplicate calcs.
 Can we kill an in-flight FFT if it goes off-screen (and not in lookahead)?
 ------------------------------------------------------------------------
-Add optional time axis at top and/or bottom
--or-
 Full-piece spectrogram in miniature along the bottom edge so that you can
-seek to any position in a click and see which parts have been calculated?
+seek to any position in a click and see which parts have been calculated.
 ------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
@@ -59,10 +52,6 @@ When adding score lines when there were none, just draw them on the display
 instead of redisplaying the columns' spectral data.
 When removing/changing such lines, just repaint the appropriate rows
 ------------------------------------------------------------------------
-Try scaling magnitudes with frequency to unweight its bottom-heaviness.
-------------------------------------------------------------------------
-Profile the max amplitude for each bin to derive an equalization function
-------------------------------------------------------------------------
 Give configure --with flags instead of Makefile's USE_ stuff.
 ------------------------------------------------------------------------
 Move toolkit-specific stuff each to their own file.
@@ -79,13 +68,12 @@ Keep settings from one run to another (softvol, fftfreq etc)
 ------------------------------------------------------------------------
 Change Makefile flags to USE_SDL1/USE_SDL2
 ------------------------------------------------------------------------
-Use Shift-B do darkness instead of 'd'.
-------------------------------------------------------------------------
+On frequency axis, add single digit 8 or whatever at the unnumbered ticks
+and/or increse the number of numbers according to the height of the graph.
+-or-
 Be able to increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
 Add test suite using PNG output
-------------------------------------------------------------------------
-Does adding an axis change what it prints for "Displaying" with 'p'?
 ------------------------------------------------------------------------
 Give the failure reason in an exit status
 ------------------------------------------------------------------------
@@ -102,15 +90,11 @@ Make a ui struct of the parameters visible in main.c
 When zoomed in a lot, print enough digits on frequency axis to reveal
 the digit that changes per tick.
 ------------------------------------------------------------------------
-Add fine control of h-zoom with Ctrl-x and Ctrl-Shift-X
-------------------------------------------------------------------------
 Make the desktop icon appear in the window manager.
 ------------------------------------------------------------------------
 Make Ctrl-left click play from here.
 ------------------------------------------------------------------------
 Decode compressed audio front-to-back without seeking
-------------------------------------------------------------------------
-Have a way to turn the bar lines off.
 ------------------------------------------------------------------------
 With libav, only cache compressed formats.
 ------------------------------------------------------------------------
@@ -121,12 +105,10 @@ Ctrl-L: play from left bar marker, then stop
 Shift-L or C-S-L: play from left bar marker, then repeat
 Ctrl-R: play from right bar marker onwards
 ------------------------------------------------------------------------
-In libav, cache all of the decoded frame, not just the bit we wanted.
-------------------------------------------------------------------------
 Compile the Enlightenment port for Android, iOS and Windows!
 ------------------------------------------------------------------------
 Pressing the same overlay key again cycles through white, black, none.
-Idem for bar lines. So last_key_presssed?
+Do the same for bar lines. Save last_key_pressed?
 ------------------------------------------------------------------------
 Add failure return values from libav_open_audio_file() and libmpg123_*()
 ------------------------------------------------------------------------
@@ -136,16 +118,7 @@ Be able to tune A to a different frequency & up/down it via the GUI.
 Or cmdline --tune A4=440.
 If no octave given, --tune F#=710 retune the nearest F# to 710. (+ais aes)
 ------------------------------------------------------------------------
-Implement status bar showing current settings:
-left time pos             disptime                 right time pos
-ppsec ppoct fftfreq window lbar rbar beats audio_length srate channels
-------------------------------------------------------------------------
-Show which bar lines are the left and right markers.
-------------------------------------------------------------------------
-Be able to drag bar lines with the mouse; the last-clicked one is the one
-that remains still. Or something. Do we need this or is LR enough?
-------------------------------------------------------------------------
-Make Defining the bar lines one pixel apart a synonym for no bar lines.
+Status bar: show lbar rbar beats audio_length srate channels
 ------------------------------------------------------------------------
 Something to show how far through the file you are (like a scroll bar)
 ------------------------------------------------------------------------
@@ -156,9 +129,6 @@ Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
 Option to turn the green line off for screencaps of nicely positioned
 spectrograms (ok, there is -o too)
-------------------------------------------------------------------------
-On frequency axis, add single digit 8 or whatever at the unnumbered ticks
-and/or increse the number of numbers according to the height of the graph.
 ------------------------------------------------------------------------
 Scroll the graphic up and down when they scroll the mouse wheel.
 ------------------------------------------------------------------------
@@ -176,8 +146,6 @@ Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
 Add command-line flag to set overlay colors.
 ------------------------------------------------------------------------
-Be able to change A440 to A432 etc witn -A 432
-------------------------------------------------------------------------
 Add finer FFT frequency control with Ctrl (and change the Fullscreen key)
 ------------------------------------------------------------------------
 When scrolling to playing position, take into account the timer interval
@@ -187,9 +155,6 @@ lags a little.
 ------------------------------------------------------------------------
 Convert all doubles to floats, to save space (?) and on ARM registers
 in fn params?
-------------------------------------------------------------------------
-When Ctrl-X is implemented to zoom by two pixels, like Ctrl-Y,
-Make Ctrl-Plus and Ctrl-Shift-Plus and -Minus work by two pixels too.
 ------------------------------------------------------------------------
 Make Ctrl-g/G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
@@ -211,9 +176,9 @@ Add a white-backgrounded heat map for color printers.
 ------------------------------------------------------------------------
 Use red and green as real and imaginary
 ------------------------------------------------------------------------
-Be able to load a spectrogram
-------------------------------------------------------------------------
 Be able to resynthesize the audio from the spectrogram
+------------------------------------------------------------------------
+Be able to load a spectrogram (and play it!)
 ------------------------------------------------------------------------
 Entire spectrogram as a data structure, not cached results,
 result-calculated when required and cached in each entry in the
@@ -226,14 +191,8 @@ If bar left or right are on-screen, add time legend.
 For a file selector in Enlightenment, it needs to use ELM not just EVAS.
 docs.enlightenment.org/elementary/1.15.0/fileselector_example_8c-example.html
 ------------------------------------------------------------------------
-Always decode compressed files from start to finish.
-------------------------------------------------------------------------
-Add Ctrl-x and Ctrl-Shift-X to do fine zooming
-------------------------------------------------------------------------
 Add --fit to fit the audio to the whole window in length with
 playing position half way.
-------------------------------------------------------------------------
-Option: keep graphic still (e.g. --fit) and only move green line.
 ------------------------------------------------------------------------
 Make Shift L or R make barlines that are always 3 pixels thick.
 ------------------------------------------------------------------------
@@ -242,6 +201,4 @@ multiple of a number of pixels.
 Exmple_ spettro swoop.wav
 l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
-------------------------------------------------------------------------
-+ and - for volume, Ctrl-+ and - to zoom both ways, 0 to no bar lines.
 ------------------------------------------------------------------------
