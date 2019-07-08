@@ -179,8 +179,8 @@ switch_again:
 	    else if (!strcmp(argv[0], "--piano")) argv[0] = "-k";
 	    else if (!strcmp(argv[0], "--guitar")) argv[0] = "-g";
 	    else if (!strcmp(argv[0], "--score")) argv[0] = "-s";
-	    else if (!strcmp(argv[0], "--freq_axis")) argv[0] = "-a";
-	    else if (!strcmp(argv[0], "--time_axis")) argv[0] = "-A";
+	    else if (!strcmp(argv[0], "--freq-axis")) argv[0] = "-a";
+	    else if (!strcmp(argv[0], "--time-axis")) argv[0] = "-A";
 	    /* Those environment variables */
 	    else if (!strcmp(argv[0], "--fps")) argv[0] = "-R";
 	    else if (!strcmp(argv[0], "--ppsec")) argv[0] = "-P";
