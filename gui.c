@@ -252,7 +252,7 @@ gui_init(char *filename)
      */
     max_x = disp_width - 1;
     disp_offset = disp_width / 2;
-    if (show_freq_axes) max_x -= frequency_axis_width;
+    if (show_freq_axes) max_x -= note_name_axis_width;
     max_y = disp_height - 1;
     if (show_time_axes) max_y -= top_margin;
     /* maglen depends on max_y */
