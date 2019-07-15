@@ -202,3 +202,6 @@ Exmple_ spettro swoop.wav
 l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
 ------------------------------------------------------------------------
+Add logmax to status line, next to dynamic range.
+Show dynrange and max db?
+------------------------------------------------------------------------
