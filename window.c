@@ -147,6 +147,7 @@ static void
 kaiser(double *data, int datalen)
 {
     double beta = 20.0;
+    /* beta = pi * alpha in the literature, so alpha =~ 6.3662 */
 
     /*
      *         besseli0(beta * sqrt(1 - (2*x/N).^2))
