@@ -8,8 +8,18 @@
 <H1 ALIGN=CENTER>SPETTRO</H1>
 <P ALIGN=CENTER>Show a scrolling spectrogram of music as it plays.</P>
 <HR>
-<IMG SRC="screenshot.png" ALIGN=RIGHT>
-<IMG SRC="sox-spectrogram.png" ALIGN=RIGHT>
+<TABLE WIDTH=322 ALIGN=RIGHT BORDER=0 CELLPADDING=0 CELLSPACING=0>
+<TR><TD>
+<DIV ALIGN=CENTER>
+<IMG SRC="screenshot.png">
+<BR CLEAR=ALL>
+<B>spettro</B> displaying Delia Derbyshire's 20-second theme "Chronicle"
+<P>
+<IMG SRC="sox-spectrogram.png">
+<BR CLEAR=ALL>
+A linear spectrogram of the same music, courtesy of <B>sox&nbsp;spectrogram</B>
+</DIV>
+</TABLE>
 Most spectrograms have a linear frequency axis, which is no good for music
 because the top half of the graphic represents the top octave of the sound,
 the octave below occupies the next quarter of the screen,
@@ -48,12 +58,14 @@ You then press buttons on the keyboard to make everything else happen.
       to the left in time with the audio. Press it again and it pauses,
       press it again and it continues playing. When it gets to the end
       of the piece, it stops automatically; press Space again and it
-      starts playing again from the beginning.
+      starts playing from the beginning.
       <BR>If your keyboard has <B>Play/Pause</B> and <B>Stop</B> media buttons,
       these may also work.
 </DL>
 The <B>-p</B> or <B>--autoplay</B> command-line flag makes it start playing immediately, and
-the <B>-e</B> or <B>--exit</B> flag makes it quit when it reaches the end of the audio file.
+the <B>-e</B> or <B>--exit</B> flag makes it quit when it reaches the end of the audio file,
+so <B>spettro&nbsp;-pe</B will play a file and quit,
+like most command-line media players.
 
 <H2>Moving around</H2>
 
@@ -169,11 +181,11 @@ The command-line options to set the initial position and zoom are:
       it automatically lowers the brightness so that the loudest pixel
       is displayed at the brightest color (usually white).
       When this happens, all newly-painted pixel columns will be dimmer than the
-      already-displayed ones, causing a color discontinutity when the new,
+      already-displayed ones, causing a color discontinuity when the new,
       louder pixels enter the displayed area.
       (It used to repaint previously-painted lines when this happens,
       but that turned out to be too slow.)
-      To repaint the whole display at the new brightness, press Ctrl-L.
+      To repaint the whole display at the new brightness, press <B>Ctrl-L</B>.
       <BR>
       The <B>-M</B>&nbsp;<I>logmax</I> flag lets you start with the brightest
       color representing a pixel energy of <I>logmax</I> decibels.
@@ -181,7 +193,7 @@ The command-line options to set the initial position and zoom are:
       values below 0 make it start out brighter.
       <BR>
       The current value of <I>logmax</I> can be found out by pressing '<B>p</B>'
-      and it is included in the name of the '<B>o</B>' key's screendump file.
+      and looking at spettro's console output.
 
 <H2>Image size and full-screen mode</H2>
 
@@ -198,7 +210,7 @@ set the window's size with the command-line options:
 </DL>
 Fullscreen mode fills the whole screen with the picture but it does not
 change the size of the underlying image; it scales a picture of the above size
-to the size of the screen (so the pixels appear bigger).
+to the size of the screen (so the pixels and writing appear bigger).
 <DL>
  <DT><B>Ctrl-F</B>
   <DD>This key switches between windowed and full-screen modes.
@@ -212,13 +224,14 @@ your screen and go into fullscreen mode, for example:
 <BLOCKQUOTE><TT>
 spettro -w 1024 -h 768 -F whatever.wav
 </TT></BLOCKQUOTE>
-If you don't know your screen's exact size,
-the Unix command <B>xrandr</B> will tell you.
+If your monitor or video card does not support the width and height you
+specify, you may get a blank screen and have to reset the computer. 
+The <B>xrandr</B> command will tell you your screen's native dimensions.
 
 <H2>Frequency/time resolution</H2>
 
 Spettro works by taking short samples of the audio file, centered on different
-moments in the audio file, and converts each sample to a column of pixels
+moments in the audio file, and converting each sample to a column of pixels
 whose colors represent the energy in the sound at each frequency.
 <P>
 By default, the FFT frequency is 5Hz, which takes a fifth of a second sample
@@ -246,7 +259,7 @@ window function used to smooth the edges of each sample before it is transformed
 into a spectrum.
 <P>
 Each window trades differently between frequency selectiveness and
-resultant background noise, with the following list being approximately from
+background noise, with the following list being approximately from
 the cleanest but least selective to the most selective but most noisy.
 <P>
 The five window functions can be selected by holding Ctrl down and
@@ -266,10 +279,11 @@ pressing a letter, or with command line flags.
   <DD>The '<B>w</B>' and '<B>W</B>' keys cycle forward/backwards
       through the window functions in the order shown above.
 </DL>
+
 <P>
 For more info on the different window functions' peculiarities and merits,
-see <A HREF="http://en.wikipedia.org/wiki/Window_function">http://en.wikipedia.org/wiki/Window_function</A>
-or experiment with <B>spettro</B> and see for yourself!
+see <A HREF="http://en.wikipedia.org/wiki/Window_function">Window_function</A>
+on Wikipedia or experiment with <B>spettro</B> and see for yourself!
 
 <H2>Frequency scales and overlays</H2>
 
@@ -282,14 +296,14 @@ the staff lines of a conventional score.
  <DT><B>a</B>
   <DD>The '<B>a</B>' key adds a frequency axis on the left side of the graph,
       and the positions of the conventional scoring notes, from A0 to G9,
-      on the right
-      <BR>The <B>-a</B> or <B>--freq_axes</B> command-line flag
+      on the right. Pressing '<B>a</b>' again makes them go away.
+      <BR>The <B>-a</B> or <B>--freq-axis</B> command-line flag
       makes it start up showing the frequency scales.
  <DT><B>A</B>
   <DD>The '<B>A</B>' key labels the time in seconds along the bottom of the
-      graph and show a status line along the top showing the values of all
-      settings that determins what the graph looks like.
-      <BR>The <B>-A</B> or <B>--time_axes</B> command-line flag
+      graph and shows a status line along the top with the values of all
+      settings that determine what the graph looks like.
+      <BR>The <B>-A</B> or <B>--time-axis</B> command-line flag
       makes it start up showing these.
  <DT><B>k</B>
   <DD>The '<B>k</B>' key
@@ -306,28 +320,27 @@ the staff lines of a conventional score.
       <BR>E2(82.4Hz) A2(110Hz) D3(146.8Hz) G3(196.0Hz) B3(246.9Hz) E4 (329.6Hz)
       <BR><B>g</B> makes the lines one pixel thick, <B>G</B> three pixels thick.
       <BR>Pressing '<B>g</B>' or '<B>G</B>' again makes the guitar lines
-          black instead of white and pressing it again removes them.
+          black instead of white and pressing them again removes them.
       <BR>The <B>-g</B> or <B>--guitar</B> command-line flag also
-      makes it show the guitar strings lines.
+      makes it show the guitar strings' lines.
  <DT><B>s S</B>
   <DD>The '<B>s</B>' key overlays two five-line staves
-      like those in a conventional musical score.
+      like those of a conventional musical score.
       <BR>From top to bottom, the staff lines are centered on:
       <BR>F5(698.5Hz) D5(587.3Hz) B4(493.9Hz) G4(392.0Hz) E4(329.6Hz)
       <BR>A3(220.0Hz) F3(174.6Hz) D3(146.8Hz) B2(123.5Hz) G2(98.0Hz)
       <BR>'<B>s</B>' makes the lines one pixel thick,
           '<B>S</B>' three pixels thick.
       <BR>Pressing '<B>s</B>' or '<B>S</B>' again makes the staff lines
-          black instead of white and pressing it again removes them.
+          black instead of white and pressing them again removes them.
       <BR>The <B>-s</B> or <B>--score</B> command-line flag also makes
       it start up with staff lines.
 </DL>
 Turning the staff lines on turns the guitar lines off and vice versa
 (because they overlap)
 but you can display the piano keys at the same time as either of them,
-to b able to identify notes above the top or below the bottom staff line,
-or to see the fretted positions between the open guitar strings,
-in which case the staff or guitar lines are shown three pixels thick.
+to identify notes above the top or below the bottom staff lines,
+or to see the fretted positions between the open guitar strings.
 <P>
 There is, as yet, no command line flag to make the overlays green or black
 instead of white.
@@ -338,7 +351,7 @@ To help you pick out the rhythm, spettro can overlay evenly-spaced vertical
 lines onto the graphic to show where each bar of the music begins and ends.
 <P>
 To do this, you mark two pixel columns to say where some bar starts and ends,
-and spettro will show bar lines evenly spaced throughout the piece.
+and spettro will add bar lines evenly spaced throughout the piece.
 <P>
 To get a useful result, precise positioning of the bar lines is crucial.
 <P>
@@ -349,7 +362,7 @@ There are three ways to set the position of the bar line markers:
      For more precise positioning, zoom in on the time axis with '<B>X</B>',
      hold down the <B>Ctrl</B> key and use the left and right arrow keys to
      shift the graphic by one pixel at a time.
- <LI>If you hold down the Ctrl key, you can position the left bar line by
+ <LI>If you hold down the <B>Ctrl</B> key, you can position the left bar line by
      putting the mouse pointer at the start of a bar and clicking the left
      mouse button. Similarly you can position the right bar line with
      the right mouse button.
@@ -357,16 +370,17 @@ There are three ways to set the position of the bar line markers:
      command-line flags set the left and right bar line's positions to the
      following number of seconds from the start of the piece.
 </UL>
-If you set the "left" bar line marker to the right of the "right" one,
+If you set the left bar line marker to the right of the right one,
 it will still work.
 <P>
 Once you have both bar line markers set, you can make it show lines dividing
 each bar into from 2 to 12 beats by pressing the number keys
-from <B>2</B> to <B>8</B> or the function keys <B>F2</B> to <B>F12</B>.
+from <B>2</B> to <B>9</B> or the function keys <B>F2</B> to <B>F12</B>.
 <P>
-The <B>1</B> and <B>F1</B> keys remove the beat lines, leaving just the bars.
+The <B>1</B> and <B>F1</B> keys remove the beat lines, leaving just the bars
+and the <B>0</B> (zero) key removes the bar lines.
 <P>
-The <B>-b</B><&nbsp;<I>n</I> (or <B>--beats</B>) option sets the initial number
+The <B>-b</B>&nbsp;<I>n</I> (or <B>--beats</B>&nbsp;<I>n</I>) option sets the initial number
 of beats per bar.
 
 <H2>Quit</H2>
@@ -379,17 +393,17 @@ of beats per bar.
 <H2>Redraw</H2>
 <DL>
  <DT><B>Ctrl-L</B> / <B>Ctrl-R</B>
-  <DD><B>Ctrl-L</B> redraws the display from the results already computed
-      while <B>Ctrl-R</B> recalculates every column from the audio.
+  <DD><B>Ctrl-L</B> redraws the display from the cache of results already
+      computed, while <B>Ctrl-R</B> recalculates every column from the audio.
       These can be useful if the display becomes garbled for some reason.
 </DL>
 
 <H2>Diagnostics</H2>
 <DL>
  <DT><B>t</B>
-  <DD>Prints the current playing time on stdout.
+  <DD>Prints the current playing time on the console.
  <DT><B>p</B>
-  <DD>Prints the current user-interface settings on stdout.
+  <DD>Prints the current user-interface settings on the console.
 </DL>
 
 <H2>Soft volume control</H2>
@@ -404,7 +418,7 @@ have made the audio output clip.
       If your keyboard has volume-up and volume-down media buttons,
       they may also work.
 </DL>
-The <B>-v</B>&nbsp;<I>N</I> commmand-line flag sets the initial softvolume
+The <B>-v</B>&nbsp;<I>N</I> command-line flag sets the initial softvolume
 level to <I>N</I>, where values above 1.0 are louder than 100% and values
 lower than 1.0 are softer than usual.
 
@@ -418,12 +432,11 @@ lower than 1.0 are softer than usual.
 The <B>-o</B> <I>file.png</I> (or <B>--output</B>) command-line option, instead, makes spettro
 start up, calculate the spectrogram, dump the image into a named file and
 quit without playing it or giving you the chance to press any buttons.
+Unlike the '<B>o<B>' key, <B>-o<B>'s output doesn't include the green line.
 <P>
-This is one reason why the file name generated by the <B>o</B> key includes the
-command line options necessary to regenerate the view saved in that file.
-<P>
-With this and, for example, <TT>-w&nbsp;4000&nbsp;-h&nbsp;1000</TT>,
-you can print out higher-definition images than the screen is capable of.
+With these and, for example, <TT>-w&nbsp;4000&nbsp;-h&nbsp;1000</TT>,
+you can generate higher-definition images than your screen is capable of
+displaying.
 
 <H2>Other command-line options</H2>
 
@@ -438,7 +451,7 @@ you can print out higher-definition images than the screen is capable of.
   <DD>Shows which version of spettro you are using, and with which
       graphic toolkit and audio libraries it was compiled.
  <DT><B>--help</B>
-  <DD>Shows a summary of all key stroke commands and option flags.
+  <DD>Shows a summary of all keys and option flags.
 </DL>
 
 <HR>
