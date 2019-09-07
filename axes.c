@@ -425,8 +425,6 @@ draw_status_line(void)
 void
 draw_time_axis(void)
 {
-    char s[128];
-
     /* Time of left- and rightmost pixel columns */
     double min_time = screen_column_to_start_time(min_x);
     double max_time = screen_column_to_start_time(max_x);
@@ -437,17 +435,16 @@ draw_time_axis(void)
     gui_lock();
 
     /* Current playing time */
-    sprintf(s, "%.2f", disp_time);
-    draw_text(s, disp_offset, 1, CENTER, BOTTOM);
+    draw_text(seconds_to_string(disp_time), disp_offset, 1, CENTER, BOTTOM);
 
     /* From */
     if (DELTA_GE(min_time, 0.0)) {
-	sprintf(s, "%.2f", min_time);
-	draw_text(s, min_x, 1, LEFT, BOTTOM);
+	draw_text(seconds_to_string(min_time), min_x, 1, LEFT, BOTTOM);
     } else {
     	/* Draw 0.0 at wherever it is on-screen */
 	int x = time_to_screen_column(0.0);
-	sprintf(s, "%.2f", 0.0);
+	char *s = "0.00";
+
 	/* We center it on the left edge but stop it overflowing into
 	 * the frequency axis.
 	 */
@@ -461,8 +458,7 @@ draw_time_axis(void)
 
     /* To */
     if (DELTA_LE(max_time, audio_files_length())) {
-	sprintf(s, "%.2f", max_time);
-	draw_text(s, max_x, 1, RIGHT, BOTTOM);
+	draw_text(seconds_to_string(max_time), max_x, 1, RIGHT, BOTTOM);
     } else {
     	/* Draw max_time wherever it is on-screen.
 	 * We mark the start time of each column we label so truncate end time
@@ -470,7 +466,8 @@ draw_time_axis(void)
 	 */
 	double column_start_time = trunc(audio_files_length() / step) * step;
 	int x = time_to_screen_column(column_start_time);
-	sprintf(s, "%.2f", column_start_time);
+	char *s = seconds_to_string(column_start_time);
+
 	/*
 	 * We center it on the rightmost column but stop the text
 	 * overflowing the right edge into the note name axis.

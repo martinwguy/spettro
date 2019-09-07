@@ -160,8 +160,6 @@ Make Ctrl-g/G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
 Show the time of the end of the piece on the time scale
 ------------------------------------------------------------------------
-Be able to display times as 1:30.62
-------------------------------------------------------------------------
 Be able to give command-line time parameters as 1:30.62
 ------------------------------------------------------------------------
 Be able to set the colour of the staff/guitar/piano lines at startup.

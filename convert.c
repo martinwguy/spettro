@@ -199,3 +199,35 @@ is_2357(int n)
     while (n % 7 == 0) n /= 7;
     return (n == 1);
 }
+
+/* Convert time in seconds to a string like 1:30.45 */
+char *
+seconds_to_string(double secs)
+{
+    unsigned h,m,s,f;	/* Hours, minutes, seconds and hundredths of a sec */
+    unsigned isecs;	/* Number of whole seconds */
+    static char string[sizeof("-HH:MM:SS.ff")]; /* Up to 99 hours */
+    char *str = string;
+
+    if (secs < 0.0) {
+	/* Cannot happen (unless they set a bar line before time=0?)
+	 * Do the right thing anyway. */
+	string[0] = '-';
+	str++;
+	secs = -secs;
+    }
+
+    /* round to the nearest hundredth of a second */
+    secs = round(secs * 100) / 100;
+    isecs = (unsigned) trunc(secs);
+    f = lrint((secs - (double)isecs) * 100);
+    s = isecs % 60;
+    m = (isecs/60) % 60;
+    h = isecs/60/60;
+
+    if (h > 0) sprintf(str, "%d:%02d:%02d.%02d", h, m, s, f);
+    else if (m > 0) sprintf(str, "%d:%02d.%02d", m, s, f);
+    else sprintf(str, "%d.%02d", s, f);
+
+    return string;
+}

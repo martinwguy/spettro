@@ -41,3 +41,5 @@ extern double screen_column_to_start_time(int col);
  * Choose a good FFT size for the given FFT frequency
  */
 extern int fft_freq_to_speclen(double fft_freq, double sample_rate);
+
+extern char *seconds_to_string(double secs);
