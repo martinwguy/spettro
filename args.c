@@ -25,6 +25,7 @@
 #include "audio_file.h"
 #include "barlines.h"
 #include "colormap.h"
+#include "convert.h"
 #include "ui.h"
 
 #include <ctype.h>	/* for tolower() */
@@ -61,9 +62,9 @@ usage(void)
 -a     Show the frequency axes\n\
 -A     Show the time axis and status line\n\
 -f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
--t n   Set the initial playing time in seconds\n\
--l n   Set the position of the left bar line in seconds\n\
--r n   Set the position of the right bar line in seconds\n\
+-t n   Set the initial playing time\n\
+-l n   Set the position of the left bar line\n\
+-r n   Set the position of the right bar line\n\
 -b n   Set the number of beats per bar\n\
 -P n   Set how many pixel columns to display per second of audio, default %g\n",
 				DEFAULT_PPSEC); printf("\
@@ -293,9 +294,6 @@ another_letter:
 	 */
 	case 'n':	/* Minimum frequency */
 	case 'x':	/* Maximum frequency */
-	case 't':	/* Play starting from time t */
-	case 'l':	/* Set left bar line position */
-	case 'r':	/* Set right bar line position */
 	case 'f':	/* Set FFT frequency */
 	case 'v':	/* Set software volume control */
 	case 'd':	/* Set dynamic range */
@@ -340,9 +338,6 @@ another_letter:
 		switch (letter) {
 		case 'n': min_freq = arg;	break;
 		case 'x': max_freq = arg;	break;
-		case 't': disp_time = arg;	break;
-		case 'l': bar_left_time = arg;	break;
-		case 'r': bar_right_time = arg; break;
 		case 'f': fft_freq = arg;	break;
 		case 'v': softvol = arg;	break;
 		case 'd': dyn_range = arg;	break;
@@ -356,6 +351,26 @@ another_letter:
 	/*
 	 * Parameters that take a string argument
 	 */
+	case 't':	/* Play starting from time t */
+	case 'l':	/* Set left bar line position */
+	case 'r':	/* Set right bar line position */
+	    {
+		double secs = string_to_seconds(argv[0]);
+
+		if (isnan(secs)) {
+		    fprintf(stderr, "Time not recognized in -%c %s\n",
+			letter, argv[0]);
+		    exit(1);
+		}
+
+		switch (letter) {
+		    case 't': disp_time = secs;		break;
+		    case 'l': bar_left_time = secs;	break;
+		    case 'r': bar_right_time = secs;	break;
+		}
+	    }
+	    break;
+
 	case 'o':
 	    output_file = argv[0];
 	    break;

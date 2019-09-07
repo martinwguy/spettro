@@ -231,3 +231,53 @@ seconds_to_string(double secs)
 
     return string;
 }
+
+/* Convert a time string to a double.
+ * The time may be any number of seconds (and maybe a dot and decimal places)
+ * or minutes:SS[.dp] or hours:MM:SS[.dp]
+ *
+ * If the string argument is not parsable, we return NAN.
+ *
+ * Other oddities forced by the use of sscanf():
+ * Minutes with hours, and seconds with minutes, can also be a single digit.
+ * Because %u and %f always discard initial white space, they can put spaces
+ * after a colon or before the decimal point.
+ * Seconds before a decimal point are %u instead of %2u because otherwise
+ * "1:400.5" would be accepted as 1:40.5
+ * "1:00:" is accepted as "1:00".
+ */
+double
+string_to_seconds(char *string)
+{
+    unsigned h, m, s;	/* Hours, minutes and seconds */
+    double frac = 0.0;	/* decimal places, 0 <= frac < 1.0 */
+    double secs;	/* Result for just the seconds */
+    int n;		/* Number of chars were consumed by the match,
+    			 * used to detect trailing garbage */
+
+    if (sscanf(string, "%2u:%2u:%u%lf%n", &h, &m, &s, &frac, &n) == 4) { }
+    else
+    if (sscanf(string, "%2u:%2u:%u%n", &h, &m, &s, &n) == 3) { }
+    else
+    if (sscanf(string, "%2u:%u%lf%n", &m, &s, &frac, &n) == 3)
+	h = 0;	/* May have been set by a previous partial match */
+    else
+    if (sscanf(string, "%2u:%2u%n", &m, &s, &n) == 2)
+	h = 0;
+    else
+    if (sscanf(string, "%lf%n", &secs, &n) == 1 &&
+	    secs >= 0.0 && DELTA_LT(secs, (double)(99*60*60 + 59*60 + 60)) &&
+	    string[n] == '\0')
+	return secs;
+    else
+	return NAN;
+
+    /* Handle all formats except a bare number of seconds */
+
+    /* Range checks. Hours are limited to 2 digits when printed. */
+    if (s > 59 || m > 59 || h > 99 || frac < 0.0 || frac >= 1.0 ||
+	    string[n] != '\0')
+	return NAN;
+
+    return h*60*60 + m*60 + s + frac;
+}
