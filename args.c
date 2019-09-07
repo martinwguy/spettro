@@ -40,7 +40,7 @@
 
 static void print_version(void);
 
-/* Print usage message and quit */
+/* Print a summary of the command-line flags */
 static void
 usage(void)
 {
@@ -77,10 +77,17 @@ usage(void)
 -W x   Use FFT window function x where x starts with\n\
        K for Kaiser, D for Dolph, N for Nuttall, B for Blackman, H for Hann\n\
 -m map Select a color map: heatmap, gray or print\n\
--o f   Display the spectrogram, dump it to file f in PNG format and quit.\n\
+-o f   Display the spectrogram, dump it to file f in PNG format and quit\n\
 --version  Which version of spettro is this, and which libraries does it use?\n\
+--keys Show which key presses do what, and quit\n\
 --help This!\n\
-If no filename is supplied, it opens \"audio.wav\"\n\
+If no file is specified, it opens \"audio.wav\"\n");
+}
+
+static void
+show_keys()
+{
+    printf("\
 == Keyboard commands ==\n\
 Space      Play/Pause/Resume/Restart the audio player\n\
 Left/Right Skip back/forward by a tenth of a screenful\n\
@@ -96,8 +103,7 @@ m          Cycle through the color maps: heatmap/grayscale/gray for printers\n\
 c/C        Decrease/increase the contrast by 6dB (by 1dB if Ctrl is held down)\n\
 b/B        Decrease/increase the brightness by 10%%\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
-Ctrl K/D/N/B/H\n\
-           Set the window function to Kaiser, Dolph, Nuttall, Blackman or Hann\n\
+Ctrl K/D/N/B/H  Set the window function to Kaiser/Dolph/Nuttall/Blackman/Hann\n\
 w/W        Cycle forward/backward through the window functions\n\
 a          Toggle the frequency axes\n\
 A          Toggle the time axis and status line\n\
@@ -115,8 +121,6 @@ Crtl L     Redraw the display from cached FFT results\n\
 Crtl R     Redraw the display by recalculating from the audio data\n\
 Ctrl F     Flip full-screen mode\n\
 q/Ctrl C/Esc   Quit\n");
-
-    exit(1);
 }
 
 static void
@@ -189,9 +193,13 @@ switch_again:
 	    else if (!strcmp(argv[0], "--version")) {
 		print_version();
 		exit(0);
+	    } else if (!strcmp(argv[0], "--keys")) {
+	    	show_keys();
+		exit(0);
 	    } else {
 	    	/* --help and everything else */
 		usage();
+		exit(0);
 	    }
 
 	    /* Switch on the short-form argument letter */
