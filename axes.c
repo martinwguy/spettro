@@ -216,7 +216,7 @@ add_tick(int k, double min, double max, double distance, int log_scale, double v
 static int
 calculate_ticks(double min, double max, double distance, int log_scale)
 {
-    double step;	/* Put numbered ticks at multiples of this */
+    double stride;	/* Put numbered ticks at multiples of this */
     double range = max - min;
     int k;
     double value;	/* Temporary */
@@ -234,41 +234,41 @@ calculate_ticks(double min, double max, double distance, int log_scale)
      * which can give us at most 9 divisions (e.g. from 0 to 9999, step 1000)
      * Then try 5*this, 2*this and 1*this.
      */
-    step = pow(10.0, floor(log10(max)));
+    stride = pow(10.0, floor(log10(max)));
     do {
-	if (range / (step * 5) >= TARGET_DIVISIONS) {
-	    step *= 5;
+	if (range / (stride * 5) >= TARGET_DIVISIONS) {
+	    stride *= 5;
 	    break;
 	}
-	if (range / (step * 2) >= TARGET_DIVISIONS) {
-	    step *= 2;
+	if (range / (stride * 2) >= TARGET_DIVISIONS) {
+	    stride *= 2;
 	    break;
 	}
-	if (range / step >= TARGET_DIVISIONS) break;
-	step /= 10;
+	if (range / stride >= TARGET_DIVISIONS) break;
+	stride /= 10;
     } while (1);	/* This is an odd loop! */
 
     /* Ensure that the least significant digit that changes gets printed, */
-    decimal_places_to_print = lrint(-floor(log10(step)));
+    decimal_places_to_print = lrint(-floor(log10(stride)));
     if (decimal_places_to_print < 0)
 	    decimal_places_to_print = 0;
 
-    /* Now go from the first multiple of step that's >= min to
+    /* Now go from the first multiple of stride that's >= min to
      * the last one that's <= max. */
     k = 0;
-    value = ceil(min / step) * step;
+    value = ceil(min / stride) * stride;
 
     /* Add the half-way tick before the first number if it's in range */
-    k = add_tick(k, min, max, distance, log_scale, value - step / 2, TRUE);
+    k = add_tick(k, min, max, distance, log_scale, value - stride / 2, TRUE);
 
     while (DELTA_LE(value, max)) {
 	/* Add a tick next to each printed number */
 	k = add_tick(k, min, max, distance, log_scale, value, FALSE);
 
 	/* and at the half-way tick after the number if it's in range */
-	k = add_tick(k, min, max, distance, log_scale, value + step / 2, TRUE);
+	k = add_tick(k, min, max, distance, log_scale, value + stride/2, TRUE);
 
-	value += step;
+	value += stride;
     }
 
     return k;
@@ -461,8 +461,8 @@ draw_time_axis(void)
 	draw_text(seconds_to_string(max_time), max_x, 1, RIGHT, BOTTOM);
     } else {
     	/* Draw max_time wherever it is on-screen.
-	 * We mark the start time of each column we label so truncate end time
-	 * to step size
+	 * We mark the start time of each column we label,
+	 * so truncate end time to the stride.
 	 */
 	double column_start_time = trunc(audio_files_length() / step) * step;
 	int x = time_to_screen_column(column_start_time);

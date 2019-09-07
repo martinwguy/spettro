@@ -256,7 +256,6 @@ gui_init(char *filename)
     max_y = disp_height - 1;
     if (show_time_axes) max_y -= top_margin;
     /* maglen depends on max_y */
-    maglen = (max_y - min_y) + 1;
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     	/* maybe SDL_RENDERER_PRESENTVSYNC */

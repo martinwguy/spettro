@@ -100,6 +100,6 @@ extern unsigned note_name_axis_width;	/* Right axis area */
 extern unsigned top_margin, bottom_margin; /* Top and bottom axes heights */
 
 /* Values derived from the above */
-extern double step;		/* time step per column = 1/ppsec */
-extern int maglen;		/* Size of logarithmic spectral data
-				 * == height of graph in pixels */
+#define step	(1 / ppsec)		/* time step per column = 1/ppsec */
+#define maglen	(max_y - min_y + 1)	/* Size of logarithmic spectral data
+			 		 * == height of graph in pixels */

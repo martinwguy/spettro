@@ -113,7 +113,6 @@ main(int argc, char **argv)
 
     /* Set variables with derived values */
     disp_offset = disp_width / 2;
-    step = 1 / ppsec;
     min_x = 0; max_x = disp_width - 1;
     min_y = 0; max_y = disp_height - 1;
     if (show_freq_axes) {
@@ -124,7 +123,6 @@ main(int argc, char **argv)
 	min_y += bottom_margin;
 	max_y -= top_margin;
     }
-    maglen = (max_y - min_y) + 1;
 
     /* If they set disp_time with -t or --start, round it to nearest step */
     disp_time = lrint(disp_time / step) * step;
