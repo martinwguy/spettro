@@ -203,3 +203,9 @@ The last barline no longer coincides with the end of the piece.
 Add logmax to status line, next to dynamic range.
 Show dynrange and max db?
 ------------------------------------------------------------------------
+With -t argument, round it to a multiple of step
+------------------------------------------------------------------------
+cache.c:128 clang reports constant condition at window == -1
+------------------------------------------------------------------------
+Check that the starting time and bar times are within the audio.
+------------------------------------------------------------------------
