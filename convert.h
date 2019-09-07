@@ -17,8 +17,7 @@
 
 /* convert.h: Declarations for convert.c */
 
-#define NOTE_A440	48  /* Note number of A above middle C */
-#define A0_FREQUENCY	27.5
+#define A4_FREQUENCY	440
 
 /*
  * Vertical position (frequency domain) convertion functions
