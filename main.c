@@ -126,6 +126,9 @@ main(int argc, char **argv)
     }
     maglen = (max_y - min_y) + 1;
 
+    /* If they set disp_time with -t or --start, round it to nearest step */
+    disp_time = lrint(disp_time / step) * step;
+
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.
      * Emotion seems not to let us get the raw sample data or sampling rate
