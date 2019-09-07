@@ -29,8 +29,8 @@
 #include "spettro.h"
 #include "cache.h"
 
-#include "convert.h"	/* for result_t */
-#include "calc.h"	/* for result_t */
+#include "convert.h"
+#include "calc.h"
 #include "window.h"
 #include "ui.h"
 
@@ -129,8 +129,8 @@ recall_result(double t, int speclen, window_function_t window)
 	/* If the time is the same and speclen is the same,
 	 * this is the result we want */
 	if (DELTA_GE(p->t, t) && DELTA_LE(p->t, t) &&
-	    (speclen == -1 || p->speclen == speclen) &&
-	    (window == -1 || p->window == window)) {
+	    (speclen == ANY_SPECLEN || p->speclen == speclen) &&
+	    (window  == ANY_WINDOW  || p->window  == window)) {
 	    break;
 	}
 	/* If the stored time is greater, it isn't there. */

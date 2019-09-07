@@ -20,6 +20,7 @@
 #ifndef WINDOW_H
 
 typedef enum {
+    ANY_WINDOW = -1, /* Used to see if a column has any results in the cache */
     KAISER = 0,
     DOLPH,
     NUTTALL,
