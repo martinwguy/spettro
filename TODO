@@ -209,3 +209,5 @@ cache.c:128 clang reports constant condition at window == -1
 ------------------------------------------------------------------------
 Check that the starting time and bar times are within the audio.
 ------------------------------------------------------------------------
+Using a palettized video mode may be interesting.
+------------------------------------------------------------------------
