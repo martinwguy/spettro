@@ -205,3 +205,10 @@ Show dynrange and max db?
 ------------------------------------------------------------------------
 Check that the starting time and bar times are within the audio.
 ------------------------------------------------------------------------
+Adding score lines when fullscreened causes a pause and jump in the scrolling
+because it redraws every column (it causes the same-length pause as a Ctrl-L).
+------------------------------------------------------------------------
+Try making MP3 seeks seek to 2 blocks before the desired position,
+decode them and throw the extra blocks away, and see if this makes the
+noisy MP3 formats improve.
+------------------------------------------------------------------------
