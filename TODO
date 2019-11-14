@@ -212,3 +212,15 @@ Try making MP3 seeks seek to 2 blocks before the desired position,
 decode them and throw the extra blocks away, and see if this makes the
 noisy MP3 formats improve.
 ------------------------------------------------------------------------
+With -t argument, round it to a multiple of step
+------------------------------------------------------------------------
+cache.c:128 clang reports constant condition at window == -1
+------------------------------------------------------------------------
+Check that the starting time and bar times are within the audio.
+------------------------------------------------------------------------
+Drop mouse panning
+------------------------------------------------------------------------
+Be able to mouse-drag bar lines.
+------------------------------------------------------------------------
+Be able to mouse-drag extended bar lines, keeping the further bar line in place.
+------------------------------------------------------------------------
