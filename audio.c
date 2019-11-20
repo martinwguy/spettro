@@ -89,6 +89,16 @@ init_audio(audio_file_t *af, char *filename)
 	    exit(1);
 	}
 	wavspec.samples = lrint(step * sample_rate * af->channels);
+	/* SDL sometimes requires a power-of-two buffer,
+	 * failing to work if it isn't, so reduce it to such */
+	{
+	    int places = 0;
+	    while (wavspec.samples > 0) {
+		wavspec.samples >>= 1;
+		places++;
+	    }
+	    wavspec.samples = 1 << (places - 1);
+	}
 	wavspec.callback = sdl_fill_audio;
 	wavspec.userdata = af;
 
