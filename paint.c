@@ -244,7 +244,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 	 * We have no way of knowing what it is displaying so force its repaint
 	 * with the current parameters.
 	 */
-	if ((r = recall_result(t, -1, -1)) != NULL) {
+	if ((r = recall_result(t, ANY_SPECLEN, ANY_WINDOW)) != NULL) {
 	    /* There's data for this column. */
 	    if (r->speclen == speclen && r->window == window_function) {
 		/* Bingo! It's the right result */
@@ -308,7 +308,6 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     }
     speclen = fft_freq_to_speclen(fft_freq, af->sample_rate);
 
-    assert(maglen == max_y - min_y + 1);
     logmag = Calloc(maglen, sizeof(*logmag));
     col_logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate, speclen);
 

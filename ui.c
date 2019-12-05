@@ -91,7 +91,7 @@ double disp_time = 0.0;		/* When in the audio file is the crosshair?
 				 * Always a multiple of "step". */
 int disp_offset; 		/* Crosshair is in which display column? */
 
-/* The size of the vertical axes, when they are present. */
+/* The width in pixels of the vertical axes, when they are present. */
 
 /* Numeric frequency axis on the left.
  * 22050- == Space, Five * (digit + blank column) + 2 pixels for tick.
@@ -107,9 +107,3 @@ unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);	/* == 11 */
 /* Space above and below for status info at the top, time index at the bottom */
 unsigned top_margin = (1 + 5 + 1);	/* space above, text, space below */
 unsigned bottom_margin = (1 + 5 + 1);	/* space below, text, space above */
-
-/* Values derived from the above */
-double step = 0.0;	/* time step per column = 1/ppsec
-			 * 0.0 means "not set yet" as a booby trap. */
-int maglen;		/* Size of logarithmic spectral data
-			 * == height of graph in pixels */

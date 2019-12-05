@@ -1,10 +1,8 @@
 #! /bin/sh
 
-# Runes to generate "configure", run it and compile the program.
+# Runes to generate "configure" and "Makefile"
 
 aclocal
 autoconf
 autoheader	# generates configure.h.in
 automake --add-missing
-./configure
-make

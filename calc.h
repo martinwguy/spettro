@@ -82,6 +82,9 @@ typedef struct result {
     				  * in time order */
 } result_t;
 
+/* Used in recall_result() to see if the cache has any results for a column */
+#define ANY_SPECLEN (-1)
+
 extern void calc(calc_t *data);
 
 #define CALC_H

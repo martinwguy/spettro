@@ -86,7 +86,6 @@ time_zoom_by(double by)
 	return;
     }
     ppsec *= by;
-    step = 1 / ppsec;
 
     /* Change the screen-scrolling speed to match */
     change_timer_interval(step);

@@ -203,6 +203,15 @@ The last barline no longer coincides with the end of the piece.
 Add logmax to status line, next to dynamic range.
 Show dynrange and max db?
 ------------------------------------------------------------------------
+Check that the starting time and bar times are within the audio.
+------------------------------------------------------------------------
+Adding score lines when fullscreened causes a pause and jump in the scrolling
+because it redraws every column (it causes the same-length pause as a Ctrl-L).
+------------------------------------------------------------------------
+Try making MP3 seeks seek to 2 blocks before the desired position,
+decode them and throw the extra blocks away, and see if this makes the
+noisy MP3 formats improve.
+------------------------------------------------------------------------
 With -t argument, round it to a multiple of step
 ------------------------------------------------------------------------
 cache.c:128 clang reports constant condition at window == -1
@@ -210,4 +219,8 @@ cache.c:128 clang reports constant condition at window == -1
 Check that the starting time and bar times are within the audio.
 ------------------------------------------------------------------------
 Using a palettized video mode may be interesting.
+------------------------------------------------------------------------
+Drop mouse panning
+------------------------------------------------------------------------
+Be able to mouse-drag extended bar lines, keeping the further bar line in place.
 ------------------------------------------------------------------------

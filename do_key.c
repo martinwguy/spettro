@@ -297,13 +297,11 @@ k_toggle_axes(key_t key)
 	if (show_time_axes) {
 	    /* Remove time axis and status information */
 	    min_y = 0; max_y = disp_height - 1;
-	    maglen = (max_y - min_y) + 1;
 	    show_time_axes = FALSE;
 	} else {
 	    /* Add time axis */
 	    min_y = bottom_margin;
 	    max_y = disp_height - 1 - top_margin;
-	    maglen = (max_y - min_y) + 1;
 	    show_time_axes = TRUE;
 	}
 	/* Adding/removing the top and bottom axes scales the graph vertically

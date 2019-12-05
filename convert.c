@@ -67,7 +67,9 @@ freq_to_magindex(double freq)
 		 (max_y - min_y));
 }
 
-/* Take "A0" or whatever and return the frequency it represents */
+/* Take "A0" or whatever and return the frequency it represents.
+ * Returns NAN if the note name is not recognized.
+ */
 double
 note_name_to_freq(const char *note)
 {
@@ -76,9 +78,9 @@ note_name_to_freq(const char *note)
     if (note[0] < 'A' || note[0] > 'G' || note[1] < '0' || note[1] > '9')
         return NAN;
 
-    return A0_FREQUENCY *
-    	   pow(2.0, note[1] - '0') * 
-	   pow(2.0, (1/12.0) * semitones[note[0] - 'A']);
+    return (A4_FREQUENCY / 16.0) /* A0 */
+    	    * pow(2.0, note[1] - '0') 
+	    * pow(2.0, (1/12.0) * semitones[note[0] - 'A']);
 }
 
 /* Convert a note number of the piano keyboard to the frequency it represents.
@@ -89,7 +91,8 @@ note_number_to_freq(const int n)
 {
     static double cache[88];	/* Init to 0.0 */
     if (cache[n] == 0.0)
-	cache[n] = A0_FREQUENCY * pow(2.0, (1/12.0) * n);
+	cache[n] = (A4_FREQUENCY / 16.0) /* A0 */
+		   * pow(2.0, (1/12.0) * n);
     return cache[n];
 }
 
