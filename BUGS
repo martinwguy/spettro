@@ -94,3 +94,18 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ------------------------------------------------------------------------
+libsox: sox_seek doesn't work. Read just carries on reading from
+	where it was. One workaround is to close and reopen the audio
+	file before every seek-and-read.
+
+libaudiofile:
+	returns half-length double-frequency data for signed shorts.
+	No workaround yet.
+
+sox:	synth sine generates -32768 samples rarely, when the trough of
+	a cycle is exactly synchronised on a sample.
+
+rezound: In the graphoc, +32767 and a few values below it occupy
+	the top row of pixels, as they should, but -32767 and a few values
+	above it are one pixel off the bottom of the display.
+------------------------------------------------------------------------
