@@ -1,0 +1,52 @@
+User interface
+--------------
+For the touch-screen version, we want pinch to zoom, drag to pan with
+buttons for FFT size etc.
+For the mouse version, click and drag (also arrow keys) pans the time
+and the frequency axes with buttons to zoom the time axis, frequency axis,
+FFT size and brightness/contrast (a.k.a. maximum value and dynamic range).
+
+Tap or click the screen or hit space to start/pause/resume/restart playback.
+
+Panning left and right skips the song to the new position.
+Panning up and down moves the view on the frequency axis.
+
+You can set bar lines by Control-clicking the left and right mouse buttons
+at the starts of two consecutive bars: it shows a grid of bar lines by
+extending them at regular intervals left and right of the marked positions.
+
+PLANNED:
+Pressing 2, 3, 4, 5, 6 etc sets the number of beats per bar to N.
+1 gives you just the bar lines, 0 turns bar lines off.
+
+
+A time grid would be nice too, with a button to turn it on/off and, when on,
+with a setting for the number of beats per bar giving more a luminous line
+every N "beats". Users can drag a bar line to align it to a feature.
+The first time they do this, the position (phase) of the time scale shifts.
+When you drag a different bar line, the one you just dropped stays where it is
+and the time scale stretches. Move a different bar line and, again,
+the last one you clicked stays still and the time scale stretches.
+
+FFT sizes are powers of 2 by default; that way we can use some super-fast
+alternative FFT routines. If you have a keyboard, you should be able to
+set the FFT size (or FFT frequency) in a box. Alternatively, a slider that
+clicks to the next power of 2 if you click its <| |> endcaps or you can
+move the slider smoothly to choose an intermediate size.
+
+Program structure
+-----------------
+- Calculation threads doing one FFT each receiving requests for an FFT around a
+  particular moment and returning the result of same.
+- The main thread doing UI handling, scrolling of the display, starting/stopping
+  music etc.
+- If using SDL_AUDIO, SDL starts an audio-playing thread that requests audio
+  data asynchronously.
+
+GUI->calc: "Send me the FFT for this moment in time"
+calc->GUI: "Here's the result for audio around time T"
+
+Add to that the reverse mapping to apply the logarithmic frequency axis and
+the color map and hey presto.
+
+    Martin Guy <martinwguy@gmail.com>, December 2016 - June 2017.
