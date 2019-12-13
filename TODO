@@ -207,12 +207,13 @@ Check that the starting time and bar times are within the audio.
 ------------------------------------------------------------------------
 Adding score lines when fullscreened causes a pause and jump in the scrolling
 because it redraws every column (it causes the same-length pause as a Ctrl-L).
+It would be better just to draw the lines and, when turning them off, to
+repaint only those lines, not the whole columns.
+When removing, though, check for coincidence with other lines.
 ------------------------------------------------------------------------
 Try making MP3 seeks seek to 2 blocks before the desired position,
 decode them and throw the extra blocks away, and see if this makes the
 noisy MP3 formats improve.
-------------------------------------------------------------------------
-With -t argument, round it to a multiple of step
 ------------------------------------------------------------------------
 cache.c:128 clang reports constant condition at window == -1
 ------------------------------------------------------------------------
