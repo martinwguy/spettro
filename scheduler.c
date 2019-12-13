@@ -431,7 +431,7 @@ DEBUG("List is empty after all\r");
  * scheduled calculations that no longer correspond to a pixel column.
  */
 void
-reschedule_for_bigger_step()
+reschedule_for_bigger_secpp()
 {
     calc_t **cpp;
 
@@ -439,7 +439,7 @@ reschedule_for_bigger_step()
 
     for (cpp = &list; *cpp != NULL; /* see below */) {
 	/* If its time is no longer a multiple of the step, drop it */
-	if (DELTA_GT((*cpp)->t, floor((*cpp)->t / step) * step)) {
+	if (DELTA_GT((*cpp)->t, floor((*cpp)->t / secpp) * secpp)) {
 	    calc_t *cp = *cpp;	/* Old cell to free */
 	    /* Rewrite "next" field of previous cell or the "list" pointer */
 	    *cpp = cp->next;

@@ -124,11 +124,9 @@ main(int argc, char **argv)
 	max_y -= top_margin;
     }
 
-    /* If they set disp_time with -t or --start, round it to nearest step */
-    disp_time = lrint(disp_time / step) * step;
-
-    /* If they set disp_time with -t or --start, round it to nearest step */
-    disp_time = lrint(disp_time / step) * step;
+    /* If they set disp_time with -t or --start, round it to nearest
+     * left edge of a column */
+    disp_time = lrint(disp_time / secpp) * secpp;
 
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.

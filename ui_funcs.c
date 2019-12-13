@@ -88,10 +88,10 @@ time_zoom_by(double by)
     ppsec *= by;
 
     /* Change the screen-scrolling speed to match */
-    change_timer_interval(step);
+    change_timer_interval(secpp);
 
     /* Zooming by < 1.0 increases the step size */
-    if (by < 1.0) reschedule_for_bigger_step();
+    if (by < 1.0) reschedule_for_bigger_secpp();
 
     if (show_time_axes) {
 	draw_time_axis();

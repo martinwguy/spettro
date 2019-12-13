@@ -63,7 +63,7 @@ do_scroll()
     /* Align to a multiple of 1/ppsec so that times in cached results
      * continue to match. This is usually a no-op.
      */
-    new_disp_time = floor(new_disp_time / step + DELTA) * step;
+    new_disp_time = floor(new_disp_time / secpp + DELTA) * secpp;
 
     scroll_by = time_to_piece_column(new_disp_time) -
 		time_to_piece_column(disp_time);

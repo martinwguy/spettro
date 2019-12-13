@@ -47,7 +47,7 @@
 #include "convert.h"
 #include "libmpg123.h"
 #include "lock.h"
-#include "ui.h"			/* for disp_time, disp_offset and step */
+#include "ui.h"			/* for disp_time, disp_offset and secpp */
 
 #include <string.h>		/* for memset() */
 

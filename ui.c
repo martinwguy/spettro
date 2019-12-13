@@ -88,7 +88,7 @@ char *output_file = NULL;	/* Image file to write to and quit. This is done
 
 /* Where in time and space is the current playing position on the screen? */
 double disp_time = 0.0;		/* When in the audio file is the crosshair? 
-				 * Always a multiple of "step". */
+				 * Always a multiple of "secpp". */
 int disp_offset; 		/* Crosshair is in which display column? */
 
 /* The width in pixels of the vertical axes, when they are present. */

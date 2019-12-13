@@ -77,18 +77,14 @@ init_audio(audio_file_t *af, char *filename)
 	/* 4096 makes for a visible lag between audio and video, as the video
 	 * follows the next af-reading position, which is 0-4096 samples
 	 * ahead of what's playing now.
-	 * Set it to "step" so that we should never get more than one column
+	 * Set it to "secpp" so that we should never get more than one column
 	 * behind.
 	 */
-	if (step == 0.0) {
-	    fprintf(stderr, "Internal error: init_audio() was called before \"step\" was initialized.\n");
-	    exit(1);
-	}
 	if (sample_rate == 0.0) {
 	    fprintf(stderr, "Internal error: init_audio() was called before \"sample_rate\" was initialized.\n");
 	    exit(1);
 	}
-	wavspec.samples = lrint(step * sample_rate * af->channels);
+	wavspec.samples = lrint(secpp * sample_rate * af->channels);
 	/* SDL sometimes requires a power-of-two buffer,
 	 * failing to work if it isn't, so reduce it to such */
 	{

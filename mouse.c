@@ -159,7 +159,7 @@ do_mouse_move(int screen_x, int screen_y)
      * pan the display by N pixels */
     if (!Ctrl && !Shift && left_button_is_down) {
 	if (screen_x != mouse_down_x) {
-	    time_pan_by((mouse_down_x - screen_x) * step);
+	    time_pan_by((mouse_down_x - screen_x) * secpp);
 	}
 	if (screen_y != mouse_down_y) {
 	    double one_pixel = exp(log(max_freq/min_freq) / (disp_height-1));

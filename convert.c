@@ -101,7 +101,7 @@ note_number_to_freq(const int n)
  *
  * We divide time into steps, one for each pixel column, starting from the
  * start of the piece of audio, with column 0 of the piece representing
- * what happens from 0.0 to 1/ppsec (==step) seconds.
+ * what happens from 0.0 to 1/ppsec seconds.
  * The audio for the FFT for a given column should therefore be centered
  * on 
  *
@@ -115,7 +115,7 @@ note_number_to_freq(const int n)
 int
 time_to_piece_column(double t)
 {
-    return (int) floor(t / step + DELTA);
+    return (int) floor(t / secpp + DELTA);
 }
 
 int
@@ -128,7 +128,7 @@ time_to_screen_column(double t)
 double
 screen_column_to_start_time(int col)
 {
-    return disp_time + (col - disp_offset) * step;
+    return disp_time + (col - disp_offset) * secpp;
 }
 
 /*

@@ -111,9 +111,9 @@ k_left_right(key_t key)
 {
     double by;
 
-    if (!Shift && !Ctrl) by = disp_width * step / 10;
-    if (Shift && !Ctrl) by = disp_width * step;
-    if (!Shift && Ctrl) by = step;
+    if (!Shift && !Ctrl) by = disp_width * secpp / 10;
+    if (Shift && !Ctrl) by = disp_width * secpp;
+    if (!Shift && Ctrl) by = secpp;
     if (Shift && Ctrl) by = 1.0;
     time_pan_by(key == KEY_LEFT ? -by : +by);
 }
@@ -396,11 +396,11 @@ k_print_params(key_t key)
 min_freq,   max_freq,    dyn_range,   logmax,     fft_freq,   window_name(window_function));
 
     printf(
-"%s %.3f disp_time=%.3f step=%.3f Showing %.3f to %.3f audio_length=%.3f\n",
+"%s %.3f disp_time=%.3f ppsec=%.3f Showing %.3f to %.3f audio_length=%.3f\n",
 	playing == PLAYING ? "Playing" :
 	playing == STOPPED ? "Stopped at" :
 	playing == PAUSED  ? "Paused at" : "Doing what? at",
-	get_playing_time(), disp_time, step,
+	get_playing_time(), disp_time, ppsec,
 	screen_column_to_start_time(min_x),
 	screen_column_to_start_time(max_x + 1),
 	audio_files_length());

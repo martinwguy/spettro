@@ -230,7 +230,7 @@ calculate_ticks(double min, double max, double distance, int log_scale)
      * changes by 1, 2 or 5 amd that gives us at least the number of
      * divisions (and numberic labels) that we would like to have.
      *
-     * We do this by starting "step" at the lowest power of ten <= max,
+     * We do this by starting "stride" at the lowest power of ten <= max,
      * which can give us at most 9 divisions (e.g. from 0 to 9999, step 1000)
      * Then try 5*this, 2*this and 1*this.
      */
@@ -464,7 +464,7 @@ draw_time_axis(void)
 	 * We mark the start time of each column we label,
 	 * so truncate end time to the stride.
 	 */
-	double column_start_time = trunc(audio_files_length() / step) * step;
+	double column_start_time = trunc(audio_files_length() / secpp) * secpp;
 	int x = time_to_screen_column(column_start_time);
 	char *s = seconds_to_string(column_start_time);
 
