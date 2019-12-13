@@ -45,8 +45,8 @@ extern double logmax;
 /* Screen-scroll frequency and number of pixel columns per second of audio */
 extern double fps;
 extern double ppsec;
-#define DEFAULT_FPS	25.0
-#define DEFAULT_PPSEC	25.0
+#define DEFAULT_FPS	50.0
+#define DEFAULT_PPSEC	50.0
 
 /* The "FFT frequency": 1/fft_freq seconds of audio are windowed and FFT-ed */
 extern double fft_freq;
