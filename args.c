@@ -62,9 +62,9 @@ usage(void)
 -a     Show the frequency axes\n\
 -A     Show the time axis and status line\n\
 -f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
--t n   Set the initial playing time\n\
--l n   Set the position of the left bar line\n\
--r n   Set the position of the right bar line\n\
+-t n   Set the initial playing time in seconds, mins:secs or H:M:S\n\
+-l n   Set the time for the left bar line\n\
+-r n   Set the time for the right bar line\n\
 -b n   Set the number of beats per bar\n\
 -P n   Set how many pixel columns to display per second of audio, default %g\n",
 				DEFAULT_PPSEC); printf("\
