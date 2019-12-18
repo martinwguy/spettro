@@ -159,12 +159,6 @@ bool scroll_event_pending = FALSE;
 static Eina_Bool
 timer_cb(void *data)
 {
-    static char spinner_chars[] = "/-\\|";
-    static char *spinner_char_p = spinner_chars;
-
-    fprintf(stderr, "%c\b", *spinner_char_p++);
-    if (!*spinner_char_p) spinner_char_p = spinner_chars;
-
     /* Generate a user-defined event which will be processed in the main loop */
     if (!scroll_event_pending) {
 	ecore_event_add(scroll_event, NULL, NULL, NULL);
@@ -186,12 +180,6 @@ scroll_cb(void *data, int type, void *event)
 static Uint32
 timer_cb(Uint32 interval, void *data)
 {
-    static char spinner_chars[] = "/-\\|";
-    static char *spinner_char_p = spinner_chars;
-
-    fprintf(stderr, "%c\b", *spinner_char_p++);
-    if (!*spinner_char_p) spinner_char_p = spinner_chars;
-
     /* We only want one scroll event pending at a time, otherwise if there's
      * insufficient CPU, the event queue fills up with them and other events
      * stop working too (result events, key presses etc)
