@@ -284,7 +284,7 @@ is_bar_line(int pos_x)
 
     /* Left_bar_ticks can be negative if they mouse drag the bar line
      * into the gray area before the graphic. Make the "% bar_width" checks
-     * below work anyway - it's not used for amythint else.
+     * below work anyway - it's not used for amything else.
      */
     if (left_bar_ticks < 0)
 	left_bar_ticks += (disp_width / bar_width) * bar_width;
@@ -308,8 +308,18 @@ is_bar_line(int pos_x)
 	 */
         double column_center_time = x * secpp + secpp/2;
         double beat_period = fabs(right_bar_time - left_bar_time) / beats_per_bar;
-	double nearest_beat = lrint((column_center_time - left_bar_time) / beat_period) * beat_period + left_bar_time;
-	if (fabs(column_center_time - nearest_beat) < secpp/2) return BEAT_LINE;
+	double nearest_beat = round((column_center_time - left_bar_time) / beat_period) * beat_period + left_bar_time;
+
+	/* Each column represents from its start time up to but not
+	 * including the following one
+	 */
+	if (nearest_beat < column_center_time) {
+	    if (DELTA_LE(column_center_time - nearest_beat, secpp/2))
+		return BEAT_LINE;
+	} else {
+	    if (DELTA_LT(nearest_beat - column_center_time, secpp/2))
+		return BEAT_LINE;
+	}
     }
     return FALSE;
 }
