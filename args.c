@@ -365,7 +365,7 @@ another_letter:
 	    {
 		double secs = string_to_seconds(argv[0]);
 
-		if (isnan(secs)) {
+		if (isnan(secs) || secs < 0.0) {
 		    fprintf(stderr, "Time not recognized in -%c %s\n",
 			letter, argv[0]);
 		    exit(1);

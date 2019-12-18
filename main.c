@@ -124,10 +124,6 @@ main(int argc, char **argv)
 	max_y -= top_margin;
     }
 
-    /* If they set disp_time with -t or --start, round it to nearest
-     * left edge of a column */
-    disp_time = lrint(disp_time / secpp) * secpp;
-
     /* Open the audio file to find out sampling rate, length and to be able
      * to fetch pixel data to be converted into spectra.
      * Emotion seems not to let us get the raw sample data or sampling rate
@@ -137,6 +133,24 @@ main(int argc, char **argv)
     if ((af = open_audio_file(filename)) == NULL) {
     	gui_quit();
 	exit(1);
+    }
+
+    /* If they set disp_time with -s or --start, check that it's
+     * within the audio and make it coincide with the start of a column.
+     */
+    {
+	double audio_length = audio_files_length();
+
+	if (disp_time > audio_length) {
+	    fprintf(stderr,
+		    "Warning: Starting time is beyond the end of the audio.\n");
+	    disp_time = audio_length;
+	    /* Round down to the left edge of the last column. */
+	    disp_time = trunc(disp_time / secpp) * secpp;
+	} else {
+	    /* Round it to nearest edge of a column */
+	    disp_time = lrint(disp_time / secpp) * secpp;
+	}
     }
 
     /* Initialise the graphics subsystem. */
