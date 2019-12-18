@@ -57,8 +57,8 @@ PNG_LIBS=  `pkg-config --libs libpng`
 # Video-driving libraries
 SDL_CFLAGS=`sdl2-config --cflags` -pthread
 SDL_LIBS=  `sdl2-config --libs` -lX11 -pthread
-EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x`
-EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x`
+EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x eina`
+EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x eina`
 
 # Audio file-reading libraries
 AUDIOFILE_CFLAGS=`pkg-config --cflags audiofile`
