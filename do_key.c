@@ -474,9 +474,7 @@ k_right_barline(key_t key)
 static void
 k_no_barlines(key_t key)
 {
-    /* Defining both bar lines at the same time is how you remove them */
-    if (left_bar_time != UNDEFINED) set_right_bar_time(left_bar_time);
-    else if (right_bar_time != UNDEFINED) set_left_bar_time(right_bar_time);
+    left_bar_time = right_bar_time = UNDEFINED;
 }
 
 /* Refresh the display from the result cache */

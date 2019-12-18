@@ -26,8 +26,10 @@ triggers the "Avanti!" warning, which shouldn't happen, and sometimes
 leaves a few columns unrefreshed.
 ------------------------------------------------------------------------
 Setting one bar line, then dragging the other one over it whaps the screen
-all white when they are one pixel apart, then cancels the other bar line
-when they have the same value.
+all white when they are one pixel apart, which makes redrawing very slow.
+------------------------------------------------------------------------
+It sometimes omits some beat lines. e.g.
+./spettro -l 6.02 -r 4.62 -b 7 test/chaconne.ogg
 
 ============================ Calc ======================================
 

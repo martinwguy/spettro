@@ -33,8 +33,8 @@
 
 
 /*
- * They can click and release the mouse of the same point,
- * which means to set the left/right bar line at that point.
+ * If they click and release the mouse, that sets the left/right bar line
+ * at that point.
  *
  * If they move the mouse with a button held down,
  * this means to reposition the corresponding bar line marker.

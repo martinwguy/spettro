@@ -21,8 +21,8 @@
  *
  * If you press 2, 3, 4 ecc, this makes the bar lines three pixels wide and
  * gives N-1 one-pixel-wide beat lines (think: 4 to a bar).
- * 1 reverts to no beat lines and 0 reverts to none with one-pixel-wide
- * bar lines again.
+ * 1 reverts to no beat lines with one-pixel-wide bar lines again
+ * and 0 reverts to no bar lines either.
  *
  * The column overlay takes priority over the row overlay, so that
  * "bar lines" are maintained whole, not cut, and the bar lines overlay the
@@ -164,21 +164,24 @@ set_bar_time(double *this_one, double *the_other_one, double when)
     /* Set this bar marker's position */
     *this_one = when;
 
-    /* Defining both bar lines at the same time is how you remove them */
+    /* If they define both bar lines at the same column, we just draw one
+     * bar line and no beat lines
+     */
     if (time_to_piece_column(left_bar_time) ==
 	time_to_piece_column(right_bar_time)) {
 	int col = time_to_screen_column(left_bar_time);
 
-	left_bar_time = right_bar_time = UNDEFINED;
+	*this_one = when;
+
+	/* If the column is on-screen, repaint it */
 	if (col >= min_x && col <= max_x) {
 	    repaint_column(col, min_y, max_y, FALSE);
 	    gui_update_column(col);
 	}
 	return;
-    }
-
-    /* Both are defined at different times. Paint the new bar lines. */
-    {   int col;
+    } else {
+	/* Both are defined at different times. Paint the new bar lines. */
+	int col;
 	for (col=min_x; col <= max_x; col++) {
 	    if (is_bar_line(col)) {
 		repaint_column(col, min_y, max_y, FALSE);
