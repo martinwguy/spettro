@@ -33,14 +33,11 @@
 
 
 /*
- * They can click and release the mouse of the same point.
- * If Ctrl, this means o set ehe left/right bar lines.
+ * They can click and release the mouse of the same point,
+ * which means to set the left/right bar line at that point.
  *
- * If they move the mouse between Ctrl-clock and contol-release,
- * this means to place/reposition the left/right bar line marker.
- *
- * If they move the mouse while holding a button down without ctrl,
- * this is a pan command, by frequency and by time.
+ * If they move the mouse with a button held down,
+ * this means to reposition the corresponding bar line marker.
  */
 
 /* Remember where they clicked down and which modifier keys were held */
@@ -133,14 +130,14 @@ do_mouse_button(unsigned screen_x, unsigned screen_y, mouse_button_t button, boo
     }
 
     /* Mouse up while setting bar line position: set it. */
-    if (down && Ctrl) switch (button) {
+    if (down) switch (button) {
     case LEFT_BUTTON:	set_left_bar_time(when);	break;
     case RIGHT_BUTTON:	set_right_bar_time(when);	break;
     }
 
-    if (!down) switch (button) {
-	case LEFT_BUTTON:	left_button_is_down = FALSE;	break;
-	case RIGHT_BUTTON:	right_button_is_down = FALSE;	break;
+    switch (button) {
+	case LEFT_BUTTON:	left_button_is_down = down;	break;
+	case RIGHT_BUTTON:	right_button_is_down = down;	break;
     }
 }
 
@@ -148,26 +145,13 @@ void
 do_mouse_move(int screen_x, int screen_y)
 {
     /* Dragging the mouse left/right while setting a bar line */
-    if (Ctrl) {
+    if (!Ctrl & !Shift) {
 	double when = screen_column_to_start_time(screen_x);
 
 	if (left_button_is_down) set_left_bar_time(when);
 	if (right_button_is_down) set_right_bar_time(when);
     }
 
-    /* Plain dragging while holding left button:
-     * pan the display by N pixels */
-    if (!Ctrl && !Shift && left_button_is_down) {
-	if (screen_x != mouse_down_x) {
-	    time_pan_by((mouse_down_x - screen_x) * secpp);
-	}
-	if (screen_y != mouse_down_y) {
-	    double one_pixel = exp(log(max_freq/min_freq) / (disp_height-1));
-	    freq_pan_by(pow(one_pixel, (double)(screen_y - mouse_down_y)));
-	}
-	if (screen_x != mouse_down_x || screen_y != mouse_down_y)
-	    repaint_display(TRUE);
-    }
     /* This isn't right, but works with the current logic */
     mouse_down_x = screen_x;
     mouse_down_y = screen_y;

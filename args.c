@@ -121,6 +121,10 @@ Crtl L     Redraw the display from cached FFT results\n\
 Crtl R     Redraw the display by recalculating from the audio data\n\
 Ctrl F     Flip full-screen mode\n\
 q/Ctrl C/Esc   Quit\n");
+    printf("\
+== Mouse controls ==\n\
+Left/Right click: Set the position of the left/right bar line\n\
+");
 }
 
 static void

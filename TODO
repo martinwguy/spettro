@@ -221,7 +221,5 @@ Check that the starting time and bar times are within the audio.
 ------------------------------------------------------------------------
 Using a palettized video mode may be interesting.
 ------------------------------------------------------------------------
-Drop mouse panning
-------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
 ------------------------------------------------------------------------
