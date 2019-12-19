@@ -92,8 +92,8 @@ remember_result(result_t *result)
 		    r->fft_freq == result->fft_freq &&
 		    r->window == result->window) {
 		    /* Same params: forget the new result and return the old */
-fprintf(stderr, "Discarding duplicate result for time %g fft_freq %g window %d (%s)\n",
-	result->t, result->fft_freq, result->window,
+fprintf(stderr, "Discarding duplicate result for %g/%g/%c (%s)\n",
+	result->t, result->fft_freq, window_key(result->window),
 	memcmp(r->spec, result->spec, (r->speclen+1) * sizeof(*(r->spec))) == 0
 	    ? "same" : "different");
 		    destroy_result(result);

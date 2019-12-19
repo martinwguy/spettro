@@ -248,8 +248,8 @@ schedule(calc_t *calc)
     				      calc->audio_file->sample_rate);
 
     if (recall_result(calc->t, speclen, calc->window)) {
-	fprintf(stderr, "scheduler drops calculation already in cache for time %g\n",
-		calc->t);
+	fprintf(stderr, "scheduler drops calculation already in cache for %g/%g/%c\n",
+		calc->t, calc->fft_freq, window_key(calc->window));
 	return;
     }
 
@@ -282,9 +282,9 @@ DEBUG("Adding at end of list\n");
 	*cpp = calc;
     } else /* If a duplicate in time, replace the existing one */
     if (DELTA_EQ((*cpp)->t, calc->t)) {
-DEBUG("Replacing existing item/%g/%c at %g with new/%g/%c\n",
-      (*cpp)->fft_freq, window_key((*cpp)->window), (*cpp)->t,
-      calc->fft_freq, window_key((*cpp)->window));
+DEBUG("Replacing existing item %g/%g/%c  with new %g/%g/%c\n",
+      (*cpp)->t, (*cpp)->fft_freq, window_key((*cpp)->window),
+      (*cpp)->t,   calc->fft_freq, window_key(  calc->window));
 	    calc_t *old = *cpp;
 	    calc->next = (*cpp)->next;
 	    *cpp = calc;
