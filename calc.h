@@ -48,7 +48,6 @@ typedef struct calc_t {
     Ecore_Thread *	thread;
 #endif
     struct calc_t *	next;	/* List of calcs to perform, in time order */
-    struct calc_t *	prev;	/* Reverse pointer of doubly-linked list */
 } calc_t;
 
 /*

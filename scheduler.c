@@ -260,7 +260,7 @@ DEBUG("Scheduling %g/%g/%c... ", calc->t, calc->fft_freq,
     if (list == NULL) {
 DEBUG("Adding to empty list:\n");
 	list = calc;
-	calc->next = calc->prev = NULL;
+	calc->next = NULL;
 	print_list();
 	unlock_list();
 	return;
@@ -279,8 +279,6 @@ DEBUG("Adding to empty list:\n");
 	/* At end of list. Just add it to the end. */
 DEBUG("Adding at end of list\n");
 	calc->next = NULL;
-	/* For the prev pointer, cpp points at its "next" item */
-	calc->prev = (calc_t *)((char *)cpp - ((char *)&(calc->next)-(char *)calc));
 	*cpp = calc;
     } else /* If a duplicate in time, replace the existing one */
     if (DELTA_EQ((*cpp)->t, calc->t)) {
@@ -288,22 +286,16 @@ DEBUG("Replacing existing item/%g/%c at %g with new/%g/%c\n",
       (*cpp)->fft_freq, window_key((*cpp)->window), (*cpp)->t,
       calc->fft_freq, window_key((*cpp)->window));
 	    calc_t *old = *cpp;
-	    calc->next = old->next;
-	    calc->prev = old->prev;
-	    if (calc->next) calc->next->prev = calc;
-	    if (calc->prev) calc->prev->next = calc;
-	    if (list == old) list = calc;
+	    calc->next = (*cpp)->next;
+	    *cpp = calc;
 	    free(old);
     } else {
 DEBUG("Adding before later item\n");
-	calc_t *cp = *cpp; /* The item to add it before */
-
-	/* Add it before the one that is later than it. */
-	calc->next = cp;
-	calc->prev = cp->prev;
-	if (calc->prev) calc->prev->next = calc;
-	else list = calc;
-	cp->prev = calc;
+	/* Add it before the one that is later than it.
+	 * cpp is pointing to the "next" field of the previous cell.
+	 */
+	calc->next = *cpp;
+	*cpp = calc;
     }
 
     print_list();
@@ -373,8 +365,6 @@ DEBUG("List is empty\r");
 	    calc_t *old_cp = list;
 	    old_cp = list;	/* Remember cell to free */
 	    list = list->next;
-	    /* New first cell , if any, has no previous one */
-	    if (list != NULL) list->prev = NULL;
 	    free(old_cp);
 	}
     }
@@ -400,9 +390,7 @@ DEBUG("List is empty after dropping before-screens\r");
 	 * I guess because of calls to drop_all_work() when the params change.
 	 */
 	if (cp->fft_freq != fft_freq || cp->window != window_function) {
-	    if (cp->next) cp->next->prev = cp->prev;
-	    if (cp->prev) cp->prev->next = cp->next;
-	    else list = cp->next;
+	    list = cp->next;
 	    free(cp);
 fprintf(stderr, "Avanti!\n");
 	    continue;
@@ -412,9 +400,7 @@ DEBUG("Picked %g/%g/%c from list\n", cp->t, cp->fft_freq,
       window_key(cp->window));
 
 	*cpp = cp->next;
-	if (cp->next) cp->next->prev = cp->prev;
-	if (cp->prev) cp->prev->next = cp->next;
-	cp->next = cp->prev = NULL; /* Not strictly necessary but */
+	cp->next = NULL; /* Not strictly necessary but */
 	jobs_in_flight++;
 	print_list();
 	unlock_list();
@@ -443,8 +429,6 @@ reschedule_for_bigger_secpp()
 	    calc_t *cp = *cpp;	/* Old cell to free */
 	    /* Rewrite "next" field of previous cell or the "list" pointer */
 	    *cpp = cp->next;
-	    /* and the "prev" field of the following cell, if there is one */
-	    if (cp->next) cp->next->prev = cp->prev;
 	    free(cp);
 	    /* and *cpp is already the next cell to examine */
 	} else {
