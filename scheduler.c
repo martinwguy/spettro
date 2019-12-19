@@ -255,7 +255,7 @@ schedule(calc_t *calc)
 
     lock_list();
 
-DEBUG("Scheduling %g/%d/%c... ", calc->t, calc->speclen,
+DEBUG("Scheduling %g/%g/%c... ", calc->t, calc->fft_freq,
       window_key(calc->window));
     if (list == NULL) {
 DEBUG("Adding to empty list:\n");
@@ -284,9 +284,9 @@ DEBUG("Adding at end of list\n");
 	*cpp = calc;
     } else /* If a duplicate in time, replace the existing one */
     if (DELTA_EQ((*cpp)->t, calc->t)) {
-DEBUG("Replacing existing item/%d/%c at %g with new/%d/%c\n",
-      (*cpp)->speclen, (*cpp)->t, window_key((*cpp)->window),
-      calc->speclen, window_key((*cpp)->window));
+DEBUG("Replacing existing item/%g/%c at %g with new/%g/%c\n",
+      (*cpp)->fft_freq, window_key((*cpp)->window), (*cpp)->t,
+      calc->fft_freq, window_key((*cpp)->window));
 	    calc_t *old = *cpp;
 	    calc->next = old->next;
 	    calc->prev = old->prev;
@@ -408,7 +408,7 @@ fprintf(stderr, "Avanti!\n");
 	    continue;
 	}
 
-DEBUG("Picked %g/%d/%c from list\n", cp->t, cp->speclen,
+DEBUG("Picked %g/%g/%c from list\n", cp->t, cp->fft_freq,
       window_key(cp->window));
 
 	*cpp = cp->next;
@@ -462,9 +462,9 @@ print_list()
 
 DEBUG("List:");
     for (cp = list; cp != NULL; cp=cp->next) {
-	DEBUG(" %g/%d", cp->t, cp->speclen);
+	DEBUG(" %g/%g", cp->t, cp->fft_freq);
 	if (cp->window != window_function)
-	    DEBUG("/%c", window_(cp->window));
+	    DEBUG("/%c", window_key(cp->window));
     }
 DEBUG("\n");
 }
