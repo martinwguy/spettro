@@ -15,7 +15,6 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
 /*
  * scheduler.c - Maintain a list of columns to be refreshed, probably
  * using the same number of FFT calculation threads as there are CPUs.
@@ -30,7 +29,7 @@
  *
  * The list can contain work that is no longer relevant, either because the
  * columns are no longer on-screen or because the calculation parameters
- * (speclen, window_function) have changed since it was scheduled.
+ * (fft_freq, window_function) have changed since it was scheduled.
  * We remove these while searching for new work in get_work().
  */
 
@@ -46,9 +45,6 @@
 #include "paint.h"
 #include "ui.h"
 
-/* How many threads are busy calculating an FFT for us? */
-int jobs_in_flight = 0;
-
 #if 0
 #define DEBUG(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -58,7 +54,6 @@ int jobs_in_flight = 0;
 #if SDL_MAIN
 #include <SDL.h>
 #endif
-
 
 #if ECORE_MAIN
 #include <unistd.h>		/* for usleep() */
@@ -74,10 +69,16 @@ int jobs_in_flight = 0;
 bool sdl_quit_threads = FALSE;	/* When true, calc threads should return */
 #endif
 
-static void print_list(void);
+static void print_list(calc_t *list);
 
 /* The list of moments to calculate */
 static calc_t *list = NULL;
+/* The list of moments that are currently being calculated */
+static calc_t *jobs = NULL;
+/* How many threads are busy calculating an FFT for us? */
+int jobs_in_flight = 0;
+
+static bool is_in_flight(calc_t *calc);
 
 /* Statics for scheduler */
 
@@ -247,6 +248,18 @@ schedule(calc_t *calc)
     int speclen = fft_freq_to_speclen(calc->fft_freq,
     				      calc->audio_file->sample_rate);
 
+    /* Is this column's calculation already being performed?
+     * This happens a lot, when several scrolls happen before the newly
+     * revealed columns' results have come back from the calc threads.
+     */
+    if (is_in_flight(calc)) {
+	//fprintf(stderr, "scheduler drops calculation already in flight for %g/%g/%c\n",
+		//calc->t, calc->fft_freq, window_key(calc->window));
+	free(calc);
+	return;
+    }
+
+    /* Do we already have a result for this calculation in the cache? */
     if (recall_result(calc->t, speclen, calc->window)) {
 	fprintf(stderr, "scheduler drops calculation already in cache for %g/%g/%c\n",
 		calc->t, calc->fft_freq, window_key(calc->window));
@@ -262,7 +275,7 @@ DEBUG("Scheduling %g/%g/%c... ", calc->t, calc->fft_freq,
 DEBUG("Adding to empty list:\n");
 	list = calc;
 	calc->next = NULL;
-	print_list();
+	print_list(list);
 	unlock_list();
 	return;
     }
@@ -286,10 +299,10 @@ DEBUG("Adding at end of list\n");
 DEBUG("Replacing existing item %g/%g/%c  with new %g/%g/%c\n",
       (*cpp)->t, (*cpp)->fft_freq, window_key((*cpp)->window),
       (*cpp)->t,   calc->fft_freq, window_key(  calc->window));
-	    calc_t *old = *cpp;
+	    calc_t *cp = *cpp;
 	    calc->next = (*cpp)->next;
 	    *cpp = calc;
-	    free(old);
+	    free(cp);
     } else {
 DEBUG("Adding before later item\n");
 	/* Add it before the one that is later than it.
@@ -299,8 +312,24 @@ DEBUG("Adding before later item\n");
 	*cpp = calc;
     }
 
-    print_list();
+    print_list(list);
     unlock_list();
+}
+
+/* Are the results for this calculation already being worked on by
+ * one of the calculation threads?
+ */
+static bool
+is_in_flight(calc_t *calc)
+{
+    calc_t *cp;
+
+    for (cp = jobs; cp != NULL; cp = cp->next) {
+	if (calc->t        == cp->t &&
+	    calc->fft_freq == cp->fft_freq &&
+	    calc->window   == cp->window) return TRUE;
+    }
+    return FALSE;
 }
 
 /*
@@ -334,16 +363,13 @@ there_is_work()
 
 /* The FFT threads ask here for the next FFT to perform
  *
- * Priority: 1. times corrisponding to columns visible in the display window:
- *		first those immediately ahead of the play position,
- *		in time order,
- *	     2. then, any missing columns left of the play position
- *		in front-to-back order.
+ * Give them the earliest one that is on-screen, so that the screen
+ * repaints from left to right.
  */
 calc_t *
 get_work()
 {
-    /* Again, we will need to remove the most interesting element from the list
+    /* We will need to remove the most interesting element from the list
      * so again we keep a pointer to the "next" field of the previous cell.
      */
     calc_t **cpp;
@@ -390,7 +416,9 @@ DEBUG("List is empty after dropping before-screens\r");
 	 * drop this calc and continue searching. This never happens,
 	 * I guess because of calls to drop_all_work() when the params change.
 	 */
-	if (cp->fft_freq != fft_freq || cp->window != window_function) {
+	if (DELTA_NE(cp->fft_freq, fft_freq) ||
+	    cp->window != window_function) {
+
 	    list = cp->next;
 	    free(cp);
 fprintf(stderr, "Avanti!\n");
@@ -400,10 +428,16 @@ fprintf(stderr, "Avanti!\n");
 DEBUG("Picked %g/%g/%c from list\n", cp->t, cp->fft_freq,
       window_key(cp->window));
 
+	/* Detach the job from the list of jobs-to-do */
 	*cpp = cp->next;
-	cp->next = NULL; /* Not strictly necessary but */
+
+	/* and add it to the list of jobs in flight */
+	DEBUG("Adding to "); print_list(jobs);
+	cp->next = jobs;
+	jobs = cp;
 	jobs_in_flight++;
-	print_list();
+
+	print_list(list);
 	unlock_list();
 	return cp;
     }
@@ -441,12 +475,13 @@ reschedule_for_bigger_secpp()
 }
 
 static void
-print_list()
+print_list(calc_t *l)
 {
     calc_t *cp;
 
-DEBUG("List:");
-    for (cp = list; cp != NULL; cp=cp->next) {
+DEBUG(l == list ? "List:" : "Jobs:");
+if (l == jobs) DEBUG(" [%d]", jobs_in_flight);
+    for (cp = l; cp != NULL; cp=cp->next) {
 	DEBUG(" %g/%g", cp->t, cp->fft_freq);
 	if (cp->window != window_function)
 	    DEBUG("/%c", window_key(cp->window));
@@ -465,9 +500,30 @@ calc_notify(result_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
 
-    result = remember_result(result);
+    lock_list();
+    /* Remove it from the list of jobs in flight */
+    {
+	calc_t **cpp;
+	DEBUG("Removing from "); print_list(jobs);
+	for (cpp = &jobs; *cpp != NULL; cpp = &((*cpp)->next)) {
+	    if ((*cpp)->t        == result->t &&
+		(*cpp)->fft_freq == result->fft_freq &&
+		(*cpp)->window   == result->window) {
+		calc_t *cp;
 
-    jobs_in_flight--;
+		cp = *cpp;
+		*cpp = cp->next;
+		jobs_in_flight--;
+		goto got_it;
+	    }
+	}
+	fprintf(stderr, "Result for %g/%g/%c is not among the jobs in flight\n",
+		result->t, result->fft_freq, window_key(result->window));
+    }
+got_it:
+    unlock_list();
+
+    result = remember_result(result);
 
     if (result->fft_freq != fft_freq || result->window != window_function) {
 	/* This is the result from an old call to schedule() before

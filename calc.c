@@ -82,8 +82,6 @@ calc(calc_t *calc)
     calc_result(get_result(calc, spec, speclen));
 
     destroy_spectrum(spec);
-
-    free(calc);
 }
 
 /* The function called by calculation threads to report a result */
