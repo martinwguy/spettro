@@ -250,6 +250,7 @@ schedule(calc_t *calc)
     if (recall_result(calc->t, speclen, calc->window)) {
 	fprintf(stderr, "scheduler drops calculation already in cache for %g/%g/%c\n",
 		calc->t, calc->fft_freq, window_key(calc->window));
+	free(calc);
 	return;
     }
 
