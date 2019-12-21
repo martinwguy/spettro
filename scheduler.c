@@ -78,7 +78,7 @@ static calc_t *jobs = NULL;
 /* How many threads are busy calculating an FFT for us? */
 int jobs_in_flight = 0;
 
-static bool is_in_flight(calc_t *calc);
+static bool is_in_list(calc_t *calc, calc_t *l);
 
 /* Statics for scheduler */
 
@@ -248,13 +248,14 @@ schedule(calc_t *calc)
     int speclen = fft_freq_to_speclen(calc->fft_freq,
     				      calc->audio_file->sample_rate);
 
-    /* Is this column's calculation already being performed?
+    /* Is this column's calculation already scheduled or already being performed?
      * This happens a lot, when several scrolls happen before the newly
      * revealed columns' results have come back from the calc threads.
+     * Being in flight is four times more common that being already scheduled,
+     * so check that first (its list is also shorter).
      */
-    if (is_in_flight(calc)) {
-	//fprintf(stderr, "scheduler drops calculation already in flight for %g/%g/%c\n",
-		//calc->t, calc->fft_freq, window_key(calc->window));
+
+    if (is_in_list(calc, jobs) || is_in_list(calc, list)) {
 	free(calc);
 	return;
     }
@@ -317,14 +318,14 @@ DEBUG("Adding before later item\n");
 }
 
 /* Are the results for this calculation already being worked on by
- * one of the calculation threads?
+ * one of the calculation threads or in the list of scheduled jobs?
  */
 static bool
-is_in_flight(calc_t *calc)
+is_in_list(calc_t *calc, calc_t *l)
 {
     calc_t *cp;
 
-    for (cp = jobs; cp != NULL; cp = cp->next) {
+    for (cp = l; cp != NULL; cp = cp->next) {
 	if (calc->t        == cp->t &&
 	    calc->fft_freq == cp->fft_freq &&
 	    calc->window   == cp->window) return TRUE;
@@ -528,7 +529,9 @@ got_it:
     if (result->fft_freq != fft_freq || result->window != window_function) {
 	/* This is the result from an old call to schedule() before
 	 * the parameters changed.
-	 * Keep it in the cache in case they flip back to old parameters
+	 * We don't need to reschedule it because a change in parameters
+	 * is always followed by a request to repaint everything.
+	 * We keep it in the cache in case they flip back to the old parameters.
 	 */
 	return;
     }

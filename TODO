@@ -25,9 +25,6 @@ line on the right edge.
 ------------------------------------------------------------------------
 Cancel scheduled calculations that are no longer in the area of interest
 ------------------------------------------------------------------------
-Keep track of which calculations are in-flight, to avoid duplicate calcs.
-Can we kill an in-flight FFT if it goes off-screen (and not in lookahead)?
-------------------------------------------------------------------------
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated.
 ------------------------------------------------------------------------
