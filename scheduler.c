@@ -408,10 +408,21 @@ DEBUG("List is empty after dropping before-screens\r");
      */
     cpp = &list;
     while (*cpp != NULL) {
-	/* We have the first column that's on-screen so remove this calc_t
-	 + from the list and hand it to the hungry calculation thread.
-	 */
 	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
+
+	/* If the work is not in the area of interest, drop it.
+	 * This can happen when scrolling left.
+	 */
+	if (DELTA_GT(cp->t, screen_column_to_start_time(max_x + LOOKAHEAD))) {
+	    fprintf(stderr, "Dropping work too far right\n");
+	    *cpp = cp->next;
+	    free(cp);
+	    continue;
+	}
+
+	/* We have the first column that's on-screen so remove this calc_t
+	 * from the list and hand it to the hungry calculation thread.
+	 */
 
 	/* If UI settings has changed since the work was scheduled,
 	 * drop this calc and continue searching. This never happens,
