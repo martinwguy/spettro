@@ -431,7 +431,7 @@ DEBUG("List is empty after dropping before-screens\r");
 	if (DELTA_NE(cp->fft_freq, fft_freq) ||
 	    cp->window != window_function) {
 
-	    list = cp->next;
+	    *cpp = cp->next;
 	    free(cp);
 fprintf(stderr, "Avanti!\n");
 	    continue;
