@@ -121,9 +121,9 @@ do_scroll()
 	    repaint_column(x, min_y, max_y, FALSE);
 	}
     } else {
-	/* Repaint the left edge */
+	/* Scrolling left: precalculate a normal left-scroll's width. */
 	int x;
-	for (x = min_x + scroll_by - 1; x >= min_x; x--) {
+	for (x = min_x + scroll_by - 1; x >= min_x - LOOKAHEAD; x--) {
 	    repaint_column(x, min_y, max_y, FALSE);
 	}
     }
@@ -161,7 +161,7 @@ repaint_display(bool refresh_only)
 {
     /* repaint_display is what paremeter-changing functions call to
      * repaint with the new parameters, so also recalculate the lookahead */
-    repaint_columns(min_x, max_x + LOOKAHEAD, min_y, max_y, refresh_only);
+    repaint_columns(min_x - LOOKAHEAD, max_x + LOOKAHEAD, min_y, max_y, refresh_only);
 
     gui_update_display();
 }
@@ -179,6 +179,11 @@ repaint_columns(int from_x, int to_x, int from_y, int to_y, bool refresh_only)
 	repaint_column(x, min_y, max_y, refresh_only);
     }
 
+    /* Limit GUI update to on-screen stuff, as we are also called to
+     * precalculate off-screen columns.
+     */
+    if (from_x < min_x) from_x = min_x;
+    if (to_x > max_x) to_x = max_x;
     gui_update_rect(from_x, from_y, to_x, to_y);
 }
 
@@ -208,9 +213,8 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
     audio_file_t *af;	/* Audio file for this column */
     int speclen;
 
-    if (pos_x < min_x || pos_x > max_x + LOOKAHEAD) {
+    if (pos_x < min_x - LOOKAHEAD || pos_x > max_x + LOOKAHEAD) {
 	fprintf(stderr, "Repainting off-screen column %d\n", pos_x);
-	abort();
 	return;
     }
 
@@ -220,7 +224,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
     /* If the column is before/after the start/end of the piece,
      * give it the background colour */
     if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_files_length())) {
-	if (!refresh_only)
+	if (!refresh_only && pos_x >= min_x && pos_x <= max_x)
 	    gui_paint_column(pos_x, min_y, max_y, background);
 	return;
     }
@@ -232,12 +236,9 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
     }
     speclen = fft_freq_to_speclen(fft_freq, af->sample_rate);
 
-
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
-	if (get_col_overlay(pos_x, NULL)) {
-	return;
-	}
+	if (get_col_overlay(pos_x, NULL)) return;
 
 	/* If there's any result for this column in the cache, it should be
 	 * displaying something, but it might be for the wrong speclen/window.
@@ -267,9 +268,10 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 	    paint_column(pos_x, from_y, to_y, r);
 	} else {
 	    /* ...otherwise paint it with the background color */
-	    gui_paint_column(pos_x, from_y, to_y, background);
+	    if (pos_x >= min_x && pos_x <= max_x)
+		gui_paint_column(pos_x, from_y, to_y, background);
 
-	    /* and if it was for a valid time, schedule its calculation */
+	    /* ...and if it was for a valid time, schedule its calculation */
 	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_files_length())) {
 		calc_column(pos_x);
 	    }
@@ -292,8 +294,10 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     color_t ov;		/* Overlay color */
     int speclen;
 
-    /* Can happen when results for lookahead calculations arrive */
-    if (pos_x > max_x) return;
+    /* Only paint on-screen columns. Off-screen columns Can happen
+     * when results for lookahead calculations arrive.
+     */
+    if (pos_x < min_x || pos_x > max_x) return;
 
     /* Apply column overlay */
     if (get_col_overlay(pos_x, &ov)) {

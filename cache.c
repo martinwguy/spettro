@@ -59,10 +59,6 @@ remember_result(result_t *result)
 
     /* Now find where to add the result to the time-ordered list */
     if (results == NULL) {
-	if (last_result != NULL) {
-	    fprintf(stderr, "result is null but last_results isn't at time %g\n",
-		    last_result->t);
-	}
         result->next = NULL;
 	results = last_result = result;
     } else {

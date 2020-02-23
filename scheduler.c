@@ -281,6 +281,9 @@ DEBUG("Adding to empty list:\n");
 	return;
     }
 
+    /* To keep the list in time order, skip over all pending calculations
+     * that are earlier than the new one.
+     */
     for (cpp = &list;
 	 *cpp != NULL && DELTA_LT((*cpp)->t, calc->t);
 	 cpp = &((*cpp)->next))
@@ -367,6 +370,8 @@ there_is_work()
  * Give them the earliest one that is on-screen, so that the screen
  * repaints from left to right.
  */
+static void put_work_in_flight(calc_t **cpp);
+
 calc_t *
 get_work()
 {
@@ -385,9 +390,12 @@ DEBUG("List is empty\r");
 	return NULL;
     }
 
-    /* First, drop any list items that are off the left side of the screen */
+    /* First, drop any list items that are off the left side of the screen,
+     * but keep the same amount of lookahead off the left side of the screen
+     * so that the region exposed by scrolling left with <- is precalculated.
+     */
     {
-	double earliest = screen_column_to_start_time(min_x);
+	double earliest = screen_column_to_start_time(min_x - LOOKAHEAD);
 
 	while (list != NULL && DELTA_LT(list->t, earliest)) {
 	    calc_t *old_cp = list;
@@ -403,28 +411,23 @@ DEBUG("List is empty after dropping before-screens\r");
 	return NULL;
     }
 
-    /* Refresh the screen left-to-right. This tends to make it decode
-     * compressed audio files in time order.
-     */
+    /* Refresh the screen left-to-right, then the off-screen lookahead */
     cpp = &list;
     while (*cpp != NULL) {
-	calc_t *cp = (*cpp);	/* Proto return value, the cell we detach */
+	calc_t *cp = *cpp;	/* Proto return value, the cell we detach */
 
 	/* If the work is not in the area of interest, drop it.
-	 * This can happen when scrolling left.
+	 * The first condition happens due to look-behind,
+	 * the second when scrolling left.
 	 */
-	if (DELTA_GT(cp->t, screen_column_to_start_time(max_x + LOOKAHEAD))) {
-	    fprintf(stderr, "Dropping work too far right\n");
+	if (DELTA_LT(cp->t, screen_column_to_start_time(min_x - LOOKAHEAD)) ||
+	    DELTA_GT(cp->t, screen_column_to_start_time(max_x + LOOKAHEAD))) {
 	    *cpp = cp->next;
 	    free(cp);
 	    continue;
 	}
 
-	/* We have the first column that's on-screen so remove this calc_t
-	 * from the list and hand it to the hungry calculation thread.
-	 */
-
-	/* If UI settings has changed since the work was scheduled,
+	/* If UI settings changed since the work was scheduled,
 	 * drop this calc and continue searching. This never happens,
 	 * I guess because of calls to drop_all_work() when the params change.
 	 */
@@ -437,19 +440,30 @@ fprintf(stderr, "Avanti!\n");
 	    continue;
 	}
 
-DEBUG("Picked %g/%g/%c from list\n", cp->t, cp->fft_freq,
-      window_key(cp->window));
+	put_work_in_flight(cpp);
+	unlock_list();
+	return cp;
+    }
 
-	/* Detach the job from the list of jobs-to-do */
-	*cpp = cp->next;
+    /* Then the pre-screen look-behind. */
+    cpp = &list;
+    while (*cpp != NULL &&
+    	   DELTA_LT((*cpp)->t, screen_column_to_start_time(min_x))) {
+	calc_t *cp = *cpp;	/* Proto return value, the cell we detach */
 
-	/* and add it to the list of jobs in flight */
-	DEBUG("Adding to "); print_list(jobs);
-	cp->next = jobs;
-	jobs = cp;
-	jobs_in_flight++;
+	/* If UI settings changed since the work was scheduled,
+	 * drop this calc and continue searching.
+	 */
+	if (DELTA_NE(cp->fft_freq, fft_freq) ||
+	    cp->window != window_function) {
 
-	print_list(list);
+	    *cpp = cp->next;
+	    free(cp);
+fprintf(stderr, "Avanti!\n");
+	    continue;
+	}
+
+	put_work_in_flight(cpp);
 	unlock_list();
 	return cp;
     }
@@ -458,6 +472,29 @@ DEBUG("List is empty after all\r");
 
     unlock_list();
     return NULL;
+}
+
+/* Convenience function to avoid repetition:
+ * Remove this job from the to-do list, put it on the in-flight list
+ */
+static void
+put_work_in_flight(calc_t **cpp)
+{
+    calc_t *cp = *cpp;
+
+DEBUG("Picked %g/%g/%c from list\n", cp->t, cp->fft_freq,
+      window_key(cp->window));
+
+    /* Detach the job from the list of jobs-to-do */
+    *cpp = cp->next;
+
+    /* and add it to the list of jobs in flight */
+    DEBUG("Adding to "); print_list(jobs);
+    cp->next = jobs;
+    jobs = cp;
+    jobs_in_flight++;
+
+    print_list(list);
 }
 
 /* When they zoom out on the frequency axis, we need to remove all the
