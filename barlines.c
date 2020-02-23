@@ -200,7 +200,7 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 bool
 get_col_overlay(int x, color_t *colorp)
 {
-    bool is_overlayed = FALSE;
+    bool is_overlaid = FALSE;
     color_t color;
 
     /* Bar lines take priority over the green line so that they don't
@@ -208,21 +208,21 @@ get_col_overlay(int x, color_t *colorp)
      * see when you have placed a bar line at the current playing position
      * when it's paused. */
     if (is_bar_line(x)) {
-	color = white; is_overlayed = TRUE; 
+	color = white; is_overlaid = TRUE; 
     } else
     if (x == disp_offset && !green_line_off) {
 	/* If you want a pixel-wide green line, use here
-	 * color = green; is_overlayed = TRUE;
+	 * color = green; is_overlaid = TRUE;
 	 *
-	 * Instead, we say it's not overlayed so that we can OR the green line
+	 * Instead, we say it's not overlaid so that we can OR the green line
 	 * into it when it's painted (unless it's covered by a bar line,
 	 * of course, which was handled above.) */
-	is_overlayed = FALSE;
+	is_overlaid = FALSE;
     }
 
-    if (is_overlayed && colorp != NULL) *colorp = color;
+    if (is_overlaid && colorp != NULL) *colorp = color;
 
-    return is_overlayed;
+    return is_overlaid;
 }
 
 /* Does screen column x coincide with the position of a bar or beat line?
@@ -284,7 +284,7 @@ is_bar_line(int pos_x)
 
     /* Left_bar_ticks can be negative if they mouse drag the bar line
      * into the gray area before the graphic. Make the "% bar_width" checks
-     * below work anyway - it's not used for amything else.
+     * below work anyway - it's not used for anything else.
      */
     if (left_bar_ticks < 0)
 	left_bar_ticks += (disp_width / bar_width) * bar_width;

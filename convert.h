@@ -20,7 +20,7 @@
 #define A4_FREQUENCY	440
 
 /*
- * Vertical position (frequency domain) convertion functions
+ * Vertical position (frequency domain) conversion functions
  */
 extern double v_pixel_freq_ratio(void);
 extern double magindex_to_frequency(int k);
@@ -30,7 +30,7 @@ extern double note_name_to_freq(const char *note);
 extern double note_number_to_freq(const int note);
 
 /*
- * Horizontal position (time domain) convertion functions
+ * Horizontal position (time domain) conversion functions
  */
 extern int time_to_piece_column(double t);
 extern int time_to_screen_column(double t);

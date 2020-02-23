@@ -69,7 +69,7 @@
  * The bar line should appear when you press the button
  * and if you move it while holding the button, the bar line should move too,
  * being positioned definitively when you release the mouse button.
- * THe other bar lines on each side should expand and collapse to match
+ * The other bar lines on each side should expand and collapse to match
  * If they release Ctrl before MouseUp, no change should be made.
  *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
@@ -153,8 +153,8 @@ main(int argc, char **argv)
 	}
     }
 
-    /* Initialise the graphics subsystem. */
-    /* Note: SDL2 in fullcreen mode may change disp_height and disp_width */
+    /* Initialize the graphics subsystem. */
+    /* Note: SDL2 in fullscreen mode may change disp_height and disp_width */
     gui_init(filename);
 
     /* Must happen after colors (green,white) are defined */

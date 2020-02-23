@@ -152,7 +152,7 @@ draw_note_names()
 	     * The half pixel slop ensures that the top and bottom pixel rows
 	     * receive a tick if the vertical pixel position of that label
 	     * would round to the pixel row in question. Otherwise half the
-	     * time at random the top or bottom pixel rows are not labelled.
+	     * time at random the top or bottom pixel rows are not labeled.
 	     */
 	    if (DELTA_GE(freq, min_freq / half_a_pixel) &&
 	        DELTA_LE(freq, max_freq * half_a_pixel)) {
@@ -169,7 +169,7 @@ draw_note_names()
 
 /* Decide where to put ticks and numbers on an axis.
  *
- * Graph-labelling convention is that the least significant digit that changes
+ * Graph-labeling convention is that the least significant digit that changes
  * from one label to the next should change by 1, 2 or 5, so we step by the
  * largest suitable value of 10^n * {1, 2 or 5} that gives us the required
  * number of divisions / numeric labels.
@@ -179,7 +179,7 @@ draw_note_names()
  * What we now mean by "division" is one of the gaps between numbered segments
  * so we ask for a minimum of 3 to give the same effect as the old minimum of
  * 6 half-divisions.
- * This results in the same axis labelling for all maximum values
+ * This results in the same axis labeling for all maximum values
  * from 0 to 12000 in steps of 1000 and gives sensible results from 13000 on,
  * to a maximum of 7 divisions and 8 labels from 0 to 14000.
  */
@@ -228,7 +228,7 @@ calculate_ticks(double min, double max, double distance, int log_scale)
 
     /* Choose a step between successive axis labels so that one digit
      * changes by 1, 2 or 5 amd that gives us at least the number of
-     * divisions (and numberic labels) that we would like to have.
+     * divisions (and numeric labels) that we would like to have.
      *
      * We do this by starting "stride" at the lowest power of ten <= max,
      * which can give us at most 9 divisions (e.g. from 0 to 9999, step 1000)
@@ -295,7 +295,7 @@ calculate_ticks(double min, double max, double distance, int log_scale)
  *
  * This works fine for wide ranges, not so well for narrow ranges like
  * 5000-6000, so for ranges less than a decade we apply the above
- * linear numbering style 0.2 0.4 0.6 0.8 or whatever, but calulating
+ * linear numbering style 0.2 0.4 0.6 0.8 or whatever, but calculating
  * the positions of the legends logarithmically.
  *
  * Alternatives could be:

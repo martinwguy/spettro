@@ -25,7 +25,7 @@
 #include "ui.h"
 
 /*
- * Vertical position (frequency domain) convertion functions
+ * Vertical position (frequency domain) conversion functions
  *
  * The bottom pixel row (min_y) should be centered on the minimum frequency,
  * min_freq, and the top pixel row (max_y) on the maximum frequency, max_freq.
@@ -97,7 +97,7 @@ note_number_to_freq(const int n)
 }
 
 /*
- * Horizontal position (time domain) convertion functions
+ * Horizontal position (time domain) conversion functions
  *
  * We divide time into steps, one for each pixel column, starting from the
  * start of the piece of audio, with column 0 of the piece representing

@@ -159,7 +159,7 @@ do_scroll()
 void
 repaint_display(bool refresh_only)
 {
-    /* repaint_display is what paremeter-changing functions call to
+    /* repaint_display is what parameter-changing functions call to
      * repaint with the new parameters, so also recalculate the lookahead */
     repaint_columns(min_x - LOOKAHEAD, max_x + LOOKAHEAD, min_y, max_y, refresh_only);
 
@@ -319,7 +319,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     if (col_logmax > logmax) logmax = col_logmax;
 
     /* For now, we just normalize each column to the maximum seen so far.
-     * Really we need to add max_db and have brightness/contast control.
+     * Really we need to add max_db and have brightness/contrast control.
      */
     gui_lock();		/* Allow pixel-writing access */
     for (y=from_y; y <= to_y; y++) {

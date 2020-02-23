@@ -16,7 +16,7 @@
  */
 
 /*
- * config.h - Select toolkit compenents to use.
+ * config.h - Select toolkit components to use.
  */
 
 #ifndef CONFIG_H

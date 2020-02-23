@@ -267,7 +267,7 @@ col_to_af_and_offset(int col, audio_file_t **audio_file_p, double *offset_p)
     				 audio_file_p, offset_p);
 }
 
-/* What is the sample rate of the audio file at the current playing postion? */
+/* What is the sample rate of the audio file at the current playing position? */
 double
 current_sample_rate()
 {
@@ -408,7 +408,7 @@ read_audio_file(audio_file_t *af, char *data,
     }
 
 #if USE_LIBSOX
-    sox_frame = start;	/* Next audio should be truened from this offset */
+    sox_frame = start;	/* Next audio should be returned from this offset */
 
     /* sox reads a number of samples, not frames */
     samples_to_read = frames_to_read * af->channels;

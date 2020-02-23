@@ -499,14 +499,14 @@ static void
 k_softvol_down(key_t key)
 {
     softvol *= 0.9;
-    fprintf(stderr, "Soltvol = %g\n", softvol);
+    fprintf(stderr, "Softvol = %g\n", softvol);
 }
 
 static void
 k_softvol_up(key_t key)
 {
     softvol /= 0.9;
-    fprintf(stderr, "Soltvol = %g\n", softvol);
+    fprintf(stderr, "Softvol = %g\n", softvol);
 }
 
 /* Beats per bar */
@@ -531,7 +531,7 @@ k_beats_per_bar(key_t key)
 		case KEY_F11:	set_beats_per_bar(11);	break;
 		case KEY_F12:	set_beats_per_bar(12);	break;
     default:
-	fprintf(stderr, "Internal error: Impossile beats-per-bar key %d\n", key);
+	fprintf(stderr, "Internal error: Impossible beats-per-bar key %d\n", key);
 	return;
     }
 }

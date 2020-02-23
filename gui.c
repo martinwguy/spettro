@@ -92,7 +92,7 @@ static void ecore_quitGUI(Ecore_Evas *ee EINA_UNUSED);
 #endif
 
 /*
- * Initialise the GUI subsystem.
+ * Initialize the GUI subsystem.
  *
  * "filename" is the name of the audio file, used for window title
  */
@@ -108,7 +108,7 @@ gui_init(char *filename)
     else last_filename = filename;
 
     /*
-     * Initialise the various subsystems
+     * Initialize the various subsystems
      */
 #if SDL_MAIN
     /* Without this, you get:
@@ -468,7 +468,7 @@ gui_main()
 static int
 get_next_SDL_event(SDL_Event *eventp)
 {
-    /* Prioritise UI events over window refreshes, results and such */
+    /* Prioritize UI events over window refreshes, results and such */
     /* First, see if there are any UI events to be had */
     SDL_PumpEvents();
 #if SDL1
@@ -503,7 +503,7 @@ get_next_SDL_event(SDL_Event *eventp)
 }
 #endif
 
-/* Stop everything befre we exit */
+/* Stop everything before we exit */
 void
 gui_quit()
 {
@@ -659,7 +659,7 @@ gui_v_scroll_by(int scroll_by)
 	    from.x = min_x; to.x = min_x;
 	    from.w = max_x - min_x + 1;
 
-	    /* Invert coords bcos SDL is 0-to-top */
+	    /* Invert coords because SDL is 0-to-top */
 	    from.y = (disp_height - 1) - max_y;
 	    to.y   = (disp_height - 1) - (max_y - scroll_by);
 	    from.h = (max_y - min_y + 1) - scroll_by;

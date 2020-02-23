@@ -22,7 +22,7 @@
  * The main code calls start_scheduler() initially, then calls schedule()
  * to ask for a FFT to be done,
  * The FFT threads call get_work() repeatedly, perform the FFT and send an
- * event to * tha main loop, and that calls calc_notify() with the new result,
+ * event to the main loop, and that calls calc_notify() with the new result
  * and refreshes some column of the display.
  *
  * The list of pending columns to refresh is kept in time order.
@@ -603,7 +603,7 @@ got_it:
 	return;
     }
 
-    /* To avoid an embarassing pause at the start of the graphics, we wait
+    /* To avoid an embarrassing pause at the start of the graphics, we wait
      * until the FFT delivers its first result before starting the player.
      */
     if (autoplay) {

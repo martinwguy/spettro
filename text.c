@@ -89,9 +89,15 @@ text_width(const char *text)
     
 /*
  * Draw the given text at the given coordinates.
- * Alignment TOP put the top pixel of the text at that y coordinat
- * Alignment LEFT puts the leftmost pixel of the text at that x coordinat
- * CENTER centers the text on that coordinate value.
+ *
+ * alignment_y can be
+ *	TOP to puts the top pixel of the text at that y coordinate
+ *	CENTER to put the middle pixel of the text at that y coordinate
+ *	BOTTOM to put the bottom pixel of the text at that y coordinate
+ * alignment_x can be
+ *	LEFT to put the leftmost pixel of the text at that x coordinate
+ *	RIGHT to put the rightmost pixel of the text at that x coordinate
+ *	CENTER to centers the text on that coordinate value.
  *
  * gui_lock() and gui_unlock() must be placed around calls to this.
  */

@@ -395,7 +395,7 @@ fail:
 /* Seek to sample frame "start".
  *
  * For uncompressed audio, it seeks to the right sample.
- * For most compresed formats, it seeks to the start of the chunk that contains
+ * For most compressed formats, it seeks to the start of the chunk that contains
  * the sample frame, leaving "frames_to_skip" as the number of samples frames
  * to skip when reading, to get the the right sample.
  *

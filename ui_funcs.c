@@ -20,7 +20,7 @@
  *
  * It's up to the caller to call repaint_display() to show any changes
  * except for time pans, which are always updated when the timer ticks and
- * frequency pans, which know more about what to redwar than the caller.
+ * frequency pans, which know more about what to redraw than the caller.
  */
 
 #include "spettro.h"

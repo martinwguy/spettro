@@ -117,8 +117,8 @@ l/r        Set the left/right bar markers for an overlay of bar lines\n\
 t          Show the current playing time on stdout\n\
 o          Output (save) the current screenful into a PNG file\n\
 p          Show the playing time and settings on stdout\n\
-Crtl L     Redraw the display from cached FFT results\n\
-Crtl R     Redraw the display by recalculating from the audio data\n\
+Ctrl L     Redraw the display from cached FFT results\n\
+Ctrl R     Redraw the display by recalculating from the audio data\n\
 Ctrl F     Flip full-screen mode\n\
 q/Ctrl C/Esc   Quit\n");
     printf("\
@@ -416,7 +416,7 @@ another_letter:
 	}
     }
 
-    /* Don't call set_*_bar_time becaue that would trigger repaints before
+    /* Don't call set_*_bar_time because that would trigger repaints before
      * the graphics system is up */
     if (bar_left_time != UNDEFINED) {
 	left_bar_time = bar_left_time;
