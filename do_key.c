@@ -395,15 +395,16 @@ k_print_params(key_t key)
 "min_freq=%g max_freq=%g dyn_range=%g logmax=%.3g fft_freq=%g window=%s\n",
 min_freq,   max_freq,    dyn_range,   logmax,     fft_freq,   window_name(window_function));
 
-    printf(
-"%s %.3f disp_time=%.3f ppsec=%.3f Showing %.3f to %.3f audio_length=%.3f\n",
+    printf("disp_time=%.3f ppsec=%.3f audio_length=%.3f\n",
+	disp_time, ppsec, audio_files_length());
+
+    printf("%s %.3f Showing %.3f to %.3f\n",
 	playing == PLAYING ? "Playing" :
 	playing == STOPPED ? "Stopped at" :
 	playing == PAUSED  ? "Paused at" : "Doing what? at",
-	get_playing_time(), disp_time, ppsec,
+	get_playing_time(),
 	screen_column_to_start_time(min_x),
-	screen_column_to_start_time(max_x + 1),
-	audio_files_length());
+	screen_column_to_start_time(max_x + 1));
 
     if (left_bar_time != UNDEFINED)
 	printf("left bar=%.3f", left_bar_time);
