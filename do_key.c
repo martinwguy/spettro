@@ -77,7 +77,7 @@ restart:
 	break;
 
     case PAUSED:
-	if (DELTA_GE(get_playing_time(), audio_files_length())) {
+	if (DELTA_GE(get_playing_time(), audio_file_length())) {
 	    /* They went "End" while it was paused. Restart from 0 */
 	    goto restart;
 	}
@@ -130,7 +130,7 @@ k_home(key_t key)
 static void
 k_end(key_t key)
 {
-    set_playing_time(audio_files_length());
+    set_playing_time(audio_file_length());
 }
 
 #if ECORE_MAIN
@@ -396,7 +396,7 @@ k_print_params(key_t key)
 min_freq,   max_freq,    dyn_range,   logmax,     fft_freq,   window_name(window_function));
 
     printf("disp_time=%.3f ppsec=%.3f audio_length=%.3f\n",
-	disp_time, ppsec, audio_files_length());
+	disp_time, ppsec, audio_file_length());
 
     printf("%s %.3f Showing %.3f to %.3f\n",
 	playing == PLAYING ? "Playing" :

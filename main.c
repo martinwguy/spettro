@@ -104,12 +104,9 @@ int
 main(int argc, char **argv)
 {
     char *filename;
-    audio_file_t *af;
+    audio_file_t *af = NULL;
 
     process_args(&argc, &argv);
-
-    /* Set default values for unset parameters */
-    filename = (argc > 0) ? argv[0] : "audio.wav";
 
     /* Set variables with derived values */
     disp_offset = disp_width / 2;
@@ -124,64 +121,76 @@ main(int argc, char **argv)
 	max_y -= top_margin;
     }
 
-    /* Open the audio file to find out sampling rate, length and to be able
-     * to fetch pixel data to be converted into spectra.
-     * Emotion seems not to let us get the raw sample data or sampling rate
-     * and doesn't know the file length until the "open_done" event arrives
-     * so we use libsndfile, libaudiofile or libsox for that.
-     */
-    if ((af = open_audio_file(filename)) == NULL) {
-    	gui_quit();
-	exit(1);
-    }
+    /* Process each filename argument */
+    for (filename = argv[0]; argc > 0; argc--, argv++) {
+	if ((af = open_audio_file(filename)) == NULL) {
+	    gui_quit();
+	    exit(1);
+	}
 
-    /* If they set disp_time with -s or --start, check that it's
-     * within the audio and make it coincide with the start of a column.
-     */
-    {
-	double audio_length = audio_files_length();
-
-	if (disp_time > audio_length) {
+	/* If they set disp_time with -t or --start, check that it's
+	 * within the audio and make it coincide with the start of a column.
+	 */
+	if (disp_time > audio_file_length()) {
 	    fprintf(stderr,
-		    "Warning: Starting time is beyond the end of the audio.\n");
-	    disp_time = audio_length;
+		    "Starting time (%g) is beyond the end of the audio (%g).\n",
+		    disp_time, audio_file_length());
+	    disp_time = audio_file_length();
 	    /* Round down to the left edge of the last column. */
 	    disp_time = trunc(disp_time / secpp) * secpp;
 	} else {
 	    /* Round it to nearest edge of a column */
 	    disp_time = lrint(disp_time / secpp) * secpp;
 	}
-    }
 
-    /* Initialize the graphics subsystem. */
-    /* Note: SDL2 in fullscreen mode may change disp_height and disp_width */
-    gui_init(filename);
+	/* Initialize the graphics subsystem. */
+	/* SDL2 in fullscreen mode may change disp_height and disp_width */
+	{
+	    /* Only do these once */
+	    static bool initted = FALSE;
 
-    /* Must happen after colors (green,white) are defined */
-    make_row_overlay();	
+	    if (!initted) {
+		gui_init(filename);
+		make_row_overlay();	
+		init_audio(af, filename);
+		initted = TRUE;
+	    }
+	}
 
-    init_audio(af, filename);
+	/* Apply the -p flag */
+	if (disp_time != 0.0) set_playing_time(disp_time);
 
-    /* Apply the -p flag */
-    if (disp_time != 0.0) set_playing_time(disp_time);
+	start_scheduler(max_threads);
 
-    start_scheduler(max_threads);
+	draw_axes();
 
-    draw_axes();
+	repaint_display(FALSE); /* Schedules the initial screen refresh */
 
-    repaint_display(FALSE); /* Schedules the initial screen refresh */
+	start_timer();
+	gui_main();
 
-    start_timer();
-    gui_main();
+	if (output_file) {
+	    while (there_is_work()) { abort(); sleep(1); }
+	    while (jobs_in_flight > 0) { abort(); usleep(100000); }
+	    green_line_off = TRUE;
+	    repaint_column(disp_offset, min_y, max_y, FALSE);
+	    gui_update_column(disp_offset);
+	    gui_output_png_file(output_file);
+	    green_line_off = FALSE;
 
-    if (output_file) {
-	while (there_is_work()) {abort(); sleep(1); }
-	while (jobs_in_flight > 0) {abort(); usleep(100000); }
-	green_line_off = TRUE;
-	repaint_column(disp_offset, min_y, max_y, FALSE);
-	gui_update_column(disp_offset);
-	gui_output_png_file(output_file);
-	green_line_off = FALSE;
+	    /* We only have one output file, so only process one filename */
+	    if (argc > 1) fprintf(stderr, "Only outputting the first file\n");
+	    break;
+	}
+
+	/* If there are more files, clear all caches */
+	if (argc > 1) {
+	    stop_timer();
+	    stop_scheduler();
+	    drop_all_work();
+	    drop_all_results();
+	    no_audio_cache(af);
+	}
     }
 
     gui_quit();

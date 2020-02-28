@@ -63,7 +63,7 @@ calc(calc_t *calc)
 {
     spectrum *spec;
     int speclen	= fft_freq_to_speclen(calc->fft_freq,
-    				      calc->audio_file->sample_rate);
+    				      current_sample_rate());
 
     /* If parameters have changed since the work was queued, don't bother.
      * This should never happen because we clear the work queue when we
@@ -123,7 +123,6 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 	result->fft_freq = calc->fft_freq;
 	result->speclen = speclen;
 	result->window = calc->window;
-	result->audio_file = calc->audio_file;
 #if ECORE_MAIN
 	result->thread = calc->thread;
 #endif
@@ -134,9 +133,9 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 	    fprintf(stderr, "Cannot lock audio file\n");
 	    exit(1);
 	}
-	read_cached_audio(calc->audio_file, (char *) spec->time_domain,
+	read_cached_audio((char *) spec->time_domain,
 			  af_double, 1,
-			  lrint(calc->t * calc->audio_file->sample_rate) - fftsize/2,
+			  lrint(calc->t * current_sample_rate()) - fftsize/2,
 			  fftsize);
 	if (!unlock_audio_file()) {
 	    fprintf(stderr, "Cannot unlock audio file\n");

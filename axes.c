@@ -457,14 +457,14 @@ draw_time_axis(void)
     }
 
     /* To */
-    if (DELTA_LE(max_time, audio_files_length())) {
+    if (DELTA_LE(max_time, audio_file_length())) {
 	draw_text(seconds_to_string(max_time), max_x, 1, RIGHT, BOTTOM);
     } else {
     	/* Draw max_time wherever it is on-screen.
 	 * We mark the start time of each column we label,
 	 * so truncate end time to the stride.
 	 */
-	double column_start_time = trunc(audio_files_length() / secpp) * secpp;
+	double column_start_time = trunc(audio_file_length() / secpp) * secpp;
 	int x = time_to_screen_column(column_start_time);
 	char *s = seconds_to_string(column_start_time);
 

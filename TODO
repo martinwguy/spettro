@@ -1,7 +1,4 @@
 ------------------------------------------------------------------------
-- Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
-- Also mention |<< and >>| media keys in the manual.
-------------------------------------------------------------------------
 Be able to position the green line, disp_offset,
 and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
 ------------------------------------------------------------------------
@@ -221,10 +218,17 @@ for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a backgrounde
 window with a garbled version of part of the desktop
 ------------------------------------------------------------------------
-Play multiple files by starting the next half a screenful ahead of
-the end of the last. CLear all caches and don''t worry about the tail end
-corrupting if they do things that require a column redraw.
-------------------------------------------------------------------------
 Rework frequency axis numbering code to include more labels, according to
 to the available space.
+------------------------------------------------------------------------
+When a mouse move event arrives, see if there are more mouse move events
+queued and act only on the last one, to avoid too many screen redraws,
+one for each pixel that the mouse moves.
+------------------------------------------------------------------------
+Multiple file playing:
+- on 'q', quit, don't advance
+- on space at end of audio, go to next file (which may quit)
+  instead of replaying
+- Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
+- Also mention |<< and >>| media keys in the manual.
 ------------------------------------------------------------------------

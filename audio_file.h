@@ -56,11 +56,9 @@ typedef struct audio_file {
 	double sample_rate;
 	unsigned long frames;	/* The file has (frames*channels) samples */
 	unsigned channels;
-	int cache;		/* File descriptor open to the cache file. -1 = none */
 	short *audio_buf;	/* The required audio data as 16-bit signed,
     				 * with same number of channels as audio file */
 	int audio_buflen;	/* Memory allocated to audio_buf[] in samples */
-	struct audio_file *next;/* For the linked list of the files we have opened so far */
 } audio_file_t;
 
 typedef enum {
@@ -68,10 +66,12 @@ typedef enum {
 	af_signed,  /* 16-bit native endian, same number of channels as the input file */
 } af_format_t;
 
+extern audio_file_t *current_audio_file(void);
+
 /* Return a handle for the audio file, NULL on failure */
 extern audio_file_t *open_audio_file(char *filename);
 
-extern int read_audio_file(audio_file_t *audio_file, char *data,
+extern int read_audio_file(char *data,
 			   af_format_t format, int channels,
 			   int start,	/* In frames offset from 0.0 */
 			   int nframes);
@@ -81,15 +81,12 @@ extern void close_audio_file(audio_file_t *audio_file);
 /* Utility functions */
 
 /* The length of an audio file in seconds */
-extern double audio_file_length(audio_file_t *audio_file);
-
-/* The length of all the audio files joined together */
-extern double audio_files_length(void);
+extern double audio_file_length(void);
 
 /* Convert a playing time to the audio file and offset into that file in secs */
-extern bool time_to_af_and_offset(double t, audio_file_t **audio_file_p, double *offset_p);
+extern bool time_to_offset(double t, double *offset_p);
 /* The same for a screen column */
-extern bool col_to_af_and_offset(int col, audio_file_t **audio_file_p, double *offset_p);
+extern bool col_to_offset(int col, double *offset_p);
 /* What's the sample rate of the audio file at the current playing position? */
 extern double current_sample_rate(void);
 

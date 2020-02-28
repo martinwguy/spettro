@@ -116,3 +116,5 @@ rezound: In the graphoc, +32767 and a few values below it occupy
 	the top row of pixels, as they should, but -32767 and a few values
 	above it are one pixel off the bottom of the display.
 ------------------------------------------------------------------------
+It doesn't play/display the second file, giving all-background
+------------------------------------------------------------------------

@@ -244,7 +244,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	fprintf(stderr, "Cannot lock audio file\n");
 	exit(1);
     }
-    frames_read = read_cached_audio(af, (char *)stream,
+    frames_read = read_cached_audio((char *)stream,
 				    af_signed, channels,
 				    sdl_start, frames_to_read);
     if (!unlock_audio_file()) {

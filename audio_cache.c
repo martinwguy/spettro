@@ -32,7 +32,7 @@
  * Each open audio_file_t keeps a file descriptor, "cache", open to its
  * temporary file and delete it so no cleanup is necessary on exit
  * (on Unix and Unix-alikes!).
- * If af->cache < 0 that means that no cache is in operation, which is used
+ * If (cache < 0) that means that no cache is in operation, which is used
  * for uncompressed audio files.
  */
 
@@ -56,14 +56,19 @@ static void fill_hole(
 	long hole_size,		/* How many samples to fill in */
 	long start);		/* Frame offset in audio file to read from */
 
+/*
+ * Local data
+ */
+static int cache;	/* File descriptor open to the cache file. -1 = none */
+
 /* Create the cache file and return a pointer to its FILE pointer or */
 void
 create_audio_cache(audio_file_t *af)
 {
     char tmpfilename[] = "/tmp/spettro-XXXXXX";
-    af->cache = mkstemp(tmpfilename);
+    cache = mkstemp(tmpfilename);
 
-    if (af->cache < 0) {
+    if (cache < 0) {
     	fprintf(stderr, "Cannot create decompressed audio cache file.\n");
 	return;
     }
@@ -77,8 +82,9 @@ create_audio_cache(audio_file_t *af)
 void
 no_audio_cache(audio_file_t *af)
 {
-    if (af->cache >= 0) close(af->cache);
-    af->cache = -1;
+    if (af == NULL) return;
+    if (cache >= 0) close(cache);
+    cache = -1;
     free(af->audio_buf);
 }
 
@@ -89,7 +95,7 @@ no_audio_cache(audio_file_t *af)
  */
 
 int
-read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels,
+read_cached_audio(char *data, af_format_t format, int channels,
 		  int start, int frames_to_read)
 {
     static int samples_in_buf = 0;/* Number of samples read into buf[] */
@@ -98,13 +104,13 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
     short *hole_start = NULL;	/* No hole found yet */
     long hole_size;		/* Size of the hole we found, in samples */
     long total_frames = 0;	/* How many sample frames have we filled? */
+    audio_file_t *af = current_audio_file();
 
     int i;
     short *sp;
 
-    if (af->cache < 0) {
-	return read_audio_file(af, data, format, channels,
-				  start, frames_to_read);
+    if (cache < 0) {
+	return read_audio_file(data, format, channels, start, frames_to_read);
     }
 
     /* Fill space before the start with silence. Only happens with af_double
@@ -133,7 +139,7 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
      * past the end of the file should extend it silently. */
     offset = (long)start * af->channels * sizeof(short);
     off_t new_offset;
-    if ((new_offset = lseek(af->cache, offset, SEEK_SET)) != offset) {
+    if ((new_offset = lseek(cache, offset, SEEK_SET)) != offset) {
         fprintf(stderr, "Can't seek to offset %ld in cache file: lseek returns %ld\n",
 		new_offset, offset);
 	perror("lseek");	
@@ -141,7 +147,7 @@ read_cached_audio(audio_file_t *af, char *data, af_format_t format, int channels
     } else {
         int bytes_read, frames_read;
 
-        bytes_read = read(af->cache, (char *)(af->audio_buf),
+        bytes_read = read(cache, (char *)(af->audio_buf),
 	     frames_to_read * af->channels * sizeof(*(af->audio_buf)));
 	samples_in_buf = bytes_read / sizeof(short);
 	frames_read = samples_in_buf / af->channels;
@@ -221,7 +227,7 @@ fill_hole(audio_file_t *af,
     if (frames_to_read <= 0)
     	frames_read = 0;
     else
-        frames_read = read_audio_file(af, (char *)hole_start,
+        frames_read = read_audio_file((char *)hole_start,
 				      af_signed, af->channels,
 				      start, frames_to_read);
 
@@ -242,12 +248,12 @@ fill_hole(audio_file_t *af,
 
     /* Save the new data in the cache file */
     offset = start * af->channels * sizeof(short);
-    if (lseek(af->cache, offset, SEEK_SET) != offset) {
+    if (lseek(cache, offset, SEEK_SET) != offset) {
 	fprintf(stderr, "Warning: Failed to seek to update cache file\n");
     } else {
     	size_t size = frames_read * af->channels * sizeof(short);
 
-	if (write(af->cache, (char *)hole_start, size) != size) {
+	if (write(cache, (char *)hole_start, size) != size) {
 	    fprintf(stderr, "Warning: Failed to update cache file\n");
 	    /* Mostly harmless */
 	}

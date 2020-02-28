@@ -44,7 +44,7 @@ void
 time_pan_by(double by)
 {
     double playing_time;
-    double audio_length = audio_files_length();
+    double audio_length = audio_file_length();
 
     playing_time = get_playing_time() + by;
 

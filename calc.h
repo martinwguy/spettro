@@ -37,9 +37,8 @@
  * Also, an element of the list of FFTs to perform used by the scheduler.
  */
 typedef struct calc_t {
-    /* These items define what calculation was performed */
-    audio_file_t *	audio_file; /* Our audio file handle */
-    double		t;	/* FFT centered on  when? */
+    /* These items define what calculation is to be or was performed */
+    double		t;	/* FFT centered on when? */
     double		fft_freq; /* FFT frequency when scheduled */
     window_function_t	window;
 
@@ -62,7 +61,6 @@ typedef struct calc_t {
 
 typedef struct result {
     /* These items define what calculation was performed */
-    audio_file_t *	audio_file;/* Which audio file this result came from */
     double		t;	 /* FFT is centered on what time in the piece */
     double		fft_freq;/* The FFT frequency for this result */
     window_function_t	window;  /* Apply which window function to the audio data? */

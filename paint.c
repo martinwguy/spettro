@@ -57,8 +57,8 @@ do_scroll()
 
     if (DELTA_LE(new_disp_time, 0.0))
 	new_disp_time = 0.0;
-    if (DELTA_GE(new_disp_time, audio_files_length()))
-	new_disp_time = audio_files_length();
+    if (DELTA_GE(new_disp_time, audio_file_length()))
+	new_disp_time = audio_file_length();
 
     /* Align to a multiple of 1/ppsec so that times in cached results
      * continue to match. This is usually a no-op.
@@ -210,7 +210,6 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
     /* What time does this column represent? */
     double t = screen_column_to_start_time(pos_x);
     result_t *r;
-    audio_file_t *af;	/* Audio file for this column */
     int speclen;
 
     if (pos_x < min_x - LOOKAHEAD || pos_x > max_x + LOOKAHEAD) {
@@ -223,18 +222,18 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 
     /* If the column is before/after the start/end of the piece,
      * give it the background colour */
-    if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_files_length())) {
+    if (DELTA_LT(t, 0.0) || DELTA_GT(t, audio_file_length())) {
 	if (!refresh_only && pos_x >= min_x && pos_x <= max_x)
 	    gui_paint_column(pos_x, min_y, max_y, background);
 	return;
     }
 
     /* Find speclen for the audio file at this column */
-    if (!col_to_af_and_offset(pos_x, &af, NULL)) {
+    if (!col_to_offset(pos_x, NULL)) {
 	fprintf(stderr, "repaint_column: Can't find audio file for screen column %d\n", pos_x);
 	return;
     }
-    speclen = fft_freq_to_speclen(fft_freq, af->sample_rate);
+    speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
 
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
@@ -272,7 +271,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 		gui_paint_column(pos_x, from_y, to_y, background);
 
 	    /* ...and if it was for a valid time, schedule its calculation */
-	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_files_length())) {
+	    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_file_length())) {
 		calc_column(pos_x);
 	    }
 	}
@@ -287,7 +286,6 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 void
 paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
-    audio_file_t *af;	/* audio file for this column */
     float *logmag;
     double col_logmax;	/* maximum log magnitude in the column */
     int y;
@@ -306,14 +304,15 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
     }
 
     /* Find speclen for the audio file at this column */
-    if (!col_to_af_and_offset(pos_x, &af, NULL)) {
-	fprintf(stderr, "paint_column: Can't find audio file for screen column %d\n", pos_x);
+    if (!col_to_offset(pos_x, NULL)) {
+	fprintf(stderr, "paint_column: Can't find offset for screen column %d\n", pos_x);
 	return;
     }
-    speclen = fft_freq_to_speclen(fft_freq, af->sample_rate);
+    speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
 
     logmag = Calloc(maglen, sizeof(*logmag));
-    col_logmax = interpolate(logmag, result->spec, from_y, to_y, result->audio_file->sample_rate, speclen);
+    col_logmax = interpolate(logmag, result->spec, from_y, to_y,
+    			     current_sample_rate(), speclen);
 
     /* Auto-adjust brightness if some pixel is brighter than current maximum */
     if (col_logmax > logmax) logmax = col_logmax;
@@ -358,19 +357,17 @@ static void
 calc_column(int col)
 {
     double t;		/* Time in seconds represented by col */
-    audio_file_t *af;	/* Which audio file does that time fall in? */
     double offset;	/* Time since the start of the specific audio file */
 
     calc_t *calc = Malloc(sizeof(calc_t));
 
     /* Time represented by col, as number of seconds since the start of the first audio file */
     t = screen_column_to_start_time(col);
-    if (!time_to_af_and_offset(t, &af, &offset)) {
-    	fprintf(stderr, "Can't convert overall time %g to audio file and offset\n", t);
+    if (!time_to_offset(t, &offset)) {
+    	fprintf(stderr, "Can't convert time %g to offset\n", t);
 	return;
     }
 
-    calc->audio_file = af;
     calc->fft_freq   = fft_freq;
     calc->window     = window_function;
     calc->t	     = offset;

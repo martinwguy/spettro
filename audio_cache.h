@@ -28,6 +28,6 @@ extern void no_audio_cache(audio_file_t *af);
 /* Read audio from the audio file through the cache.
  * Same interface as read_audio_file
  */
-extern int read_cached_audio(audio_file_t *audio_file, char *data,
+extern int read_cached_audio(char *data,
 			     af_format_t format, int channels,
 			     int start, int frames_to_read);

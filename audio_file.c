@@ -66,17 +66,26 @@ static size_t sox_frame;	/* Which will be returned if you sox_read? */
 #include "libmpg123.h"
 #endif
 
-static audio_file_t *audio_files = NULL;
+static audio_file_t *audio_file = NULL;
 
-/* Pointer to the "next" field of the last cell in the list */
-static audio_file_t **last_audio_file_nextp = &audio_files;
+audio_file_t *
+current_audio_file(void)
+{
+    return audio_file;
+}
 
+/* Open the audio file to find out sampling rate, length and to be able
+ * to fetch pixel data to be converted into spectra.
+ *
+ * Emotion seems not to let us get the raw sample data or sampling rate
+ * and doesn't know the file length until the "open_done" event arrives
+ * so we use libsndfile, libaudiofile or libsox for that.
+ */
 audio_file_t *
 open_audio_file(char *filename)
 {
     audio_file_t *af = Malloc(sizeof(*af));
 
-    af->cache = -1;
     af->audio_buf = NULL;
     af->audio_buflen = 0;
 
@@ -189,70 +198,32 @@ open_audio_file(char *filename)
 
     af->filename = filename;
 
-    /* Add the audio file to the list of audio files opened so far */
-    af->next = NULL;
-    *last_audio_file_nextp = af;
-    last_audio_file_nextp = &(af->next);
-
-    return af;
+    return audio_file = af;
 }
 
 /* Return the length of an audio file in seconds. */
 double
-audio_file_length(audio_file_t *af)
+audio_file_length(void)
 {
-    return (double)(af->frames) / af->sample_rate;
-}
-
-/* Return the length of all the audio files */
-double
-audio_files_length()
-{
-    audio_file_t *afp;
-    double audio_length = 0.0;
-
-    for (afp = audio_files; afp != NULL; afp = afp->next)
-	audio_length += audio_file_length(afp);
-
-    return audio_length;
+    return audio_file == NULL ? 0 :
+	   (double)(audio_file->frames) / audio_file->sample_rate;
 }
 
 /* Map a playing time in the whole piece (all audio files concatenated)
  * to the specific audio file and the offset in seconds into it.
  *
- * If all goes well, it fills in the last two parameters with the audio file
- * and offset into it and returns TRUE.  If not, it returns FALSE.
+ * If the time is inside the audio, it fills in the last two parameters
+ * with the audio file and offset into it and returns TRUE.
+ * If the time is outside the piece, it returns FALSE.
  */
 bool
-time_to_af_and_offset(double when,
-		      audio_file_t **audio_file_p, double *offset_p)
+time_to_offset(double when, double *offset_p)
 {
-    audio_file_t *af;
-    audio_file_t *last_audio_file = audio_files;
     double t = when;
-    double length = 0.0;	/* Length of *af, left by the loop as
-    				 * the length of last piece */
 
-    for (af = audio_files; af != NULL; af = af->next) {
-    	length = (double)(af->frames) / af->sample_rate;
-
-	/* If it's less than the length of this piece, this is the file.
-	 * If it is equal to the length of an audio file, that's the same as
-	 * the start of the following one. */
-	if (DELTA_LT(t, length)) {
-	    if (audio_file_p)	*audio_file_p = af;
-	    if (offset_p)	*offset_p = t;
-	    return TRUE;
-	}
-	t -= length;
-	last_audio_file = af;
-    }
-
-    /* Special case: when "when" is the total overall length of all audio,
-     * i.e. at the end of the last file */
-    if (DELTA_EQ(t, 0.0)) {
-    	if (audio_file_p)	*audio_file_p = last_audio_file;
-	if (offset_p)		*offset_p = length;
+    /* If it's less than the length of this piece, this is the file. */
+    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_file_length())) {
+	if (offset_p) *offset_p = t;
 	return TRUE;
     }
 
@@ -261,24 +232,26 @@ time_to_af_and_offset(double when,
 
 /* A similar function to convert a screen column to the same */
 bool
-col_to_af_and_offset(int col, audio_file_t **audio_file_p, double *offset_p)
+col_to_offset(int col, double *offset_p)
 {
-    return time_to_af_and_offset(screen_column_to_start_time(col),
-    				 audio_file_p, offset_p);
+    return time_to_offset(screen_column_to_start_time(col), offset_p);
 }
 
 /* What is the sample rate of the audio file at the current playing position? */
 double
 current_sample_rate()
 {
-    audio_file_t *af;
-
-    if (!col_to_af_and_offset(disp_offset, &af, NULL)) {
-	fprintf(stderr, "Cannot find current sample rate\n");
+    if (!col_to_offset(disp_offset, NULL)) {
+	fprintf(stderr, "Warning: Cannot find current sample rate\n");
 	return 0.0;
     }
 
-    return af->sample_rate;
+    if (audio_file == NULL) {
+	fprintf(stderr, "Warning: requested sample rate with no audio file\n");
+	abort();
+    }
+
+    return audio_file->sample_rate;
 }
 
 /*
@@ -306,16 +279,16 @@ static size_t sox_buf_size = 0;	/* Size of sox_buf in samples */
 #endif
 
 int
-read_audio_file(audio_file_t *af, char *data,
+read_audio_file(char *data,
 		af_format_t format, int channels,
 		int start, int frames_to_read)
 {
 #if USE_LIBAUDIOFILE
-    AFfilehandle afh = af->afh;
+    AFfilehandle afh = audio_file->afh;
 #elif USE_LIBSNDFILE
-    SNDFILE *sndfile = af->sndfile;
+    SNDFILE *sndfile = audio_file->sndfile;
 #elif USE_LIBSOX
-    sox_format_t *sf = af->sf;
+    sox_format_t *sf = audio_file->sf;
     int samples_to_read, samples;
 #endif
 
@@ -351,14 +324,14 @@ read_audio_file(audio_file_t *af, char *data,
 
 #if USE_LIBMPG123
     /* Decode MP3's with libmpg123 */
-    if (strcasecmp(af->filename + strlen(af->filename) - 4,
+    if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
     		   ".mp3") == 0) {
-	if (libmpg123_seek(af, start) == FALSE) {
+	if (libmpg123_seek(audio_file, start) == FALSE) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
 	    return 0;
 	}
 	while (frames_to_read > 0) {
-	    int frames = libmpg123_read_frames(af, write_to, frames_to_read, format, NULL, NULL, NULL);
+	    int frames = libmpg123_read_frames(audio_file, write_to, frames_to_read, format, NULL, NULL, NULL);
 	    if (frames > 0) {
 		total_frames += frames;
 		write_to += frames * framesize;
@@ -381,13 +354,13 @@ read_audio_file(audio_file_t *af, char *data,
      */
     if (start < sox_frame) {
 	sox_close(sf);
-	sf = sox_open_read(af->filename, NULL, NULL, NULL);
+	sf = sox_open_read(audio_file->filename, NULL, NULL, NULL);
 	sox_frame = 0;
 	if (sf == NULL) {
-	    fprintf(stderr, "libsox failed to reopen \"%s\"\n", af->filename);
+	    fprintf(stderr, "libsox failed to reopen \"%s\"\n", audio_file->filename);
 	    return 0;
 	}
-	af->sf = sf;
+	audio_file->sf = sf;
     }
 #endif
 
@@ -398,7 +371,7 @@ read_audio_file(audio_file_t *af, char *data,
         sf_seek(sndfile, start, SEEK_SET) != start
 #elif USE_LIBSOX
 	/* sox seeks in samples, not frames */
-	sox_seek(sf, start * af->channels, SOX_SEEK_SET) != 0
+	sox_seek(sf, start * audio_file->channels, SOX_SEEK_SET) != 0
 #elif USE_LIBAV
 	libav_seek(start) != 0
 #endif
@@ -411,7 +384,7 @@ read_audio_file(audio_file_t *af, char *data,
     sox_frame = start;	/* Next audio should be returned from this offset */
 
     /* sox reads a number of samples, not frames */
-    samples_to_read = frames_to_read * af->channels;
+    samples_to_read = frames_to_read * audio_file->channels;
 
     /* Adjust size of 32-bit-sample buffer for the raw data from sox_read() */
     if (sox_buf_size < samples_to_read) {
@@ -433,10 +406,10 @@ read_audio_file(audio_file_t *af, char *data,
 #elif USE_LIBSNDFILE
 
 	if (format == af_double) {
-            frames = mix_mono_read_doubles(af,
+            frames = mix_mono_read_doubles(audio_file,
 					   (double *)write_to, frames_to_read);
 	} else {
-	    if (channels != af->channels) {
+	    if (channels != audio_file->channels) {
 		fprintf(stderr, "Wrong number of channels in signed audio read!\n");
 		return 0;
 	    }
@@ -449,12 +422,12 @@ read_audio_file(audio_file_t *af, char *data,
     	double *dp;
     	signed short *sp;
 
-	samples_to_read = frames_to_read * af->channels;
+	samples_to_read = frames_to_read * audio_file->channels;
 	samples = sox_read(sf, sox_buf, samples_to_read);
 	if (samples == SOX_EOF)  {
 	    frames = 0;
 	}
-	frames = samples / af->channels;
+	frames = samples / audio_file->channels;
 	if (frames == 0) break;
 
 	sox_frame += frames;
@@ -470,7 +443,7 @@ read_audio_file(audio_file_t *af, char *data,
 
     	    dp = (double *) write_to;
 	    /* Convert mono values to double */
-	    if (af->channels == 1) {
+	    if (audio_file->channels == 1) {
 		/* Convert mono samples to doubles */
 		sox_sample_t *bp = sox_buf;	/* Where to read from */
 		int clips = 0;
@@ -490,15 +463,15 @@ read_audio_file(audio_file_t *af, char *data,
 		    int clips = 0;
 
 		    *dp = 0.0;
-		    for (channel=0; channel < af->channels; channel++)
+		    for (channel=0; channel < audio_file->channels; channel++)
 			*dp += SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
-		    *dp++ /= af->channels;
+		    *dp++ /= audio_file->channels;
 		    (void)clips;	/* Disable "unused variable" warning */
 		}
 	    }
 	    break;
 	case af_signed:	/* As-is for playing */
-	    if (af->channels != channels) {
+	    if (audio_file->channels != channels) {
 		fprintf(stderr, "Asking for signed audio with %d channels",
 			channels);
 		return 0;
@@ -554,6 +527,8 @@ read_audio_file(audio_file_t *af, char *data,
 void
 close_audio_file(audio_file_t *af)
 {
+    if (af == NULL) return;
+
 #if USE_LIBAUDIOFILE
     afCloseFile(af->afh);
 #elif USE_LIBSNDFILE

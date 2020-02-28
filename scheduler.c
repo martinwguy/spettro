@@ -70,6 +70,7 @@ bool sdl_quit_threads = FALSE;	/* When true, calc threads should return */
 #endif
 
 static void print_list(calc_t *list);
+static void clear_list(void);
 
 /* The list of moments to calculate */
 static calc_t *list = NULL;
@@ -237,6 +238,9 @@ stop_scheduler(void)
 #endif
     free(thread);
     threads = 0;
+
+    /* Drop all pending calculations */
+    clear_list();
 }
 
 /* Ask for an FFT to be queued for execution */
@@ -245,8 +249,7 @@ schedule(calc_t *calc)
 {
     /* Add it to the list in time order */
     calc_t **cpp;	/* Pointer to the "next" field of the previous cell */
-    int speclen = fft_freq_to_speclen(calc->fft_freq,
-    				      calc->audio_file->sample_rate);
+    int speclen = fft_freq_to_speclen(calc->fft_freq, current_sample_rate());
 
     /* Is this column's calculation already scheduled or already being performed?
      * This happens a lot, when several scrolls happen before the newly
@@ -538,6 +541,15 @@ if (l == jobs) DEBUG(" [%d]", jobs_in_flight);
 DEBUG("\n");
 }
 
+static void
+clear_list()
+{
+    calc_t *lp, *next;
+
+    for (lp = list; lp != NULL; next = lp->next, free(lp), lp = next)
+	;
+    list = NULL;
+}
 /*
  * The main loop has been notified of the arrival of a result. Process it.
  */
