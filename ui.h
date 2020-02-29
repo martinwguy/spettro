@@ -89,8 +89,6 @@ extern char *output_file;	/* Image file to write to */
 
 /* End of option flags. Derived and calculated parameters follow */
 
-extern char *filename;		/* Current audio file name */
-
 /* Where is time and space is the current playing position on the screen? */
 extern double disp_time;	/* When in the audio file is the crosshair? */
 extern int disp_offset; 	/* Crosshair is in which display column? */
