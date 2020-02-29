@@ -228,9 +228,15 @@ seconds_to_string(double secs)
     m = (isecs/60) % 60;
     h = isecs/60/60;
 
-    if (h > 0) sprintf(str, "%d:%02d:%02d.%02d", h, m, s, f);
-    else if (m > 0) sprintf(str, "%d:%02d.%02d", m, s, f);
-    else sprintf(str, "%d.%02d", s, f);
+    {
+	/* Avoid gcc compiler warning about possible sprintf buffer overflow.
+	 * Sorry if your audio file is more than 255 hours long! */
+	unsigned char ch = h;
+
+	if (h > 0) sprintf(str, "%d:%02d:%02d.%02d", ch, m, s, f);
+	else if (m > 0) sprintf(str, "%d:%02d.%02d", m, s, f);
+	else sprintf(str, "%d.%02d", s, f);
+    }
 
     return string;
 }
