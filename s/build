@@ -75,13 +75,17 @@ do
     }
 done
 
-if make -j4 $MAKEFLAGS clean all > /dev/null
+# "make -s clean" is still noisy
+make -s $MAKEFLAGS clean > /dev/null
+
+if make -s -j4 $MAKEFLAGS all
 then
     git checkout Makefile.am
 else
+    status=$?
     echo 'Build fails' 1>&2
     git checkout Makefile.am
-    exit 1
+    exit $status
 fi
 
 exit 0
