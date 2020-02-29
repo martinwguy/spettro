@@ -63,16 +63,15 @@ void
 make_row_overlay()
 {
     int note;	/* Of 88-note piano: 0 = Bottom A, 87 = top C */
-    int len = maglen;
 
     /* Check for resize */
-    if (row_overlay_maglen != len) {
-      row_overlay = Realloc(row_overlay, len * sizeof(*row_overlay));
-      row_is_overlaid = Realloc(row_is_overlaid, len * sizeof(*row_is_overlaid));
-      row_overlay_maglen = len;
+    if (row_overlay_maglen != maglen) {
+      row_overlay = Realloc(row_overlay, maglen * sizeof(*row_overlay));
+      row_is_overlaid = Realloc(row_is_overlaid, maglen * sizeof(*row_is_overlaid));
+      row_overlay_maglen = maglen;
     }
-    memset(row_overlay, 0, len * sizeof(*row_overlay));
-    memset(row_is_overlaid, 0, len * sizeof(*row_is_overlaid));
+    memset(row_overlay, 0, maglen * sizeof(*row_overlay));
+    memset(row_is_overlaid, 0, maglen * sizeof(*row_is_overlaid));
 
     if (piano_lines) {
 	/* Initialization deferred until "white" is defined */
@@ -87,7 +86,7 @@ make_row_overlay()
 	    int magindex = freq_to_magindex(freq);
 
 	    /* If in screen range, write it to the overlay */
-	    if (magindex >= 0 && magindex < len) {
+	    if (magindex >= 0 && magindex < maglen) {
 		overlay_row(magindex, color[note % 12] == 0 ? piano_line_color
 							    : black);
 	    }
