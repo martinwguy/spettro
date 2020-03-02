@@ -116,7 +116,7 @@ l/r        Set the left/right bar markers for an overlay of bar lines\n\
 +/-        Increase/decrease the soft volume control\n\
 t          Show the current playing time on stdout\n\
 o          Output (save) the current screenful into a PNG file\n\
-p          Show the playing time and settings on stdout\n\
+Ctrl P     Show the playing time and settings on stdout\n\
 Ctrl L     Redraw the display from cached FFT results\n\
 Ctrl R     Redraw the display by recalculating from the audio data\n\
 Ctrl F     Flip full-screen mode\n\
@@ -376,7 +376,7 @@ another_letter:
 		}
 
 		switch (letter) {
-		    case 't': disp_time = secs;		break;
+		    case 't': start_time = secs;	break;
 		    case 'l': bar_left_time = secs;	break;
 		    case 'r': bar_right_time = secs;	break;
 		}

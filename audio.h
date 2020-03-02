@@ -30,6 +30,7 @@ enum playing { STOPPED, PLAYING, PAUSED };
 extern enum playing playing;
 
 extern void init_audio(audio_file_t *audio_file, char *filename);
+extern void reinit_audio(audio_file_t *audio_file, char *filename);
 extern void pause_audio(void);
 extern void start_playing(void);
 extern void stop_playing(void);

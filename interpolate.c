@@ -50,7 +50,7 @@ static double mtoscache_sample_rate = 0.0;
 
 /* What index in the linear spectrum does pixel row "magindex" correspond to?
  * "magindex" can be from 0..maglen, not 0..maglen-1, because the
- * interpolator may use the row above the top one (is this right?).
+ * interpolator may use the row above the top one.
  */
 static double
 magindex_to_specindex(int magindex, double sample_rate, int speclen)

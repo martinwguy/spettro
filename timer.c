@@ -180,6 +180,15 @@ scroll_cb(void *data, int type, void *event)
 static Uint32
 timer_cb(Uint32 interval, void *data)
 {
+/* To see if the timer is running, #define DEBUG 1 */
+#if DEBUG
+    static char spinner[]="|/-\\";
+    static char *spinnerp = spinner;
+
+    putc(*spinnerp, stderr); putc('\b', stderr);
+    if (!*++spinnerp) spinnerp = spinner;
+#endif
+
     /* We only want one scroll event pending at a time, otherwise if there's
      * insufficient CPU, the event queue fills up with them and other events
      * stop working too (result events, key presses etc)

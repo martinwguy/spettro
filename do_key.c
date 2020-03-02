@@ -60,10 +60,11 @@ static void
 k_quit(key_t key)
 {
     gui_quit_main_loop();
+    quitting = TRUE;
 }
 
 static void
-k_space(key_t key)	/* Play/Pause/Rewind */
+k_space(key_t key)	/* Play/Pause/Next_file/Quit */
 {
     switch (playing) {
     case PLAYING:
@@ -71,15 +72,15 @@ k_space(key_t key)	/* Play/Pause/Rewind */
 	break;
 
     case STOPPED:
-restart:
-	set_playing_time(0.0);
-	start_playing();
+stopped:
+	/* Move on to the next filename argument (or quit if it's the last) */
+	gui_quit_main_loop();
 	break;
 
     case PAUSED:
 	if (DELTA_GE(get_playing_time(), audio_file_length())) {
-	    /* They went "End" while it was paused. Restart from 0 */
-	    goto restart;
+	    /* They went "End" while it was paused. Do the same as STOPPED. */
+	    goto stopped;
 	}
 	continue_playing();
 	break;
@@ -100,6 +101,21 @@ k_stop(key_t key)
     if (playing == PLAYING) pause_audio();
 }
 #endif
+
+/* Go to the next/previous audio file */
+static void
+k_next(key_t key)
+{
+    play_next = TRUE;
+    gui_quit_main_loop();
+}
+
+static void
+k_prev(key_t key)
+{
+    play_previous = TRUE;
+    gui_quit_main_loop();
+}
 
 /*
  * Arrow <-/->: Jump back/forward a tenth of a screenful
@@ -132,23 +148,6 @@ k_end(key_t key)
 {
     set_playing_time(audio_file_length());
 }
-
-#if ECORE_MAIN
-/* Previous and Next audio track.
- + Until we can play multiple audio files, just go to start/end of piece.
- */
-static void
-k_prev(key_t key)
-{
-    k_home(key);
-}
-
-static void
-k_next(key_t key)
-{
-    k_end(key);
-}
-#endif
 
 /*
  * Arrow Up/Down: Pan the frequency axis by a tenth of the screen height.
@@ -391,9 +390,11 @@ k_screendump(key_t key)
 static void
 k_print_params(key_t key)
 {
+    printf("filename=\"%s\"\n", current_audio_file()->filename);
+
     printf(
 "min_freq=%g max_freq=%g dyn_range=%g logmax=%.3g fft_freq=%g window=%s\n",
-min_freq,   max_freq,    dyn_range,   logmax,     fft_freq,   window_name(window_function));
+ min_freq,   max_freq,   dyn_range,   logmax,     fft_freq,   window_name(window_function));
 
     printf("disp_time=%.3f ppsec=%.3f audio_length=%.3f\n",
 	disp_time, ppsec, audio_file_length());
@@ -592,7 +593,7 @@ static key_fn key_fns[] = {
     { KEY_S,	"S",    k_overlay,	k_overlay,	k_bad,		k_bad },
     { KEY_G,	"G",    k_overlay,	k_overlay,	k_bad,		k_bad },
     { KEY_O,	"O",    k_screendump,	k_bad,		k_bad,		k_bad },
-    { KEY_P,	"P",    k_print_params,	k_bad,		k_bad,		k_bad },
+    { KEY_P,	"P",    k_prev,		k_bad,		k_print_params,	k_bad },
     { KEY_T,	"T",    k_print_time,	k_bad,		k_bad,		k_bad },
     { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
     { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
@@ -603,7 +604,7 @@ static key_fn key_fns[] = {
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
     { KEY_M,	"M",    k_change_color,	k_bad,		k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_bad,		k_set_window,	k_bad },
-    { KEY_N,	"N",	k_bad,		k_bad,		k_set_window,	k_bad },
+    { KEY_N,	"N",    k_next,		k_bad,		k_set_window,	k_bad },
     { KEY_0,	"0",	k_no_barlines,	k_bad,		k_bad,		k_bad },
     { KEY_9,	"9",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_1,	"1",	k_beats_per_bar,k_bad,		k_bad,		k_bad },

@@ -108,6 +108,23 @@ init_audio(audio_file_t *af, char *filename)
 #endif
 }
 
+/* Change the audio file */
+void
+reinit_audio(audio_file_t *af, char *filename)
+{
+#if EMOTION_AUDIO
+    if (emotion_object_file_set(em, filename) != EINA_TRUE) {
+	fputs("Couldn't load audio file. Try compiling with -DUSE_EMOTION_SDL in Makefile.am\n", stderr);
+	exit(1);
+    }
+#elif SDL_AUDIO
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    init_audio(af, filename);
+#else
+# error "Define one of EMOTION_AUDIO and SDL_AUDIO"
+#endif
+}
+
 #if EMOTION_AUDIO
 /*
  * Callback is called when the player gets to the end of the piece.

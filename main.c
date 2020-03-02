@@ -103,8 +103,9 @@
 int
 main(int argc, char **argv)
 {
-    char *filename;
     audio_file_t *af = NULL;
+    int i;		/* filename argument index */
+    static bool is_first_file = TRUE;
 
     process_args(&argc, &argv);
 
@@ -122,11 +123,15 @@ main(int argc, char **argv)
     }
 
     /* Process each filename argument */
-    for (filename = argv[0]; argc > 0; argc--, argv++) {
+    for (i=0 ; i<argc; i++) {
+	char *filename = argv[i];
+
 	if ((af = open_audio_file(filename)) == NULL) {
-	    gui_quit();
-	    exit(1);
+	    fprintf(stderr, "Cannot open \"%s\"\n", filename);
+	    continue;
 	}
+
+	disp_time = start_time;
 
 	/* If they set disp_time with -t or --start, check that it's
 	 * within the audio and make it coincide with the start of a column.
@@ -143,6 +148,16 @@ main(int argc, char **argv)
 	    disp_time = lrint(disp_time / secpp) * secpp;
 	}
 
+	if (!is_first_file) {
+	    reinit_audio(af, filename);
+	    /* If we're stopped at the end and the new file is longer,
+	     * then we're paused in the middle of it
+	     */
+	    if (playing == STOPPED) playing = PAUSED;
+	} else {
+	    is_first_file = FALSE;
+	}
+
 	/* Initialize the graphics subsystem. */
 	/* SDL2 in fullscreen mode may change disp_height and disp_width */
 	{
@@ -151,13 +166,16 @@ main(int argc, char **argv)
 
 	    if (!initted) {
 		gui_init(filename);
+		/* The row overlay (piano notes/staff lines) doesn't depend on
+		 * the sample rate, only on min/max_freq, so it doesn't change
+		 * from file to file */
 		make_row_overlay();	
 		init_audio(af, filename);
 		initted = TRUE;
 	    }
 	}
 
-	/* Apply the -p flag */
+	/* Apply the -t flag */
 	if (disp_time != 0.0) set_playing_time(disp_time);
 
 	start_scheduler(max_threads);
@@ -170,8 +188,7 @@ main(int argc, char **argv)
 	gui_main();
 
 	if (output_file) {
-	    while (there_is_work()) { abort(); sleep(1); }
-	    while (jobs_in_flight > 0) { abort(); usleep(100000); }
+	    while (there_is_work() || jobs_in_flight > 0) usleep(100000);
 	    green_line_off = TRUE;
 	    repaint_column(disp_offset, min_y, max_y, FALSE);
 	    gui_update_column(disp_offset);
@@ -183,8 +200,32 @@ main(int argc, char **argv)
 	    break;
 	}
 
+	/* Quit the main loop if that's what they asked for */
+	if (quitting) i = argc;	 /* Should be argc-1 really */
+
+	/* Have they asked to back up to the previous file */
+	if (play_previous) {
+	    if (i <= 0) {
+		fprintf(stderr, "You're already at the first file.\n");
+	    } else {
+		i--;
+	    }
+	    /* Don't do the loop reinit */
+	    i--;
+	    play_previous = FALSE;
+	}
+	/* If they say "next" at the last file, stay on the last file */
+	if (play_next) {
+	    if (i >= argc - 1) {
+		fprintf(stderr, "You're already at the last file.\n");
+		/* To stay on the same file, don't do the loop reinit */
+		i--;
+	    }
+	    play_next = FALSE;
+	}
+
 	/* If there are more files, clear all caches */
-	if (argc > 1) {
+	if (i < argc - 1) {
 	    stop_timer();
 	    stop_scheduler();
 	    drop_all_work();
@@ -193,7 +234,7 @@ main(int argc, char **argv)
 	}
     }
 
-    gui_quit();
+    gui_quit();	/* Also stops scheduler and timer */
 
     /* Free memory to make valgrind happier */
     drop_all_work();

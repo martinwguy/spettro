@@ -93,7 +93,6 @@ open_audio_file(char *filename)
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(filename + strlen(filename)-4, ".mp3") == 0) {
 	if (!libmpg123_open(af, filename)) {
-	    fprintf(stderr, "Cannot open \"%s\n", filename);
 	    free(af);
 	    return NULL;
 	}
@@ -109,7 +108,6 @@ open_audio_file(char *filename)
     if ((afh = afOpenFile(filename, "r", NULL)) == NULL) {
 	/* By default it prints a line to stderr, which is what we want.
 	 * For better error handling use afSetErrorHandler() */
-	fprintf(stderr, "Cannot open \"%s\n", filename);
 	free(af);
 	return NULL;
     }
@@ -140,8 +138,7 @@ open_audio_file(char *filename)
     memset(&info, 0, sizeof(info));
 
     if ((sndfile = sf_open(filename, SFM_READ, &info)) == NULL) {
-	fprintf(stderr, "libsndfile failed to open \"%s\": %s\n",
-		filename, sf_strerror(NULL));
+	free(af);
 	return NULL;
     }
     af->sndfile = sndfile;
@@ -166,7 +163,7 @@ open_audio_file(char *filename)
     sox_format_init();
     sf = sox_open_read(filename, NULL, NULL, NULL);
     if (sf == NULL) {
-	fprintf(stderr, "Cannot open \"%s\n", filename);
+	free(af);
 	return NULL;
     }
     af->sf = sf;
@@ -188,7 +185,7 @@ open_audio_file(char *filename)
 #elif USE_LIBAV
     libav_open_audio_file(&af, filename);
     if (af == NULL) {
-	fprintf(stderr, "Cannot open \"%s\n", filename);
+	free(af);
 	return NULL;
     }
     create_audio_cache(af);
@@ -197,8 +194,10 @@ open_audio_file(char *filename)
     }
 
     af->filename = filename;
+    fprintf(stderr, "audio_filename = %s\n", filename);
 
-    return audio_file = af;
+    audio_file = af;
+    return af;
 }
 
 /* Return the length of an audio file in seconds. */

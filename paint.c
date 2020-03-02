@@ -153,7 +153,6 @@ do_scroll()
  *
  * Returns TRUE if the result was found in the cache and repainted,
  *	   FALSE if it painted the background color or was off-limits.
- * The GUI screen-updating function is called by whoever called us.
  */
 
 void

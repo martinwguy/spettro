@@ -120,3 +120,5 @@ rezound: In the graphoc, +32767 and a few values below it occupy
 ------------------------------------------------------------------------
 It doesn't play/display the second file, giving all-background
 ------------------------------------------------------------------------
+EMOTION: softvol changes but has no effect
+------------------------------------------------------------------------

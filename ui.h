@@ -56,6 +56,9 @@ extern double fft_freq;
 extern window_function_t window_function;
 #define DEFAULT_WINDOW_FUNCTION KAISER
 
+/* The -t/--start time parameter */
+extern double start_time;
+
 extern bool piano_lines;	/* Draw lines where piano keys fall? */
 extern bool staff_lines;	/* Draw manuscript score staff lines? */
 extern bool guitar_lines;	/* Draw guitar string lines? */
@@ -101,3 +104,8 @@ extern unsigned top_margin, bottom_margin; /* Top and bottom axes heights */
 #define secpp	(1 / ppsec)		/* time step per column */
 #define maglen	(max_y - min_y + 1)	/* Size of logarithmic spectral data
 			 		 * == height of graph in pixels */
+
+/* Variables to control the main loop from the depths of do_key.c */
+extern bool play_previous;	/* Have they asked to play the previous file? */
+extern bool play_next;		/* Have they asked to play the next file? */
+extern bool quitting;		/* Have they asked to quit the program? */
