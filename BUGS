@@ -8,6 +8,10 @@ it has refreshed (usual case), it continues to think that Ctrl is held
 until you press and release it again.
 SDL1 works OK so this is an SDL2 bug - make a workaround?
 ------------------------------------------------------------------------
+EMOTION: "End" key is not recognized (but the "Home" key is!)
+k_end() is called, set_playing_position() too, but the graphic doesn't
+scroll, and it continues to play from the start, not the end.
+------------------------------------------------------------------------
 When key-repeating a slow operation, the Shift state is measured when
 the event is processed, not when the key was pressed.
 ------------------------------------------------------------------------
@@ -121,4 +125,7 @@ rezound: In the graphoc, +32767 and a few values below it occupy
 It doesn't play/display the second file, giving all-background
 ------------------------------------------------------------------------
 EMOTION: softvol changes but has no effect
+------------------------------------------------------------------------
+On 64-bit linux the display is dark playing Amarok.wav
+It turns out that logmax=3.69e+19
 ------------------------------------------------------------------------
