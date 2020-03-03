@@ -229,7 +229,14 @@ end:
 
 void print_frame(const AVFrame *frame)
 {
-    const int n = frame->nb_samples * av_get_channel_layout_nb_channels(av_frame_get_channel_layout(frame));
+    const int n = frame->nb_samples * av_get_channel_layout_nb_channels(
+#if LIBAVFORMAT_VERSION_INT >= 0x040000
+	frame->channel_layout
+#else
+	/* Deprecated since 4.0.0 */
+    	av_frame_get_channel_layout(frame)
+#endif
+    );
     const uint16_t *p     = (uint16_t*)frame->data[0];
     const uint16_t *p_end = p + n;
 
@@ -265,8 +272,11 @@ int filtering_main(int argc, char **argv)
         exit(1);
     }
 
+#if LIBAVFORMAT_VERSION_INT < 0x040000
+    /* Deprecated and not required from 4.0.0 */
     av_register_all();
     avfilter_register_all();
+#endif
 
     if ((ret = open_input_file(argv[1])) < 0)
         goto end;
@@ -353,7 +363,9 @@ end:
 
 #include "audio_file.h"
 
+#if LIBAVFORMAT_VERSION_INT < 0x040000
 static bool libav_is_initialized = FALSE;
+#endif
 static int libav_stream_index;
 
 /* Open the audio file and fill in fields of the supplied audio_file_t.
@@ -365,11 +377,13 @@ libav_open_audio_file(audio_file_t **afp, const char *filename)
     audio_file_t *af = *afp;
     char *filter_descr;
 
+#if LIBAVFORMAT_VERSION_INT < 0x040000
     if (!libav_is_initialized) {
         av_register_all();
 	avfilter_register_all();
         libav_is_initialized = TRUE;
     }
+#endif
 
     libav_stream_index = open_input_file(filename);
     if (libav_stream_index < 0) goto fail;
@@ -478,7 +492,13 @@ libav_read_frames(void *write_to, int frames_to_read, af_format_t format)
                         /* print_frame */
 			{
 			    const AVFrame *frame = filt_frame;
-			    const int channels = av_get_channel_layout_nb_channels(av_frame_get_channel_layout(frame));
+			    const int channels = av_get_channel_layout_nb_channels(
+#if LIBAVFORMAT_VERSION_INT < 0x040000
+				av_frame_get_channel_layout(frame)
+#else
+				frame->channel_layout
+#endif
+			    );
 			    const int n = frame->nb_samples * channels;
 			    const int16_t *p = (int16_t*)frame->data[0];
 			    const int16_t *p_end = p + n;
