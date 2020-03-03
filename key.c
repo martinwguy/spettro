@@ -93,7 +93,7 @@ sdl_keydown(SDL_Event *eventp)
 
 #if ECORE_MAIN
     Shift = evas_key_modifier_is_set(mods, "Shift");
-    Ctrl = evas_key_modifier_is_set(mods, "Ctrl");
+    Ctrl = evas_key_modifier_is_set(mods, "Control");
 #elif SDL_MAIN
     Shift = !!(SDL_GetModState() & KMOD_SHIFT);
     Ctrl = !!(SDL_GetModState() & KMOD_CTRL);

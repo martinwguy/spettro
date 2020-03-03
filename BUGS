@@ -8,8 +8,6 @@ it has refreshed (usual case), it continues to think that Ctrl is held
 until you press and release it again.
 SDL1 works OK so this is an SDL2 bug - make a workaround?
 ------------------------------------------------------------------------
-EMOTION doesn't recognize the Ctrl key, so Ctrl-P just does P, etc.
-------------------------------------------------------------------------
 When key-repeating a slow operation, the Shift state is measured when
 the event is processed, not when the key was pressed.
 ------------------------------------------------------------------------
