@@ -1,47 +1,54 @@
-You have to compile spettro from source at present.
+#! /bin/sh
+
+# You have to compile spettro from source at present.
+
+# Here are the Debian/Ubuntu/Mint runes, which you can also run
+# by saying "sh INSTALL".
 
 
-PREPARATION
+# PREPARATION
 
-On Debian/Ubuntu/Mint you need to:
+# On Debian/Ubuntu/Mint you need to:
 	# Always
-	apt-get install libfftw3-dev pkg-config
+	sudo apt-get install -y libfftw3-dev pkg-config
 
 	# Default library choices
-	apt-get install libsdl2-dev libsndfile-dev libmpg123-dev
+	sudo apt-get install -y libsdl2-dev libsndfile-dev libmpg123-dev
 
 	# If you want to use SDL1.2 instead of SDL2.0
 	# change sdl2-config to sdl-config in Makefile.am and
-	apt-get install libsdl1.2-dev
+	sudo apt-get install -y libsdl1.2-dev
 	# or, for -DUSE_EMOTION:
-	apt-get install e17-dev libecore-dev libemotion-dev
+	sudo apt-get install -y libemotion-dev
 	# or, for -DUSE_EMOTION_SDL, both
 
 	# For -DUSE_LIBSOX
-	apt-get install libsox-dev
+	sudo apt-get install -y libsox-dev
 	# or, for -DUSE_LIBAUDIOFILE
-	apt-get install libaudiofile-dev
+	sudo apt-get install -y libaudiofile-dev
 	# or, for -DUSE_LIBAV
-	apt-get install libavformat-dev libavfilter-dev
+	sudo apt-get install -y libavformat-dev libavfilter-dev
 
-for the build system:
-	apt-get install autoconf make
+# for the build system:
+	sudo apt-get install -y autoconf make
 
-and a compiler of some kind:
-	apt-get install build-essential
-will do the trick for sure, but
-	apt-get install gcc
-will probably be enough. Clang also works: configure CC=clang
+# and a compiler of some kind:
+	sudo apt-get install -y build-essential
+# will do the trick for sure, but
+	# sudo apt-get install -y gcc
+# will probably be enough. Clang also works: ./configure CC=clang
 
 
-FETCHING THE SOURCE CODE
+# FETCHING THE SOURCE CODE
 
-	apt-get install git
+if false; then	# If running as a shell script, you've already fetched it
+	sudo apt-get install -y git
 	git clone git://github.com/martinwguy/spettro
 	cd spettro
+fi
 
 
-COMPILATION
+# COMPILATION
 
 	aclocal
 	autoconf
@@ -49,14 +56,19 @@ COMPILATION
 	automake --add-missing
 	./configure
 	make
-or
-	sh build.sh
+# or, to check that every combination of libraries compiles OK,
+	# s/check_builds
 
 
-INSTALLATION
+# INSTALLATION
 
 	sudo make install	# In /usr/local by default
+# or
+	# apt-get install -y debhelper
+	# dpkg-buildpackage -rfakeroot -B
+	# dpkg -i ../spettro*deb
 
+exit	# end of shell-scriptable part
 
 EXECUTION
 
@@ -67,11 +79,12 @@ ALTERNATIVE CONFIGURATIONS
 
 To do to graphics and to play the sound, by default it uses SDL 2.0.
 It can also use SDL 1.2, which includes a driver for colored ASCII-art,
-or use the Enlightenment Foundation Libraries instead, which should run on
-Android and iOS and Windows.
+or use the Enlightenment Foundation Libraries instead, which should also
+run on Android, iOS and Windows.
 
 To read/decode the audio file, by default it uses libsndfile;
 alternatives are libaudiofile, libsox, libavformat (ffmpeg).
 None work well. See the file WORKS.
 
 Modify Makefile.am to make these alternative selections.
+One day we'll have ./configure --with-emotion and so on.
