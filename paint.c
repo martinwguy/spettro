@@ -209,7 +209,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
     /* What time does this column represent? */
     double t = screen_column_to_start_time(pos_x);
     result_t *r;
-    int speclen;
+    int speclen;	/* Length of the frequency spectrum */
 
     if (pos_x < min_x - LOOKAHEAD || pos_x > max_x + LOOKAHEAD) {
 	fprintf(stderr, "Repainting off-screen column %d\n", pos_x);
@@ -227,11 +227,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 	return;
     }
 
-    /* Find speclen for the audio file at this column */
-    if (!col_to_offset(pos_x, NULL)) {
-	fprintf(stderr, "repaint_column: Can't find audio file for screen column %d\n", pos_x);
-	return;
-    }
+    /* Find speclen for the audio file */
     speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
 
     if (refresh_only) {

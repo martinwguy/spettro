@@ -208,12 +208,11 @@ audio_file_length(void)
 	   (double)(audio_file->frames) / audio_file->sample_rate;
 }
 
-/* Map a playing time in the whole piece (all audio files concatenated)
- * to the specific audio file and the offset in seconds into it.
+/* Map a playing time to the offset in seconds into the audio file.
  *
- * If the time is inside the audio, it fills in the last two parameters
- * with the audio file and offset into it and returns TRUE.
- * If the time is outside the piece, it returns FALSE.
+ * If the time is within the audio file, it fills in the last parameter
+ * with the offset into it and returns TRUE.
+ * If the time is outside the audio, it returns FALSE.
  */
 bool
 time_to_offset(double when, double *offset_p)
@@ -236,7 +235,7 @@ col_to_offset(int col, double *offset_p)
     return time_to_offset(screen_column_to_start_time(col), offset_p);
 }
 
-/* What is the sample rate of the audio file at the current playing position? */
+/* What is the sample rate of the audio file? */
 double
 current_sample_rate()
 {
@@ -246,7 +245,7 @@ current_sample_rate()
     }
 
     if (audio_file == NULL) {
-	fprintf(stderr, "Warning: requested sample rate with no audio file\n");
+	fprintf(stderr, "Internal error: requested sample rate with no audio file\n");
 	abort();
     }
 
