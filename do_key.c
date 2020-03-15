@@ -260,7 +260,7 @@ k_set_window(key_t key)
 static void
 k_contrast(key_t key)
 {
-    double by = Ctrl ? 1.0 : 6.0;
+    float by = Ctrl ? 1.0 : 6.0;
 
     change_dyn_range(Shift ? by : -by);
     repaint_display(TRUE);
@@ -269,9 +269,9 @@ k_contrast(key_t key)
 static void
 k_brightness(key_t key)
 {
-    double by = 1.10;	/* by 10% */
+    float by = 1.10;	/* by 10% */
 
-    change_logmax(Shift ? 1/by : by);
+    change_logmax(Shift ? (float)1/by : by);
     repaint_display(TRUE);
 }
 
@@ -394,7 +394,7 @@ k_print_params(key_t key)
 
     printf(
 "min_freq=%g max_freq=%g dyn_range=%g logmax=%.3g fft_freq=%g window=%s\n",
- min_freq,   max_freq,   dyn_range,   logmax,     fft_freq,   window_name(window_function));
+ min_freq,   max_freq, (double)dyn_range, logmax, fft_freq,   window_name(window_function));
 
     printf("disp_time=%.3f ppsec=%.3f audio_length=%.3f\n",
 	disp_time, ppsec, audio_file_length());

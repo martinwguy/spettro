@@ -130,18 +130,18 @@ change_colormap()
  * Returns the resulting color.
  */
 color_t
-colormap(double value)
+colormap(float value)
 {
-    double findx;  /* floating-point version of indx */
+    float findx;  /* floating-point version of indx */
     int indx;	/* Index into colormap for a value <= the current one */
-    double rem; /* How far does this fall between one index and another
+    float rem; /* How far does this fall between one index and another
     		 * 0.0 <= rem < 1.0 */
-    double min_db = -dyn_range;
+    float min_db = -dyn_range;
 
     /* Map over-bright values to the brightest color */
-    if (DELTA_GE(value, 0.0))	 return RGB_to_color(map[0][R],
-    						     map[0][G],
-						     map[0][B]);
+    if (DELTA_GE(value, (float)0.0)) return RGB_to_color(map[0][R],
+							 map[0][G],
+							 map[0][B]);
 
     /* Map values below the dynamic range to the dimmest color */
     if (DELTA_LE(value, min_db)) return RGB_to_color(map[map_len-1][R],
@@ -152,12 +152,12 @@ colormap(double value)
      * Interpolate between elements of the color map.
      */
     findx = value * (map_len-1) / min_db;
-    indx = lrintf(floor(findx));
-    rem = fmod(findx, 1.0);
+    indx = lrintf(floorf(findx));
+    rem = fmodf(findx, (float)1.0);
 
     if (indx < 0) {
 	fprintf(stderr, "colormap: array index is %d because value is %g.\n",
-		indx, value);
+		indx, (double)value);
 	/* Carry on with the show */
 	return gray;
     }

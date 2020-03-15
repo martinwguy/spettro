@@ -23,7 +23,7 @@
 
 extern void change_colormap(void);
 extern void set_colormap(int which);
-extern color_t colormap(double value);
+extern color_t colormap(float value);
 
 typedef enum {
     HEAT_MAP=0,

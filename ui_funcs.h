@@ -21,5 +21,5 @@ extern void time_pan_by(double by);
 extern void time_zoom_by(double by);
 extern void freq_pan_by(double by);
 extern void freq_zoom_by(double by);
-extern void change_dyn_range(double by);
-extern void change_logmax(double by);
+extern void change_dyn_range(float by);
+extern void change_logmax(float by);

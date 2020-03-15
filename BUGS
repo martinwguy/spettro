@@ -126,6 +126,3 @@ It doesn't play/display the second file, giving all-background
 ------------------------------------------------------------------------
 EMOTION: softvol changes but has no effect
 ------------------------------------------------------------------------
-On 64-bit linux the display is dark playing Amarok.wav
-It turns out that logmax=3.69e+19
-------------------------------------------------------------------------

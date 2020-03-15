@@ -37,10 +37,10 @@ extern double min_freq, max_freq;
 #define DEFAULT_MAX_FREQ	14080.0
 
 /* Dynamic range of color map (values below minus this are black) */
-extern double dyn_range;
-#define DEFAULT_DYN_RANGE	(96.0)
-extern double logmax;
-#define DEFAULT_LOGMAX		(0.0)	/* 0 = log10(1.0) */
+extern float dyn_range;
+#define DEFAULT_DYN_RANGE	((float)96.0)
+extern float logmax;
+#define DEFAULT_LOGMAX		((float)0.0)	/* 0 = log10(1.0) */
 
 /* Screen-scroll frequency and number of pixel columns per second of audio */
 extern double fps;

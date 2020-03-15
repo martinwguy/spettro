@@ -195,19 +195,19 @@ freq_zoom_by(double by)
  * of the darker areas.
  */
 void
-change_dyn_range(double by)
+change_dyn_range(float by)
 {
     dyn_range += by;
 
     /* dyn_range should not go zero or negative, so set minimum of 1dB */
-    if (DELTA_LT(dyn_range, 1.0)) dyn_range = 1.0;
+    if (DELTA_LT(dyn_range, (float)1.0)) dyn_range = 1.0;
 
     if (show_time_axes) draw_status_line();
 }
 
 /* Change the maximum brightness */
 void
-change_logmax(double by)
+change_logmax(float by)
 {
     logmax *= by;
 }

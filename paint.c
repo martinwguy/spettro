@@ -286,7 +286,7 @@ void
 paint_column(int pos_x, int from_y, int to_y, result_t *result)
 {
     float *logmag;
-    double col_logmax;	/* maximum log magnitude in the column */
+    float col_logmax;	/* maximum log magnitude in the column */
     int y;
     color_t ov;		/* Overlay color */
     int speclen;
@@ -330,7 +330,7 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 		     /* OR in the green line if it's on */
 		     ((!green_line_off && pos_x == disp_offset) ? green : 0)
 		     |
-		     colormap(20.0 * (logmag[k] - logmax)));
+		     colormap((float)20.0 * (logmag[k] - logmax)));
     }
     gui_unlock();
 

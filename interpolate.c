@@ -22,6 +22,7 @@
 
 
 #include "spettro.h"
+#include "interpolate.h"
 
 #include "convert.h"
 #include "ui.h"
@@ -107,10 +108,10 @@ free_interpolate_cache()
  * Returns the maximum value in the column.
  */
 
-double
+float
 interpolate(float* logmag, const float *spec, const int from_y, const int to_y, double sample_rate, int speclen)
 {
-    double column_logmax = -INFINITY;
+    float column_logmax = -INFINITY;
     int y;
 
     /* Map each output coordinate to where it depends on in the input array.
