@@ -483,22 +483,33 @@ get_next_SDL_event(SDL_Event *eventp)
 			     SDL_EVENTMASK(SDL_MOUSEBUTTONUP) |
 			     SDL_EVENTMASK(SDL_MOUSEMOTION)) == 1) return 1;
 #elif SDL2
-    {	static const SDL_EventType events[] = {
-	    SDL_QUIT,
-	    SDL_KEYDOWN,
-	    SDL_MOUSEBUTTONDOWN,
-	    SDL_MOUSEBUTTONUP,
-	    SDL_MOUSEMOTION,
-	    0	/* Terminator */
-	};
-	int i;
-	for (i=0; i < sizeof(events)/sizeof(events[0]); i++)
-	    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, events[i], events[i]) == 1)
-	    	return 1;
+    /* First priority: Quit */
+    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_QUIT, SDL_QUIT) == 1)
+	return 1;
+
+    /* Second priority: UI events
+     *
+     * SDL_{KEYDOWN,KEYUP,TEXEDITING,TEXTINPUT} are consecutive and followed by
+     * SDL_MOUSE{MOTION,BUTTONDOWN,BUTTONUP,WHEEL}.
+     * see /usr/include/SDL2/SDL_events.h
+     */
+    while (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
+    				     SDL_KEYDOWN, SDL_MOUSEWHEEL) == 1) {
+	switch (eventp->type) {
+	case SDL_KEYDOWN:
+	case SDL_TEXTINPUT:
+	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEBUTTONUP:
+	case SDL_MOUSEMOTION:
+	    return 1;
+	default:
+	    /* Ignore keyboard/mouse events that are not known to gui_main() */
+	    continue;
+	}
     }
 #endif
 
-    /* No UI events? Wait for all events */
+    /* No Quit or UI events? Wait for all events */
     return SDL_WaitEvent(eventp);
 }
 #endif
