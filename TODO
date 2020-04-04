@@ -212,8 +212,6 @@ Left channel as red, right as green
 ------------------------------------------------------------------------
 Reimplement timed scrolling
 ------------------------------------------------------------------------
-When repeatedly Ctrl-Y zooming, keep scrolling the display
-------------------------------------------------------------------------
 for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a backgrounde
 window with a garbled version of part of the desktop

@@ -200,15 +200,15 @@ gui_init(char *filename)
 
     evas_object_show(image);
 
-    /* Set GUI callbacks */
-    evas_object_event_callback_add(image, EVAS_CALLBACK_KEY_DOWN,
-				   keyDown, em);
-    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_DOWN,
-				   mouseDown, em);
-    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_UP,
-				   mouseUp, em);
-    evas_object_event_callback_add(image, EVAS_CALLBACK_MOUSE_MOVE,
-				   mouseMove, em);
+    /* Set GUI callbacks at a lower priority so that scroll events come first */
+    evas_object_event_callback_priority_add(image, EVAS_CALLBACK_KEY_DOWN,
+				   EVAS_CALLBACK_PRIORITY_AFTER, keyDown, em);
+    evas_object_event_callback_priority_add(image, EVAS_CALLBACK_MOUSE_DOWN,
+				   EVAS_CALLBACK_PRIORITY_AFTER, mouseDown, em);
+    evas_object_event_callback_priority_add(image, EVAS_CALLBACK_MOUSE_UP,
+				   EVAS_CALLBACK_PRIORITY_AFTER, mouseUp, em);
+    evas_object_event_callback_priority_add(image, EVAS_CALLBACK_MOUSE_MOVE,
+				   EVAS_CALLBACK_PRIORITY_AFTER, mouseMove, em);
 #endif
 
 #if SDL_VIDEO
@@ -476,7 +476,11 @@ get_next_SDL_event(SDL_Event *eventp)
     if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_QUIT)) == 1)
         return 1;
 
-    /* Second priority: UI events */
+    /* Second priority: screen-scrolling events */
+    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_USEREVENT)) == 1)
+	return 1;
+
+    /* Third priority: UI events */
     if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
 			     SDL_EVENTMASK(SDL_KEYDOWN) |
 			     SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN) |
@@ -494,7 +498,11 @@ get_next_SDL_event(SDL_Event *eventp)
     if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_QUIT, SDL_QUIT) == 1)
 	return 1;
 
-    /* Second priority: UI events
+    /* Second priority: screen-scrolling events */
+    if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_USEREVENT, SDL_USEREVENT) == 1)
+	return 1;
+
+    /* Third priority: UI events
      *
      * SDL_{KEYDOWN,KEYUP,TEXEDITING,TEXTINPUT} are consecutive and followed by
      * SDL_MOUSE{MOTION,BUTTONDOWN,BUTTONUP,WHEEL}.
