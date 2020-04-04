@@ -5,17 +5,14 @@ and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
 Be able to display audio from a live source, presumably with the green
 line on the right edge.
 ------------------------------------------------------------------------
-Cancel scheduled calculations that are no longer in the area of interest
-------------------------------------------------------------------------
 Full-piece spectrogram in miniature along the bottom edge so that you can
 seek to any position in a click and see which parts have been calculated.
 ------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
-Option to synch scrolling to real time not playing-time (--smooth option?)
-by scrolling the graphics in response to a periodic timer instead of
-by the sound player's current position.
-Synch is good if I remember, with the reposition-ELF-on-resume tweak,
+Reimplement timed scrolling, or add an option to synch scrolling to real time
+not playing-time (--smooth option?) by scrolling the graphics in response
+to a periodic timer instead of the sound player's current playing position.
 ------------------------------------------------------------------------
 Add -m mute flag to be able to test emotion graphics when sound is broken
 or to give just the graphics if initializing the audio output fails.
@@ -33,8 +30,6 @@ When removing/changing such lines, just repaint the appropriate rows
 ------------------------------------------------------------------------
 Give configure --with flags instead of Makefile's USE_ stuff.
 ------------------------------------------------------------------------
-Move toolkit-specific stuff each to their own file.
-------------------------------------------------------------------------
 Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 Check make_row_overlay()
@@ -43,14 +38,15 @@ Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
 ------------------------------------------------------------------------
 Keep settings from one run to another (softvol, fftfreq etc)
 ------------------------------------------------------------------------
-'-t' can be > audio_length, but check that emotion_set_time() > length works.
-------------------------------------------------------------------------
 Change Makefile flags to USE_SDL1/USE_SDL2
 ------------------------------------------------------------------------
 On frequency axis, add single digit 8 or whatever at the unnumbered ticks
 and/or increse the number of numbers according to the height of the graph.
 -or-
-Be able to increase the number of labels/divisions on the frequency axis
+increase the number of labels/divisions on the frequency axis
+------------------------------------------------------------------------
+When zoomed in a lot, print enough digits on frequency axis to reveal
+the digit that changes per tick.
 ------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------
@@ -65,9 +61,6 @@ center/range.
 Recognise note names A0 in -n -x and the above.
 ------------------------------------------------------------------------
 Make a ui struct of the parameters visible in main.c
-------------------------------------------------------------------------
-When zoomed in a lot, print enough digits on frequency axis to reveal
-the digit that changes per tick.
 ------------------------------------------------------------------------
 Make the desktop icon appear in the window manager.
 ------------------------------------------------------------------------
@@ -95,9 +88,7 @@ In audio file reading, convert mono doubles to mono floats.
 ------------------------------------------------------------------------
 Be able to tune A to a different frequency & up/down it via the GUI.
 Or cmdline --tune A4=440.
-If no octave given, --tune F#=710 retune the nearest F# to 710. (+ais aes)
-------------------------------------------------------------------------
-Status bar: show lbar rbar beats audio_length srate channels
+If no octave is given, --tune F#=710 retunes the F# nearest to 710.
 ------------------------------------------------------------------------
 Something to show how far through the file you are (like a scroll bar)
 ------------------------------------------------------------------------
@@ -139,19 +130,11 @@ Make Ctrl-g/G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
 Show the time of the end of the piece on the time scale
 ------------------------------------------------------------------------
-Be able to give command-line time parameters as 1:30.62
-------------------------------------------------------------------------
 Be able to set the colour of the staff/guitar/piano lines at startup.
-------------------------------------------------------------------------
-Remove Ctrl from mouse-bar-line setting, bcos on a mousepad they will want
-one finger to hold the button pressed and the other to move the pointer.
-Ctrl needs three fingers instad of two.
 ------------------------------------------------------------------------
 Detect MP3 format from file hdr, not file name.
 ------------------------------------------------------------------------
 Add a white-backgrounded heat map for color printers.
-------------------------------------------------------------------------
-Use red and green as real and imaginary
 ------------------------------------------------------------------------
 Be able to resynthesize the audio from the spectrogram
 ------------------------------------------------------------------------
@@ -179,11 +162,6 @@ Exmple_ spettro swoop.wav
 l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
 ------------------------------------------------------------------------
-Add logmax to status line, next to dynamic range.
-Show dynrange and max db?
-------------------------------------------------------------------------
-Check that the starting time and bar times are within the audio.
-------------------------------------------------------------------------
 Adding score lines when fullscreened causes a pause and jump in the scrolling
 because it redraws every column (it causes the same-length pause as a Ctrl-L).
 It would be better just to draw the lines and, when turning them off, to
@@ -210,7 +188,7 @@ Implement video output.
 ------------------------------------------------------------------------
 Left channel as red, right as green
 ------------------------------------------------------------------------
-Reimplement timed scrolling
+Try red and green as real and imaginary
 ------------------------------------------------------------------------
 for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a backgrounde
