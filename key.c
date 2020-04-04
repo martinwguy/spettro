@@ -187,6 +187,8 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "f11"))			key = KEY_F11;
     else if (!strcmp(name, "f12"))			key = KEY_F12;
 #if ECORE_MAIN
+    else if (!strcmp(name, "plus"))			key = KEY_PLUS;
+    else if (!strcmp(name, "minus"))			key = KEY_MINUS;
     else if (!strcmp(name, "prior"))			key = KEY_PGUP;
     else if (!strcmp(name, "next"))			key = KEY_PGDN;
     else if (!strcmp(name, "kp_end"))			key = KEY_END;
@@ -242,6 +244,16 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "keypad 7") && !numlock)	key = KEY_HOME;
     else if (!strcmp(name, "keypad 8") && !numlock)	key = KEY_UP;
     else if (!strcmp(name, "keypad 9") && !numlock)	key = KEY_PGUP;
+    else if (!strcmp(name, "keypad 0"))			key = KEY_0;
+    else if (!strcmp(name, "keypad 1"))			key = KEY_1;
+    else if (!strcmp(name, "keypad 2"))			key = KEY_2;
+    else if (!strcmp(name, "keypad 3"))			key = KEY_3;
+    else if (!strcmp(name, "keypad 4"))			key = KEY_4;
+    else if (!strcmp(name, "keypad 5"))			key = KEY_5;
+    else if (!strcmp(name, "keypad 6"))			key = KEY_6;
+    else if (!strcmp(name, "keypad 7"))			key = KEY_7;
+    else if (!strcmp(name, "keypad 8"))			key = KEY_8;
+    else if (!strcmp(name, "keypad 9"))			key = KEY_9;
     /* Ignore these as they also come in as a TEXTINPUT character "+" etc */
     else if (!strcmp(name, "keypad +"))			key = KEY_NONE;
     else if (!strcmp(name, "keypad -"))			key = KEY_NONE;
