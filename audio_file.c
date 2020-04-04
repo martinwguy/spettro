@@ -194,7 +194,6 @@ open_audio_file(char *filename)
     }
 
     af->filename = filename;
-    fprintf(stderr, "audio_filename = %s\n", filename);
 
     audio_file = af;
     return af;
