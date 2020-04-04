@@ -481,7 +481,14 @@ get_next_SDL_event(SDL_Event *eventp)
 			     SDL_EVENTMASK(SDL_KEYDOWN) |
 			     SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN) |
 			     SDL_EVENTMASK(SDL_MOUSEBUTTONUP) |
-			     SDL_EVENTMASK(SDL_MOUSEMOTION)) == 1) return 1;
+			     SDL_EVENTMASK(SDL_MOUSEMOTION)) == 1) {
+	/* Only action the last mousemove event, to avoid redrawing bar lines
+	 * for every pixel move, which gets slow when the barlines are close.
+	 */
+	do {} while (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
+				    SDL_EVENTMASK(SDL_MOUSEMOTION)) == 1);
+	return 1;
+    }
 #elif SDL2
     /* First priority: Quit */
     if (SDL_PeepEvents(eventp, 1, SDL_GETEVENT, SDL_QUIT, SDL_QUIT) == 1)
@@ -500,7 +507,13 @@ get_next_SDL_event(SDL_Event *eventp)
 	case SDL_TEXTINPUT:
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
+	    return 1;
 	case SDL_MOUSEMOTION:
+	    /* Only action the last mousemove event, to avoid redrawing bar lines
+	     * for every pixel move, which gets slow when the barlines are close.
+	     */
+	    do {} while (SDL_PeepEvents(eventp, 1, SDL_GETEVENT,
+					SDL_MOUSEMOTION, SDL_MOUSEMOTION) == 1);
 	    return 1;
 	default:
 	    /* Ignore keyboard/mouse events that are not known to gui_main() */

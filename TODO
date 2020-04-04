@@ -221,10 +221,6 @@ window with a garbled version of part of the desktop
 Rework frequency axis numbering code to include more labels, according to
 to the available space.
 ------------------------------------------------------------------------
-When a mouse move event arrives, see if there are more mouse move events
-queued and act only on the last one, to avoid too many screen redraws,
-one for each pixel that the mouse moves.
-------------------------------------------------------------------------
 Multiple file playing:
 - on 'q', quit, don't advance
 - on space at end of audio, go to next file (which may quit)
