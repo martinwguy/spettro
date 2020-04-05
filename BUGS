@@ -97,8 +97,6 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ------------------------------------------------------------------------
--t 100000 works but -t 1000000 is not recognized
-------------------------------------------------------------------------
 libaudiofile returns half-length double-frequency data for signed shorts.
 ------------------------------------------------------------------------
 It doesn't play/display the second file, giving all-background

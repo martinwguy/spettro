@@ -370,8 +370,9 @@ another_letter:
 		double secs = string_to_seconds(argv[0]);
 
 		if (isnan(secs) || secs < 0.0) {
-		    fprintf(stderr, "Time not recognized in -%c %s\n",
+		    fprintf(stderr, "Time not recognized in -%c %s; ",
 			letter, argv[0]);
+		    fprintf(stderr, "the maximum is 99:59:59.99 (359999.99 seconds).\n");
 		    exit(1);
 		}
 
