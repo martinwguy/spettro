@@ -12,8 +12,10 @@ EMOTION: "End" key is not recognized (but the "Home" key is!)
 k_end() is called, set_playing_position() too, but the graphic doesn't
 scroll, and it continues to play from the start, not the end.
 ------------------------------------------------------------------------
-When key-repeating a slow operation, the Shift state is measured when
-the event is processed, not when the key was pressed.
+With SDL1, holding down a key doesn't change the repeating key when you
+press or release Shift or Ctrl. Instead the Shift/Ctrl state for the
+repeated key remains whatever it was when you started key repeat.
+You have to release and press the key again to reflect the new modifiers.
 ------------------------------------------------------------------------
 Capital command letters didn't used to work in SDL1 CACA driver over ssh.
 Now, on a plain text console it fails:

@@ -64,7 +64,6 @@ sdl_keydown(SDL_Event *eventp)
 {
 #if ECORE_MAIN
     Evas_Event_Key_Down *ev = einfo;
-    const Evas_Modifier *mods = evas_key_modifier_get(evas);
 #elif SDL_MAIN && SDL2
     bool numlock;
 #endif
@@ -74,16 +73,23 @@ sdl_keydown(SDL_Event *eventp)
 
 #if ECORE_MAIN
     name = strdup(ev->key);	/* Copy because we'll lower-case it */
+    Shift = evas_key_modifier_is_set(ev->modifiers, "Shift");
+    Ctrl = evas_key_modifier_is_set(ev->modifiers, "Control");
 #elif SDL_MAIN
 # if SDL1
-    name = strdup(SDL_GetKeyName(eventp->key.keysym.sym));
+    name  = strdup(SDL_GetKeyName(eventp->key.keysym.sym));
+    Shift = !!(eventp->key.keysym.mod & KMOD_SHIFT);
+    Ctrl  = !!(eventp->key.keysym.mod & KMOD_CTRL);
 # elif SDL2
     switch (eventp->type) {
     case SDL_TEXTINPUT:
-    	name = strdup(eventp->text.text);
+    	name  = strdup(eventp->text.text);
+	Shift = isupper(name[0]);
 	break;
     case SDL_KEYDOWN:
-        name = strdup(SDL_GetKeyName(eventp->key.keysym.sym));
+        name  = strdup(SDL_GetKeyName(eventp->key.keysym.sym));
+	Shift = !!(eventp->key.keysym.mod & KMOD_SHIFT);
+	Ctrl  = !!(eventp->key.keysym.mod & KMOD_CTRL);
     	break;
     default:
         abort();
@@ -92,13 +98,9 @@ sdl_keydown(SDL_Event *eventp)
 #endif
 
 #if ECORE_MAIN
-    Shift = evas_key_modifier_is_set(mods, "Shift");
-    Ctrl = evas_key_modifier_is_set(mods, "Control");
 #elif SDL_MAIN
-    Shift = !!(SDL_GetModState() & KMOD_SHIFT);
-    Ctrl = !!(SDL_GetModState() & KMOD_CTRL);
 # if SDL2
-    numlock = !!(SDL_GetModState() & KMOD_NUM);
+    numlock = !!(eventp->key.keysym.mod & KMOD_NUM);
 # endif
 #endif
 
@@ -274,7 +276,7 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "right ctrl"))		key = KEY_NONE;
 #endif
     else
-moan:	fprintf(stderr, "Key \"%s\" doesn't do anything.\n", name);
+moan:	fprintf(stderr, "Key \"%s\" is unused.\n", name);
 #if SDL_MAIN && SDL2
     }
 #endif
