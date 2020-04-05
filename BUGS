@@ -27,7 +27,7 @@ If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label. Extend the precision to include the
 changing or extra digit.
 ------------------------------------------------------------------------
-Hitting "w" twice (i.e. again before it's finidhed redrawing the display)
+Hitting "w" twice (i.e. again before it's finished redrawing the display)
 triggers the "Avanti!" warning, which shouldn't happen, and sometimes
 leaves a few columns unrefreshed.
 ------------------------------------------------------------------------
@@ -36,14 +36,14 @@ all white when they are one pixel apart, which makes redrawing very slow.
 
 ============================ Calc ======================================
 
-It calculates duplicate results.
-
-They seem mostly to be columns near the right hand side.
-Hypothesis: a calc thread takes a pending column to calculate, removes
-the work from the queue, a scroll happens and the same columns
-results unrefreshable because there is no work item for it, but there
-is no result in the result cache either.
-Solution: Keep track of which results are being calculated.
+It calculates duplicate results when playing.
+They seem mostly to be columns near or at the right edge.
+------------------------------------------------------------------------
+With 4 processors, it never uses 100% CPU, even when behind in its calculations.
+Instead, the audio becomes stuttery, so presumably the calc threads are locking out
+the audio playing thread, as well as locking each other out too much.
+One solution might be to use the audio cache always and decode forwards instead of
+seeking the audio file madly between the playing position and the right hand edge.
 
 ============================ Audio file ================================
 
