@@ -318,10 +318,12 @@ k_toggle_axes(key_t key)
 static void
 k_cycle_window(key_t key)
 {
-    if (!Shift) next_window_function();
-    if (Shift) prev_window_function();
+    window_function = ((!Shift) ? (window_function + 1)
+    			        : (window_function + NUMBER_OF_WINDOW_FUNCTIONS-1))
+    		      % NUMBER_OF_WINDOW_FUNCTIONS;
     if (show_time_axes) draw_status_line();
-    repaint_display(TRUE);
+    drop_all_work();
+    repaint_display(FALSE);
 }
 
 /* Toggle staff/piano/guitar line overlays */

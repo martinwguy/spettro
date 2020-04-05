@@ -27,10 +27,6 @@ If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label. Extend the precision to include the
 changing or extra digit.
 ------------------------------------------------------------------------
-Hitting "w" twice (i.e. again before it's finished redrawing the display)
-triggers the "Avanti!" warning, which shouldn't happen, and sometimes
-leaves a few columns unrefreshed.
-------------------------------------------------------------------------
 Setting one bar line, then dragging the other one over it whaps the screen
 all white when they are one pixel apart, which makes redrawing very slow.
 
