@@ -11,24 +11,19 @@ SDL1 works OK so this is an SDL2 bug - make a workaround?
 EMOTION: "End" key is not recognized (but the "Home" key is!)
 k_end() is called, set_playing_position() too, but the graphic doesn't
 scroll, and it continues to play from the start, not the end.
+It works OK in EMOTION_SDL, so it's the sound player, not the GUI.
 ------------------------------------------------------------------------
-With SDL1, holding down a key doesn't change the repeating key when you
+With SDL1, a repeating key doesn't change its modifiers when you
 press or release Shift or Ctrl. Instead the Shift/Ctrl state for the
-repeated key remains whatever it was when you started key repeat.
+repeated key remains whatever it was when you started the key repeat.
 You have to release and press the key again to reflect the new modifiers.
+OK in SDL2 and EMOTION.
 ------------------------------------------------------------------------
 Capital command letters didn't used to work in SDL1 CACA driver over ssh.
 Now, on a plain text console it fails:
 Couldn't initialize SDL: Unable to open a console terminal.
 and over ssh it fails:
 Couldn't initialize SDL: Unable to open mouse.
-------------------------------------------------------------------------
-If you zoom the frequency axis in a huge amount, you eventually get several
-frequency-axis ticks with the same label. Extend the precision to include the
-changing or extra digit.
-------------------------------------------------------------------------
-Setting one bar line, then dragging the other one over it whaps the screen
-all white when they are one pixel apart, which makes redrawing very slow.
 
 ============================ Calc ======================================
 
@@ -57,7 +52,6 @@ libav seeks to packet boundaries on MP3,FLAC,Ogg
 libav plays AAC and mp4 at one sixth of the speed.
 ------------------------------------------------------------------------
 Playing MP3s with libmpg123 on a slow processor results in discontinuous audio
-
 probably because decoding the audio for the right hand edge of the screen
 is blocking the audio-file thread for too long. If it always decodes in a
 straight line, could we launch it as a separate process?
@@ -103,22 +97,9 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ------------------------------------------------------------------------
-libsox: sox_seek doesn't work. Read just carries on reading from
-	where it was. One workaround is to close and reopen the audio
-	file before every seek-and-read.
-
-libaudiofile:
-	returns half-length double-frequency data for signed shorts.
-	No workaround yet.
-
-sox:	synth sine generates -32768 samples rarely, when the trough of
-	a cycle is exactly synchronised on a sample.
-
-rezound: In the graphoc, +32767 and a few values below it occupy
-	the top row of pixels, as they should, but -32767 and a few values
-	above it are one pixel off the bottom of the display.
-------------------------------------------------------------------------
 -t 100000 works but -t 1000000 is not recognized
+------------------------------------------------------------------------
+libaudiofile returns half-length double-frequency data for signed shorts.
 ------------------------------------------------------------------------
 It doesn't play/display the second file, giving all-background
 ------------------------------------------------------------------------

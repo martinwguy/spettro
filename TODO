@@ -45,8 +45,9 @@ and/or increse the number of numbers according to the height of the graph.
 -or-
 increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
-When zoomed in a lot, print enough digits on frequency axis to reveal
-the digit that changes per tick.
+If you zoom the frequency axis in a huge amount, you eventually get several
+frequency-axis ticks with the same label.
+Show enough digits on frequency axis to reveal the digit that changes per tick.
 ------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------
