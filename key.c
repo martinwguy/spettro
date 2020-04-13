@@ -188,6 +188,7 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "f10"))			key = KEY_F10;
     else if (!strcmp(name, "f11"))			key = KEY_F11;
     else if (!strcmp(name, "f12"))			key = KEY_F12;
+    else if (!strcmp(name, "stop"))			key = KEY_STOP;
 #if ECORE_MAIN
     else if (!strcmp(name, "plus"))			key = KEY_PLUS;
     else if (!strcmp(name, "minus"))			key = KEY_MINUS;
@@ -215,7 +216,6 @@ sdl_keydown(SDL_Event *eventp)
     else if (!strcmp(name, "xf86audionext"))		key = KEY_NEXT;
     else if (!strcmp(name, "xf86audioraisevolume"))	key = KEY_0;
     else if (!strcmp(name, "xf86audiolowervolume"))	key = KEY_9;
-    else if (!strcmp(name, "stop"))			key = KEY_STOP;
 #elif SDL_MAIN
 # if SDL1
     else if (!strcmp(name, "page up"))			key = KEY_PGUP;

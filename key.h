@@ -77,13 +77,11 @@ enum key {
     KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8,
     KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
     KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12,
-#if ECORE_MAIN
     /* Extended keyboard's >/|| [] |<< and >>| buttons */
     KEY_PLAY,
     KEY_STOP,
     KEY_PREV,
     KEY_NEXT,
-#endif
 };
 
 /* typedef key_t is already used by sys/types.h */

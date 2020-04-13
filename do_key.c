@@ -87,7 +87,6 @@ stopped:
     }
 }
 
-#if ECORE_MAIN
 /* Play/Pause key - the same as Space */
 static void
 k_play(key_t key)
@@ -100,7 +99,6 @@ k_stop(key_t key)
 {
     if (playing == PLAYING) pause_audio();
 }
-#endif
 
 /* Go to the next/previous audio file */
 static void
@@ -629,13 +627,11 @@ static key_fn key_fns[] = {
     { KEY_F10,	"F10",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_F11,	"F11",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_F12,	"F12",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
-#if ECORE_MAIN
     /* Extended keyboard's >/|| [] |<< and >>| buttons */
     { KEY_PLAY,	"Play",	k_play,		k_bad,		k_bad,		k_bad },
     { KEY_STOP,	"Stop",	k_stop,		k_bad,		k_bad,		k_bad },
     { KEY_PREV,	"Prev",	k_prev,		k_bad,		k_bad,		k_bad },
     { KEY_NEXT,	"Next",	k_next,		k_bad,		k_bad,		k_bad },
-#endif
 };
 #define N_KEYS (sizeof(key_fns) / sizeof(key_fns[0]))
 
