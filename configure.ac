@@ -1,3 +1,5 @@
+# configure.ac for spettro
+
 AC_INIT([spettro],[0.1])
 AC_CONFIG_HEADERS([configure.h])
 AM_INIT_AUTOMAKE
@@ -38,3 +40,6 @@ AC_CHECK_LIB([ecore_evas],[ecore_evas_init])
 AC_CHECK_LIB([eo],[emotion_object_add])
 AC_CHECK_LIB([sndfile],[sf_open])
 AC_CHECK_LIB([audiofile],[afOpenFile])
+
+# All done
+AC_OUTPUT
