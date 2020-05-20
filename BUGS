@@ -68,11 +68,33 @@ the audio cache always takes max 1us.
 However, read_audio_file() is taking up to 12000 us, most commonly
 3500-4000 us, or 3 or 4 milliseconds.
 ------------------------------------------------------------------------
-libmpg123 without an audio_cache clags when end-of-file appears on the screen.
+libmpg123 without a cache doesn't even decode most of the audio, saying:
+Can't seek to offset -1 in cache file: lseek returns 0 (6 times)
+lseek: Illegal seek
+Can't seek to offset -1 in cache file: lseek returns 1764
+lseek: Illegal seek
+Can't seek to offset -1 in cache file: lseek returns 3528
+lseek: Illegal seek
+Can't seek to offset -1 in cache file: lseek returns 5292
+lseek: Illegal seek
+Can't seek to offset -1 in cache file: lseek returns 7056
+lseek: Illegal seek
+Can't seek to offset -1 in cache file: lseek returns 8820
+lseek: Illegal seek
+Can't seek to offset -1 in cache file: lseek returns 10584
+lseek: Illegal seek
+colormap: array index is -2147483648 because value is -nan.
+colormap: array index is -2147483648 because value is -nan.
+colormap: array index is -2147483648 because value is -nan.
+...
 
+Was: libmpg123 without an audio_cache clags when end-of-file appears on screen.
 libmpg123_read_frames() is whizzing at 100%CPU and playing stops because
 the audio file is locked and hitting Space makes the main loop hang in
 pause_audio::SDL_PauseAudio()
+------------------------------------------------------------------------
+libmpg123 with a cache says, when EOF appears on the screen:
+"Error: Error reading the stream. (code 18)" a few dozen times.
 ------------------------------------------------------------------------
 libmpg123 fails to open "letter from home 64kbps.mp3"
 
