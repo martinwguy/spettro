@@ -72,15 +72,15 @@ Carly Simon - Nobody does it better.mp3
 Chic - Le Freak.mp3
     File length is 216.013 instead of 215.98
 
+brigantini.mp3
+    Audio length is wrong: 2151.53 insted of 318.22
+
 Dario Fisicaro - 'Na Passiata.mp3
 Dave Brubeck - Take Five*.mp3
 Eedie & Eddie
     Hangs uninterruptibly when it gets to the end.
     The GUI is running but display updating has stopped. 100% CPU (one thread).
     This happens as soon as it tries to decode the end of the file.
-
-brigantini.mp3
-    Audio length is wrong: 2151.53 insted of 318.22
 
 ^\-ing it says it's in SDL_waitEvent, but SEGV-ing the active thread says:
 #0  0xb7761cf9 in __kernel_vsyscall ()
@@ -103,7 +103,7 @@ Clint Anderson - Firm Ware
     Decodes very slowly and the audio is jumpy due to audio file locking.
 
 Doors - Riders on the Storm
-    Looks OK, but seeking a head it clags saying
+    Looks OK, but seeking ahead it clags saying
     Error: Unable to set up output format! (code 1)
 
 Dream Warriors - My Definition
