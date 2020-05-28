@@ -5,9 +5,6 @@ and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
 Be able to display audio from a live source, presumably with the green
 line on the right edge.
 ------------------------------------------------------------------------
-Full-piece spectrogram in miniature along the bottom edge so that you can
-seek to any position in a click and see which parts have been calculated.
-------------------------------------------------------------------------
 Do subpixel positioning of bar lines / antialiasing.
 ------------------------------------------------------------------------
 Reimplement timed scrolling, or add an option to synch scrolling to real time
@@ -48,6 +45,9 @@ increase the number of labels/divisions on the frequency axis
 If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label.
 Show enough digits on frequency axis to reveal the digit that changes per tick.
+------------------------------------------------------------------------
+Rework frequency axis numbering code to include more labels, according to
+to the available space.
 ------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------
@@ -159,7 +159,7 @@ Make Shift L or R make barlines that are always 3 pixels thick.
 ------------------------------------------------------------------------
 Rework barline code to place at appropriate column, not at constant
 multiple of a number of pixels.
-Exmple_ spettro swoop.wav
+Example: spettro swoop.wav
 l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
 ------------------------------------------------------------------------
@@ -174,8 +174,6 @@ decode them and throw the extra blocks away, and see if this makes the
 noisy MP3 formats improve.
 ------------------------------------------------------------------------
 cache.c:128 clang reports constant condition at window == -1
-------------------------------------------------------------------------
-Check that the starting time and bar times are within the audio.
 ------------------------------------------------------------------------
 Using a palettized video mode may be interesting.
 ------------------------------------------------------------------------
@@ -194,9 +192,6 @@ Try red and green as real and imaginary
 for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a backgrounde
 window with a garbled version of part of the desktop
-------------------------------------------------------------------------
-Rework frequency axis numbering code to include more labels, according to
-to the available space.
 ------------------------------------------------------------------------
 Multiple file playing:
 - on 'q', quit, don't advance
