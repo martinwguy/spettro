@@ -27,11 +27,9 @@ typedef struct
 	fftw_plan plan;
 
 	double *time_domain;
-	double *window;
+	float *window;
 	double *freq_domain;
 	float *mag_spec;
-
-	/* double data []; */
 } spectrum;
 
 extern spectrum *create_spectrum(int speclen, window_function_t window_function);

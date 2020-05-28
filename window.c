@@ -26,18 +26,18 @@
 
 #define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
 
-static void kaiser(double *data, int datalen);
-static void dolph(double *data, int datalen);
-static void nuttall(double *data, int datalen);
-static void blackman(double *data, int datalen);
-static void hann(double *data, int datalen);
+static void kaiser(float *data, int datalen);
+static void dolph(float *data, int datalen);
+static void nuttall(float *data, int datalen);
+static void blackman(float *data, int datalen);
+static void hann(float *data, int datalen);
 
-static double besseli0(double x);
+static float besseli0(float x);
 
 typedef struct stored_window {
     window_function_t wfunc;
     int datalen;
-    double *window;
+    float *window;
     struct stored_window *next;
 } stored_window_t;
 
@@ -62,10 +62,10 @@ window_key(window_function_t w)
     return "KNHBD?"[w];
 }
 
-double *
+float *
 get_window(window_function_t wfunc, int datalen)
 {
-    double *new_window;	/* data to return */
+    float *new_window;	/* data to return */
 
     lock_window();
 
@@ -129,9 +129,9 @@ free_windows()
 }
 
 static void
-kaiser(double *data, int datalen)
+kaiser(float *data, int datalen)
 {
-    double beta = 20.0;
+    float beta = 20.0;
     /* beta = pi * alpha in the literature, so alpha =~ 6.3662 */
 
     /*
@@ -140,7 +140,7 @@ kaiser(double *data, int datalen)
      *                 besseli0(beta)
      */
 
-    double two_n_on_N, denom;
+    float two_n_on_N, denom;
     int k;
 
     denom = besseli0(beta);
@@ -151,7 +151,7 @@ kaiser(double *data, int datalen)
     }
 
     for (k = 0; k < datalen ; k++) {
-	double n = k + 0.5 - 0.5 * datalen;
+	float n = k + 0.5 - 0.5 * datalen;
 	two_n_on_N = (2.0 * n) / datalen;
 	data[k] = besseli0(beta * sqrt(1.0 - two_n_on_N * two_n_on_N)) / denom;
     }
@@ -159,9 +159,9 @@ kaiser(double *data, int datalen)
 }
 
 static void
-nuttall(double *data, int datalen)
+nuttall(float *data, int datalen)
 {
-    const double a[4] = { 0.355768, 0.487396, 0.144232, 0.012604 };
+    const float a[4] = { 0.355768, 0.487396, 0.144232, 0.012604 };
     int k;
 
     /*
@@ -171,7 +171,7 @@ nuttall(double *data, int datalen)
      */
 
     for (k = 0; k < datalen ; k++) {
-	double scale;
+	float scale;
 
 	scale = M_PI * k / (datalen - 1);
 
@@ -183,7 +183,7 @@ nuttall(double *data, int datalen)
 }
 
 static void
-hann(double *data, int datalen)
+hann(float *data, int datalen)
 {
     int k;
 
@@ -198,24 +198,24 @@ hann(double *data, int datalen)
 }
 
 static void
-blackman(double *data, int datalen)
+blackman(float *data, int datalen)
 {
     int k;
-    double m = datalen - 1;
-    double alpha = .16;
+    float m = datalen - 1;
+    float alpha = .16;
 
     /* From sox spectrogram */
     for (k = 0; k < datalen ; k++) {
-	double x = 2 * M_PI * k / m;
+	float x = 2 * M_PI * k / m;
 	data[k] = 0.5 * ((1 - alpha) - cos(x) + alpha * cos(2 * x));
     }
 }
 
 static void
-dolph(double *data, int N)
+dolph(float *data, int N)
 {
-    double att = 126.6;	/* empirically */
-    double b = cosh(acosh(pow(10., att/20)) / (N-1)), sum, t, c, norm = 0;
+    float att = 126.6;	/* empirically */
+    float b = cosh(acosh(pow(10., att/20)) / (N-1)), sum, t, c, norm = 0;
     int i, j;
     for (c = 1 - 1 / (b*b), i = (N-1) / 2; i >= 0; --i) {
       for (sum = !i, b = t = j = 1; j <= i && sum != t; b *= (i-j) * (1./j), ++j)
@@ -225,17 +225,17 @@ dolph(double *data, int N)
     }
 }
 
-static double
-besseli0(double x)
+static float
+besseli0(float x)
 {
     int k = 1;
-    double half_x = 0.5 * x;
-    double pow_half_x_k = half_x;	/* Always == pow(0.5*x, k) */
-    double factorial_k = 1.0;
-    double result = 0.0;
+    float half_x = 0.5 * x;
+    float pow_half_x_k = half_x;	/* Always == pow(0.5*x, k) */
+    float factorial_k = 1.0;
+    float result = 0.0;
 
     while (k < 25) {
-	double temp;
+	float temp;
 
 	temp = pow_half_x_k / factorial_k;
 	result += temp * temp;

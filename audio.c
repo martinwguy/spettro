@@ -17,10 +17,6 @@
 
 /*
  * audio.c - Audio-playing functions
- *
- * This needs to separate overall audio-playing system init and
- * choice of input file, so that we can seamlessly skip from one
- * audio file to another.
  */
 
 #include "spettro.h"
