@@ -298,11 +298,6 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 	return;
     }
 
-    /* Find speclen for the audio file at this column */
-    if (!col_to_offset(pos_x, NULL)) {
-	fprintf(stderr, "paint_column: Can't find offset for screen column %d\n", pos_x);
-	return;
-    }
     speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
 
     logmag = Calloc(maglen, sizeof(*logmag));
@@ -351,21 +346,11 @@ paint_column(int pos_x, int from_y, int to_y, result_t *result)
 static void
 calc_column(int col)
 {
-    double t;		/* Time in seconds represented by col */
-    double offset;	/* Time since the start of the specific audio file */
-
     calc_t *calc = Malloc(sizeof(calc_t));
-
-    /* Time represented by col, as number of seconds since the start of the first audio file */
-    t = screen_column_to_start_time(col);
-    if (!time_to_offset(t, &offset)) {
-    	fprintf(stderr, "Can't convert time %g to offset\n", t);
-	return;
-    }
 
     calc->fft_freq   = fft_freq;
     calc->window     = window_function;
-    calc->t	     = offset;
+    calc->t	     = screen_column_to_start_time(col);
 
     schedule(calc);
 }

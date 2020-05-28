@@ -83,10 +83,6 @@ extern void close_audio_file(audio_file_t *audio_file);
 /* The length of an audio file in seconds */
 extern double audio_file_length(void);
 
-/* Convert a playing time to the audio file and offset into that file in secs */
-extern bool time_to_offset(double t, double *offset_p);
-/* The same for a screen column */
-extern bool col_to_offset(int col, double *offset_p);
 /* What's the sample rate of the audio file at the current playing position? */
 extern double current_sample_rate(void);
 

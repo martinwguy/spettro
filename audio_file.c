@@ -207,42 +207,10 @@ audio_file_length(void)
 	   (double)(audio_file->frames) / audio_file->sample_rate;
 }
 
-/* Map a playing time to the offset in seconds into the audio file.
- *
- * If the time is within the audio file, it fills in the last parameter
- * with the offset into it and returns TRUE.
- * If the time is outside the audio, it returns FALSE.
- */
-bool
-time_to_offset(double when, double *offset_p)
-{
-    double t = when;
-
-    /* If it's less than the length of this piece, this is the file. */
-    if (DELTA_GE(t, 0.0) && DELTA_LE(t, audio_file_length())) {
-	if (offset_p) *offset_p = t;
-	return TRUE;
-    }
-
-    return FALSE;
-}
-
-/* A similar function to convert a screen column to the same */
-bool
-col_to_offset(int col, double *offset_p)
-{
-    return time_to_offset(screen_column_to_start_time(col), offset_p);
-}
-
 /* What is the sample rate of the audio file? */
 double
 current_sample_rate()
 {
-    if (!col_to_offset(disp_offset, NULL)) {
-	fprintf(stderr, "Warning: Cannot find current sample rate\n");
-	return 0.0;
-    }
-
     if (audio_file == NULL) {
 	fprintf(stderr, "Internal error: requested sample rate with no audio file\n");
 	abort();

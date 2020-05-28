@@ -65,8 +65,8 @@ typedef struct result {
     double		fft_freq;/* The FFT frequency for this result */
     window_function_t	window;  /* Apply which window function to the audio data? */
 
-    /* This is derived from fft_freq, audio sampling rate and fudge factors */
-    int			speclen; /* Length of the linear spectrum */
+    /* Length of the linear spectrum, derived from fft_freq and sampling rate */
+    int			speclen;
 
     /* This is the result */
     float *		spec;	 /* The linear spectrum from [0..speclen]
