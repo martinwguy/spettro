@@ -45,8 +45,8 @@ static void
 usage(void)
 {
     printf(
-"Usage: spettro [options] [file]\n\
--p:    Autoplay the file on startup\n\
+"Usage: spettro [options] file\n\
+-p:    Play the file straight away\n\
 -e:    Exit when the audio file has played\n\
 -h n   Set the window's height to n pixels, default %u\n\
 -w n   Set the window's width to n pixels, default %u\n",
@@ -80,8 +80,7 @@ usage(void)
 -o f   Display the spectrogram, dump it to file f in PNG format and quit\n\
 --version  Which version of spettro is this, and which libraries does it use?\n\
 --keys Show which key presses do what, and quit\n\
---help This!\n\
-If no file is specified, it opens \"audio.wav\"\n");
+--help This!\n");
 }
 
 static void
@@ -424,6 +423,12 @@ another_letter:
     }
     if (bar_right_time != UNDEFINED) {
 	right_bar_time = bar_right_time;
+    }
+
+    /* They must supply at least one filename argument */
+    if (argc <= 0) {
+	fprintf(stderr, "You must supply at least one audio file name.\n");
+	exit(1);
     }
 
     *argcp = argc;
