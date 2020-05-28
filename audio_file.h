@@ -62,7 +62,7 @@ typedef struct audio_file {
 } audio_file_t;
 
 typedef enum {
-	af_double,  /* mono doubles */
+	af_float,   /* mono floats */
 	af_signed,  /* 16-bit native endian, same number of channels as the input file */
 } af_format_t;
 

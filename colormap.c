@@ -167,7 +167,7 @@ colormap(float value)
     }
 
     return RGB_to_color(
-        (primary_t) lrint((1.0 - rem) * map[indx][R] + rem * map[indx + 1][R]),
-	(primary_t) lrint((1.0 - rem) * map[indx][G] + rem * map[indx + 1][G]),
-	(primary_t) lrint((1.0 - rem) * map[indx][B] + rem * map[indx + 1][B]));
+        (primary_t)lrintf((1.0f - rem) * map[indx][R] + rem * map[indx + 1][R]),
+	(primary_t)lrintf((1.0f - rem) * map[indx][G] + rem * map[indx + 1][G]),
+	(primary_t)lrintf((1.0f - rem) * map[indx][B] + rem * map[indx + 1][B]));
 }

@@ -444,7 +444,7 @@ libav_read_frames(void *write_to, int frames_to_read, af_format_t format)
     AVFrame *filt_frame = av_frame_alloc();
     int frames_written = 0;
     uint16_t *sp = (uint16_t *)write_to;
-    double *dp = (double *)write_to;
+    float *fp = (float *)write_to;
     int ret;
 
     /* In chunked audio formats, libav_seek() moves to the start of the chunk
@@ -513,12 +513,12 @@ libav_read_frames(void *write_to, int frames_to_read, af_format_t format)
 				case af_signed:
 				    *sp++ = *p++;
 				    break;
-				case af_double:
+				case af_float:
 				    {
-					int c; double d;
-					for (c=0, d=0.0; c < channels; c++)
-					    d += (double)*p++ / 32767.0;
-					*dp++ = d;
+					int c; float f;
+					for (c=0, f=0.0; c < channels; c++)
+					    f += (float)*p++ / 32767.0f;
+					*fp++ = f;
 					break;
 				    }
 				}

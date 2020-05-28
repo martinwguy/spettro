@@ -29,7 +29,7 @@ AC_CHECK_HEADER([audiofile.h])
 
 # Obligatory libraries
 AC_CHECK_LIB([m],[lrint])
-AC_CHECK_LIB([fftw3],[fftw_plan_r2r_1d])
+AC_CHECK_LIB([fftw3f],[fftwf_plan_r2r_1d])
 
 # Optional libraries
 AC_CHECK_LIB([SDL],[SDL_Init])

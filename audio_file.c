@@ -52,9 +52,9 @@
 #include <string.h>		/* for memset() */
 
 #if USE_LIBSNDFILE
-static int mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read);
+static int mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read);
 /* Buffer used by the above */
-static double *multi_data = NULL;   /* buffer for incoming samples */
+static float *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
 #elif USE_LIBSOX
 static size_t sox_frame;	/* Which will be returned if you sox_read? */
@@ -253,12 +253,12 @@ current_sample_rate()
 
 /*
  * read_audio_file(): Read sample frames from the audio file,
- * returning them as mono doubles for the graphics or with the
+ * returning them as mono floats for the graphics or with the
  * original number of channels as 16-bit system-native bytendianness
  * for the sound player.
  *
  * "data" is where to put the audio data.
- * "format" is one of af_double or af_signed
+ * "format" is one of af_float or af_signed
  * "channels" is the number of desired channels, 1 to monoise or copied from
  *		the WAV file to play as-is.
  * "start" is the index of the first sample frame to read.
@@ -290,15 +290,15 @@ read_audio_file(char *data,
 #endif
 
     /* size of one frame of output data in bytes */
-    int framesize = (format == af_double ? sizeof(double) : sizeof(short))
+    int framesize = (format == af_float ? sizeof(float) : sizeof(short))
 		    * channels;
     int total_frames = 0;	/* How many frames have we filled? */
     char *write_to = data;	/* Where to write next data */
 
 #if USE_LIBAUDIOFILE
     if (afSetVirtualSampleFormat(afh, AF_DEFAULT_TRACK,
-	format == af_double ? AF_SAMPFMT_DOUBLE : AF_SAMPFMT_TWOSCOMP,
-	format == af_double ? sizeof(double) : sizeof(short)) ||
+	format == af_float ? AF_SAMPFMT_FLOAT : AF_SAMPFMT_TWOSCOMP,
+	format == af_float ? sizeof(float) : sizeof(short)) ||
         afSetVirtualChannels(afh, AF_DEFAULT_TRACK, channels)) {
             fprintf(stderr, "Can't set virtual sample format.\n");
 	    return 0;
@@ -306,7 +306,7 @@ read_audio_file(char *data,
 #endif
 
     if (start < 0) {
-	if (format != af_double) {
+	if (format != af_float) {
 	    fprintf(stderr, "Internal error: Reading audio data for playing from before the start of the piece");
 	    exit(1);
 	}
@@ -397,14 +397,14 @@ read_audio_file(char *data,
 	/* libaudio and libsndfile's sample frames are a sample for each channel */
 #if USE_LIBAUDIOFILE
 
-	/* libaudiofile does the mixing down to one channel for doubles */
+	/* libaudiofile does the mixing down to one channel for floats */
         frames = afReadFrames(afh, AF_DEFAULT_TRACK, write_to, frames_to_read);
 
 #elif USE_LIBSNDFILE
 
-	if (format == af_double) {
-            frames = mix_mono_read_doubles(audio_file,
-					   (double *)write_to, frames_to_read);
+	if (format == af_float) {
+            frames = mix_mono_read_floats(audio_file,
+					   (float *)write_to, frames_to_read);
 	} else {
 	    if (channels != audio_file->channels) {
 		fprintf(stderr, "Wrong number of channels in signed audio read!\n");
@@ -416,7 +416,7 @@ read_audio_file(char *data,
 #elif USE_LIBSOX
 
 	/* Shadows of write_to with an appropriate type */
-    	double *dp;
+    	float *fp;
     	signed short *sp;
 
 	samples_to_read = frames_to_read * audio_file->channels;
@@ -431,27 +431,27 @@ read_audio_file(char *data,
 
 	/* Convert to desired format */
 	switch (format) {
-	case af_double:	/* Mono doubles for FFT */
+	case af_float:	/* Mono floats for FFT */
 	    if (channels != 1) {
-		fprintf(stderr, "Asking for double audio with %d channels",
+		fprintf(stderr, "Asking for float audio with %d channels",
 			channels);
 		return 0;
 	    }
 
-    	    dp = (double *) write_to;
-	    /* Convert mono values to double */
+    	    fp = (float *) write_to;
+	    /* Convert mono values to float */
 	    if (audio_file->channels == 1) {
-		/* Convert mono samples to doubles */
+		/* Convert mono samples to floats */
 		sox_sample_t *bp = sox_buf;	/* Where to read from */
 		int clips = 0;
 		int i;
 
 		(void)clips;	/* Disable "unused variable" warning */
 		for (i=0; i<samples; i++) {
-		    *dp++ = SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
+		    *fp++ = SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
 		}
 	    } else {
-		/* Convert multi-sample frames to mono doubles */
+		/* Convert multi-sample frames to mono floats */
 		sox_sample_t *bp = sox_buf;
 		int i;
 
@@ -459,10 +459,10 @@ read_audio_file(char *data,
 		    int channel;
 		    int clips = 0;
 
-		    *dp = 0.0;
+		    *fp = 0.0;
 		    for (channel=0; channel < audio_file->channels; channel++)
-			*dp += SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
-		    *dp++ /= audio_file->channels;
+			*fp += SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
+		    *fp++ /= audio_file->channels;
 		    (void)clips;	/* Disable "unused variable" warning */
 		}
 	    }
@@ -512,7 +512,7 @@ read_audio_file(char *data,
     }
 
     /* If it stopped before reading all frames, fill the rest with silence */
-    if (format == af_double && frames_to_read > 0) {
+    if (format == af_float && frames_to_read > 0) {
         memset(write_to, 0, frames_to_read * framesize);
 	total_frames += frames_to_read;
 	frames_to_read = 0;
@@ -566,16 +566,16 @@ close_audio_file(audio_file_t *af)
 #define MIN(x, y)		((x) < (y) ? (x) : (y))
 
 static int
-mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read)
+mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)
 {
     if (af->channels == 1)
 #if USE_LIBAUDIOFILE
 	return afReadFrames(af->afh, AF_DEFAULT_TRACK, data, frames_to_read);
 #elif USE_LIBSNDFILE
-	return sf_read_double(af->sndfile, data, frames_to_read);
+	return sf_read_float(af->sndfile, data, frames_to_read);
 #endif
 
-    /* Read multi-channel data and mix it down to a single channel of doubles */
+    /* Read multi-channel data and mix it down to a single channel of floats */
     {
 	int k, ch, frames_read;
 	int dataout = 0;		    /* No of samples written so far */
@@ -593,14 +593,14 @@ mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read)
 	    /* A libaudiofile frame is a sample for each channel */
 	    frames_read = afReadFrames(af->afh, AF_DEFAULT_TRACK, multi_data, this_read);
 #elif USE_LIBSNDFILE
-	    /* A sf_readf_double frame is a sample for each channel */
-	    frames_read = sf_readf_double(af->sndfile, multi_data, this_read);
+	    /* A sf_readf_float frame is a sample for each channel */
+	    frames_read = sf_readf_float(af->sndfile, multi_data, this_read);
 #endif
 	    if (frames_read <= 0)
 		break;
 
 	    for (k = 0; k < frames_read; k++) {
-		double mix = 0.0;
+		float mix = 0.0;
 
 		for (ch = 0; ch < af->channels; ch++)
 		    mix += multi_data[k * af->channels + ch];
@@ -612,5 +612,5 @@ mix_mono_read_doubles(audio_file_t *af, double *data, int frames_to_read)
 
 	return dataout;
   }
-} /* mix_mono_read_double */
+} /* mix_mono_read_float */
 #endif

@@ -47,8 +47,8 @@ create_spectrum (int speclen, window_function_t window_function)
      * samples for better time precision, hoping to eliminate artifacts.
      */
     lock_fftw3();
-    spec->time_domain	= fftw_alloc_real(2 * speclen + 1);
-    spec->freq_domain	= fftw_alloc_real(2 * speclen);
+    spec->time_domain	= fftwf_alloc_real(2 * speclen + 1);
+    spec->freq_domain	= fftwf_alloc_real(2 * speclen);
     unlock_fftw3();
     spec->mag_spec	= Calloc(speclen + 1, sizeof(*spec->mag_spec));
     spec->plan = NULL;
@@ -60,7 +60,7 @@ create_spectrum (int speclen, window_function_t window_function)
     }
 
     lock_fftw3();
-    spec->plan = fftw_plan_r2r_1d(2 * speclen,
+    spec->plan = fftwf_plan_r2r_1d(2 * speclen,
 			    spec->time_domain, spec->freq_domain,
 			    FFTW_R2HC, FFTW_ESTIMATE /*| FFTW_PRESERVE_INPUT*/);
     unlock_fftw3();
@@ -81,10 +81,10 @@ destroy_spectrum(spectrum *spec)
 {
     lock_fftw3();
     if (spec->plan) {
-	fftw_destroy_plan(spec->plan);
+	fftwf_destroy_plan(spec->plan);
     }
-    fftw_free(spec->time_domain);
-    fftw_free(spec->freq_domain);
+    fftwf_free(spec->time_domain);
+    fftwf_free(spec->freq_domain);
     unlock_fftw3();
     /* free(spec->window);	window may be in use by another calc thread */
     free(spec->mag_spec);
@@ -102,7 +102,7 @@ calc_magnitude_spectrum(spectrum *spec)
     for (k = 0; k < 2 * speclen; k++)
 	spec->time_domain[k] *= spec->window[k];
 
-    fftw_execute(spec->plan);
+    fftwf_execute(spec->plan);
 
     /*
      * Convert from FFTW's "half complex" format to an array of magnitudes.
@@ -111,18 +111,18 @@ calc_magnitude_spectrum(spectrum *spec)
      */
 
     /* Add the DC offset at 0Hz */
-    spec->mag_spec[0] = fabs(spec->freq_domain[0]);
+    spec->mag_spec[0] = fabsf(spec->freq_domain[0]);
 
     for (k = 1; k < speclen; k++) {
-	double re = spec->freq_domain[k];
-	double im = spec->freq_domain[freqlen - k];
-	double mag = sqrt(re * re + im * im);
+	float re = spec->freq_domain[k];
+	float im = spec->freq_domain[freqlen - k];
+	float mag = sqrtf(re * re + im * im);
 	spec->mag_spec[k] = mag;
     }
 
     /* Lastly add the point for the Nyquist frequency */
     {
-	double mag = fabs(spec->freq_domain[speclen]);
+	float mag = fabsf(spec->freq_domain[speclen]);
 	spec->mag_spec[speclen] = mag;
     }
 }

@@ -24,11 +24,11 @@
 typedef struct
 {	int speclen;
 	window_function_t wfunc;
-	fftw_plan plan;
+	fftwf_plan plan;
 
-	double *time_domain;
+	float *time_domain;
 	float *window;
-	double *freq_domain;
+	float *freq_domain;
 	float *mag_spec;
 } spectrum;
 

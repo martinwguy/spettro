@@ -49,8 +49,8 @@ AM_LDFLAGS = $(SDL_LIBS) $(SNDFILE_LIBS) $(MPG123_LIBS)
 AM_CFLAGS += $(FFTW_CFLAGS) $(PNG_CFLAGS) -march=native -mtune=native -Wall
 AM_LDFLAGS += $(FFTW_LIBS) $(PNG_LIBS) -lm
 
-FFTW_CFLAGS=`pkg-config --cflags fftw3`
-FFTW_LIBS=  `pkg-config --libs fftw3`
+FFTW_CFLAGS=`pkg-config --cflags fftw3f`
+FFTW_LIBS=  `pkg-config --libs fftw3f`
 PNG_CFLAGS=`pkg-config --cflags libpng`
 PNG_LIBS=  `pkg-config --libs libpng`
 

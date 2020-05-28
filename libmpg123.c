@@ -165,8 +165,8 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 		      unsigned long *frames_p)
 {
     /* Where to write to next in the buffer */
-    double *dp = (double *) write_to;	/* used when format == af_double */
-    char   *bp = (char *)   write_to;	/* used when format == af_signed */
+    float *fp = (float *) write_to;	/* used when format == af_float */
+    char  *bp = (char *)  write_to;	/* used when format == af_signed */
     int frames_written = 0;
     int ret = MPG123_OK;
 
@@ -219,7 +219,7 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 	    }
 
 	    switch (format) {
-	    case af_double: af->framesize = sizeof(double);	      break;
+	    case af_float:  af->framesize = sizeof(float);	      break;
 	    case af_signed: af->framesize = sizeof(short) * channels; break;
 	    default: abort();
 	    }
@@ -242,46 +242,46 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 	    bp += bytes;
 	    frames_written += (bytes/2)/channels;
 	    break;
-	case af_double:	/* Want mono doubles */
+	case af_float:	/* Want mono floats */
 	    switch (channels) {
 	    case 1:
-		{	/* Convert 16-bit signeds to doubles */
+		{	/* Convert 16-bit signeds to floats */
 		    short *isp = (short *)audio;
 		    int shorts = bytes / 2;
 
 		    if (bytes % 2 != 0) {
 			fprintf(stderr,
-				"libmad123 returns odd byte count\n");
+				"libmpg123 returns odd byte count\n");
 			return 0;
 		    }
 
 		    while (shorts > 0) {
 			/* Convert [-32767..+32767] to -1..+1 */
-			*dp++ = (double)(*isp++) / 32767.0;
+			*fp++ = (float)(*isp++) / 32767.0;
 			shorts--;
 			frames_written++;
 		    }
 		}
 		break;
 	    case 2:
-		{	/* Convert pairs of 16-bit signeds to doubles */
+		{	/* Convert pairs of 16-bit signeds to floats */
 		    short *isp = (short *)audio;
 		    int shorts = bytes / 2;
 
 		    if (bytes % 2 != 0) {
 			fprintf(stderr,
-				"libmad123 returns odd byte count\n");
+				"libmpg123 returns odd byte count\n");
 			return 0;
 		    }
 		    if (shorts % 2 != 0) {
 			fprintf(stderr,
-				"libmad123 returns odd short count for stereo file.\n");
+				"libmpg123 returns odd short count for stereo file.\n");
 			return 0;
 		    }
 
 		    while (shorts > 0) {
 			/* Convert 2 * [-32767..+32767] to -1..+1 */
-			*dp++ = ((double)isp[0] + (double)isp[1]) / 65534.0;
+			*fp++ = ((float)isp[0] + (float)isp[1]) / 65535.0f;
 			isp += 2; shorts -= 2;
 			frames_written++;
 		    }

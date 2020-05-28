@@ -47,7 +47,7 @@
 /* Functions to convert between the cache format and 16-bit signed */
 static void convert_signed_to_cached(short *to, short *from, long len);
 static void convert_cached_to_signed(short *to, short *from, long len);
-static void convert_cached_to_mono_double(double *to, short *from, long len, int channels);
+static void convert_cached_to_mono_float(float *to, short *from, long len, int channels);
 
 /* Read uncached data from the audio file into a hole in our data */
 static void fill_hole(
@@ -113,13 +113,13 @@ read_cached_audio(char *data, af_format_t format, int channels,
 	return read_audio_file(data, format, channels, start, frames_to_read);
     }
 
-    /* Fill space before the start with silence. Only happens with af_double
+    /* Fill space before the start with silence. Only happens with af_float
      * and always includes part of the actual data */
     if (start < 0) {
 	int silence = -start;
-        assert (format == af_double);
-	memset(data, 0, silence * sizeof(double));
-	data += silence * sizeof(double);
+        assert (format == af_float);
+	memset(data, 0, silence * sizeof(float));
+	data += silence * sizeof(float);
 	total_frames += silence;
 	frames_to_read -= silence;
 	start = 0;
@@ -192,13 +192,13 @@ read_cached_audio(char *data, af_format_t format, int channels,
     }
 
     /* Now convert our completed data to the required format, one of:
-     * mono doubles or same-number-of-channels shorts */
+     * mono floats or same-number-of-channels shorts */
     switch (format) {
     case af_signed:	/* 16-bit with the same number of channels */
     	convert_cached_to_signed((short *)data, af->audio_buf, samples_in_buf);
         break;
-    case af_double:
-        convert_cached_to_mono_double((double *)data, af->audio_buf, samples_in_buf,
+    case af_float:
+        convert_cached_to_mono_float((float *)data, af->audio_buf, samples_in_buf,
 				      af->channels);
         break;
     }
@@ -285,19 +285,19 @@ convert_cached_to_signed(short *to, short *from, long len)
  * taking "channels" samples from "from" for each output sample.
  */
 static void
-convert_cached_to_mono_double(double *to, short *from, long len, int channels)
+convert_cached_to_mono_float(float *to, short *from, long len, int channels)
 {
     int i;
     switch (channels) {
     case 1:
 	for (i=0; i<len; i++) {
-	    *to++ = (double)(*from++ ^ (short)0x8000) / 32767.0;
+	    *to++ = (float)(*from++ ^ (short)0x8000) / 32767.0f;
 	}
 	break;
     case 2:
 	for (i=0; i<len; i+=2) {
-	    *to++ = ((double)(from[0] ^ (short)0x8000) / 32767.0 +
-		     (double)(from[1] ^ (short)0x8000) / 32767.0) / 2;
+	    *to++ = ((float)(from[0] ^ (short)0x8000) / 32767.0f +
+		     (float)(from[1] ^ (short)0x8000) / 32767.0f) / 2;
 	    from += 2;
 	}
 	break;
@@ -307,7 +307,7 @@ convert_cached_to_mono_double(double *to, short *from, long len, int channels)
 		/* Start of a new output sample */
 		*to = 0.0;
 	    }
-	    *to += (double)(*from++ ^ (short)0x8000) / 32767.0;
+	    *to += (float)(*from++ ^ (short)0x8000) / 32767.0f;
 	    if (i % channels == channels - 1) {
 		/* End of a new output sample */
 		*to++ /= channels;

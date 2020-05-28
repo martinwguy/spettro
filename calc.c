@@ -134,7 +134,7 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 	    exit(1);
 	}
 	read_cached_audio((char *) spec->time_domain,
-			  af_double, 1,
+			  af_float, 1,
 			  lrint(calc->t * current_sample_rate()) - fftsize/2,
 			  fftsize);
 	if (!unlock_audio_file()) {
