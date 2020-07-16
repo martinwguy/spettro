@@ -3,9 +3,6 @@
 # build: Compile the named variant. Default is SDL2 and SNDFILE
 # Usage: s/build [ SDL1 | EMOTION | EMOTION_SDL ] [ AUDIOFILE | SOX ]
 #
-# For SOX, it also disables the LIBMPG123 decoding of MP3's so that
-# those libraries are used for MP3 decoding.
-#
 # s/build EMOTION_SDL SDL1 also works to build the hybrid version using
 # SDL1.2 instead of SDL2.0
 
@@ -48,7 +45,6 @@ do
     SOX)
 	sed -i -e '/^AM_CFLAGS/s/USE_LIBSNDFILE/USE_LIBSOX/' \
 	       -e '/^AM_[CLD]*FLAGS/s/SNDFILE_/SOX_/' \
-	       -e '/^AM_[CLD]*FLAGS/s/ [^ ]*MPG123[^ ]*//' \
 	       Makefile.am
 	;;
     *=*|-*)
