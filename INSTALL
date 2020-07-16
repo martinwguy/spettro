@@ -10,22 +10,19 @@
 
 # On Debian/Ubuntu/Mint you need to:
 	# Always
-	sudo apt-get install -y libfftw3-dev pkg-config
+	sudo apt-get install -y autoconf make pkg-config
+	sudo apt-get install -y libfftw3-dev libsndfile-dev libmpg123-dev
 
-	# Default library choices
-	sudo apt-get install -y libsdl2-dev libsndfile-dev libmpg123-dev
+	# Default library choice
+	sudo apt-get install -y libsdl2-dev
 
 	# If you want to use SDL1.2 instead of SDL2.0
 	# change sdl2-config to sdl-config in Makefile.am and
 	sudo apt-get install -y libsdl1.2-dev
 	# or, for -DUSE_EMOTION:
 	sudo apt-get install -y libemotion-dev
-	# or, for -DUSE_EMOTION_SDL, both of these.
 
-# for the build system:
-	sudo apt-get install -y autoconf make
-
-# and a compiler of some kind:
+# a compiler of some kind:
 	sudo apt-get install -y build-essential
 # will do the trick for sure, but
 	# sudo apt-get install -y gcc
