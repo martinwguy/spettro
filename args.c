@@ -449,14 +449,5 @@ print_version()
     printf(" SDL 2.0");
 # endif
 #endif
-    printf(" and ");
-#if USE_LIBAUDIOFILE
-    printf("libaudiofile %d.%d.%d",
-	    LIBAUDIOFILE_MAJOR_VERSION,
-	    LIBAUDIOFILE_MINOR_VERSION,
-	    LIBAUDIOFILE_MICRO_VERSION);
-#elif USE_LIBSNDFILE
-    printf("libsndfile");
-#endif
     printf("\n");
 }

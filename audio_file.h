@@ -21,13 +21,7 @@
 
 #ifndef AUDIO_FILE_H
 
-#if USE_LIBAUDIOFILE
-# include <audiofile.h>
-#elif USE_LIBSNDFILE
 # include <sndfile.h>
-#else
-# error "Define one of USE_LIBAUDIOFILE or USE_LIBSNDFILE"
-#endif
 
 #if USE_LIBMPG123
 #include <mpg123.h>
@@ -35,11 +29,7 @@
 
 typedef struct audio_file {
 	char *filename;
-#if USE_LIBAUDIOFILE
-	AFfilehandle afh;
-#elif USE_LIBSNDFILE
  	SNDFILE *sndfile;
-#endif
 #if USE_LIBMPG123
 	mpg123_handle *mh;
 	FILE *in;

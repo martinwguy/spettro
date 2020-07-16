@@ -18,13 +18,8 @@
 /*
  * audio_file.c - Stuff to read audio samples from a sound file
  *
- * Implemented using one of:
- * - libaudiofile, which can only read a few formats, and not ogg or mp3,
- * - libsndfile, which can read ogg but not mp3.
- * - libmpg123, because none of the above get MP3s right.
- *
- * Identifier names containing "audiofile" are libaudiofile library functions,
- * and those containing "audio_file" refer to this lib-independent layer.
+ * Implemented using libsndfile, which can read ogg but not mp3.
+ * and libmpg123, because spettro needs sample-accurate seeking.
  *
  * This also keeps track of all the opened audio files, treating them as if
  + they were one long file made of them all concatenated together and thus
@@ -47,12 +42,11 @@
 
 #include <string.h>		/* for memset() */
 
-#if USE_LIBSNDFILE
+/* Stuff for libsndfile */
 static int mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read);
 /* Buffer used by the above */
 static float *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
-#endif
 
 #if USE_LIBMPG123
 #include "libmpg123.h"
@@ -71,12 +65,14 @@ current_audio_file(void)
  *
  * Emotion seems not to let us get the raw sample data or sampling rate
  * and doesn't know the file length until the "open_done" event arrives
- * so we use libsndfile or libaudiofile for that.
+ * so we use libsndfile for that.
  */
 audio_file_t *
 open_audio_file(char *filename)
 {
     audio_file_t *af = Malloc(sizeof(*af));
+    SF_INFO info;
+    SNDFILE *sndfile;
 
     af->audio_buf = NULL;
     af->audio_buflen = 0;
@@ -89,43 +85,8 @@ open_audio_file(char *filename)
 	    return NULL;
 	}
 	create_audio_cache(af);
-    } else /* Use the main audio file library */
+    } else { /* Use the main audio file library */
 #endif
-    {
-
-#if USE_LIBAUDIOFILE
-    AFfilehandle afh;
-    int comptype;	/* Compression type */
-
-    if ((afh = afOpenFile(filename, "r", NULL)) == NULL) {
-	/* By default it prints a line to stderr, which is what we want.
-	 * For better error handling use afSetErrorHandler() */
-	free(af);
-	return NULL;
-    }
-    af->afh = afh;
-    af->sample_rate = afGetRate(afh, AF_DEFAULT_TRACK);
-    af->frames = afGetFrameCount(afh, AF_DEFAULT_TRACK);
-    af->channels = afGetChannels(afh, AF_DEFAULT_TRACK);
-    comptype = afGetCompression(afh, AF_DEFAULT_TRACK);
-    switch(comptype) {
-    char *compression;
-    case AF_COMPRESSION_NONE:
-	no_audio_cache(af);
-	break;
-    default:
-	compression = afQueryPointer(AF_QUERYTYPE_COMPRESSION, AF_QUERY_NAME,
-				     comptype, 0, 0);
-	if (strcmp(compression, "FLAC") != 0) {
-	    fprintf(stderr, "Unknown compression type \"%s\"\n", compression);
-	}
-	create_audio_cache(af);
-	break;
-    }
-
-#elif USE_LIBSNDFILE
-    SF_INFO info;
-    SNDFILE *sndfile;
 
     memset(&info, 0, sizeof(info));
 
@@ -148,9 +109,9 @@ open_audio_file(char *filename)
 	break;
     }
 
-#endif
-
+#ifdef USE_LIBMPG123
     }
+#endif
 
     af->filename = filename;
 
@@ -199,27 +160,13 @@ read_audio_file(char *data,
 		af_format_t format, int channels,
 		int start, int frames_to_read)
 {
-#if USE_LIBAUDIOFILE
-    AFfilehandle afh = audio_file->afh;
-#elif USE_LIBSNDFILE
     SNDFILE *sndfile = audio_file->sndfile;
-#endif
 
     /* size of one frame of output data in bytes */
     int framesize = (format == af_float ? sizeof(float) : sizeof(short))
 		    * channels;
     int total_frames = 0;	/* How many frames have we filled? */
     char *write_to = data;	/* Where to write next data */
-
-#if USE_LIBAUDIOFILE
-    if (afSetVirtualSampleFormat(afh, AF_DEFAULT_TRACK,
-	format == af_float ? AF_SAMPFMT_FLOAT : AF_SAMPFMT_TWOSCOMP,
-	format == af_float ? sizeof(float) : sizeof(short)) ||
-        afSetVirtualChannels(afh, AF_DEFAULT_TRACK, channels)) {
-            fprintf(stderr, "Can't set virtual sample format.\n");
-	    return 0;
-    }
-#endif
 
     if (start < 0) {
 	if (format != af_float) {
@@ -259,13 +206,7 @@ read_audio_file(char *data,
 
     {
 
-    if (
-#if USE_LIBAUDIOFILE
-        afSeekFrame(afh, AF_DEFAULT_TRACK, start) != start
-#elif USE_LIBSNDFILE
-        sf_seek(sndfile, start, SEEK_SET) != start
-#endif
-	) {
+    if (sf_seek(sndfile, start, SEEK_SET) != start) {
 	fprintf(stderr, "Failed to seek in audio file.\n");
 	return 0;
     }
@@ -274,13 +215,7 @@ read_audio_file(char *data,
     while (frames_to_read > 0) {
         int frames;	/* How many frames did the last read() call return? */
 
-	/* libaudio and libsndfile's sample frames are a sample for each channel */
-#if USE_LIBAUDIOFILE
-
-	/* libaudiofile does the mixing down to one channel for floats */
-        frames = afReadFrames(afh, AF_DEFAULT_TRACK, write_to, frames_to_read);
-
-#elif USE_LIBSNDFILE
+	/* libsndfile's sample frames are a sample for each channel */
 
 	if (format == af_float) {
             frames = mix_mono_read_floats(audio_file,
@@ -292,8 +227,6 @@ read_audio_file(char *data,
 	    }
 	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
 	}
-
-#endif
 
         if (frames > 0) {
 	    total_frames += frames;
@@ -322,16 +255,11 @@ close_audio_file(audio_file_t *af)
 {
     if (af == NULL) return;
 
-#if USE_LIBAUDIOFILE
-    afCloseFile(af->afh);
-#elif USE_LIBSNDFILE
     sf_close(af->sndfile);
     free(multi_data);
-#endif
     free(af);
 }
 
-#if USE_LIBSNDFILE
 /* This last function is from sndfile-tools */
 
 /*
@@ -360,11 +288,7 @@ static int
 mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)
 {
     if (af->channels == 1)
-#if USE_LIBAUDIOFILE
-	return afReadFrames(af->afh, AF_DEFAULT_TRACK, data, frames_to_read);
-#elif USE_LIBSNDFILE
 	return sf_read_float(af->sndfile, data, frames_to_read);
-#endif
 
     /* Read multi-channel data and mix it down to a single channel of floats */
     {
@@ -380,13 +304,9 @@ mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)
 	    /* Number of frames to read from file */
 	    int this_read = frames_to_read - dataout;
 
-#if USE_LIBAUDIOFILE
-	    /* A libaudiofile frame is a sample for each channel */
-	    frames_read = afReadFrames(af->afh, AF_DEFAULT_TRACK, multi_data, this_read);
-#elif USE_LIBSNDFILE
 	    /* A sf_readf_float frame is a sample for each channel */
 	    frames_read = sf_readf_float(af->sndfile, multi_data, this_read);
-#endif
+
 	    if (frames_read <= 0)
 		break;
 
@@ -404,4 +324,3 @@ mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)
 	return dataout;
   }
 } /* mix_mono_read_float */
-#endif

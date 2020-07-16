@@ -27,15 +27,10 @@
 #		broken.
 #		It needs both $(SDL_CFLAGS/LIBS) and $(EMOTION_CFLAGS/LIBS)
 # USE_SDL	uses SDL for everything. This is now the default.
-#
-# To choose the audio file-reading/decoding library, define one of
-# USE_AUDIOFILE or USE_SNDFILE and change
-# SNDFILE_{CFLAGS,LIBS} to AUDIOFILE_* or SNDFILE_* accordingly.
-# See the file WORKS for how well they work.
 
 # ---------------- These are the lines you might want to change ---------------
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBSNDFILE -DUSE_LIBMPG123
+AM_CFLAGS = -DUSE_SDL -DUSE_LIBMPG123
 AM_CFLAGS += $(SDL_CFLAGS) $(SNDFILE_CFLAGS) $(MPG123_CFLAGS)
 AM_LDFLAGS = $(SDL_LIBS) $(SNDFILE_LIBS) $(MPG123_LIBS)
 
@@ -61,8 +56,6 @@ EMOTION_CFLAGS=`pkg-config --cflags emotion evas ecore ecore-evas ecore-x eina`
 EMOTION_LIBS=  `pkg-config --libs   emotion evas ecore ecore-evas ecore-x eina`
 
 # Audio file-reading libraries
-AUDIOFILE_CFLAGS=`pkg-config --cflags audiofile`
-AUDIOFILE_LIBS=  `pkg-config --libs audiofile`
 MPG123_CFLAGS=   `pkg-config --cflags libmpg123`
 MPG123_LIBS=     `pkg-config --libs libmpg123`
 SNDFILE_CFLAGS=  `pkg-config --cflags sndfile`

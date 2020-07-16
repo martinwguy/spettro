@@ -38,10 +38,6 @@ seeking the audio file madly between the playing position and the right hand edg
 
 ============================ Audio file ================================
 
-libaudiofile returns half the audio data we asked for followed by half
-silence, and the audio fragments it gives us is the requested sample
-halved in time and doubled in frequency.
-------------------------------------------------------------------------
 Playing MP3s with libmpg123 on a slow processor results in discontinuous audio
 probably because decoding the audio for the right hand edge of the screen
 is blocking the audio-file thread for too long. If it always decodes in a
@@ -109,8 +105,6 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-------------------------------------------------------------------------
-libaudiofile returns half-length double-frequency data for signed shorts.
 ------------------------------------------------------------------------
 It doesn't play/display the second file, giving all-background
 ------------------------------------------------------------------------

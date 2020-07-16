@@ -1,7 +1,7 @@
 #! /bin/sh
 
-# build: Compile the named variant. Default is SDL2 and SNDFILE
-# Usage: s/build [ SDL1 | EMOTION | EMOTION_SDL ] [ AUDIOFILE ]
+# build: Compile the named variant. Default is SDL2
+# Usage: s/build [ SDL1 | EMOTION | EMOTION_SDL ]
 #
 # s/build EMOTION_SDL SDL1 also works to build the hybrid version using
 # SDL1.2 instead of SDL2.0
@@ -34,20 +34,12 @@ do
 	       -e '/^AM_LDFLAGS/s/SDL_LIBS/SDL_LIBS) $(EMOTION_LIBS/' Makefile.am
 	;;
 
-    SNDFILE)
-	# is the default
-	continue
-	;;
-    AUDIOFILE)
-	sed -i -e '/^AM_CFLAGS/s/USE_LIBSNDFILE/USE_LIBAUDIOFILE/' \
-	       -e '/^AM_[CLD]*FLAGS/s/SNDFILE_/AUDIOFILE_/' Makefile.am
-	;;
     *=*|-*)
     	MAKEFLAGS="$MAKEFLAGS $a";
 	;;
     *)
     	echo "$a unrecognized"
-	echo "Usage: s/build [SDL1|SDL2|EMOTION|EMOTION_SDL] [AUDIOFILE|SNDFILE]"; exit 1
+	echo "Usage: s/build [SDL1|SDL2|EMOTION|EMOTION_SDL]"; exit 1
 	;;
     esac
     shift

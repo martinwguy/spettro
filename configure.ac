@@ -25,7 +25,6 @@ AC_CHECK_HEADER([SDL.h])
 export CPPFLAGS=
 
 AC_CHECK_HEADER([sndfile.h])
-AC_CHECK_HEADER([audiofile.h])
 
 # Obligatory libraries
 AC_CHECK_LIB([m],[lrint])
@@ -39,7 +38,6 @@ AC_CHECK_LIB([ecore],[ecore_main_loop_begin])
 AC_CHECK_LIB([ecore_evas],[ecore_evas_init])
 AC_CHECK_LIB([eo],[emotion_object_add])
 AC_CHECK_LIB([sndfile],[sf_open])
-AC_CHECK_LIB([audiofile],[afOpenFile])
 
 # All done
 AC_OUTPUT

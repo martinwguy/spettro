@@ -22,9 +22,6 @@
 	sudo apt-get install -y libemotion-dev
 	# or, for -DUSE_EMOTION_SDL, both of these.
 
-	# or, for -DUSE_LIBAUDIOFILE
-	sudo apt-get install -y libaudiofile-dev
-
 # for the build system:
 	sudo apt-get install -y autoconf make
 
@@ -77,9 +74,6 @@ To do to graphics and to play the sound, by default it uses SDL 2.0.
 It can also use SDL 1.2, which includes a driver for colored ASCII-art,
 or use the Enlightenment Foundation Libraries instead, which should also
 run on Android, iOS and Windows.
-
-To read/decode the audio file, by default it uses libsndfile;
-the alternatives is libaudiofile
 
 Modify Makefile.am to make these alternative selections.
 One day we'll have ./configure --with-emotion and so on.
