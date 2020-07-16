@@ -48,9 +48,7 @@ static int mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_rea
 static float *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
 
-#if USE_LIBMPG123
 #include "libmpg123.h"
-#endif
 
 static audio_file_t *audio_file = NULL;
 
@@ -77,7 +75,6 @@ open_audio_file(char *filename)
     af->audio_buf = NULL;
     af->audio_buflen = 0;
 
-#if USE_LIBMPG123
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(filename + strlen(filename)-4, ".mp3") == 0) {
 	if (!libmpg123_open(af, filename)) {
@@ -85,33 +82,30 @@ open_audio_file(char *filename)
 	    return NULL;
 	}
 	create_audio_cache(af);
-    } else { /* Use the main audio file library */
-#endif
+    } else {
+	/* for anything else, use libsndfile */
 
-    memset(&info, 0, sizeof(info));
+	memset(&info, 0, sizeof(info));
 
-    if ((sndfile = sf_open(filename, SFM_READ, &info)) == NULL) {
-	free(af);
-	return NULL;
+	if ((sndfile = sf_open(filename, SFM_READ, &info)) == NULL) {
+	    free(af);
+	    return NULL;
+	}
+	af->sndfile = sndfile;
+	af->sample_rate = info.samplerate;
+	af->frames = info.frames;
+	af->channels = info.channels;
+	/* Switch on major format type */
+	switch (info.format & 0xFFFF0000) {
+	case SF_FORMAT_FLAC:
+	case SF_FORMAT_OGG:
+	    create_audio_cache(af);
+	    break;
+	default:	/* All other formats are uncompressed */
+	    no_audio_cache(af);
+	    break;
+	}
     }
-    af->sndfile = sndfile;
-    af->sample_rate = info.samplerate;
-    af->frames = info.frames;
-    af->channels = info.channels;
-    /* Switch on major format type */
-    switch (info.format & 0xFFFF0000) {
-    case SF_FORMAT_FLAC:
-    case SF_FORMAT_OGG:
-	create_audio_cache(af);
-	break;
-    default:	/* All other formats are uncompressed */
-	no_audio_cache(af);
-	break;
-    }
-
-#ifdef USE_LIBMPG123
-    }
-#endif
 
     af->filename = filename;
 
@@ -182,7 +176,6 @@ read_audio_file(char *data,
 	start = 0;	/* Read audio data from start of file */
     }
 
-#if USE_LIBMPG123
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
     		   ".mp3") == 0) {
@@ -201,43 +194,40 @@ read_audio_file(char *data,
 		break;
 	    }
 	}
-    } else
-#endif
+    } else {
+	/* and anything else with libsndfile */
 
-    {
-
-    if (sf_seek(sndfile, start, SEEK_SET) != start) {
-	fprintf(stderr, "Failed to seek in audio file.\n");
-	return 0;
-    }
-
-    /* Read from the file until we have read all requested samples */
-    while (frames_to_read > 0) {
-        int frames;	/* How many frames did the last read() call return? */
-
-	/* libsndfile's sample frames are a sample for each channel */
-
-	if (format == af_float) {
-            frames = mix_mono_read_floats(audio_file,
-					   (float *)write_to, frames_to_read);
-	} else {
-	    if (channels != audio_file->channels) {
-		fprintf(stderr, "Wrong number of channels in signed audio read!\n");
-		return 0;
-	    }
-	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
+	if (sf_seek(sndfile, start, SEEK_SET) != start) {
+	    fprintf(stderr, "Failed to seek in audio file.\n");
+	    return 0;
 	}
 
-        if (frames > 0) {
-	    total_frames += frames;
-            write_to += frames * framesize;
-            frames_to_read -= frames;
-        } else {
-            /* We ask it to read past EOF so failure is normal */
-	    break;
-        }
-    }
+	/* Read from the file until we have read all requested samples */
+	while (frames_to_read > 0) {
+	    int frames;	/* How many frames did the last read() call return? */
 
+	    /* libsndfile's sample frames are a sample for each channel */
+
+	    if (format == af_float) {
+		frames = mix_mono_read_floats(audio_file,
+					       (float *)write_to, frames_to_read);
+	    } else {
+		if (channels != audio_file->channels) {
+		    fprintf(stderr, "Wrong number of channels in signed audio read!\n");
+		    return 0;
+		}
+		frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
+	    }
+
+	    if (frames > 0) {
+		total_frames += frames;
+		write_to += frames * framesize;
+		frames_to_read -= frames;
+	    } else {
+		/* We ask it to read past EOF so failure is normal */
+		break;
+	    }
+	}
     }
 
     /* If it stopped before reading all frames, fill the rest with silence */

@@ -22,19 +22,17 @@
 #ifndef AUDIO_FILE_H
 
 # include <sndfile.h>
-
-#if USE_LIBMPG123
 #include <mpg123.h>
-#endif
 
 typedef struct audio_file {
 	char *filename;
  	SNDFILE *sndfile;
-#if USE_LIBMPG123
+	
+	/* libmpg123 stuff */
 	mpg123_handle *mh;
 	FILE *in;
 	int framesize;
-#endif
+
 	double sample_rate;
 	unsigned long frames;	/* The file has (frames*channels) samples */
 	unsigned channels;

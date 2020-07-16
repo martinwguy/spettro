@@ -30,7 +30,7 @@
 
 # ---------------- These are the lines you might want to change ---------------
 
-AM_CFLAGS = -DUSE_SDL -DUSE_LIBMPG123
+AM_CFLAGS = -DUSE_SDL
 AM_CFLAGS += $(SDL_CFLAGS) $(SNDFILE_CFLAGS) $(MPG123_CFLAGS)
 AM_LDFLAGS = $(SDL_LIBS) $(SNDFILE_LIBS) $(MPG123_LIBS)
 

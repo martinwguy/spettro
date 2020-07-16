@@ -21,8 +21,6 @@
  * by the mpg123 project - free software under the terms of the LGPL 2.1
  */
 
-#if USE_LIBMPG123
-
 #include "spettro.h"
 #include "libmpg123.h"
 
@@ -303,5 +301,3 @@ libmpg123_close(audio_file_t *af)
     fclose(af->in);
     mpg123_delete(af->mh);
 }
-
-#endif
