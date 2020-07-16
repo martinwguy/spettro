@@ -42,7 +42,6 @@
 #endif
 
 #include "audio_file.h"
-#include "audio_cache.h"
 #include "cache.h"
 #include "calc.h"
 #include "gui.h"	/* For RESULT_EVENT */
@@ -133,7 +132,7 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 	    fprintf(stderr, "Cannot lock audio file\n");
 	    exit(1);
 	}
-	read_cached_audio((char *) spec->time_domain,
+	read_audio_file((char *) spec->time_domain,
 			  af_float, 1,
 			  lrint(calc->t * current_sample_rate()) - fftsize/2,
 			  fftsize);

@@ -38,51 +38,6 @@ seeking the audio file madly between the playing position and the right hand edg
 
 ============================ Audio file ================================
 
-Playing MP3s with libmpg123 on a slow processor results in discontinuous audio
-probably because decoding the audio for the right hand edge of the screen
-is blocking the audio-file thread for too long. If it always decodes in a
-straight line, could we launch it as a separate process?
-Shouldn't it get the decoded audio from the audio cache?
-
-Observation: Sometimes, when being lumpy, it takes
-Locked audio file in 224352 us.
-Locked audio file in 177735 us.
-Locked audio file in 194932 us.
-but there are not enough of these to match all the jumps in the audio;
-usually it only takes max 2 us to lock the audio file, and locking
-the audio cache always takes max 1us.
-
-However, read_audio_file() is taking up to 12000 us, most commonly
-3500-4000 us, or 3 or 4 milliseconds.
-------------------------------------------------------------------------
-libmpg123 without a cache doesn't even decode most of the audio, saying:
-Can't seek to offset -1 in cache file: lseek returns 0 (6 times)
-lseek: Illegal seek
-Can't seek to offset -1 in cache file: lseek returns 1764
-lseek: Illegal seek
-Can't seek to offset -1 in cache file: lseek returns 3528
-lseek: Illegal seek
-Can't seek to offset -1 in cache file: lseek returns 5292
-lseek: Illegal seek
-Can't seek to offset -1 in cache file: lseek returns 7056
-lseek: Illegal seek
-Can't seek to offset -1 in cache file: lseek returns 8820
-lseek: Illegal seek
-Can't seek to offset -1 in cache file: lseek returns 10584
-lseek: Illegal seek
-colormap: array index is -2147483648 because value is -nan.
-colormap: array index is -2147483648 because value is -nan.
-colormap: array index is -2147483648 because value is -nan.
-...
-
-Was: libmpg123 without an audio_cache clags when end-of-file appears on screen.
-libmpg123_read_frames() is whizzing at 100%CPU and playing stops because
-the audio file is locked and hitting Space makes the main loop hang in
-pause_audio::SDL_PauseAudio()
-------------------------------------------------------------------------
-libmpg123 with a cache says, when EOF appears on the screen:
-"Error: Error reading the stream. (code 18)" a few dozen times.
-------------------------------------------------------------------------
 libmpg123 fails to open "letter from home 64kbps.mp3"
 
 Error: Unable to set up output format! (code 1)Can't read the first frame.

@@ -35,8 +35,6 @@ Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
 ------------------------------------------------------------------------
 Keep settings from one run to another (softvol, fftfreq etc)
 ------------------------------------------------------------------------
-Change Makefile flags to USE_SDL1/USE_SDL2
-------------------------------------------------------------------------
 On frequency axis, add single digit 8 or whatever at the unnumbered ticks
 and/or increse the number of numbers according to the height of the graph.
 -or-
@@ -81,16 +79,11 @@ Compile the Enlightenment port for Android, iOS and Windows!
 Pressing the same overlay key again cycles through white, black, none.
 Do the same for bar lines. Save last_key_pressed?
 ------------------------------------------------------------------------
-In audio file reading, convert mono doubles to mono floats.
-------------------------------------------------------------------------
 Be able to tune A to a different frequency & up/down it via the GUI.
 Or cmdline --tune A4=440.
 If no octave is given, --tune F#=710 retunes the F# nearest to 710.
 ------------------------------------------------------------------------
 Something to show how far through the file you are (like a scroll bar)
-------------------------------------------------------------------------
-Use floating-point decoder libraries MP3 files' mono-double output and
-see if the output is less noisy like http://i.imgur.com/DxnNBwM.jpg
 ------------------------------------------------------------------------
 Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
@@ -119,9 +112,6 @@ When scrolling to playing position, take into account the timer interval
 to position the display at the middle of the forthcoming timer interval.
 Currently it syncs to the playing time, which then moves ahead so it
 lags a little.
-------------------------------------------------------------------------
-Convert all doubles to floats, to save space (?) and on ARM registers
-in fn params?
 ------------------------------------------------------------------------
 Make Ctrl-g/G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
@@ -165,19 +155,11 @@ It would be better just to draw the lines and, when turning them off, to
 repaint only those lines, not the whole columns.
 When removing, though, check for coincidence with other lines.
 ------------------------------------------------------------------------
-Try making MP3 seeks seek to 2 blocks before the desired position,
-decode them and throw the extra blocks away, and see if this makes the
-noisy MP3 formats improve.
-------------------------------------------------------------------------
 cache.c:128 clang reports constant condition at window == -1
 ------------------------------------------------------------------------
 Using a palettized video mode may be interesting.
 ------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
-------------------------------------------------------------------------
-Be able to launch external audio decoders on a pipe & cache results.
-------------------------------------------------------------------------
-Always decode to disk cache.
 ------------------------------------------------------------------------
 Implement video output.
 ------------------------------------------------------------------------
@@ -197,6 +179,4 @@ Multiple file playing:
 - Also mention |<< and >>| media keys in the manual.
 ------------------------------------------------------------------------
 Automatically increase softvol progressively
-------------------------------------------------------------------------
-See how long the threads have to wait for the various locks.
 ------------------------------------------------------------------------

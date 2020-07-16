@@ -87,7 +87,6 @@
  */
 #include "args.h"
 #include "audio.h"
-#include "audio_cache.h"
 #include "audio_file.h"
 #include "axes.h"
 #include "cache.h"
@@ -230,7 +229,6 @@ main(int argc, char **argv)
 	    stop_scheduler();
 	    drop_all_work();
 	    drop_all_results();
-	    no_audio_cache(af);
 	}
     }
 
@@ -239,7 +237,6 @@ main(int argc, char **argv)
     /* Free memory to make valgrind happier */
     drop_all_work();
     drop_all_results();
-    no_audio_cache(af);
     free_interpolate_cache();
     free_row_overlay();
     free_windows();

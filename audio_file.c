@@ -34,7 +34,6 @@
 #include "spettro.h"
 #include "audio_file.h"		/* Our header file */
 
-#include "audio_cache.h"
 #include "convert.h"
 #include "libmpg123.h"
 #include "lock.h"
@@ -81,7 +80,6 @@ open_audio_file(char *filename)
 	    free(af);
 	    return NULL;
 	}
-	create_audio_cache(af);
     } else {
 	/* for anything else, use libsndfile */
 
@@ -95,16 +93,6 @@ open_audio_file(char *filename)
 	af->sample_rate = info.samplerate;
 	af->frames = info.frames;
 	af->channels = info.channels;
-	/* Switch on major format type */
-	switch (info.format & 0xFFFF0000) {
-	case SF_FORMAT_FLAC:
-	case SF_FORMAT_OGG:
-	    create_audio_cache(af);
-	    break;
-	default:	/* All other formats are uncompressed */
-	    no_audio_cache(af);
-	    break;
-	}
     }
 
     af->filename = filename;
