@@ -34,9 +34,6 @@
 #if ECORE_MAIN
 #include <Ecore.h>	/* For EFL_VERSION_* */
 #endif
-#if USE_LIBAV
-#include "libavformat/version.h"
-#endif
 
 static void print_version(void);
 
@@ -462,8 +459,6 @@ print_version()
     printf("libsndfile");
 #elif USE_LIBSOX
     printf("libSoX %s", sox_version());
-#elif USE_LIBAV
-    printf("FFMPEG's libav %s", AV_STRINGIFY(LIBAVFORMAT_VERSION));
 #endif
     printf("\n");
 }

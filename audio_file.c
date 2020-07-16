@@ -23,8 +23,6 @@
  * - libsndfile, which can read ogg but not mp3.
  * - libsox, with more formats but sox_seek() is broken for
  *	linear audio formats and mp3 gets corrupt data if you seek.
- * - libav, but only FLAC and WAV are known to work but it may decode
- *	many formats including films.
  * - libmpg123, because none of the above get MP3s right.
  *
  * Identifier names containing "audiofile" are libaudiofile library functions,
@@ -58,8 +56,6 @@ static float *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
 #elif USE_LIBSOX
 static size_t sox_frame;	/* Which will be returned if you sox_read? */
-#elif USE_LIBAV
-# include "libav.h"
 #endif
 
 #if USE_LIBMPG123
@@ -182,13 +178,6 @@ open_audio_file(char *filename)
     }
     sox_frame = 0;
 
-#elif USE_LIBAV
-    libav_open_audio_file(&af, filename);
-    if (af == NULL) {
-	free(af);
-	return NULL;
-    }
-    create_audio_cache(af);
 #endif
 
     }
@@ -337,8 +326,6 @@ read_audio_file(char *data,
 #elif USE_LIBSOX
 	/* sox seeks in samples, not frames */
 	sox_seek(sf, start * audio_file->channels, SOX_SEEK_SET) != 0
-#elif USE_LIBAV
-	libav_seek(start) != 0
 #endif
 	) {
 	fprintf(stderr, "Failed to seek in audio file.\n");
@@ -461,10 +448,6 @@ read_audio_file(char *data,
 	   abort();
 	}
 
-#elif USE_LIBAV
-
-	frames = libav_read_frames(write_to, frames_to_read, format);
-
 #endif
 
         if (frames > 0) {
@@ -502,8 +485,6 @@ close_audio_file(audio_file_t *af)
 #elif USE_LIBSOX
     sox_close(af->sf);
     free(sox_buf);
-#elif LIBAV
-    libav_close();
 #endif
     free(af);
 }

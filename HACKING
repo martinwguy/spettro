@@ -53,11 +53,9 @@ colormap.c	Turns FFT results into a range of colours.
 convert.c	Utility functions to map various forms of frequency and time.
 do_key.c	Given an internal key code, calls the functions to perform them.
 dump.c		Writes the current screen to a PNG file (-o option and O key).
-filtering_audio.c A test file for libav, not used in the main program.
 gui.c		A wrapper for the Graphical Toolkit being used.
 interpolate.c	Maps linear FFT results onto the logarithmic vertical axis.
 key.c		Maps key names received from the GUI to internal key names.
-libav.c		A wrapper for when libav is the audio-decoding library in use.
 libmpg123.c	A wrapper for when libmpg123 is being used to decode MP3 files.
 lock.c		A wrapper for whichever resource locking library is being used.
 main.c		Initialize spettro, sets it running and responds to events.

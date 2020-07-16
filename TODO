@@ -69,8 +69,6 @@ Make Ctrl-left click play from here.
 ------------------------------------------------------------------------
 Decode compressed audio front-to-back without seeking
 ------------------------------------------------------------------------
-With libav, only cache compressed formats.
-------------------------------------------------------------------------
 Be able to save the audio fragment between left and right as a WAV file.
 ------------------------------------------------------------------------
 Be able to play the l-r selection
@@ -82,8 +80,6 @@ Compile the Enlightenment port for Android, iOS and Windows!
 ------------------------------------------------------------------------
 Pressing the same overlay key again cycles through white, black, none.
 Do the same for bar lines. Save last_key_pressed?
-------------------------------------------------------------------------
-Add failure return values from libav_open_audio_file() and libmpg123_*()
 ------------------------------------------------------------------------
 In audio file reading, convert mono doubles to mono floats.
 ------------------------------------------------------------------------

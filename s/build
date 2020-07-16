@@ -1,9 +1,9 @@
 #! /bin/sh
 
 # build: Compile the named variant. Default is SDL2 and SNDFILE
-# Usage: s/build [ SDL1 | EMOTION | EMOTION_SDL ] [ AUDIOFILE | SOX | AV ]
+# Usage: s/build [ SDL1 | EMOTION | EMOTION_SDL ] [ AUDIOFILE | SOX ]
 #
-# For SOX and AV, it also disables the LIBMPG123 decoding of MP3's so that
+# For SOX, it also disables the LIBMPG123 decoding of MP3's so that
 # those libraries are used for MP3 decoding.
 #
 # s/build EMOTION_SDL SDL1 also works to build the hybrid version using
@@ -51,18 +51,12 @@ do
 	       -e '/^AM_[CLD]*FLAGS/s/ [^ ]*MPG123[^ ]*//' \
 	       Makefile.am
 	;;
-    AV)
-	sed -i -e '/^AM_CFLAGS/s/USE_LIBSNDFILE/USE_LIBAV/' \
-	       -e '/^AM_[CLD]*FLAGS/s/SNDFILE_/AV_/' \
-	       -e '/^AM_[CLD]*FLAGS/s/ [^ ]*MPG123[^ ]*//' \
-	       Makefile.am
-	;;
     *=*|-*)
     	MAKEFLAGS="$MAKEFLAGS $a";
 	;;
     *)
     	echo "$a unrecognized"
-	echo "Usage: s/build [SDL1|SDL2|EMOTION|EMOTION_SDL] [SOX|AUDIOFILE|SNDFILE|AV]"; exit 1
+	echo "Usage: s/build [SDL1|SDL2|EMOTION|EMOTION_SDL] [SOX|AUDIOFILE|SNDFILE]"; exit 1
 	;;
     esac
     shift

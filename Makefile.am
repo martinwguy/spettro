@@ -29,8 +29,8 @@
 # USE_SDL	uses SDL for everything. This is now the default.
 #
 # To choose the audio file-reading/decoding library, define one of:
-# USE_AUDIOFILE, USE_SNDFILE, USE_SOX and USE_AV and change
-# SNDFILE_{CFLAGS,LIBS} to AUDIOFILE_*, SNDFILE_*, SOX_* or AV_* accordingly.
+# USE_AUDIOFILE, USE_SNDFILE, USE_SOX and change
+# SNDFILE_{CFLAGS,LIBS} to AUDIOFILE_*, SNDFILE_* or SOX_* accordingly.
 # See the file WORKS for how well they work.
 
 # ---------------- These are the lines you might want to change ---------------
@@ -69,10 +69,8 @@ SNDFILE_CFLAGS=  `pkg-config --cflags sndfile`
 SNDFILE_LIBS=    `pkg-config --libs sndfile`
 SOX_CFLAGS=      `pkg-config --cflags sox`
 SOX_LIBS=        `pkg-config --libs sox`
-AV_CFLAGS=`pkg-config --cflags libavformat libavcodec libavutil libavfilter`
-AV_LIBS=  `pkg-config --libs   libavformat libavcodec libavutil libavfilter`
 
-bin_PROGRAMS = spettro filtering_audio
+bin_PROGRAMS = spettro
 
 desktopdir = $(datadir)/applications
 desktop_DATA = spettro.desktop
@@ -82,17 +80,15 @@ icon_DATA = spettro.png
 spettro_SOURCES = main.c config.h spettro.h \
 	alloc.c args.c audio.c audio_cache.c audio_file.c axes.c \
 	barlines.c cache.c calc.c colormap.c convert.c do_key.c dump.c \
-	gui.c interpolate.c key.c libav.c libmpg123.c lock.c mouse.c \
+	gui.c interpolate.c key.c libmpg123.c lock.c mouse.c \
 	paint.c overlay.c scheduler.c spectrum.c text.c timer.c \
 	ui.c ui_funcs.c window.c \
 	\
 	alloc.h args.h audio.h audio_cache.h audio_file.h axes.h \
 	barlines.h cache.h calc.h colormap.h convert.h do_key.h dump.h \
-	gui.h interpolate.h key.h libav.h libmpg123.h lock.h mouse.h \
+	gui.h interpolate.h key.h libmpg123.h lock.h mouse.h \
 	paint.h overlay.h scheduler.h spectrum.h text.h timer.h \
 	ui.h ui_funcs.h window.h
-
-filtering_audio_SOURCES = filtering_audio.c libav.c libav.h
 
 # If the Makefile.am changes, recompile everything to avoid using
 # the wrongly-compiled .o files.

@@ -2,7 +2,7 @@
 
 # check-builds.sh: See if the source compiles with all USE_ variants
 
-for a in SDL1 SDL2 EMOTION EMOTION_SDL AUDIOFILE SNDFILE SOX AV
+for a in SDL1 SDL2 EMOTION EMOTION_SDL AUDIOFILE SNDFILE SOX
 do
     s/build $a "$@"
     ./spettro --version

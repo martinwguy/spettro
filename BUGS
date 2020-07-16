@@ -44,12 +44,7 @@ halved in time and doubled in frequency.
 ------------------------------------------------------------------------
 libsox: MP3 decoding via MAD is noisy. Both audio and the graphic are bad.
 This may be because it is seeking to the beginning/end of a frame instead
-of to a sample, There's code to take audio from halfway through a frame
-in libav.c
-------------------------------------------------------------------------
-libav seeks to packet boundaries on MP3,FLAC,Ogg
-------------------------------------------------------------------------
-libav plays AAC and mp4 at one sixth of the speed.
+of to a sample.
 ------------------------------------------------------------------------
 Playing MP3s with libmpg123 on a slow processor results in discontinuous audio
 probably because decoding the audio for the right hand edge of the screen

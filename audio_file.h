@@ -27,10 +27,8 @@
 # include <sndfile.h>
 #elif USE_LIBSOX
 # include <sox.h>
-#elif USE_LIBAV
-  /* nothing */
 #else
-# error "Define one of USE_LIBAUDIOFILE USE_LIBSNDFILE USE_LIBSOX USE_LIBAV"
+# error "Define one of USE_LIBAUDIOFILE USE_LIBSNDFILE USE_LIBSOX"
 #endif
 
 #if USE_LIBMPG123
@@ -45,8 +43,6 @@ typedef struct audio_file {
  	SNDFILE *sndfile;
 #elif USE_LIBSOX
 	sox_format_t *sf;
-#elif USE_LIBAV
-	/* keeps its private data as statics in libav.c */
 #endif
 #if USE_LIBMPG123
 	mpg123_handle *mh;
