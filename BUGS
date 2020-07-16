@@ -42,10 +42,6 @@ libaudiofile returns half the audio data we asked for followed by half
 silence, and the audio fragments it gives us is the requested sample
 halved in time and doubled in frequency.
 ------------------------------------------------------------------------
-libsox: MP3 decoding via MAD is noisy. Both audio and the graphic are bad.
-This may be because it is seeking to the beginning/end of a frame instead
-of to a sample.
-------------------------------------------------------------------------
 Playing MP3s with libmpg123 on a slow processor results in discontinuous audio
 probably because decoding the audio for the right hand edge of the screen
 is blocking the audio-file thread for too long. If it always decodes in a

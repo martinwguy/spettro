@@ -4,35 +4,30 @@ Which audio file-reading libraries work with which file format types?
    a) From mono files?  b) From stereo files (-2)?
 3) Does it get the mono-double audio data right for display?
 
-	  AUDIOFILE	   SNDFILE	     SOX
-	audio	video	audio	video	audio	video
+	  AUDIOFILE	   SNDFILE
+	audio	video	audio	video
 
-AAC	--		--		--
-AAC-2	--		--		--
+AAC	--		--
+AAC-2	--		--
 
-FLAC	UP	UP	OK	OK	OK	OK
-FLAC-2	UP	UP	OK	OK	OK	OK
+FLAC	UP	UP	OK	OK
+FLAC-2	UP	UP	OK	OK
 
-MP3	--		--		GAPS(1)	GAPS
-MP3-2	--		--		GAPS(1)	GAPS
+MP3	--		--
+MP3-2	--		--
 
-MP4	--		--		--
-MP4-2	--		--		--
+MP4	--		--
+MP4-2	--		--
 
-OGG	--		OK	OK	OK	OK
-OGG-2	--		OK	OK	OK	OK
+OGG	--		OK	OK
+OGG-2	--		OK	OK
 
-WAV	UP	OK	OK	OK	OK	OK
-WAV-2	UP	OK	OK	OK	OK	OK
-
-
-1) Messages "mp3: MAD lost sync" "mp3: recoverable MAD error" and
-	    "Failed to seek in audio file"
+WAV	UP	OK	OK	OK
+WAV-2	UP	OK	OK	OK
 
 == Legend ==
 --: Doesn't even try to read the file
 OK: Looks or sounds right
-GAPS: The audio is like a dotted line
 
 libmpg123 decoding:
 

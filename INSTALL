@@ -20,10 +20,8 @@
 	sudo apt-get install -y libsdl1.2-dev
 	# or, for -DUSE_EMOTION:
 	sudo apt-get install -y libemotion-dev
-	# or, for -DUSE_EMOTION_SDL, both
+	# or, for -DUSE_EMOTION_SDL, both of these.
 
-	# For -DUSE_LIBSOX
-	sudo apt-get install -y libsox-dev
 	# or, for -DUSE_LIBAUDIOFILE
 	sudo apt-get install -y libaudiofile-dev
 
@@ -81,8 +79,7 @@ or use the Enlightenment Foundation Libraries instead, which should also
 run on Android, iOS and Windows.
 
 To read/decode the audio file, by default it uses libsndfile;
-alternatives are libaudiofile or libsox.
-None work well. See the file WORKS.
+the alternatives is libaudiofile
 
 Modify Makefile.am to make these alternative selections.
 One day we'll have ./configure --with-emotion and so on.

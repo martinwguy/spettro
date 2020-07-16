@@ -457,8 +457,6 @@ print_version()
 	    LIBAUDIOFILE_MICRO_VERSION);
 #elif USE_LIBSNDFILE
     printf("libsndfile");
-#elif USE_LIBSOX
-    printf("libSoX %s", sox_version());
 #endif
     printf("\n");
 }

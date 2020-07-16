@@ -21,8 +21,6 @@
  * Implemented using one of:
  * - libaudiofile, which can only read a few formats, and not ogg or mp3,
  * - libsndfile, which can read ogg but not mp3.
- * - libsox, with more formats but sox_seek() is broken for
- *	linear audio formats and mp3 gets corrupt data if you seek.
  * - libmpg123, because none of the above get MP3s right.
  *
  * Identifier names containing "audiofile" are libaudiofile library functions,
@@ -54,8 +52,6 @@ static int mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_rea
 /* Buffer used by the above */
 static float *multi_data = NULL;   /* buffer for incoming samples */
 static int multi_data_samples = 0;  /* length of buffer in samples */
-#elif USE_LIBSOX
-static size_t sox_frame;	/* Which will be returned if you sox_read? */
 #endif
 
 #if USE_LIBMPG123
@@ -75,7 +71,7 @@ current_audio_file(void)
  *
  * Emotion seems not to let us get the raw sample data or sampling rate
  * and doesn't know the file length until the "open_done" event arrives
- * so we use libsndfile, libaudiofile or libsox for that.
+ * so we use libsndfile or libaudiofile for that.
  */
 audio_file_t *
 open_audio_file(char *filename)
@@ -152,32 +148,6 @@ open_audio_file(char *filename)
 	break;
     }
 
-#elif USE_LIBSOX
-    sox_format_t *sf;
-
-    sox_init();
-    sox_format_init();
-    sf = sox_open_read(filename, NULL, NULL, NULL);
-    if (sf == NULL) {
-	free(af);
-	return NULL;
-    }
-    af->sf = sf;
-    af->sample_rate = sf->signal.rate;
-    af->channels = sf->signal.channels;
-    af->frames = sf->signal.length / af->channels;
-    switch (sf->encoding.encoding) {	/* See sox.h */
-    case SOX_ENCODING_FLAC:
-    case SOX_ENCODING_MP3:       /**< MP3 compression */
-    case SOX_ENCODING_VORBIS:    /**< Vorbis compression */
-	create_audio_cache(af);
-	break;
-    default:	/* linear type - do not cache */
-	no_audio_cache(af);
-	break;
-    }
-    sox_frame = 0;
-
 #endif
 
     }
@@ -224,14 +194,6 @@ current_sample_rate()
  * "frames_to_read" is the number of multi-sample frames to fill "data" with.
  */
 
-#if USE_LIBSOX
-/* Sox gives us the samples as 32-bit signed integers so
- * accept them that way into a private buffer and then convert them
- */
-static sox_sample_t *sox_buf = NULL;
-static size_t sox_buf_size = 0;	/* Size of sox_buf in samples */
-#endif
-
 int
 read_audio_file(char *data,
 		af_format_t format, int channels,
@@ -241,9 +203,6 @@ read_audio_file(char *data,
     AFfilehandle afh = audio_file->afh;
 #elif USE_LIBSNDFILE
     SNDFILE *sndfile = audio_file->sndfile;
-#elif USE_LIBSOX
-    sox_format_t *sf = audio_file->sf;
-    int samples_to_read, samples;
 #endif
 
     /* size of one frame of output data in bytes */
@@ -300,50 +259,16 @@ read_audio_file(char *data,
 
     {
 
-#if USE_LIBSOX
-    /* sox_seek() (in libsox-14.4.1) is broken:
-     * if you seek to an earlier position it does nothing
-     * and just returns the data linearly to end of file.
-     * Work round this by closing and reopening the file.
-     */
-    if (start < sox_frame) {
-	sox_close(sf);
-	sf = sox_open_read(audio_file->filename, NULL, NULL, NULL);
-	sox_frame = 0;
-	if (sf == NULL) {
-	    fprintf(stderr, "libsox failed to reopen \"%s\"\n", audio_file->filename);
-	    return 0;
-	}
-	audio_file->sf = sf;
-    }
-#endif
-
     if (
 #if USE_LIBAUDIOFILE
         afSeekFrame(afh, AF_DEFAULT_TRACK, start) != start
 #elif USE_LIBSNDFILE
         sf_seek(sndfile, start, SEEK_SET) != start
-#elif USE_LIBSOX
-	/* sox seeks in samples, not frames */
-	sox_seek(sf, start * audio_file->channels, SOX_SEEK_SET) != 0
 #endif
 	) {
 	fprintf(stderr, "Failed to seek in audio file.\n");
 	return 0;
     }
-
-#if USE_LIBSOX
-    sox_frame = start;	/* Next audio should be returned from this offset */
-
-    /* sox reads a number of samples, not frames */
-    samples_to_read = frames_to_read * audio_file->channels;
-
-    /* Adjust size of 32-bit-sample buffer for the raw data from sox_read() */
-    if (sox_buf_size < samples_to_read) {
-	sox_buf = Realloc(sox_buf, samples_to_read * sizeof(sox_sample_t));
-	sox_buf_size = samples_to_read;
-    }
-#endif
 
     /* Read from the file until we have read all requested samples */
     while (frames_to_read > 0) {
@@ -366,86 +291,6 @@ read_audio_file(char *data,
 		return 0;
 	    }
 	    frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
-	}
-
-#elif USE_LIBSOX
-
-	/* Shadows of write_to with an appropriate type */
-    	float *fp;
-    	signed short *sp;
-
-	samples_to_read = frames_to_read * audio_file->channels;
-	samples = sox_read(sf, sox_buf, samples_to_read);
-	if (samples == SOX_EOF)  {
-	    frames = 0;
-	}
-	frames = samples / audio_file->channels;
-	if (frames == 0) break;
-
-	sox_frame += frames;
-
-	/* Convert to desired format */
-	switch (format) {
-	case af_float:	/* Mono floats for FFT */
-	    if (channels != 1) {
-		fprintf(stderr, "Asking for float audio with %d channels",
-			channels);
-		return 0;
-	    }
-
-    	    fp = (float *) write_to;
-	    /* Convert mono values to float */
-	    if (audio_file->channels == 1) {
-		/* Convert mono samples to floats */
-		sox_sample_t *bp = sox_buf;	/* Where to read from */
-		int clips = 0;
-		int i;
-
-		(void)clips;	/* Disable "unused variable" warning */
-		for (i=0; i<samples; i++) {
-		    *fp++ = SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
-		}
-	    } else {
-		/* Convert multi-sample frames to mono floats */
-		sox_sample_t *bp = sox_buf;
-		int i;
-
-		for (i=0; i<frames; i++) {
-		    int channel;
-		    int clips = 0;
-
-		    *fp = 0.0;
-		    for (channel=0; channel < audio_file->channels; channel++)
-			*fp += SOX_SAMPLE_TO_FLOAT_64BIT(*bp++, clips);
-		    *fp++ /= audio_file->channels;
-		    (void)clips;	/* Disable "unused variable" warning */
-		}
-	    }
-	    break;
-	case af_signed:	/* As-is for playing */
-	    if (audio_file->channels != channels) {
-		fprintf(stderr, "Asking for signed audio with %d channels",
-			channels);
-		return 0;
-	    }
-	    {
-		sox_sample_t *bp = sox_buf;
-		int i;
-
-    	        sp = (signed short *) write_to;
-		for (i=0; i<samples; i++) {
-		    sox_sample_t sox_macro_temp_sample;
-		    double sox_macro_temp_double;
-		    int clips = 0;
-
-		    *sp++ = SOX_SAMPLE_TO_SIGNED(16, *bp++, clips);
-		    (void)clips;	/* Disable "unused variable" warning */
-		}
-	    }
-	    break;
-	default:
-	   fprintf(stderr, "Internal error: Unknown sample format.\n");
-	   abort();
 	}
 
 #endif
@@ -482,9 +327,6 @@ close_audio_file(audio_file_t *af)
 #elif USE_LIBSNDFILE
     sf_close(af->sndfile);
     free(multi_data);
-#elif USE_LIBSOX
-    sox_close(af->sf);
-    free(sox_buf);
 #endif
     free(af);
 }

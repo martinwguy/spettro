@@ -25,10 +25,8 @@
 # include <audiofile.h>
 #elif USE_LIBSNDFILE
 # include <sndfile.h>
-#elif USE_LIBSOX
-# include <sox.h>
 #else
-# error "Define one of USE_LIBAUDIOFILE USE_LIBSNDFILE USE_LIBSOX"
+# error "Define one of USE_LIBAUDIOFILE or USE_LIBSNDFILE"
 #endif
 
 #if USE_LIBMPG123
@@ -41,8 +39,6 @@ typedef struct audio_file {
 	AFfilehandle afh;
 #elif USE_LIBSNDFILE
  	SNDFILE *sndfile;
-#elif USE_LIBSOX
-	sox_format_t *sf;
 #endif
 #if USE_LIBMPG123
 	mpg123_handle *mh;

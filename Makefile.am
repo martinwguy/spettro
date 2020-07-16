@@ -28,9 +28,9 @@
 #		It needs both $(SDL_CFLAGS/LIBS) and $(EMOTION_CFLAGS/LIBS)
 # USE_SDL	uses SDL for everything. This is now the default.
 #
-# To choose the audio file-reading/decoding library, define one of:
-# USE_AUDIOFILE, USE_SNDFILE, USE_SOX and change
-# SNDFILE_{CFLAGS,LIBS} to AUDIOFILE_*, SNDFILE_* or SOX_* accordingly.
+# To choose the audio file-reading/decoding library, define one of
+# USE_AUDIOFILE or USE_SNDFILE and change
+# SNDFILE_{CFLAGS,LIBS} to AUDIOFILE_* or SNDFILE_* accordingly.
 # See the file WORKS for how well they work.
 
 # ---------------- These are the lines you might want to change ---------------
@@ -67,8 +67,6 @@ MPG123_CFLAGS=   `pkg-config --cflags libmpg123`
 MPG123_LIBS=     `pkg-config --libs libmpg123`
 SNDFILE_CFLAGS=  `pkg-config --cflags sndfile`
 SNDFILE_LIBS=    `pkg-config --libs sndfile`
-SOX_CFLAGS=      `pkg-config --cflags sox`
-SOX_LIBS=        `pkg-config --libs sox`
 
 bin_PROGRAMS = spettro
 
