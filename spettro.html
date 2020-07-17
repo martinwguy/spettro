@@ -185,17 +185,17 @@ The command-line options to set the initial position and zoom are:
       When this happens, all newly-painted pixel columns will be dimmer than the
       already-displayed ones, causing a color discontinuity when the new,
       louder pixels enter the displayed area.
-      (It used to repaint previously-painted lines when this happens,
+      (It used to repaint previously-painted columns when this happens,
       but that turned out to be too slow.)
       To repaint the whole display at the new brightness, press <B>Ctrl-L</B>.
       <BR>
-      The <B>-M</B>&nbsp;<I>logmax</I> flag lets you start with the brightest
-      color representing a pixel energy of <I>logmax</I> decibels.
-      Values above 0 make it start out darker, and
+      The <B>-M</B>&nbsp;<I>maxDB</I> flag lets you start with the brightest
+      color representing a pixel energy of <I>maxDB</I> decibels.
+      Values above 0 make the picture start out darker, and
       values below 0 make it start out brighter.
       <BR>
-      The current value of <I>logmax</I> can be found out by pressing '<B>p</B>'
-      and looking at spettro's console output.
+      The current value of <I>maxDB</I> can be found out by pressing
+      '<B>Ctrl-P</B>' and looking at spettro's console output.
 </DL>
 
 <H2>Image size and full-screen mode</H2>

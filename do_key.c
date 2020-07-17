@@ -263,13 +263,16 @@ k_contrast(key_t key)
     change_dyn_range(Shift ? by : -by);
     repaint_display(TRUE);
 }
-
+/* B and b increase/decrease the brightness of the graph by changing the
+ * loudness that is represented by the brightest pixel color.
+ */
 static void
 k_brightness(key_t key)
 {
-    float by = 1.10;	/* by 10% */
+    float by = 0.6;	/* by 6 dB */
 
-    change_logmax(Shift ? (float)1/by : by);
+    /* Shift means "more brightness", which means diminishing logmax */
+    change_logmax(Shift ? -by : by);
     repaint_display(TRUE);
 }
 

@@ -209,5 +209,5 @@ change_dyn_range(float by)
 void
 change_logmax(float by)
 {
-    logmax *= by;
+    logmax += by;
 }

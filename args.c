@@ -97,7 +97,7 @@ Y/y        Zoom in/out by a factor of two on the frequency axis\n\
 Ctrl +/-   Zoom both axes\n\
 m          Cycle through the color maps: heatmap/grayscale/gray for printers\n\
 c/C        Decrease/increase the contrast by 6dB (by 1dB if Ctrl is held down)\n\
-b/B        Decrease/increase the brightness by 10%%\n\
+b/B        Decrease/increase the brightness by 6dB\n\
 f/F        Halve/double the length of the sample taken to calculate each column\n\
 Ctrl K/D/N/B/H  Set the window function to Kaiser/Dolph/Nuttall/Blackman/Hann\n\
 w/W        Cycle forward/backward through the window functions\n\
@@ -321,8 +321,8 @@ another_letter:
 			    "");
 		    exit(1);
 		}
-		/* They should all be >= 0 */
-		if (arg < 0.0) {
+		/* They should all be >= 0 except for logmax */
+		if (arg < 0.0 && letter != 'M') {
 		    fprintf(stderr, "The argument to -%c must be positive.\n",
 		    	    letter);
 		    exit(1);
