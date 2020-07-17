@@ -31,10 +31,11 @@ It calculates duplicate results when playing.
 They seem mostly to be columns near or at the right edge.
 ------------------------------------------------------------------------
 With 4 processors, it never uses 100% CPU, even when behind in its calculations.
-Instead, the audio becomes stuttery, so presumably the calc threads are locking out
-the audio playing thread, as well as locking each other out too much.
-One solution might be to use the audio cache always and decode forwards instead of
-seeking the audio file madly between the playing position and the right hand edge.
+Instead, the audio becomes stuttery, so presumably the calc threads are locking
+out the audio playing thread, as well as locking each other out too much.
+One solution might be to pre-emptively decode any audio that might be used
+(i.e. the screen area plus lookahead and lookbehind plus half the window size)
+into a memory buffer so that requests for audio do not require locking.
 
 ============================ Audio file ================================
 
@@ -45,7 +46,8 @@ But mpg123 can play it, saying it's  MPEG 2.0 L III cbr64 22050 j-s
 
 ============================ Other ======================================
 
-On ciccio1, playing a Common Swift wav, the audio and graphics get out of sync
+On a slow processor, playing Common_Swift.wav, the audio and graphics
+get out of sync
 
 spettro -w 1280 -h 800 ~martin/rec/rondoni/*ll.wav
 
@@ -61,7 +63,8 @@ ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
 ------------------------------------------------------------------------
-It doesn't play/display the second file, giving all-background
+It doesn't play/display anything but the first filename argument,
+giving all-background on subsequent ones.
 ------------------------------------------------------------------------
 EMOTION: softvol changes but has no effect
 ------------------------------------------------------------------------
