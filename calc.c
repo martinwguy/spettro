@@ -128,18 +128,10 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	if (!lock_audio_file()) {
-	    fprintf(stderr, "Cannot lock audio file\n");
-	    exit(1);
-	}
 	read_audio_file((char *) spec->time_domain,
 			  af_float, 1,
 			  lrint(calc->t * current_sample_rate()) - fftsize/2,
 			  fftsize);
-	if (!unlock_audio_file()) {
-	    fprintf(stderr, "Cannot unlock audio file\n");
-	    exit(1);
-	}
 
 	calc_magnitude_spectrum(spec);
 

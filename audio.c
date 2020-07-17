@@ -252,17 +252,9 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	return;
     }
 
-    if (!lock_audio_file()) {
-	fprintf(stderr, "Cannot lock audio file\n");
-	exit(1);
-    }
     frames_read = read_audio_file((char *)stream,
 				    af_signed, channels,
 				    sdl_start, frames_to_read);
-    if (!unlock_audio_file()) {
-	fprintf(stderr, "Cannot unlock audio file\n");
-	exit(1);
-    }
     if (frames_read <= 0) {
 	/* End of file or read error. Treat as end of file */
 	stop_playing();

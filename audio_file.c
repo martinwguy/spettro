@@ -164,11 +164,14 @@ read_audio_file(char *data,
 	start = 0;	/* Read audio data from start of file */
     }
 
+    lock_audio_file();
+
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
     		   ".mp3") == 0) {
 	if (libmpg123_seek(audio_file, start) == FALSE) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
+	    unlock_audio_file();
 	    return 0;
 	}
 	while (frames_to_read > 0) {
@@ -187,6 +190,7 @@ read_audio_file(char *data,
 
 	if (sf_seek(sndfile, start, SEEK_SET) != start) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
+	    unlock_audio_file();
 	    return 0;
 	}
 
@@ -202,6 +206,7 @@ read_audio_file(char *data,
 	    } else {
 		if (channels != audio_file->channels) {
 		    fprintf(stderr, "Wrong number of channels in signed audio read!\n");
+		    unlock_audio_file();
 		    return 0;
 		}
 		frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
@@ -217,6 +222,8 @@ read_audio_file(char *data,
 	    }
 	}
     }
+
+    unlock_audio_file();
 
     /* If it stopped before reading all frames, fill the rest with silence */
     if (format == af_float && frames_to_read > 0) {

@@ -91,19 +91,26 @@ unlock_fftw3()
     }
 }
 
-bool
+void
 lock_audio_file()
 {
-    if (!initialize(&audio_file_lock, &audio_file_lock_is_initialized))
-	return FALSE;
-    else
-	return do_lock(&audio_file_lock);
+    if (!initialize(&audio_file_lock, &audio_file_lock_is_initialized)) {
+	fprintf(stderr, "Failed to initialize audio file lock.\n");
+	exit(1);
+    }
+    if (!do_lock(&audio_file_lock)) {
+	fprintf(stderr, "Failed to lock audio file.\n");
+	exit(1);
+    }
 }
 
-bool
+void
 unlock_audio_file()
 {
-    return do_unlock(&audio_file_lock);
+    if (!do_unlock(&audio_file_lock)) {
+	fprintf(stderr, "Failed to unlock audio file.\n");
+	exit(1);
+    }
 }
 
 bool
