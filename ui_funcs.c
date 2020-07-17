@@ -51,10 +51,7 @@ time_pan_by(double by)
     if (DELTA_LE(playing_time, 0.0)) playing_time = 0.0;
 
     /* If we're at/after the end of the piece, stop */
-    if (DELTA_GE(playing_time, audio_length))
-	playing_time = audio_length;
-
-    if (playing_time == audio_length) {
+    if (DELTA_GE(playing_time, audio_length)) {
 	/* If playing, stop */
 	stop_playing();
 	playing_time = audio_length;
@@ -64,9 +61,8 @@ time_pan_by(double by)
 
     /* If moving left after it has come to the end and stopped,
      * we want to go into pause state */
-    if (by < 0.0 && playing == STOPPED && playing_time <= audio_length) {
-       playing = PAUSED;
-    }
+    if (by < 0.0 && playing == STOPPED &&
+        DELTA_LE(playing_time, audio_length)) playing = PAUSED;
 
     /* The screen will be scrolled at the next timer event */
 }
