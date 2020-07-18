@@ -23,6 +23,7 @@
 #include "paint.h"
 
 #include "audio.h"
+#include "audio_cache.h"
 #include "axes.h"
 #include "barlines.h"
 #include "cache.h"
@@ -82,6 +83,7 @@ do_scroll()
     if (abs(scroll_by) >= max_x - min_x + 1) {
 	/* If we're scrolling by more than the display width, repaint it all */
 	disp_time = new_disp_time;
+	reposition_audio_cache();
 	repaint_display(FALSE);
 	if (show_time_axes) draw_time_axis();
 	return;
@@ -109,6 +111,7 @@ do_scroll()
     }
 
     disp_time = new_disp_time;
+    reposition_audio_cache();
 
     gui_h_scroll_by(scroll_forward ? scroll_by : -scroll_by);
 

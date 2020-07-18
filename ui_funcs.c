@@ -27,6 +27,7 @@
 #include "ui_funcs.h"
 
 #include "audio.h"
+#include "audio_cache.h"
 #include "axes.h"
 #include "convert.h"
 #include "gui.h"
@@ -57,6 +58,7 @@ time_pan_by(double by)
 	playing_time = audio_length;
     }
 
+    reposition_audio_cache();
     set_playing_time(playing_time);
 
     /* If moving left after it has come to the end and stopped,
@@ -82,6 +84,8 @@ time_zoom_by(double by)
 	return;
     }
     ppsec *= by;
+
+    reposition_audio_cache();
 
     /* Change the screen-scrolling speed to match */
     change_timer_interval(secpp);

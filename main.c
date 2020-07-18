@@ -87,7 +87,7 @@
  */
 #include "args.h"
 #include "audio.h"
-#include "audio_file.h"
+#include "audio_cache.h"
 #include "axes.h"
 #include "cache.h"
 #include "gui.h"
@@ -131,6 +131,7 @@ main(int argc, char **argv)
 	}
 
 	disp_time = start_time;
+	reposition_audio_cache();
 
 	/* If they set disp_time with -t or --start, check that it's
 	 * within the audio and make it coincide with the start of a column.
@@ -146,6 +147,7 @@ main(int argc, char **argv)
 	    /* Round it to nearest edge of a column */
 	    disp_time = lrint(disp_time / secpp) * secpp;
 	}
+	reposition_audio_cache();
 
 	if (!is_first_file) {
 	    reinit_audio(af, filename);

@@ -146,15 +146,11 @@ read_audio_file(char *data,
 
     /* size of one frame of output data in bytes */
     int framesize = (format == af_float ? sizeof(float) : sizeof(short))
-		    * channels;
+    		    * channels;
     int total_frames = 0;	/* How many frames have we filled? */
     char *write_to = data;	/* Where to write next data */
 
     if (start < 0) {
-	if (format != af_float) {
-	    fprintf(stderr, "Internal error: Reading audio data for playing from before the start of the piece");
-	    exit(1);
-	}
 	/* Fill before time 0.0 with silence */
         int silence = -start;	/* How many silent frames to fill */
         memset(write_to, 0, silence * framesize);
@@ -164,14 +160,11 @@ read_audio_file(char *data,
 	start = 0;	/* Read audio data from start of file */
     }
 
-    lock_audio_file();
-
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
     		   ".mp3") == 0) {
 	if (libmpg123_seek(audio_file, start) == FALSE) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
-	    unlock_audio_file();
 	    return 0;
 	}
 	while (frames_to_read > 0) {
@@ -190,7 +183,6 @@ read_audio_file(char *data,
 
 	if (sf_seek(sndfile, start, SEEK_SET) != start) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
-	    unlock_audio_file();
 	    return 0;
 	}
 
@@ -206,7 +198,6 @@ read_audio_file(char *data,
 	    } else {
 		if (channels != audio_file->channels) {
 		    fprintf(stderr, "Wrong number of channels in signed audio read!\n");
-		    unlock_audio_file();
 		    return 0;
 		}
 		frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
@@ -223,10 +214,8 @@ read_audio_file(char *data,
 	}
     }
 
-    unlock_audio_file();
-
     /* If it stopped before reading all frames, fill the rest with silence */
-    if (format == af_float && frames_to_read > 0) {
+    if (frames_to_read > 0) {
         memset(write_to, 0, frames_to_read * framesize);
 	total_frames += frames_to_read;
 	frames_to_read = 0;

@@ -15,13 +15,18 @@
  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* lock.h: Declarations for lock.c */
+/*
+ * audio_cache.h - include file for clients of audio_cache.c
+ */
 
-extern void lock_fftw3(void);
-extern void unlock_fftw3(void);
+#ifndef AUDIO_CACHE_H
 
-extern bool lock_list(void);
-extern bool unlock_list(void);
+#include "audio_file.h"	/* for af_format_t */
 
-extern bool lock_window(void);
-extern bool unlock_window(void);
+extern int read_cached_audio(char *data, af_format_t format, int channels,
+			     int start, int frames_to_read);
+
+extern void reposition_audio_cache(void);
+
+#define AUDIO_CACHE_H 1
+#endif

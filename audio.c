@@ -22,7 +22,7 @@
 #include "spettro.h"
 #include "audio.h"
 
-#include "audio_file.h"
+#include "audio_cache.h"
 #include "gui.h"
 #include "lock.h"
 #include "ui.h"
@@ -252,7 +252,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	return;
     }
 
-    frames_read = read_audio_file((char *)stream,
+    frames_read = read_cached_audio((char *)stream,
 				    af_signed, channels,
 				    sdl_start, frames_to_read);
     if (frames_read <= 0) {

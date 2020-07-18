@@ -41,7 +41,7 @@
 #include <SDL_events.h>
 #endif
 
-#include "audio_file.h"
+#include "audio_cache.h"
 #include "cache.h"
 #include "calc.h"
 #include "gui.h"	/* For RESULT_EVENT */
@@ -63,6 +63,7 @@ calc(calc_t *calc)
     spectrum *spec;
     int speclen	= fft_freq_to_speclen(calc->fft_freq,
     				      current_sample_rate());
+    result_t *result;
 
     /* If parameters have changed since the work was queued, don't bother.
      * This should never happen because we clear the work queue when we
@@ -78,7 +79,8 @@ calc(calc_t *calc)
 	return;
     }
 
-    calc_result(get_result(calc, spec, speclen));
+    result = get_result(calc, spec, speclen);
+    if (result != NULL) calc_result(result);
 
     destroy_spectrum(spec);
 }
@@ -128,10 +130,15 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	read_audio_file((char *) spec->time_domain,
-			  af_float, 1,
-			  lrint(calc->t * current_sample_rate()) - fftsize/2,
-			  fftsize);
+	if (read_cached_audio((char *) spec->time_domain, af_float, 1,
+			      lrint(calc->t * current_sample_rate()) - fftsize/2,
+			      fftsize) != fftsize) {
+	    fprintf(stderr, "calc thread can't read %d samples at %ld\n",
+	    	    fftsize,
+		    lrint(calc->t * current_sample_rate()) - fftsize/2);
+	    free(result);
+	    return NULL;
+	}
 
 	calc_magnitude_spectrum(spec);
 

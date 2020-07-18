@@ -34,6 +34,7 @@
  * Local header files
  */
 #include "audio.h"
+#include "audio_cache.h"
 #include "axes.h"
 #include "barlines.h"
 #include "cache.h"
@@ -453,6 +454,7 @@ k_fft_size(key_t key)
 	if (fft_freq_to_speclen(fft_freq, current_sample_rate()) > 1)
 	    fft_freq *= 2;
     }
+    reposition_audio_cache();
     drop_all_work();
 
     if (show_time_axes) draw_status_line();
