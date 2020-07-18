@@ -46,7 +46,8 @@ libmpg123_open(audio_file_t *af, const char *filename)
     }
 
     if ((af->mh = mpg123_new(NULL, &ret)) == NULL) {
-	fprintf(stderr,"Unable to create mpg123 handle: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to create mpg123 handle: %s\n",
+		mpg123_plain_strerror(ret));
 	return FALSE;
     }
 
@@ -57,31 +58,37 @@ libmpg123_open(audio_file_t *af, const char *filename)
 #endif
     					     MPG123_GAPLESS |
 					     MPG123_QUIET, 0)) != MPG123_OK) {
-	fprintf(stderr,"Unable to set library options: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to set library options: %s\n",
+		mpg123_plain_strerror(ret));
 	return FALSE;
     }
 
     /* Let the seek index auto-grow and contain an entry for every frame */
     if ((ret = mpg123_param(af->mh, MPG123_INDEX_SIZE, -1, 0)) != MPG123_OK) {
-	fprintf(stderr,"Unable to set index size: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to set index size: %s\n",
+		mpg123_plain_strerror(ret));
 	return FALSE;
     }
 
     ret = mpg123_format_none(af->mh);
     if (ret != MPG123_OK) {
-	fprintf(stderr,"Unable to disable all output formats: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to disable all output formats: %s\n",
+		mpg123_plain_strerror(ret));
 	return FALSE;
     }
 
     /* Use 16-bit signed output, right for the cache */
-    ret = mpg123_format(af->mh, 44100, MPG123_MONO | MPG123_STEREO,  MPG123_ENC_SIGNED_16);
+    ret = mpg123_format(af->mh, 44100,
+    			MPG123_MONO | MPG123_STEREO, MPG123_ENC_SIGNED_16);
     if (ret != MPG123_OK) {
-	fprintf(stderr,"Unable to set float output formats: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to set output formats: %s\n",
+		mpg123_plain_strerror(ret));
 	return FALSE;
     }
 
     if ((ret = mpg123_open_feed(af->mh)) != MPG123_OK) {
-	fprintf(stderr,"Unable to open feed: %s\n", mpg123_plain_strerror(ret));
+	fprintf(stderr,"Unable to open feed: %s\n",
+		mpg123_plain_strerror(ret));
 	return FALSE;
     }
 
@@ -122,7 +129,8 @@ libmpg123_seek(audio_file_t *af, int start)
     int c = '\0';
 
     /* That condition is tricky... parentheses are crucial... */
-    while ((ret = mpg123_feedseek(af->mh, start, SEEK_SET, &inoffset)) == MPG123_NEED_MORE)
+    while ((ret = mpg123_feedseek(af->mh, start, SEEK_SET, &inoffset))
+    	   == MPG123_NEED_MORE)
     {
 	unsigned char uc;
 	c = getc(af->in);
@@ -157,7 +165,10 @@ libmpg123_seek(audio_file_t *af, int start)
  * Returns the number of frames written, or 0 on errors.
  */
 int
-libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_format_t format,
+libmpg123_read_frames(audio_file_t *af,
+		      void *write_to,
+		      int frames_to_read,
+		      af_format_t format,
 		      double *sample_rate_p,
 		      unsigned *channels_p,
 		      unsigned long *frames_p)
@@ -184,7 +195,8 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 	 *		to read the decoded audio from.
 	 * bytes	number of output bytes ready in the buffer 
 	 */
-	while ((ret = mpg123_decode_frame(af->mh, &num, &audio, &bytes)) == MPG123_NEED_MORE) {
+	while ((ret = mpg123_decode_frame(af->mh, &num, &audio, &bytes))
+	       == MPG123_NEED_MORE) {
 	    unsigned char uc;
 	    c = getc(af->in);
 	    if (c == EOF) break;
@@ -207,7 +219,7 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 
 	    length = mpg123_length(af->mh);
 	    if (length < 0) {
-		fprintf(stderr, "I can't determine the length of the MP3 file.\n");
+		fprintf(stderr, "Can't determine length of MP3 file.\n");
 		if (frames_p) *frames_p = 0;
 	    } else {
 		/* The docs say mpg123_length() return the number of samples
@@ -273,7 +285,7 @@ libmpg123_read_frames(audio_file_t *af, void *write_to, int frames_to_read, af_f
 		    }
 		    if (shorts % 2 != 0) {
 			fprintf(stderr,
-				"libmpg123 returns odd short count for stereo file.\n");
+			"libmpg123 returns odd short count for stereo file.\n");
 			return 0;
 		    }
 
