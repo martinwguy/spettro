@@ -40,6 +40,7 @@
 #include "spettro.h"
 #include "audio_cache.h"
 #include "calc.h"	/* for LOOKAHEAD */
+#include "lock.h"
 #include "ui.h"
 
 static void shorts_to_mono_floats(float *floats, short *shorts,
@@ -73,6 +74,8 @@ read_cached_audio(char *data,
 	return 0;
     }
 
+    lock_audio_cache();
+
     switch (format) {
     case af_float:
 	memcpy(data, audio_cache_f + (start - audio_cache_start),
@@ -83,6 +86,8 @@ read_cached_audio(char *data,
 	       frames_to_read * channels * sizeof(short));
 	break;
     }
+
+    unlock_audio_cache();
 
     return(frames_to_read);
 }
@@ -97,12 +102,21 @@ read_cached_audio(char *data,
 void
 reposition_audio_cache()
 {
+    /* Where the audio cache will start, in frames from start of audio file */
     off_t new_cache_start = lrint(floor(
     	(disp_time - (disp_width/2 + LOOKAHEAD) * secpp - 1/fft_freq/2) * current_sample_rate()
     ));
+    /* How big the new cache will be, in seconds */
     double new_cache_time = (disp_width + LOOKAHEAD * 2) * secpp + 1/fft_freq;
+    /* How big the new cache will be, in sample frames */
     off_t new_cache_size = lrint(ceil(new_cache_time * current_sample_rate()));
-    int nchannels = current_audio_file()->channels;
+    int nchannels = current_audio_file()->channels;	/* Local copy */
+    bool refill = FALSE;			/* Read the whole buffer? */
+    /* When new and old buffers overlap, this is the region that needs filling
+     * from the audio file */
+    off_t fill_start, fill_size;
+
+    lock_audio_cache();
 
     /* In the rare case of the size of the interesting area changing,
      * due to time zooming or window size change, don't bother trying
@@ -119,24 +133,74 @@ reposition_audio_cache()
 	audio_cache_s = Malloc(new_cache_size * sizeof(short) * nchannels);
 	audio_cache_f = Malloc(new_cache_size * sizeof(float));
 	audio_cache_size = new_cache_size;
+	refill = TRUE;
     }
 
-    /* Read the whole buffer as 16-bit nchannel shorts
+    /* Calculate which part we have to update */
+
+    /* Already in the right place? */
+    if (!refill && new_cache_start == audio_cache_start) {
+	unlock_audio_cache();
+	return;
+    }
+    
+    /* Moving forward with overlap? Move the overlapping data left and
+     * fill in the last bit */
+    if (!refill && new_cache_start > audio_cache_start &&
+		   new_cache_start < audio_cache_start + audio_cache_size) {
+	/* How many frames we move by, and how many frames overlap */ 
+	int move_by = new_cache_start - audio_cache_start;
+	int overlap = audio_cache_size - move_by;
+
+	memmove(audio_cache_s, audio_cache_s + move_by * nchannels,
+		overlap * sizeof(short) * nchannels);
+	memmove(audio_cache_f, audio_cache_f + move_by,
+		overlap * sizeof(float));
+	audio_cache_start += move_by;
+	fill_start = audio_cache_start + overlap;
+	fill_size = move_by;
+    } else
+    /* Moving backward with overlap? Move the overlapping data right and
+     * fill in the first bit */
+    if (!refill && new_cache_start < audio_cache_start &&
+		   new_cache_start > audio_cache_start - audio_cache_size) {
+	/* How many frames we move by, and how many frames overlap */ 
+	int move_by = audio_cache_start - new_cache_start;
+	int overlap = audio_cache_size - move_by;
+
+	memmove(audio_cache_s + move_by * nchannels , audio_cache_s,
+		overlap * sizeof(short) * nchannels);
+	memmove(audio_cache_f + move_by, audio_cache_f,
+		overlap * sizeof(float));
+	audio_cache_start -= move_by;
+	fill_start = audio_cache_start;
+	fill_size = move_by;
+    } else {
+	/* No overlap. Read the whole buffer. */
+	audio_cache_start = new_cache_start;
+	fill_start = audio_cache_start;
+	fill_size = audio_cache_size;
+    }
+
+    /* Read 16-bit nchannel shorts into the buffer
      * and convert those to mono doubles */
-    audio_cache_start = new_cache_start;
-    {	int n;
-	n = read_audio_file((char *)audio_cache_s,
-			af_signed, nchannels,
-    			audio_cache_start,
-			audio_cache_size);
-	if (n != audio_cache_size) {
-	    fprintf(stderr, "Failed to fill the audio cache at %ld. Wanted %ld, got %d.\n",
-	    	    audio_cache_start, audio_cache_size, n);
+    {
+	/* Where the region to fill starts, relative to the cache start */
+	off_t fill_offset = fill_start - audio_cache_start;  /* in frames */
+
+	if (read_audio_file((char *)(audio_cache_s + fill_offset * nchannels),
+			    af_signed, nchannels,
+			    fill_start, fill_size) != fill_size) {
+	    fprintf(stderr, "Failed to fill the audio cache with %ld frames.\n",
+		    fill_size);
 	    exit(1);
 	}
-	shorts_to_mono_floats(audio_cache_f, audio_cache_s,
-			      audio_cache_size, nchannels);
+	shorts_to_mono_floats(audio_cache_f + fill_offset,
+			      audio_cache_s + fill_offset * nchannels,
+			      fill_size, nchannels);
     }
+
+    unlock_audio_cache();
 }
 
 /* Convert 16-bit nchannel shorts to mono floats */
@@ -170,4 +234,28 @@ shorts_to_mono_floats(float *floats, short *shorts, off_t frames, int nchannels)
 	    todo--;
 	}
     }
+}
+
+/* Dump the audio cache as a WAV file */
+void
+dump_audio_cache()
+{
+    SF_INFO  sfinfo;
+    SNDFILE *sf;
+
+    sfinfo.samplerate = current_sample_rate();
+    sfinfo.channels = current_audio_file()->channels;
+    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+    sf = sf_open("audio_cache.wav", SFM_WRITE, &sfinfo);
+    if (sf == NULL) {
+	fprintf(stderr, "Cannot create audio_cache.wav\n");
+	return;
+    }
+
+    if (sf_writef_short(sf, audio_cache_s, audio_cache_size) != audio_cache_size) {
+	fprintf(stderr, "Failed to write audio cache\n");
+    }
+
+    sf_close(sf);
 }

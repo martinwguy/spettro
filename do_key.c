@@ -542,6 +542,12 @@ k_beats_per_bar(key_t key)
     }
 }
 
+static void
+k_dump_audio_cache(key_t key)
+{
+    dump_audio_cache();
+}
+
 /* Now for the table of key-to-function mappings */
 
 typedef struct {
@@ -604,7 +610,7 @@ static key_fn key_fns[] = {
     { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
     { KEY_R,	"R",    k_right_barline,k_bad,		k_redraw,	k_bad },
     { KEY_B,	"B",    k_brightness,	k_brightness,	k_set_window, 	k_bad },
-    { KEY_D,	"D",    k_bad,		k_bad,		k_set_window,	k_bad },
+    { KEY_D,	"D",    k_bad,		k_dump_audio_cache,k_set_window,k_bad },
     { KEY_A,	"A",    k_toggle_axes,	k_toggle_axes,	k_bad,		k_bad },
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
     { KEY_M,	"M",    k_change_color,	k_bad,		k_bad,		k_bad },

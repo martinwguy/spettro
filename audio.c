@@ -25,6 +25,7 @@
 #include "audio_cache.h"
 #include "gui.h"
 #include "lock.h"
+#include "paint.h"	/* for do_scroll() */
 #include "ui.h"
 
 
@@ -210,6 +211,7 @@ set_playing_time(double when)
 #if SDL_AUDIO
     sdl_start = lrint(when * current_sample_rate());
 #endif
+    do_scroll();
 }
 
 double

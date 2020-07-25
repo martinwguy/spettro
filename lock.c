@@ -65,6 +65,8 @@ initialize(lock_t *lockp, bool *initp)
 
 static lock_t fftw3_lock;
 static bool fftw3_lock_is_initialized = FALSE;
+static lock_t audio_cache_lock;
+static bool audio_cache_lock_is_initialized = FALSE;
 static lock_t list_lock;
 static bool list_lock_is_initialized = FALSE;
 static lock_t window_lock;
@@ -85,6 +87,25 @@ unlock_fftw3()
 {
     if (!do_unlock(&fftw3_lock)) {
 	fprintf(stderr, "Cannot unlock FFTW3\n");
+	abort();
+    }
+}
+
+void
+lock_audio_cache()
+{
+    if (!initialize(&audio_cache_lock, &audio_cache_lock_is_initialized) ||
+	!do_lock(&audio_cache_lock)) {
+	fprintf(stderr, "Cannot lock audio_cache\n");
+	abort();
+    }
+}
+
+void
+unlock_audio_cache()
+{
+    if (!do_unlock(&audio_cache_lock)) {
+	fprintf(stderr, "Cannot unlock audio_cache\n");
 	abort();
     }
 }

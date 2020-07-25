@@ -28,5 +28,7 @@ extern int read_cached_audio(char *data, af_format_t format, int channels,
 
 extern void reposition_audio_cache(void);
 
+extern void dump_audio_cache(void);
+
 #define AUDIO_CACHE_H 1
 #endif

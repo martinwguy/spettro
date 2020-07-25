@@ -20,6 +20,9 @@
 extern void lock_fftw3(void);
 extern void unlock_fftw3(void);
 
+extern void lock_audio_cache(void);
+extern void unlock_audio_cache(void);
+
 extern bool lock_list(void);
 extern bool unlock_list(void);
 

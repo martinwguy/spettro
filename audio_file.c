@@ -151,14 +151,23 @@ read_audio_file(char *data,
     char *write_to = data;	/* Where to write next data */
 
     if (start < 0) {
-	/* Fill before time 0.0 with silence */
-        int silence = -start;	/* How many silent frames to fill */
-        memset(write_to, 0, silence * framesize);
-        write_to += silence * framesize;
-	total_frames += silence;
-        frames_to_read -= silence;
-	start = 0;	/* Read audio data from start of file */
+	/* Is the whole area before 0? */
+	if (start + frames_to_read <= 0) {
+	    /* All silence */
+	    memset(write_to, 0, frames_to_read * framesize);
+	    return frames_to_read;
+	} else {
+	    /* Fill before time 0.0 with silence */
+	    int silence = -start;	/* How many silent frames to fill */
+	    memset(write_to, 0, silence * framesize);
+	    write_to += silence * framesize;
+	    total_frames += silence;
+	    frames_to_read -= silence;
+	    start = 0;	/* Read audio data from start of file */
+	}
     }
+
+    if (start >= current_audio_file()->frames) goto fill_with_silence;
 
     /* Decode MP3's with libmpg123 */
     if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
@@ -214,6 +223,7 @@ read_audio_file(char *data,
 	}
     }
 
+fill_with_silence:
     /* If it stopped before reading all frames, fill the rest with silence */
     if (frames_to_read > 0) {
         memset(write_to, 0, frames_to_read * framesize);
