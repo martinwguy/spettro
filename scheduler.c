@@ -258,10 +258,13 @@ schedule(calc_t *calc)
      * so check that first (its list is also shorter).
      */
 
+    lock_list();
     if (is_in_list(calc, jobs) || is_in_list(calc, list)) {
+	unlock_list();
 	free(calc);
 	return;
     }
+    unlock_list();
 
     /* Do we already have a result for this calculation in the cache? */
     if (recall_result(calc->t, speclen, calc->window)) {
@@ -332,7 +335,7 @@ is_in_list(calc_t *calc, calc_t *l)
     calc_t *cp;
 
     for (cp = l; cp != NULL; cp = cp->next) {
-	if (calc->t        == cp->t &&
+	if (DELTA_EQ(calc->t, cp->t) &&
 	    calc->fft_freq == cp->fft_freq &&
 	    calc->window   == cp->window) return TRUE;
     }

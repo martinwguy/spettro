@@ -83,8 +83,7 @@ remember_result(result_t *result)
 		 (r = *rp) != NULL && DELTA_LE(r->t, result->t);
 		 rp = &((*rp)->next)) {
 		/* Check for duplicates */
-		if (DELTA_LE(r->t, result->t) &&
-		    DELTA_GE(r->t, result->t) &&
+		if (DELTA_EQ(r->t, result->t) &&
 		    r->fft_freq == result->fft_freq &&
 		    r->window == result->window) {
 		    /* Same params: forget the new result and return the old */
