@@ -1,12 +1,4 @@
 ------------------------------------------------------------------------
-Be able to position the green line, disp_offset,
-and also move it with Ctrl-Shift-Left/Right arrow, Home, End?
-------------------------------------------------------------------------
-Be able to display audio from a live source, presumably with the green
-line on the right edge.
-------------------------------------------------------------------------
-Do subpixel positioning of bar lines / antialiasing.
-------------------------------------------------------------------------
 Reimplement timed scrolling, or add an option to synch scrolling to real time
 not playing-time (--smooth option?) by scrolling the graphics in response
 to a periodic timer instead of the sound player's current playing position.
@@ -31,10 +23,6 @@ Be able to change disp_height and disp_width while running, so that
 GUI window resizing becomes possible.
 Check make_row_overlay()
 ------------------------------------------------------------------------
-Should speclen be > (sample_rate/2)/fft_freq instead of near to it?
-------------------------------------------------------------------------
-Keep settings from one run to another (softvol, fftfreq etc)
-------------------------------------------------------------------------
 On frequency axis, add single digit 8 or whatever at the unnumbered ticks
 and/or increse the number of numbers according to the height of the graph.
 -or-
@@ -43,9 +31,6 @@ increase the number of labels/divisions on the frequency axis
 If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label.
 Show enough digits on frequency axis to reveal the digit that changes per tick.
-------------------------------------------------------------------------
-Rework frequency axis numbering code to include more labels, according to
-to the available space.
 ------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------
@@ -59,13 +44,9 @@ center/range.
 ------------------------------------------------------------------------
 Recognise note names A0 in -n -x and the above.
 ------------------------------------------------------------------------
-Make a ui struct of the parameters visible in main.c
-------------------------------------------------------------------------
 Make the desktop icon appear in the window manager.
 ------------------------------------------------------------------------
 Make Ctrl-left click play from here.
-------------------------------------------------------------------------
-Decode compressed audio front-to-back without seeking
 ------------------------------------------------------------------------
 Be able to save the audio fragment between left and right as a WAV file.
 ------------------------------------------------------------------------
@@ -76,9 +57,6 @@ Ctrl-R: play from right bar marker onwards
 ------------------------------------------------------------------------
 Compile the Enlightenment port for Android, iOS and Windows!
 ------------------------------------------------------------------------
-Pressing the same overlay key again cycles through white, black, none.
-Do the same for bar lines. Save last_key_pressed?
-------------------------------------------------------------------------
 Be able to tune A to a different frequency & up/down it via the GUI.
 Or cmdline --tune A4=440.
 If no octave is given, --tune F#=710 retunes the F# nearest to 710.
@@ -87,8 +65,7 @@ Something to show how far through the file you are (like a scroll bar)
 ------------------------------------------------------------------------
 Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
-Option to turn the green line off for screencaps of nicely positioned
-spectrograms (ok, there is -o too)
+Turn the green line off for screencaps of spectrograms
 ------------------------------------------------------------------------
 Scroll the graphic up and down when they scroll the mouse wheel.
 ------------------------------------------------------------------------
@@ -115,33 +92,14 @@ lags a little.
 ------------------------------------------------------------------------
 Make Ctrl-g/G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
-Show the time of the end of the piece on the time scale
-------------------------------------------------------------------------
-Be able to set the colour of the staff/guitar/piano lines at startup.
-------------------------------------------------------------------------
 Detect MP3 format from file hdr, not file name.
 ------------------------------------------------------------------------
 Add a white-backgrounded heat map for color printers.
-------------------------------------------------------------------------
-Be able to resynthesize the audio from the spectrogram
-------------------------------------------------------------------------
-Be able to load a spectrogram (and play it!)
-------------------------------------------------------------------------
-Entire spectrogram as a data structure, not cached results,
-result-calculated when required and cached in each entry in the
-gram. Changing PPSEC would have to rewrite the gram data structure,
-throwing away no-longer-coincident results.
-This enables loading and saving the whole spectrogram.
 ------------------------------------------------------------------------
 If bar left or right are on-screen, add time legend.
 ------------------------------------------------------------------------
 For a file selector in Enlightenment, it needs to use ELM not just EVAS.
 docs.enlightenment.org/elementary/1.15.0/fileselector_example_8c-example.html
-------------------------------------------------------------------------
-Add --fit to fit the audio to the whole window in length with
-playing position half way.
-------------------------------------------------------------------------
-Make Shift L or R make barlines that are always 3 pixels thick.
 ------------------------------------------------------------------------
 Rework barline code to place at appropriate column, not at constant
 multiple of a number of pixels.
@@ -149,26 +107,14 @@ Example: spettro swoop.wav
 l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
 ------------------------------------------------------------------------
-Adding score lines when fullscreened causes a pause and jump in the scrolling
-because it redraws every column (it causes the same-length pause as a Ctrl-L).
-It would be better just to draw the lines and, when turning them off, to
-repaint only those lines, not the whole columns.
-When removing, though, check for coincidence with other lines.
-------------------------------------------------------------------------
 cache.c:128 clang reports constant condition at window == -1
-------------------------------------------------------------------------
-Using a palettized video mode may be interesting.
 ------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
 ------------------------------------------------------------------------
 Implement video output.
 ------------------------------------------------------------------------
-Left channel as red, right as green
-------------------------------------------------------------------------
-Try red and green as real and imaginary
-------------------------------------------------------------------------
 for a in *.wav: do spettro -Fpe "$a"; done
-gets the graphic deinit-reinit wrong on sergio1, leaving a backgrounde
+gets the graphic deinit-reinit wrong on sergio1, leaving a background
 window with a garbled version of part of the desktop
 ------------------------------------------------------------------------
 Multiple file playing:
@@ -177,8 +123,6 @@ Multiple file playing:
   instead of replaying
 - Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
 - Also mention |<< and >>| media keys in the manual.
-------------------------------------------------------------------------
-Automatically increase softvol progressively
 ------------------------------------------------------------------------
 Drop black and thick score lines.
 ------------------------------------------------------------------------
