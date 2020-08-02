@@ -1,5 +1,6 @@
 *.o
 spettro
+audio.wav
 core
 tags
 .deps/
