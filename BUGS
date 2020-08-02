@@ -5,8 +5,7 @@ SDL2: SDL always turns numlock off on startup but if it was on, the light
 ------------------------------------------------------------------------
 SDL2: If you press Ctrl-F to switch to fullscreen and release Ctrl before
 it has refreshed (usual case), it continues to think that Ctrl is held
-until you press and release it again.
-SDL1 works OK so this is an SDL2 bug - make a workaround?
+until you press and release it again. SDL1 works OK.
 ------------------------------------------------------------------------
 EMOTION: "End" key is not recognized (but the "Home" key is!)
 k_end() is called, set_playing_position() too, but the graphic doesn't
@@ -25,18 +24,6 @@ Couldn't initialize SDL: Unable to open a console terminal.
 and over ssh it fails:
 Couldn't initialize SDL: Unable to open mouse.
 
-============================ Calc ======================================
-
-It calculates duplicate results when playing.
-They seem mostly to be columns near or at the right edge.
-------------------------------------------------------------------------
-With 4 processors, it never uses 100% CPU, even when behind in its calculations.
-Instead, the audio becomes stuttery, so presumably the calc threads are locking
-out the audio playing thread, as well as locking each other out too much.
-One solution might be to pre-emptively decode any audio that might be used
-(i.e. the screen area plus lookahead and lookbehind plus half the window size)
-into a memory buffer so that requests for audio do not require locking.
-
 ============================ Audio file ================================
 
 libmpg123 fails to open "letter from home 64kbps.mp3"
@@ -46,23 +33,6 @@ But mpg123 can play it, saying it's  MPEG 2.0 L III cbr64 22050 j-s
 
 ============================ Other ======================================
 
-On a slow processor, playing Common_Swift.wav, the audio and graphics
-get out of sync
-
-spettro -w 1280 -h 800 ~martin/rec/rondoni/*ll.wav
-
-Spectrogram of Rondone #3 10-second call.wav
-min_freq=178.696 max_freq=91492.1 fft_freq=40 dyn_range=100 speclen=550
-Stopped at 9.89685 disp_time=9.89 step=0.01 from=3.49 to=16.29 audio_length=9.89685
-
-and it also says
-
-ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-ALSA lib pcm.c:8306:(snd_pcm_recover) underrun occurred
-------------------------------------------------------------------------
 It doesn't play/display anything but the first filename argument,
 giving all-background on subsequent ones.
 ------------------------------------------------------------------------
