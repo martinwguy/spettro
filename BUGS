@@ -38,3 +38,5 @@ giving all-background on subsequent ones.
 ------------------------------------------------------------------------
 EMOTION: softvol changes but has no effect
 ------------------------------------------------------------------------
+Pressing [Space] at EOF now exits(0) instewad of replaying from the beginning.
+------------------------------------------------------------------------

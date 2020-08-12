@@ -68,18 +68,17 @@ read_cached_audio(char *data,
 		  int start, int frames_to_read)
 {
     int frames_written = 0;
+    size_t framesize;
+
+    switch (format) {
+    case af_float: framesize = sizeof(float); break;
+    case af_signed: framesize = sizeof(short) * channels; break;
+    default: abort();
+    }
 
     /* Deal with start < 0 and fill with silence */
     if (start < 0) {
-    	size_t framesize;
-	int nframes;
-
-	switch (format) {
-	case af_float: framesize = sizeof(float); break;
-	case af_signed: framesize = sizeof(short) * channels; break;
-	default: abort();
-	}
-	nframes = MIN(-start, frames_to_read);
+	int nframes = MIN(-start, frames_to_read);
 	memset(data, 0, nframes * framesize);
 	start += nframes; data += nframes * framesize;
 	frames_to_read -= nframes;
@@ -89,6 +88,14 @@ read_cached_audio(char *data,
 
     /* Are we at end-of-file? */
     if (start >= current_audio_file()->frames) return frames_written;
+
+    /* Does it read past end-of-file? If so, fill the end with silence */
+    if (start + frames_to_read > current_audio_file()->frames) {
+	int nframes = start + frames_to_read - current_audio_file()->frames;
+	frames_to_read -= nframes;
+	memset(data + (frames_to_read * framesize), 0, nframes * framesize);
+	frames_written += nframes;
+    }
 
     /* Check that the cache is positioned correctly */
     /* It can be wrong if the user pans the time and an old calculation thread
