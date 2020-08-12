@@ -74,6 +74,8 @@ time_pan_by(double by)
  * The recalculation of every other pixel column is triggered by
  * the call to repaint_display().
  *
+ * Values > 1.0 zoom in, values < 1.0 zoom out.
+ *
  * We limit the zoom to one sample difference per pixel.
  */
 void
@@ -85,7 +87,8 @@ time_zoom_by(double by)
     }
     ppsec *= by;
 
-    reposition_audio_cache();
+    /* If zooming out, we'll need more audio data */
+    if (by < 1.0) reposition_audio_cache();
 
     /* Change the screen-scrolling speed to match */
     change_timer_interval(secpp);
