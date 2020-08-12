@@ -58,7 +58,6 @@ time_pan_by(double by)
 	playing_time = audio_length;
     }
 
-    reposition_audio_cache();
     set_playing_time(playing_time);
 
     /* If moving left after it has come to the end and stopped,
