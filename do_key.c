@@ -140,6 +140,7 @@ static void
 k_home(key_t key)
 {
     set_playing_time(0.0);
+    if (playing == STOPPED) playing = PAUSED;
 }
 
 static void
