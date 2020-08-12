@@ -40,6 +40,8 @@ typedef int bool;
 # define TRUE 1
 #endif
 
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 /* Slop factor for comparisons involving calculated floating point values. */
 #define DELTA (1.0e-10)
 #define DELTA_GT(a, b) ((a) > (b) + DELTA)

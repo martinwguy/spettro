@@ -135,6 +135,10 @@ current_sample_rate()
  *	It may be negative if we are reading data for FFT transformation,
  *	in which case we invent some 0 data for the leading silence.
  * "frames_to_read" is the number of multi-sample frames to fill "data" with.
+ *
+ * The return value is the number of sample frames read,
+ * 0 if we are already at end-of-file or
+ * a negative value if some kind of read error occurred.
  */
 
 int
@@ -174,7 +178,7 @@ read_audio_file(char *data,
     		   ".mp3") == 0) {
 	if (libmpg123_seek(audio_file, start) == FALSE) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
-	    return 0;
+	    return -1;
 	}
 	while (frames_to_read > 0) {
 	    int frames = libmpg123_read_frames(audio_file, write_to, frames_to_read, format, NULL, NULL, NULL);
@@ -192,7 +196,7 @@ read_audio_file(char *data,
 
 	if (sf_seek(sndfile, start, SEEK_SET) != start) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
-	    return 0;
+	    return -1;
 	}
 
 	/* Read from the file until we have read all requested samples */
@@ -207,7 +211,7 @@ read_audio_file(char *data,
 	    } else {
 		if (channels != audio_file->channels) {
 		    fprintf(stderr, "Wrong number of channels in signed audio read!\n");
-		    return 0;
+		    return -1;
 		}
 		frames = sf_readf_short(sndfile, (short *)write_to, frames_to_read);
 	    }
@@ -262,11 +266,6 @@ close_audio_file(audio_file_t *af)
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#define ARRAY_LEN(x)	((int) (sizeof (x) / sizeof (x [0])))
-
-#define MAX(x, y)		((x) > (y) ? (x) : (y))
-#define MIN(x, y)		((x) < (y) ? (x) : (y))
 
 static int
 mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)

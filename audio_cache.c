@@ -51,11 +51,15 @@ static short *audio_cache_s = NULL;	/* 16-bit all channels for audio */
 static float *audio_cache_f = NULL;	/* 32-bit mono floats for FFT threads */
 
 static off_t audio_cache_start = 0;	/* Where the cache starts in sample frames
-				 * from the start of the audio file */
+				 	 * from the start of the audio file */
 static off_t audio_cache_size = 0;	/* Size of cache in sample frames */
 
 /*
  * read_cached_audio(): Same interface as read_audio_file().
+ * Returns 0 if we are at end-of-file or a negative number if the audio
+ * cache is mispositioned (which "should" never happen, but can if playing
+ * position changes by a page but screen hasn't scrolled yet, or if a calc
+ * takes so long to get done that time has aleady noved on).
  */
 
 int
@@ -63,15 +67,35 @@ read_cached_audio(char *data,
 		  af_format_t format, int channels,
 		  int start, int frames_to_read)
 {
+    int frames_written = 0;
+
+    /* Deal with start < 0 and fill with silence */
+    if (start < 0) {
+    	size_t framesize;
+	int nframes;
+
+	switch (format) {
+	case af_float: framesize = sizeof(float); break;
+	case af_signed: framesize = sizeof(short) * channels; break;
+	default: abort();
+	}
+	nframes = MIN(-start, frames_to_read);
+	memset(data, 0, nframes * framesize);
+	start += nframes; data += nframes * framesize;
+	frames_to_read -= nframes;
+	frames_written += nframes;
+	if (frames_to_read == 0) return frames_written;
+    }
+
+    /* Are we at end-of-file? */
+    if (start >= current_audio_file()->frames) return frames_written;
+
     /* Check that the cache is positioned correctly */
     /* It can be wrong if the user pans the time and an old calculation thread
      * tries to read audio from the old position */
     if (start < audio_cache_start ||
         start + frames_to_read > audio_cache_start + audio_cache_size) {
-	fprintf(stderr, "Audio cache is mispositioned.\n");
-	fprintf(stderr, "start=%ld size=%ld want %d frames from %d\n",
-		audio_cache_start, audio_cache_size, frames_to_read, start);
-	return 0;
+	return -1;
     }
 
     lock_audio_cache();
@@ -80,16 +104,18 @@ read_cached_audio(char *data,
     case af_float:
 	memcpy(data, audio_cache_f + (start - audio_cache_start),
 	       frames_to_read * sizeof(float));
+	frames_written += frames_to_read;
 	break;
     case af_signed:
 	memcpy(data, audio_cache_s + (start - audio_cache_start) * channels,
 	       frames_to_read * channels * sizeof(short));
+	frames_written += frames_to_read;
 	break;
     }
 
     unlock_audio_cache();
 
-    return(frames_to_read);
+    return(frames_written);
 }
 
 /*

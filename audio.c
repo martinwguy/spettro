@@ -257,10 +257,16 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     frames_read = read_cached_audio((char *)stream,
 				    af_signed, channels,
 				    sdl_start, frames_to_read);
-    if (frames_read <= 0) {
-	/* End of file or read error. Treat as end of file */
+    if (frames_read == 0) {
+	/* End of file. Treat as end of file */
 	stop_playing();
 	return;
+    }
+    if (frames_read < 0) {
+	/* Some error */
+	fprintf(stderr, "Error while reading audio cache for player: ");
+	fprintf(stderr, "start=%d want=%d\n", sdl_start, len);
+	/* Carry on playing: better an audio blip than seizing up */
     }
 
     /* Apply softvol */
@@ -282,6 +288,7 @@ printf("The audio would have clipped so I lowered softvol to %g\n", softvol);
 	}
     }
 
-    sdl_start += frames_read;
+    if (frames_read >= 0) sdl_start += frames_read;
+    else sdl_start += len; /* On read errors, pretend it worked */
 }
 #endif

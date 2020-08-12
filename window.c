@@ -23,9 +23,6 @@
 #include "paint.h"
 #include "ui.h"
 
-
-#define ARRAY_LEN(x)		((int) (sizeof(x) / sizeof(x[0])))
-
 static void kaiser(float *data, int datalen);
 static void dolph(float *data, int datalen);
 static void nuttall(float *data, int datalen);
