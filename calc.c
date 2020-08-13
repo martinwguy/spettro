@@ -19,7 +19,7 @@
  * calc.c - Do all the heavy calculation of spectra.
  *
  * This file's only entry point is calc(), which is handed a calc_t
- * describing the transform to perform, does the FFT, creates a result_t
+ * describing the transform to perform, does the FFT, creates a calc_t
  * and hands it to calc_result(), which sends them via a GUI event
  * to the main loop, which passes them to its calc_notify().
  * The logarithmic frequency axis is applied and coloring done there, not here,
@@ -54,8 +54,8 @@
  */
 
 /* Helper functions */
-static void calc_result(result_t *result);
-static result_t *get_result(calc_t *calc, spectrum *spec, int speclen);
+static void calc_result(calc_t *result);
+static calc_t *get_result(calc_t *calc, spectrum *spec, int speclen);
 
 void
 calc(calc_t *calc)
@@ -63,7 +63,7 @@ calc(calc_t *calc)
     spectrum *spec;
     int speclen	= fft_freq_to_speclen(calc->fft_freq,
     				      current_sample_rate());
-    result_t *result;
+    calc_t *result;
 
     /* If parameters have changed since the work was queued, don't bother.
      * This should never happen because we clear the work queue when we
@@ -87,7 +87,7 @@ calc(calc_t *calc)
 
 /* The function called by calculation threads to report a result */
 static void
-calc_result(result_t *result)
+calc_result(calc_t *result)
 {
     /* Send result back to main loop */
 #if ECORE_MAIN
@@ -112,17 +112,16 @@ calc_result(result_t *result)
  *
  * speclen is precalculated by the caller from calc->fft_freq
  */
-static result_t *
+static calc_t *
 get_result(calc_t *calc, spectrum *spec, int speclen)
 {
-        result_t *result;	/* The result structure */
+        calc_t *result;	/* The result structure */
 	int fftsize = speclen * 2;
 
-	result = (result_t *) Malloc(sizeof(result_t));
+	result = (calc_t *) Malloc(sizeof(calc_t));
 
 	result->t = calc->t;
 	result->fft_freq = calc->fft_freq;
-	result->speclen = speclen;
 	result->window = calc->window;
 #if ECORE_MAIN
 	result->thread = calc->thread;

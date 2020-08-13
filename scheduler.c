@@ -203,7 +203,7 @@ sdl_calc_heavy(void *data)
 static void
 ecore_calc_notify(void *data, Ecore_Thread *thread, void *msg_data)
 {
-    calc_notify((result_t *) msg_data);
+    calc_notify((calc_t *) msg_data);
 }
 #endif
 
@@ -249,7 +249,6 @@ schedule(calc_t *calc)
 {
     /* Add it to the list in time order */
     calc_t **cpp;	/* Pointer to the "next" field of the previous cell */
-    int speclen = fft_freq_to_speclen(calc->fft_freq, current_sample_rate());
 
     /* Is this column's calculation already scheduled or already being performed?
      * This happens a lot, when several scrolls happen before the newly
@@ -267,7 +266,7 @@ schedule(calc_t *calc)
     unlock_list();
 
     /* Do we already have a result for this calculation in the cache? */
-    if (recall_result(calc->t, speclen, calc->window)) {
+    if (recall_result(calc->t, fft_freq, calc->window)) {
 	fprintf(stderr, "scheduler drops calculation already in cache for %g/%g/%c\n",
 		calc->t, calc->fft_freq, window_key(calc->window));
 	free(calc);
@@ -560,7 +559,7 @@ clear_list()
 extern char *output_file;	/* In main.c */
 
 void
-calc_notify(result_t *result)
+calc_notify(calc_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
 

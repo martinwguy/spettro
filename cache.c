@@ -18,7 +18,7 @@
 /*
  * cache.c - Result cache
  *
- * We remember the FFT results we have calculated as result_t's, in time order,
+ * We remember the FFT results we have calculated as calc_t's, in time order,
  * which reflect the parameters that gave rise to that result and the
  * linear magnitude data.
  *
@@ -36,23 +36,23 @@
 
 #include <string.h>	/* for memcmp() */
 
-static void destroy_result(result_t *r);
+static void destroy_result(calc_t *r);
 
-static result_t *results = NULL; /* Linked list of result structures */
-static result_t *last_result = NULL; /* Last element in the linked list */
+static calc_t *results = NULL; /* Linked list of result structures */
+static calc_t *last_result = NULL; /* Last element in the linked list */
 
 /* "result" was obtained from malloc(); it is up to us to free it. */
 /* We return the result because, if we find a duplicate in the cache, that
  * becomes the active result.
  */
-result_t *
-remember_result(result_t *result)
+calc_t *
+remember_result(calc_t *result)
 {
     /* Drop any stored results more than a screenful before the display */
     double earliest = screen_column_to_start_time(min_x - disp_width);
 
     while (results != NULL && DELTA_LT(results->t, earliest)) {
-	result_t *r = results;
+	calc_t *r = results;
 	results = results->next;
 	destroy_result(r);
     }
@@ -73,11 +73,11 @@ remember_result(result_t *result)
 	    /* If it's before the first one, tack it onto head of list,
 	     * otherwise find which element to place it after
 	     */
-	    result_t **rp;	/* Pointer to "next" field of previous result
+	    calc_t **rp;	/* Pointer to "next" field of previous result
 			     * or to "results": the pointer we'll have
 			     * to update when we've found the right place.
 			     */
-	    result_t *r;	/* Handy pointer to the result to examine */
+	    calc_t *r;	/* Handy pointer to the result to examine */
 
 	    for (rp=&results;
 		 (r = *rp) != NULL && DELTA_LE(r->t, result->t);
@@ -87,10 +87,10 @@ remember_result(result_t *result)
 		    r->fft_freq == result->fft_freq &&
 		    r->window == result->window) {
 		    /* Same params: forget the new result and return the old */
-fprintf(stderr, "Discarding duplicate result for %g/%g/%c (%s)\n",
-	result->t, result->fft_freq, window_key(result->window),
-	memcmp(r->spec, result->spec, (r->speclen+1) * sizeof(*(r->spec))) == 0
-	    ? "same" : "different");
+		    fprintf(stderr,
+			    "Discarding duplicate result for %g/%g/%c\n",
+			    result->t, result->fft_freq,
+			    window_key(result->window));
 		    destroy_result(result);
 		    return(r);
 		}
@@ -105,14 +105,18 @@ fprintf(stderr, "Discarding duplicate result for %g/%g/%c (%s)\n",
     return result;
 }
 
-/* Return the result for time t at the current speclen and window function
+/* Return the result for time t at the current fft_freq and window function
  * or NULL if it hasn't been calculated yet, in which case we schedule it.
  * speclen==-1 or window==-1 means "I don't care for what speclen/window".
+ *
+ * The parameter "fftfreq" may be the current fft_freq or ANY_FFTFREQ,
+ * which will match the result for any FFT frequency.
+ * Similarly for the parameter "window".
  */
-result_t *
-recall_result(double t, int speclen, window_function_t window)
+calc_t *
+recall_result(double t, double fftfreq, window_function_t window)
 {
-    result_t *p;
+    calc_t *p;
 
     /* If it's later than the last cached result, we don't have it.
      * This saves uselessly scanning the whole list of results.
@@ -124,7 +128,7 @@ recall_result(double t, int speclen, window_function_t window)
 	/* If the time is the same and speclen is the same,
 	 * this is the result we want */
 	if (DELTA_GE(p->t, t) && DELTA_LE(p->t, t) &&
-	    (speclen == ANY_SPECLEN || p->speclen == speclen) &&
+	    (fftfreq == ANY_FFTFREQ || p->fft_freq == fftfreq) &&
 	    (window  == ANY_WINDOW  || p->window  == window)) {
 	    break;
 	}
@@ -141,10 +145,10 @@ recall_result(double t, int speclen, window_function_t window)
 void
 drop_all_results(void)
 {
-    result_t *r;
+    calc_t *r;
 
     for (r = results; r != NULL; /* see below */) {
-	result_t *next = r->next;
+	calc_t *next = r->next;
 	destroy_result(r);
 	r = next;
     }
@@ -153,7 +157,7 @@ drop_all_results(void)
 
 /* Free the memory associated with a result structure */
 static void
-destroy_result(result_t *r)
+destroy_result(calc_t *r)
 {
     free(r->spec);
     free(r);

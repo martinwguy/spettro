@@ -444,7 +444,7 @@ gui_main()
 	    switch (event.user.code) {
 	    case RESULT_EVENT:
 		/* Column result from a calculation thread */
-		calc_notify((result_t *) event.user.data1);
+		calc_notify((calc_t *) event.user.data1);
 		break;
 	    case SCROLL_EVENT:
 		do_scroll();

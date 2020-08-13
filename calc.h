@@ -33,40 +33,16 @@
 #include "spettro.h"
 #include "window.h"
 
-/* The parameters to calc(), saying what it should FFT.
- * Also, an element of the list of FFTs to perform used by the scheduler.
+/* The parameters for a calculation, passed to calc(), giving all parameters,
+ * also, an element of the list of needed FFTs used by the scheduler.
+ *
+ * The is also the result of an FFT, when it comes back from an FFT thread.
  */
 typedef struct calc_t {
     /* These items define what calculation is to be or was performed */
     double		t;	/* FFT centered on when? */
     double		fft_freq; /* FFT frequency when scheduled */
     window_function_t	window;
-
-    /* Other data */
-#if ECORE_MAIN
-    Ecore_Thread *	thread;
-#endif
-    struct calc_t *	next;	/* List of calcs to perform, in time order */
-} calc_t;
-
-/*
- * Structure for results from calc() with the linear FFT for a pixel column,
- * callbacked to calc_result() as each column is ready.
- *
- * Fields logmag and maglen are not filled by calc(); the main routine calls
- * interpolate() on each one to generate columns of magnitudes for the screen,
- * as the mapping changes when they pan up and down or zoom the Y axis,
- * without needing to recalculate the FFT.
- */
-
-typedef struct result {
-    /* These items define what calculation was performed */
-    double		t;	 /* FFT is centered on what time in the piece */
-    double		fft_freq;/* The FFT frequency for this result */
-    window_function_t	window;  /* Apply which window function to the audio data? */
-
-    /* Length of the linear spectrum, derived from fft_freq and sampling rate */
-    int			speclen;
 
     /* This is the result */
     float *		spec;	 /* The linear spectrum from [0..speclen]
@@ -75,21 +51,20 @@ typedef struct result {
 #if ECORE_MAIN
     Ecore_Thread *	thread;
 #endif
-    struct result *	next; 	 /* Linked list of results in the result cache,
-    				  * in time order */
-} result_t;
+    struct calc_t *	next;	/* List of calcs to perform, in time order */
+} calc_t;
 
 /* Used in recall_result() to see if the cache has any results for a column */
-#define ANY_SPECLEN (-1)
+#define ANY_FFTFREQ (0)
 
 extern void calc(calc_t *data);
 
-#define CALC_H
-#endif
-
-/* How many columns to precalculate off the right edge of the screen:
+/* How many columns to precalculate off the left and right edges of the screen.
  * A tenth of a screen width make normal operation seamless and
  * right-arrow-key motions immediate.
- * A screen's width makes it sluggish.
+ * A screen's width (to make Shift Left&Right immediate) makes it sluggish.
  */
 #define LOOKAHEAD ((max_x - min_x + 9) / 10)
+
+#define CALC_H
+#endif

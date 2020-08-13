@@ -28,7 +28,7 @@ extern bool there_is_work(void);
 extern void drop_all_work(void);
 extern calc_t *get_work(void);
 extern void reschedule_for_bigger_secpp(void);
-extern void calc_notify(result_t *result);
+extern void calc_notify(calc_t *result);
 
 extern int jobs_in_flight;
 

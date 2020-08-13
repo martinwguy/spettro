@@ -211,8 +211,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 {
     /* What time does this column represent? */
     double t = screen_column_to_start_time(pos_x);
-    result_t *r;
-    int speclen;	/* Length of the frequency spectrum */
+    calc_t *r;
 
     if (pos_x < min_x - LOOKAHEAD || pos_x > max_x + LOOKAHEAD) {
 	fprintf(stderr, "Repainting off-screen column %d\n", pos_x);
@@ -230,21 +229,18 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 	return;
     }
 
-    /* Find speclen for the audio file */
-    speclen = fft_freq_to_speclen(fft_freq, current_sample_rate());
-
     if (refresh_only) {
 	/* If there's a bar line or green line here, nothing to do */
 	if (get_col_overlay(pos_x, NULL)) return;
 
 	/* If there's any result for this column in the cache, it should be
-	 * displaying something, but it might be for the wrong speclen/window.
+	 * displaying something, but it might be for the wrong fftfreq/window.
 	 * We have no way of knowing what it is displaying so force its repaint
 	 * with the current parameters.
 	 */
-	if ((r = recall_result(t, ANY_SPECLEN, ANY_WINDOW)) != NULL) {
+	if ((r = recall_result(t, ANY_FFTFREQ, ANY_WINDOW)) != NULL) {
 	    /* There's data for this column. */
-	    if (r->speclen == speclen && r->window == window_function) {
+	    if (r->fft_freq == fft_freq && r->window == window_function) {
 		/* Bingo! It's the right result */
 		paint_column(pos_x, from_y, to_y, r);
 	    } else {
@@ -261,7 +257,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
 	    gui_paint_column(pos_x, from_y, to_y, ov);
 	} else
 	/* If we have the right spectral data for this column, repaint it */
-	if ((r = recall_result(t, speclen, window_function)) != NULL) {
+	if ((r = recall_result(t, fft_freq, window_function)) != NULL) {
 	    paint_column(pos_x, from_y, to_y, r);
 	} else {
 	    /* ...otherwise paint it with the background color */
@@ -282,7 +278,7 @@ repaint_column(int pos_x, int from_y, int to_y, bool refresh_only)
  * The GUI screen-updating function is called by whoever called us.
  */
 void
-paint_column(int pos_x, int from_y, int to_y, result_t *result)
+paint_column(int pos_x, int from_y, int to_y, calc_t *result)
 {
     float *logmag;
     float col_logmax;	/* maximum log magnitude in the column */
