@@ -285,6 +285,9 @@ paint_column(int pos_x, int from_y, int to_y, calc_t *result)
     int y;
     color_t ov;		/* Overlay color */
     int speclen;
+    /* Stuff to detect and report once the presence of out-of-range colors */
+    unsigned n_bad_pixels = 0;
+    float a_bad_value = 0.0;	/* Init value unused; avoids compiler warning */
 
     /* Only paint on-screen columns. Off-screen columns Can happen
      * when results for lookahead calculations arrive.
@@ -312,6 +315,14 @@ paint_column(int pos_x, int from_y, int to_y, calc_t *result)
     gui_lock();		/* Allow pixel-writing access */
     for (y=from_y; y <= to_y; y++) {
         int k = y - min_y;
+	float value = (float)20.0 * (logmag[k] - logmax);
+	color_t color = colormap(value);
+	if (color == no_color) {
+	    /* Something went wrong, usually because we're trying to display
+	     * an array of nans. The bad_pixels variable avoind blurting 480
+	     * error messages. */
+	    if (n_bad_pixels++ == 0) a_bad_value = value;
+	}
 	/* Apply row overlay, if any, otherwise paint the pixel
 	 * but don't overlay the green line */
 	gui_putpixel(pos_x, y,
@@ -319,10 +330,15 @@ paint_column(int pos_x, int from_y, int to_y, calc_t *result)
 		     ? ov :
 		     /* OR in the green line if it's on */
 		     ((!green_line_off && pos_x == disp_offset) ? green : 0)
-		     |
-		     colormap((float)20.0 * (logmag[k] - logmax)));
+		     | color);
     }
     gui_unlock();
+
+    /* Blurt one error message per column, not 480 */
+    if (n_bad_pixels > 0) {
+	fprintf(stderr, "%d bad color values in column %d (e.g. %g)\n",
+		n_bad_pixels, pos_x, (double)a_bad_value);
+    }
 
     free(logmag);
 

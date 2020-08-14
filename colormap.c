@@ -128,6 +128,8 @@ change_colormap()
  * "value" is a negative value in decibels, with maximum of 0.0.
  * The decibel value for the bottom of the color range is -dyn_range.
  * Returns the resulting color.
+ *
+ * If something goes wrong, return no_color.
  */
 color_t
 colormap(float value)
@@ -156,18 +158,17 @@ colormap(float value)
     rem = fmodf(findx, (float)1.0);
 
     if (indx < 0) {
-	fprintf(stderr, "colormap: array index is %d because value is %g.\n",
-		indx, (double)value);
-	/* Carry on with the show */
-	return gray;
+	/* The error is reported by the caller */
+	return no_color;
     }
 
     if (indx > map_len - 2) {	/* Need map[indx] and map[indx+1] */
-	return black;
+	return no_color;
     }
 
     return RGB_to_color(
         (primary_t)lrintf((1.0f - rem) * map[indx][R] + rem * map[indx + 1][R]),
 	(primary_t)lrintf((1.0f - rem) * map[indx][G] + rem * map[indx + 1][G]),
-	(primary_t)lrintf((1.0f - rem) * map[indx][B] + rem * map[indx + 1][B]));
+	(primary_t)lrintf((1.0f - rem) * map[indx][B] + rem * map[indx + 1][B])
+    );
 }
