@@ -30,6 +30,7 @@ extern calc_t *get_work(void);
 extern void reschedule_for_bigger_secpp(void);
 extern void calc_notify(calc_t *result);
 
+extern void remove_job(calc_t *result);
 extern int jobs_in_flight;
 
 #if SDL_MAIN

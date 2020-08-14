@@ -31,6 +31,7 @@
 #include "spettro.h"
 
 #include "convert.h"
+#include "scheduler.h"
 
 #include <unistd.h>	/* for usleep() */
 
@@ -69,6 +70,7 @@ calc(calc_t *calc)
      * This should never happen because we clear the work queue when we
      * change these parameters */
     if (calc->window != window_function || calc->fft_freq != fft_freq) {
+	remove_job(calc);
 	free(calc);
 	return;
     }
@@ -80,7 +82,9 @@ calc(calc_t *calc)
     }
 
     result = get_result(calc, spec, speclen);
+
     if (result != NULL) calc_result(result);
+    else remove_job(calc);
 
     destroy_spectrum(spec);
 }
@@ -132,9 +136,13 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 	if (read_cached_audio((char *) spec->time_domain, af_float, 1,
 			      lrint(calc->t * current_sample_rate()) - fftsize/2,
 			      fftsize) != fftsize) {
-	    fprintf(stderr, "calc thread can't read %d samples at %ld\n",
-	    	    fftsize,
-		    lrint(calc->t * current_sample_rate()) - fftsize/2);
+	    /* Only moan if the requested sample is in the current interesting
+	     * region: either on-screen or in the lookahead/behind regions */
+	    if (DELTA_GE(calc->t, disp_time - (disp_offset - min_x - LOOKAHEAD) * secpp) &&
+	        DELTA_LE(calc->t, disp_time + (max_x - disp_offset + LOOKAHEAD) * secpp))
+		fprintf(stderr, "calc thread can't read %d samples at %ld\n",
+			fftsize,
+			lrint(calc->t * current_sample_rate()) - fftsize/2);
 	    free(result);
 	    return NULL;
 	}

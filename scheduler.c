@@ -480,7 +480,7 @@ DEBUG("List is empty after all\r");
 }
 
 /* Convenience function to avoid repetition:
- * Remove this job from the to-do list, put it on the in-flight list
+ * Remove this job from the to-do list and put it on the in-flight list
  */
 static void
 put_work_in_flight(calc_t **cpp)
@@ -500,6 +500,32 @@ DEBUG("Picked %g/%g/%c from list\n", cp->t, cp->fft_freq,
     jobs_in_flight++;
 
     print_list(list);
+}
+
+/* Remove a job from the list of jobs in flight */
+void
+remove_job(calc_t *result)
+{
+    calc_t **cpp;
+
+    lock_list();
+    DEBUG("Removing from "); print_list(jobs);
+    for (cpp = &jobs; *cpp != NULL; cpp = &((*cpp)->next)) {
+	if ((*cpp)->t        == result->t &&
+	    (*cpp)->fft_freq == result->fft_freq &&
+	    (*cpp)->window   == result->window) {
+	    calc_t *cp;
+
+	    cp = *cpp;
+	    *cpp = cp->next;
+	    jobs_in_flight--;
+	    goto got_it;
+	}
+    }
+    fprintf(stderr, "Result for %g/%g/%c is not among the jobs in flight\n",
+	    result->t, result->fft_freq, window_key(result->window));
+got_it:
+    unlock_list();
 }
 
 /* When they zoom out on the frequency axis, we need to remove all the
@@ -563,28 +589,7 @@ calc_notify(calc_t *result)
 {
     int pos_x;	/* Where would this column appear in the displayed region? */
 
-    lock_list();
-    /* Remove it from the list of jobs in flight */
-    {
-	calc_t **cpp;
-	DEBUG("Removing from "); print_list(jobs);
-	for (cpp = &jobs; *cpp != NULL; cpp = &((*cpp)->next)) {
-	    if ((*cpp)->t        == result->t &&
-		(*cpp)->fft_freq == result->fft_freq &&
-		(*cpp)->window   == result->window) {
-		calc_t *cp;
-
-		cp = *cpp;
-		*cpp = cp->next;
-		jobs_in_flight--;
-		goto got_it;
-	    }
-	}
-	fprintf(stderr, "Result for %g/%g/%c is not among the jobs in flight\n",
-		result->t, result->fft_freq, window_key(result->window));
-    }
-got_it:
-    unlock_list();
+    remove_job(result);
 
     result = remember_result(result);
 
