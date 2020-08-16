@@ -68,8 +68,6 @@ extern color_t staff_line_color; /* Color to draw staff lines */
 #define DEFAULT_STAFF_LINE_COLOR white
 extern color_t guitar_line_color;/* Color to draw guitar lines */
 #define DEFAULT_GUITAR_LINE_COLOR white
-extern int staff_line_width;	/* Thickness of staff lines (1 or 3) */
-extern int guitar_line_width;	/* Thickness of guitar lines (1 or 3) */
 extern bool show_freq_axes;	/* Are we to show/showing the v. axis? */
 extern bool show_time_axes;	/* Are we to show/showing the h. axis? */
 

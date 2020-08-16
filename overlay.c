@@ -109,7 +109,7 @@ make_row_overlay()
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
 	    overlay_row(magindex, staff_line_color);
-	    if (staff_line_width == 3 || piano_lines) {
+	    if (piano_lines) {
 		overlay_row(magindex+1, staff_line_color);
 		overlay_row(magindex-1, staff_line_color);
 	    }
@@ -131,7 +131,7 @@ make_row_overlay()
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
 	    overlay_row(magindex, guitar_line_color);
-	    if (guitar_line_width == 3 || piano_lines) {
+	    if (piano_lines) {
 		overlay_row(magindex+1, guitar_line_color);
 		overlay_row(magindex-1, guitar_line_color);
 	    }

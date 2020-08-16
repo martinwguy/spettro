@@ -68,8 +68,8 @@ usage(void)
 -R n   Set the scrolling rate in frames per second, default %g\n",
 				DEFAULT_FPS); printf("\
 -k     Overlay black and white lines showing frequencies of an 88-note keyboard\n\
--s/-S  Overlay score notation pentagrams as 1- or 3-pixel-thick white lines\n\
--g/-G  Overlay 1- or 3-pixel-thick lines showing a classical guitar's strings\n\
+-s     Overlay conventional score notation pentagrams\n\
+-g     Overlay lines showing the frquencies of a classical guitar's strings\n\
 -v n   Set the softvolume level to N (>1.0 is louder, <1.0 is softer)\n\
 -W x   Use FFT window function x where x starts with\n\
        K for Kaiser, D for Dolph, N for Nuttall, B for Blackman, H for Hann\n\
@@ -103,9 +103,9 @@ Ctrl K/D/N/B/H  Set the window function to Kaiser/Dolph/Nuttall/Blackman/Hann\n\
 w/W        Cycle forward/backward through the window functions\n\
 a          Toggle the frequency axes\n\
 A          Toggle the time axis and status line\n\
-k          Toggle the overlay of 88 piano key frequencies\n\
-s/S        Toggle the overlay of conventional staff lines\n\
-g/G        Toggle the overlay of classical guitar strings' frequencies\n\
+k          Toggle the overlay of frequencies of a grand piano's 88 keys\n\
+s          Toggle the overlay of conventional staff lines\n\
+g          Toggle the overlay of frequencies of a classical guitar's strings\n\
 l/r        Set the left/right bar markers for an overlay of bar lines\n\
 1-9/F1-F12 Set the number of beats per bar (1 or F1 means \"no beat lines\")\n\
 0          Remove the bar lines\n\
@@ -238,19 +238,11 @@ switch_again:
 	    piano_lines = TRUE;
 	    goto another_letter;
 	case 's':	/* Draw conventional score notation staff lines */
-	    staff_line_width = 1;
-	    goto staff2;
-	case 'S':	/* Same, three pixels thick */
-	    staff_line_width = 3;
-staff2:	    staff_lines = TRUE;
+	    staff_lines = TRUE;
 	    guitar_lines = FALSE;
 	    goto another_letter;
 	case 'g':	/* Draw guitar string lines */
-	    guitar_line_width = 1;
-	    goto guitar2;
-	case 'G':	/* Same, three pixels thick */
-	    guitar_line_width = 3;
-guitar2:    guitar_lines = TRUE;
+	    guitar_lines = TRUE;
 	    staff_lines = FALSE;
 	    goto another_letter;
 	case 'a':

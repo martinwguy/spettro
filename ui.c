@@ -69,8 +69,6 @@ bool guitar_lines = FALSE;	/* Draw guitar string lines? */
 color_t piano_line_color  = no_color;	/* Color of piano lines */
 color_t staff_line_color  = no_color;	/* Color of staff lines */
 color_t guitar_line_color = no_color;	/* Color of guitar lines */
-int staff_line_width;			/* Thickness of staff lines (1 or 3) */
-int guitar_line_width;			/* Thickness of guitar lines (1 or 3) */
 bool show_freq_axes = FALSE;		/* Are we to show/showing the v axes? */
 bool show_time_axes = FALSE;		/* Are we to show/showing the h axes? */
 

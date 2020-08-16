@@ -348,7 +348,6 @@ k_overlay(key_t key)
 	}
 	break;
     case KEY_S:
-	staff_line_width = Shift ? 3 : 1;
 	/* Cycle through white-black-none */
 	if (!staff_lines) {
 	    staff_lines = TRUE;
@@ -363,7 +362,6 @@ k_overlay(key_t key)
 	if (staff_lines) guitar_lines = FALSE;
 	break;
     case KEY_G:
-	guitar_line_width = Shift ? 3 : 1;
 	/* Cycle through white-black-none */
 	if (!guitar_lines) {
 	    guitar_lines = TRUE;
@@ -602,8 +600,8 @@ static key_fn key_fns[] = {
     { KEY_SLASH,"slash",k_bad		k_bad,		k_bad,		k_bad },
 #endif
     { KEY_K,	"K",    k_overlay,	k_bad,		k_set_window,	k_bad },
-    { KEY_S,	"S",    k_overlay,	k_overlay,	k_bad,		k_bad },
-    { KEY_G,	"G",    k_overlay,	k_overlay,	k_bad,		k_bad },
+    { KEY_S,	"S",    k_overlay,	k_bad,		k_bad,		k_bad },
+    { KEY_G,	"G",    k_overlay,	k_bad,		k_bad,		k_bad },
     { KEY_O,	"O",    k_screendump,	k_bad,		k_bad,		k_bad },
     { KEY_P,	"P",    k_prev,		k_bad,		k_print_params,	k_bad },
     { KEY_T,	"T",    k_print_time,	k_bad,		k_bad,		k_bad },
