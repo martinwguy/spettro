@@ -844,6 +844,9 @@ gui_output_png_file(const char *filename)
 	return FALSE;
     }
 
+    green_line_off = TRUE;
+    repaint_display(TRUE);	/* repainting all reflects a changed logmax */
+
     png_init_io(png, file);
     png_set_IHDR(png, png_info,
     		 (png_uint_32)disp_width, (png_uint_32)disp_height,
@@ -870,6 +873,13 @@ gui_output_png_file(const char *filename)
     png_destroy_write_struct(&png, &png_info);
     free(png_rows);
     fclose(file);
+
+    /* If just outputting a PNG and quitting (-o), no need to restore display */
+    if (!output_file) {
+	green_line_off = FALSE;
+	repaint_column(disp_offset, min_y, max_y, TRUE);
+	gui_update_column(disp_offset);
+    }
 
     printf("Dumped the window to %s\n", filename);
 

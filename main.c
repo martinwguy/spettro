@@ -188,19 +188,6 @@ main(int argc, char **argv)
 	start_timer();
 	gui_main();
 
-	if (output_file) {
-	    while (there_is_work() || jobs_in_flight > 0) usleep(100000);
-	    green_line_off = TRUE;
-	    repaint_column(disp_offset, min_y, max_y, FALSE);
-	    gui_update_column(disp_offset);
-	    gui_output_png_file(output_file);
-	    green_line_off = FALSE;
-
-	    /* We only have one output file, so only process one filename */
-	    if (argc > 1) fprintf(stderr, "Only outputting the first file\n");
-	    break;
-	}
-
 	/* Quit the main loop if that's what they asked for */
 	if (quitting) i = argc;	 /* Should be argc-1 really */
 

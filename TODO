@@ -63,8 +63,6 @@ Something to show how far through the file you are (like a scroll bar)
 ------------------------------------------------------------------------
 Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
-Turn the green line off for screencaps of spectrograms
-------------------------------------------------------------------------
 Scroll the graphic up and down when they scroll the mouse wheel.
 ------------------------------------------------------------------------
 Make Ctrl-O read in a new audio file from disc.
