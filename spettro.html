@@ -430,12 +430,13 @@ lower than 1.0 are softer than usual.
  <DT><B>o</B>
   <DD>The '<B>o</B>' key outputs a copy of the current screen into a PNG file
       whose name includes the command-line options necessary to recreate
-      the same view that is being saved.
+      the same view that is being saved. Any visible axes are included but
+      the green line is replaced by the appropriate spectral data.
 </DL>
 The <B>-o</B> <I>file.png</I> (or <B>--output</B>) command-line option, instead, makes spettro
 start up, calculate the spectrogram, dump the image into a named file and
 quit without playing it or giving you the chance to press any buttons.
-Unlike the '<B>o<B>' key, <B>-o<B>'s output doesn't include the green line.
+The output doesn't include the green line.
 <P>
 With these and, for example, <TT>-w&nbsp;4000&nbsp;-h&nbsp;1000</TT>,
 you can generate higher-definition images than your screen is capable of
