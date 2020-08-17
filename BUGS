@@ -12,12 +12,6 @@ press or release Shift or Ctrl. Instead the Shift/Ctrl state for the
 repeated key remains whatever it was when you started the key repeat.
 You have to release and press the key again to reflect the new modifiers.
 OK in SDL2 and EMOTION.
-------------------------------------------------------------------------
-Capital command letters didn't used to work in SDL1 CACA driver over ssh.
-Now, on a plain text console it fails:
-Couldn't initialize SDL: Unable to open a console terminal.
-and over ssh it fails:
-Couldn't initialize SDL: Unable to open mouse.
 
 ============================ Audio file ================================
 
@@ -39,7 +33,8 @@ for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a background
 window with a garbled version of part of the desktop
 ------------------------------------------------------------------------
-Multiple file playing:
+Playing multiple files doesn't work. 
+Should be:
 - on 'q', quit, don't advance
 - on space at end of audio, go to next file (which may quit)
   instead of replaying
