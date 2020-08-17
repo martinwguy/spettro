@@ -211,9 +211,9 @@ switch_again:
 	case 'o': case 'W': case 'm': case 'v': case 'd': case 'R': case 'P':
 	case 'b': case 'M':
 	    if (argv[0][2] == '\0') {
-		argv++, argc--;		/* -j3 */
+		argv++, argc--;		/* -j 3 */
 	    } else {
-		 argv[0] += 2;		/* -j 3 */
+		 argv[0] += 2;		/* -j3 */
 	    }
 	    if (argc < 1 || argv[0][0] == '\0') {
 		fprintf(stderr, "-%c what?\n", letter);
@@ -302,16 +302,43 @@ another_letter:
 	case 'M':	/* Set logmax */
 	    errno = 0;
 	    {
-		char *endptr;
-		double arg = strtod(argv[0], &endptr);
+		double arg;
 
-		if (errno == ERANGE || endptr == argv[0] || !isfinite(arg)) {
-		    fprintf(stderr, "The parameter to -%c must be a floating point number%s.\n",
-		    	    letter,
-			    tolower(letter) == 'f' ? " in Hz" :
-			    letter != 'v' ? " in seconds" :
-			    "");
-		    exit(1);
+		/* Min and max frequencies can also be "A0" or whatever */
+		if ((letter == 'n' || letter == 'x') &&
+		    !isnan(arg = note_name_to_freq(argv[0]))) {
+		    ;
+		} else {
+		    char *endptr;
+
+		    arg = strtod(argv[0], &endptr);
+
+		    if (errno == ERANGE || endptr == argv[0] || !isfinite(arg)) {
+			fprintf(stderr, "The parameter to -%c must be a ",
+					letter);
+			switch (letter) {
+			case 'n':	/* Minimum frequency */
+			case 'x':	/* Maximum frequency */
+			    fprintf(stderr, "frequency in Hz or a note name");
+			    break;
+			case 'f':	/* Set FFT frequency */
+			    fprintf(stderr, "frequency in Hz");
+			    break;
+			case 'M':	/* Set logmax */
+			    fprintf(stderr, "value in dB");
+			    break;
+			case 'd':	/* Set dynamic range */
+			    fprintf(stderr, "range in dB");
+			    break;
+			case 'v':	/* Set software volume control */
+			case 'P':	/* Set pixel columns per second */
+			case 'R':	/* Set scrolling rate */
+			    fprintf(stderr, "floating point number");
+			    break;
+			}
+			fprintf(stderr, ".\n");
+			exit(1);
+		    }
 		}
 		/* They should all be >= 0 except for logmax */
 		if (arg < 0.0 && letter != 'M') {
@@ -413,6 +440,18 @@ another_letter:
     if (bar_right_time != UNDEFINED) {
 	right_bar_time = bar_right_time;
     }
+
+    /* Sanity checks */
+
+    /* Upside-down graphs (tho' it works!) and ranges that are too tiny */
+    if (max_freq - min_freq < 1.0) {
+	fprintf(stderr, "The maximum frequency must be higher than the minimum!\n");
+	exit(1);
+    }
+
+     /* Set variables with derived values */
+     disp_offset = disp_width / 2;
+     min_x = 0; max_x = disp_width - 1;
 
     /* They must supply at least one filename argument */
     if (argc <= 0) {

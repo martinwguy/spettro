@@ -68,19 +68,25 @@ freq_to_magindex(double freq)
 }
 
 /* Take "A0" or whatever and return the frequency it represents.
+ * The standard form "C5#" is also recognized and synonym "C5+".
  * Returns NAN if the note name is not recognized.
  */
 double
 note_name_to_freq(const char *note)
 {
     static int semitones[7] = { 0, 2, 3, 5, 7, 8, 10 }; /* A-G */
+    bool sharp = note[0] && note[1] && (note[2] == '#' || note[2] == '+');
 
-    if (note[0] < 'A' || note[0] > 'G' || note[1] < '0' || note[1] > '9')
+    if (toupper(note[0]) >= 'A' && toupper(note[0]) <= 'G' &&
+	(note[1] >= '0' && note[1] <= '9') &&
+	(note[2] == '\0' || (sharp && note[3] == '\0'))) {
+	return (A4_FREQUENCY / 16.0) /* A0 */
+		* pow(2.0, note[1] - '0') 
+		* pow(2.0, (1/12.0) *
+		           (semitones[toupper(note[0]) - 'A'] + sharp));
+    } else {
         return NAN;
-
-    return (A4_FREQUENCY / 16.0) /* A0 */
-    	    * pow(2.0, note[1] - '0') 
-	    * pow(2.0, (1/12.0) * semitones[note[0] - 'A']);
+    }
 }
 
 /* Convert a note number of the piano keyboard to the frequency it represents.
