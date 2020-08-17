@@ -326,7 +326,7 @@ paint_column(int pos_x, int from_y, int to_y, calc_t *result)
 	/* Apply row overlay, if any, otherwise paint the pixel
 	 * but don't overlay the green line */
 	gui_putpixel(pos_x, y,
-		     (green_line_off || pos_x != disp_offset) && get_row_overlay(y, &ov)
+		     ((green_line_off || pos_x != disp_offset) && get_row_overlay(y, &ov))
 		     ? ov :
 		     /* OR in the green line if it's on */
 		     ((!green_line_off && pos_x == disp_offset) ? green : 0)
