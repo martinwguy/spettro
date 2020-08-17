@@ -37,6 +37,7 @@
 #include "spettro.h"
 #include "barlines.h"
 
+#include "axes.h"
 #include "convert.h"
 #include "gui.h"
 #include "paint.h"
@@ -140,7 +141,7 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 	repaint_column(new_col, min_y, max_y, FALSE);
 	gui_update_column(new_col);
 
-	return;
+	goto out;
     }
 
     /* From here on, we know that *the_other_one is not UNDEFINED */
@@ -178,7 +179,6 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 	    repaint_column(col, min_y, max_y, FALSE);
 	    gui_update_column(col);
 	}
-	return;
     } else {
 	/* Both are defined at different times. Paint the new bar lines. */
 	int col;
@@ -189,6 +189,8 @@ set_bar_time(double *this_one, double *the_other_one, double when)
 	    }
 	}
     }
+out:
+    if (show_time_axes) draw_time_axis();
 }
 
 /*

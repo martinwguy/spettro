@@ -497,6 +497,20 @@ draw_time_axis(void)
 	draw_text(s, x, 1, CENTER, BOTTOM);
     }
 
+    /* Bar lines */
+    if (left_bar_time != UNDEFINED &&
+	DELTA_GE(left_bar_time, screen_column_to_start_time(min_x) + secpp/2) &&
+	DELTA_LE(left_bar_time, screen_column_to_start_time(max_x) + secpp/2)) {
+	draw_text(seconds_to_string(left_bar_time),
+		  time_to_screen_column(left_bar_time), 1, CENTER, BOTTOM);
+    }
+    if (right_bar_time != UNDEFINED &&
+	DELTA_GE(right_bar_time, screen_column_to_start_time(min_x) + secpp/2) &&
+	DELTA_LE(right_bar_time, screen_column_to_start_time(max_x) + secpp/2)) {
+	draw_text(seconds_to_string(right_bar_time),
+		  time_to_screen_column(right_bar_time), 1, CENTER, BOTTOM);
+    }
+
     gui_unlock();
 
     gui_update_rect(min_x, 0, max_x, min_y - 1);

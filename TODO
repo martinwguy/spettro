@@ -78,15 +78,11 @@ Detect MP3 format from file header, not from file name.
 ------------------------------------------------------------------------
 Add a white-backgrounded heat map for color printers.
 ------------------------------------------------------------------------
-If bar left or right are on-screen, add time legend.
-------------------------------------------------------------------------
 Rework barline code to place at appropriate column, not at constant
 multiple of a number of pixels.
 Example: spettro swoop.wav
 l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
-------------------------------------------------------------------------
-cache.c:128 clang reports constant condition at window == -1
 ------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
 ------------------------------------------------------------------------
