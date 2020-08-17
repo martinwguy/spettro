@@ -441,7 +441,6 @@ DEBUG("List is empty after dropping before-screens\r");
 
 	    *cpp = cp->next;
 	    free(cp);
-fprintf(stderr, "Avanti!\n");
 	    continue;
 	}
 
@@ -464,7 +463,6 @@ fprintf(stderr, "Avanti!\n");
 
 	    *cpp = cp->next;
 	    free(cp);
-fprintf(stderr, "Avanti!\n");
 	    continue;
 	}
 
