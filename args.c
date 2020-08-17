@@ -58,7 +58,8 @@ usage(void)
 				DEFAULT_LOGMAX); printf("\
 -a     Show the frequency axes\n\
 -A     Show the time axis and status line\n\
--f n   Set the FFT frequency, default %gHz\n", fft_freq); printf("\
+-f n   Set the FFT frequency, default %gHz, minimum %g\n",
+				fft_freq, MIN_FFT_FREQ); printf("\
 -t n   Set the initial playing time in seconds, mins:secs or H:M:S\n\
 -l n   Set the time for the left bar line\n\
 -r n   Set the time for the right bar line\n\
@@ -346,6 +347,14 @@ another_letter:
 		    	    letter);
 		    exit(1);
 		}
+
+		/* Place an arbitrary lower limit on the FFT frequency */
+		if (letter == 'f' && DELTA_LT(arg, MIN_FFT_FREQ)) {
+		    fprintf(stderr, "The FFT frequency must be >= %g\n",
+		    	    MIN_FFT_FREQ);
+		    exit(1);
+		}
+
 		/* These must be > 0.
 		 * Dynamic range and FPS can be 0, if silly.
 		 */
@@ -356,11 +365,6 @@ another_letter:
 		    exit(1);
 		default:
 		    break;
-		}
-		if (0 && letter == 'f' && DELTA_LT(arg, 1.0)) {
-		    /* Dunno why, but it aborts if < 1.0 */
-		    fprintf(stderr, "The FFT frequency must be >= 1.0\n");
-		    exit(1);
 		}
 		switch (letter) {
 		case 'n': min_freq = arg;	break;

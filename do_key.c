@@ -417,8 +417,15 @@ static void
 k_fft_size(key_t key)
 {
     if (Shift) {
-       /* Increase FFT size; decrease FFT frequency */
-       fft_freq /= 2;
+	/* Increase FFT size; decrease FFT frequency */
+	if (DELTA_EQ(fft_freq, MIN_FFT_FREQ)) {
+	    /* Already at the minimum value: do nothing */
+	    return;       
+	}
+	fft_freq /= 2;
+	if (DELTA_LT(fft_freq, MIN_FFT_FREQ)) {
+	    fft_freq = MIN_FFT_FREQ;
+	}
     } else {
 	/* Decrease FFT size: increase FFT frequency */
 	if (fft_freq_to_speclen(fft_freq, current_sample_rate()) > 1)

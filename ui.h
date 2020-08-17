@@ -51,6 +51,7 @@ extern double ppsec;
 /* The "FFT frequency": 1/fft_freq seconds of audio are windowed and FFT-ed */
 extern double fft_freq;
 #define DEFAULT_FFT_FREQ 5.0
+#define MIN_FFT_FREQ 0.1	/* Makes spettro use about 1GB */
 
 /* Which window functions to apply to each audio sample before FFt-ing it */
 extern window_function_t window_function;
