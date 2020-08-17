@@ -24,6 +24,8 @@
 #include "audio_file.h"		/* for audio_file->sample_rate */
 #include "ui.h"
 
+#include <ctype.h>		/* for toupper() */
+
 /*
  * Vertical position (frequency domain) conversion functions
  *
