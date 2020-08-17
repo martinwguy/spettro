@@ -146,7 +146,8 @@ k_home(key_t key)
 static void
 k_end(key_t key)
 {
-    set_playing_time(audio_file_length());
+    /* Go to the last sample */
+    set_playing_time(audio_file_length() - 1/current_sample_rate());
 }
 
 /*

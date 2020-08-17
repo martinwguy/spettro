@@ -7,11 +7,6 @@ SDL2: If you press Ctrl-F to switch to fullscreen and release Ctrl before
 it has refreshed (usual case), it continues to think that Ctrl is held
 until you press and release it again. SDL1 works OK.
 ------------------------------------------------------------------------
-EMOTION: "End" key is not recognized (but the "Home" key is!)
-k_end() is called, set_playing_position() too, but the graphic doesn't
-scroll, and it continues to play from the start, not the end.
-It works OK in EMOTION_SDL, so it's the sound player, not the GUI.
-------------------------------------------------------------------------
 With SDL1, a repeating key doesn't change its modifiers when you
 press or release Shift or Ctrl. Instead the Shift/Ctrl state for the
 repeated key remains whatever it was when you started the key repeat.
