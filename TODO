@@ -34,13 +34,7 @@ Show enough digits on frequency axis to reveal the digit that changes per tick.
 ------------------------------------------------------------------------
 Add test suite using PNG output
 ------------------------------------------------------------------------
-Give the failure reason in an exit status
-------------------------------------------------------------------------
 Convert html to man page
-------------------------------------------------------------------------
-Be able to set spectrogram size in pixels or in seconds/frequency range.
-There's already min-max freq, allow min/max, min/range max/range or
-center/range.
 ------------------------------------------------------------------------
 Make the desktop icon appear in the window manager.
 ------------------------------------------------------------------------
@@ -49,8 +43,8 @@ Make Ctrl-left click play from here.
 Be able to save the audio fragment between left and right as a WAV file.
 ------------------------------------------------------------------------
 Be able to play the l-r selection
-Ctrl-L: play from left bar marker, then stop
-Shift-L or C-S-L: play from left bar marker, then repeat
+Ctrl-L: play from left bar marker to right bar marker, then stop,
+	or if no right bar marker is set, play to end.
 Ctrl-R: play from right bar marker onwards
 ------------------------------------------------------------------------
 Compile the Enlightenment port for Android, iOS and Windows!
@@ -59,17 +53,11 @@ Be able to tune A to a different frequency & up/down it via the GUI.
 Or cmdline --tune A4=440.
 If no octave is given, --tune F#=710 retunes the F# nearest to 710.
 ------------------------------------------------------------------------
-Something to show how far through the file you are (like a scroll bar)
-------------------------------------------------------------------------
 Implement Chloropleth maps https://en.wikipedia.org/wiki/Choropleth_map
 ------------------------------------------------------------------------
 Scroll the graphic up and down when they scroll the mouse wheel.
 ------------------------------------------------------------------------
 Make Ctrl-O read in a new audio file from disc.
-------------------------------------------------------------------------
-Make Ctrl-N or > make it skip to the next file.
-------------------------------------------------------------------------
-Respond to stdin keystrokes as well - maybe solves the CAPS and CACA probs.
 ------------------------------------------------------------------------
 Make 'Y' and 'y' zoom in by less than a factor of two, say a tenth of
 the screen height, like the default time pan, or by one octave like the
@@ -86,14 +74,11 @@ lags a little.
 ------------------------------------------------------------------------
 Make G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
-Detect MP3 format from file hdr, not file name.
+Detect MP3 format from file header, not from file name.
 ------------------------------------------------------------------------
 Add a white-backgrounded heat map for color printers.
 ------------------------------------------------------------------------
 If bar left or right are on-screen, add time legend.
-------------------------------------------------------------------------
-For a file selector in Enlightenment, it needs to use ELM not just EVAS.
-docs.enlightenment.org/elementary/1.15.0/fileselector_example_8c-example.html
 ------------------------------------------------------------------------
 Rework barline code to place at appropriate column, not at constant
 multiple of a number of pixels.
@@ -104,15 +89,4 @@ The last barline no longer coincides with the end of the piece.
 cache.c:128 clang reports constant condition at window == -1
 ------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
-------------------------------------------------------------------------
-for a in *.wav: do spettro -Fpe "$a"; done
-gets the graphic deinit-reinit wrong on sergio1, leaving a background
-window with a garbled version of part of the desktop
-------------------------------------------------------------------------
-Multiple file playing:
-- on 'q', quit, don't advance
-- on space at end of audio, go to next file (which may quit)
-  instead of replaying
-- Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
-- Also mention |<< and >>| media keys in the manual.
 ------------------------------------------------------------------------

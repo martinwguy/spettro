@@ -40,3 +40,14 @@ EMOTION: softvol changes but has no effect
 ------------------------------------------------------------------------
 Pressing [Space] at EOF now exits(0) instewad of replaying from the beginning.
 ------------------------------------------------------------------------
+for a in *.wav: do spettro -Fpe "$a"; done
+gets the graphic deinit-reinit wrong on sergio1, leaving a background
+window with a garbled version of part of the desktop
+------------------------------------------------------------------------
+Multiple file playing:
+- on 'q', quit, don't advance
+- on space at end of audio, go to next file (which may quit)
+  instead of replaying
+- Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
+- Also mention |<< and >>| media keys in the manual.
+------------------------------------------------------------------------
