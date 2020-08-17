@@ -42,8 +42,6 @@ Be able to set spectrogram size in pixels or in seconds/frequency range.
 There's already min-max freq, allow min/max, min/range max/range or
 center/range.
 ------------------------------------------------------------------------
-Recognise note names A0 in -n -x and the above.
-------------------------------------------------------------------------
 Make the desktop icon appear in the window manager.
 ------------------------------------------------------------------------
 Make Ctrl-left click play from here.
@@ -81,8 +79,6 @@ frequency pan.
 ------------------------------------------------------------------------
 Make Ctrl 'x' and 'X' zoom by one pixel.
 ------------------------------------------------------------------------
-Add command-line flag to set overlay colors.
-------------------------------------------------------------------------
 Add finer FFT frequency control with Ctrl (and change the Fullscreen key)
 ------------------------------------------------------------------------
 When scrolling to playing position, take into account the timer interval
@@ -90,7 +86,7 @@ to position the display at the middle of the forthcoming timer interval.
 Currently it syncs to the playing time, which then moves ahead so it
 lags a little.
 ------------------------------------------------------------------------
-Make Ctrl-g/G do bass guitar strings instead of EADGBE.
+Make G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
 Detect MP3 format from file hdr, not file name.
 ------------------------------------------------------------------------
@@ -111,8 +107,6 @@ cache.c:128 clang reports constant condition at window == -1
 ------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
 ------------------------------------------------------------------------
-Implement video output.
-------------------------------------------------------------------------
 for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a background
 window with a garbled version of part of the desktop
@@ -123,6 +117,4 @@ Multiple file playing:
   instead of replaying
 - Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
 - Also mention |<< and >>| media keys in the manual.
-------------------------------------------------------------------------
-Drop black and thick score lines.
 ------------------------------------------------------------------------

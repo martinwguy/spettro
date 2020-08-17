@@ -336,43 +336,14 @@ k_overlay(key_t key)
     switch (key) {
     case KEY_K:
 	/* Cycle white keys through white-green-none */
-	if (!piano_lines) {
-	    piano_lines = TRUE;
-	    piano_line_color = white;
-	} else {
-	    if (piano_line_color == white) {
-		piano_line_color = green;
-	    } else {
-		piano_lines = FALSE;
-	    }
-	}
+	piano_lines = !piano_lines;
 	break;
     case KEY_S:
-	/* Cycle through white-black-none */
-	if (!staff_lines) {
-	    staff_lines = TRUE;
-	    staff_line_color = white;
-	} else {
-	    if (staff_line_color == white) {
-		staff_line_color = black;
-	    } else {
-		staff_lines = FALSE;
-	    }
-	}
+	staff_lines = !staff_lines;
 	if (staff_lines) guitar_lines = FALSE;
 	break;
     case KEY_G:
-	/* Cycle through white-black-none */
-	if (!guitar_lines) {
-	    guitar_lines = TRUE;
-	    guitar_line_color = white;
-	} else {
-	    if (guitar_line_color == white) {
-		guitar_line_color = black;
-	    } else {
-		guitar_lines = FALSE;
-	    }
-	}
+	guitar_lines = !guitar_lines;
 	if (guitar_lines) staff_lines = FALSE;
 	break;
     default:	/* Silence compiler warnings */

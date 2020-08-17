@@ -74,10 +74,6 @@ make_row_overlay()
     memset(row_is_overlaid, 0, maglen * sizeof(*row_is_overlaid));
 
     if (piano_lines) {
-	/* Initialization deferred until "white" is defined */
-	if (piano_line_color == no_color)
-	    piano_line_color = DEFAULT_PIANO_LINE_COLOR;
-
 	/* Run up the piano keyboard blatting the pixels they hit */
 	for (note = 0; note < 88; note++) {
 	    /* Colour of notes in octave,  starting from A */
@@ -87,17 +83,12 @@ make_row_overlay()
 
 	    /* If in screen range, write it to the overlay */
 	    if (magindex >= 0 && magindex < maglen) {
-		overlay_row(magindex, color[note % 12] == 0 ? piano_line_color
-							    : black);
+		overlay_row(magindex, color[note % 12] == 0 ? white : black);
 	    }
 	}
     }
 
     if (staff_lines) {
-	/* Initialization deferred until "white" is defined */
-	if (staff_line_color == no_color)
-	    staff_line_color = DEFAULT_STAFF_LINE_COLOR;
-
 	/* Which note numbers do the staff lines fall on? */
 	static int notes[] = {
 	    22, 26, 29, 32, 36,	/* G2 B2 D3 F3 A3 */
@@ -108,19 +99,16 @@ make_row_overlay()
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
-	    overlay_row(magindex, staff_line_color);
+	    overlay_row(magindex, STAFF_LINE_COLOR);
+	    /* If piano keys are also shown, make staff lines 3 pixels thick */
 	    if (piano_lines) {
-		overlay_row(magindex+1, staff_line_color);
-		overlay_row(magindex-1, staff_line_color);
+		overlay_row(magindex+1, STAFF_LINE_COLOR);
+		overlay_row(magindex-1, STAFF_LINE_COLOR);
 	    }
 	}
     }
 
     if (guitar_lines) {
-	/* Initialization deferred until "white" is defined */
-	if (guitar_line_color == no_color)
-	    guitar_line_color = DEFAULT_GUITAR_LINE_COLOR;
-
 	/* Which note numbers do the guitar strings fall on? */
 	static int notes[] = {
 	    19, 24, 29, 34, 38, 43  /* Classical guitar: E2 A2 D3 G3 B3 E4 */
@@ -130,10 +118,11 @@ make_row_overlay()
 	for (i=0; i < sizeof(notes)/sizeof(notes[0]); i++) {
 	    double freq = note_number_to_freq(notes[i]);
 	    int magindex = freq_to_magindex(freq);
-	    overlay_row(magindex, guitar_line_color);
+	    overlay_row(magindex, GUITAR_LINE_COLOR);
+	    /* If piano keys are also shown, make guitar lines 3 pixels thick */
 	    if (piano_lines) {
-		overlay_row(magindex+1, guitar_line_color);
-		overlay_row(magindex-1, guitar_line_color);
+		overlay_row(magindex+1, GUITAR_LINE_COLOR);
+		overlay_row(magindex-1, GUITAR_LINE_COLOR);
 	    }
         }
     }

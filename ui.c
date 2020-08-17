@@ -62,15 +62,9 @@ double start_time = 0.0;
 bool piano_lines  = FALSE;	/* Draw lines where piano keys fall? */
 bool staff_lines  = FALSE;	/* Draw manuscript score staff lines? */
 bool guitar_lines = FALSE;	/* Draw guitar string lines? */
-/* We can't initialize these to white because with SDL
- * the colors are variables, dependent on the pixel format.
- * They will be set to white the first time they are used in make_row_overlay()
- */
-color_t piano_line_color  = no_color;	/* Color of piano lines */
-color_t staff_line_color  = no_color;	/* Color of staff lines */
-color_t guitar_line_color = no_color;	/* Color of guitar lines */
-bool show_freq_axes = FALSE;		/* Are we to show/showing the v axes? */
-bool show_time_axes = FALSE;		/* Are we to show/showing the h axes? */
+
+bool show_freq_axes = FALSE;	/* Are we to show/showing the v axes? */
+bool show_time_axes = FALSE;	/* Are we to show/showing the h axes? */
 
 double left_bar_time = UNDEFINED;
 double right_bar_time = UNDEFINED;
