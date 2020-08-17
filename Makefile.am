@@ -113,3 +113,6 @@ mrproper: clean
 audio.wav:
 	sox -V1 -n -b 16 -e signed $@ synth 10 sine 27.5-14080 \
 				  fade l 0 36.91 36.91 trim 0 10
+
+notefreqs: notefreqs.o convert.o ui.o
+	$(CC) $(CFLAGS) -o $@ notefreqs.o convert.o ui.o -lm

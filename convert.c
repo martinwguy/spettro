@@ -76,7 +76,9 @@ freq_to_magindex(double freq)
 double
 note_name_to_freq(const char *note)
 {
-    static int semitones[7] = { 0, 2, 3, 5, 7, 8, 10 }; /* A-G */
+    /* It goes A1 B1 C2 D2 E2 F2 G2 A2 B2 C3, so make An correct
+     * and compensate for C-Gn being an octave lower */
+    static int semitones[7] = { 0, 2, -9, -7, -5, -4, -2 }; /* A-G */
     bool sharp = note[0] && note[1] && (note[2] == '#' || note[2] == '+');
 
     if (toupper(note[0]) >= 'A' && toupper(note[0]) <= 'G' &&

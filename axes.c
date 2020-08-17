@@ -135,19 +135,32 @@ draw_freq_axis()
     gui_update_rect(0, 0, frequency_axis_width - 1, disp_height - 1);
 }
 
+/*
+ * Note names are sequenced A0 B0 C1 D1 E1 F1 G1 A1 B1 C3 ... F8 G8 A8
+ */
 static void
 draw_note_names()
 {
+    /* Note letters within each numeric octave */
+    char note_names[] = { 'C', 'D', 'E', 'F', 'G', 'A', 'B' };
     char note_name[3]; /* "A0" etc */
+    int octave;	/* numeric: 0 to 8 */
+    int note;	/* index into note_names */
 
     gui_paint_rect(max_x + 1, 0, disp_width - 1, disp_height - 1, black);
 
     note_name[2] = '\0';
     gui_lock();
-    for (note_name[0] = 'A'; note_name[0] <= 'G'; note_name[0]++) {
-	for (note_name[1] = '0'; note_name[1] <= '9'; note_name[1]++) {
-	    double freq = note_name_to_freq(note_name);
-	    double half_a_pixel = sqrt(v_pixel_freq_ratio());
+    for (octave = 0; octave <= 9; octave++) {
+	note_name[1] = octave + '0';
+	for (note = ((octave == 0) ? 5 : 0);	/* from A0 */
+	     note <= ((octave == 9) ? 5 : 6);	/*   to A9 */
+	     note++) {
+	    double freq, half_a_pixel;
+
+	    note_name[0] = note_names[note];
+	    freq = note_name_to_freq(note_name);
+	    half_a_pixel = sqrt(v_pixel_freq_ratio());
 	    /* If the tick is within the axis range, draw it.
 	     * The half pixel slop ensures that the top and bottom pixel rows
 	     * receive a tick if the vertical pixel position of that label

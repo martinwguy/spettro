@@ -58,7 +58,7 @@ usage(void)
 				DEFAULT_LOGMAX); printf("\
 -a     Show the frequency axes\n\
 -A     Show the time axis and status line\n\
--f n   Set the FFT frequency, default %gHz, minimum %g\n",
+-f n   Set the FFT frequency in Hz, default %g, minimum %g\n",
 				fft_freq, MIN_FFT_FREQ); printf("\
 -t n   Set the initial playing time in seconds, mins:secs or H:M:S\n\
 -l n   Set the time for the left bar line\n\
