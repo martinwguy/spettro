@@ -34,7 +34,7 @@ void
 dump_screenshot()
 {
     char s[1024];
-    char *filename = "spettro";	/* Used to be the audio filename */
+    char *filename = "spettro";
 
     strcpy(s, filename);
     /* Add any parameters that they've changed */
@@ -59,7 +59,18 @@ dump_screenshot()
     if (left_bar_time != UNDEFINED)  add(s, " -l %g", left_bar_time);
     if (right_bar_time != UNDEFINED) add(s, " -r %g", right_bar_time);
     if (beats_per_bar != DEFAULT_BEATS_PER_BAR) add(s, " -b %d", beats_per_bar);
-    add(s, "%s.png", "");
+
+    {
+	/* basename() man modify the string, so work on a copy */
+	char *fn = strdup(current_audio_file()->filename);
+	char *bn = basename(fn);
+	char *dot = strrchr(bn, '.');
+
+	if (dot) *dot = '\0';
+	add(s, " %s.png", bn);
+	free(fn);
+    }
+
 #undef add
     gui_output_png_file(s);
 }
