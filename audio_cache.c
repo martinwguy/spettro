@@ -97,16 +97,97 @@ read_cached_audio(char *data,
 	frames_written += nframes;
     }
 
-    /* Check that the cache is positioned correctly */
-    /* It can be wrong if the user pans the time and an old calculation thread
-     * tries to read audio from the old position */
-    if (start < audio_cache_start ||
-        start + frames_to_read > audio_cache_start + audio_cache_size) {
-	return -1;
-    }
-
+    /* Check that the cache is positioned correctly.
+     *
+     * It can be wrong if the user pans in time and an old calculation thread
+     * tries to read audio from the old position, or if they pan by more than
+     * half a screenful and the audio-playing thread callback happens before
+     * the new data has been decoded.
+     */
     lock_audio_cache();
 
+    /* 1) starting before the start of the cache */
+    if (start < audio_cache_start) {
+	/* zero the missing first part, then copy the rest from the cache */
+	if (start + frames_to_read > audio_cache_start) {
+	    /* There is an overlap between the cache and the required region so
+	     * fill the non-overlapping region with silence
+	     */
+	    int frames = audio_cache_start - start;
+
+	    switch (format) {
+	    case af_float:
+		 memset(data, 0, frames * sizeof(float));
+		 data += frames * sizeof(float);
+		 break;
+	    case af_signed:
+		 memset(data, 0, frames * channels * sizeof(short));
+		 data += frames * channels * sizeof(short);
+		 break;
+	    }
+	    frames_written += frames;
+	    frames_to_read -= frames;
+	    start = audio_cache_start;
+	} else {
+	    /* There is no overlap. Fill with silence */
+	    unlock_audio_cache();
+
+	    switch (format) {
+	    case af_float:
+		memset(data, 0, frames_to_read * sizeof(float));
+		data += frames_to_read * sizeof(float);
+		break;
+	    case af_signed:
+		memset(data, 0, frames_to_read * channels * sizeof(short));
+		data += frames_to_read * channels * sizeof(short);
+		break;
+	    }
+	    return frames_to_read;
+	}
+    }
+
+    /* 2) Going past the end of the cache */
+    if (start + frames_to_read > audio_cache_start + audio_cache_size) {
+	/* If there is an overlap, zero the missing end part then copy
+	 * the rest from the cache */
+	if (start < audio_cache_start + audio_cache_size) {
+	    /* Size of the overlapping region in frames */
+	    int overlap = audio_cache_start + audio_cache_size - start;
+	    /* How many frames to fill with silence */
+	    int frames = frames_to_read - overlap;
+
+	    switch (format) {
+		int framesize;
+	    case af_float:
+	    	framesize = sizeof(float);
+		memset(data + overlap * framesize, 0, frames * framesize);
+		break;
+	    case af_signed:
+	    	framesize = channels * sizeof(short);
+		memset(data + overlap * framesize, 0, frames * framesize);
+		break;
+	    }
+	    frames_written += frames;
+	    frames_to_read -= frames;	/* == overlap */
+	} else {
+	    /* There is no overlap. Fill with silence */
+	    unlock_audio_cache();
+
+	    switch (format) {
+	    case af_float:
+		 memset(data, 0, frames_to_read * sizeof(float));
+		 data += frames_to_read * sizeof(float);
+		 break;
+	    case af_signed:
+		 memset(data, 0, frames_to_read * channels * sizeof(short));
+		 data += frames_to_read * channels * sizeof(short);
+		 break;
+	    }
+	    return frames_to_read;
+	}
+    }
+
+    /* Copy from the cache to the audio buffer */
     switch (format) {
     case af_float:
 	memcpy(data, audio_cache_f + (start - audio_cache_start),
