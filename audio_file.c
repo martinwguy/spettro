@@ -194,9 +194,16 @@ read_audio_file(char *data,
     } else {
 	/* and anything else with libsndfile */
 
-	if (sf_seek(sndfile, start, SEEK_SET) != start) {
-	    fprintf(stderr, "Failed to seek in audio file.\n");
-	    return -1;
+	/* libsndfile doesn't check to see if you're seeking to the same
+	 * position except for (SEEK_CUR, 0), so check here to avoid
+	 * restarting a frame-based compressed format decoder.
+	 + It almost always is in the right place.
+	 */
+	if (sf_seek(sndfile, 0, SEEK_CUR) != start) {
+	    if (sf_seek(sndfile, start, SEEK_SET) != start) {
+		fprintf(stderr, "Failed to seek in audio file.\n");
+		return -1;
+	    }
 	}
 
 	/* Read from the file until we have read all requested samples */
