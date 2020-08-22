@@ -130,24 +130,17 @@ main(int argc, char **argv)
 	    continue;
 	}
 
-	disp_time = start_time;
-	reposition_audio_cache();
-
 	/* If they set disp_time with -t or --start, check that it's
 	 * within the audio and make it coincide with the start of a column.
 	 */
-	if (disp_time > audio_file_length()) {
+	if (start_time > audio_file_length()) {
 	    fprintf(stderr,
 		    "Starting time (%g) is beyond the end of the audio (%g).\n",
 		    disp_time, audio_file_length());
-	    disp_time = audio_file_length();
-	    /* Round down to the left edge of the last column. */
-	    disp_time = trunc(disp_time / secpp) * secpp;
+	    set_disp_time(audio_file_length());
 	} else {
-	    /* Round it to nearest edge of a column */
-	    disp_time = lrint(disp_time / secpp) * secpp;
+	    set_disp_time(start_time);
 	}
-	reposition_audio_cache();
 
 	if (!is_first_file) {
 	    reinit_audio(af, filename);

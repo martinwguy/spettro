@@ -90,6 +90,8 @@ extern char *output_file;	/* Image file to write to */
 
 /* Where is time and space is the current playing position on the screen? */
 extern double disp_time;	/* When in the audio file is the crosshair? */
+extern void set_disp_time(double when); /* Only modify it with this function */
+
 extern int disp_offset; 	/* Crosshair is in which display column? */
 
 extern unsigned frequency_axis_width;	/* Left axis area */

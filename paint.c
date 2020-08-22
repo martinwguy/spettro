@@ -64,7 +64,7 @@ do_scroll()
     /* Align to a multiple of 1/ppsec so that times in cached results
      * continue to match. This is usually a no-op.
      */
-    new_disp_time = floor(new_disp_time / secpp + DELTA) * secpp;
+    new_disp_time = round(new_disp_time / secpp) * secpp;
 
     scroll_by = time_to_piece_column(new_disp_time) -
 		time_to_piece_column(disp_time);
@@ -82,8 +82,7 @@ do_scroll()
 
     if (abs(scroll_by) >= max_x - min_x + 1) {
 	/* If we're scrolling by more than the display width, repaint it all */
-	disp_time = new_disp_time;
-	reposition_audio_cache();
+	set_disp_time(new_disp_time);
 	repaint_display(FALSE);
 	if (show_time_axes) draw_time_axis();
 	return;
@@ -110,8 +109,7 @@ do_scroll()
 	green_line_off = FALSE;
     }
 
-    disp_time = new_disp_time;
-    reposition_audio_cache();
+    set_disp_time(new_disp_time);
 
     gui_h_scroll_by(scroll_forward ? scroll_by : -scroll_by);
 
