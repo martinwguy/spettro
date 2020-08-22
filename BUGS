@@ -12,6 +12,11 @@ press or release Shift or Ctrl. Instead the Shift/Ctrl state for the
 repeated key remains whatever it was when you started the key repeat.
 You have to release and press the key again to reflect the new modifiers.
 OK in SDL2 and EMOTION.
+------------------------------------------------------------------------
+With SDL2, if you do a lot of key repeat, say for panning in time,
+eventually it either stops responding to keystrokes entirely or
+gets very laggy but eventualy recovers.
+The scrolling and audio playing continue OK.
 
 ============================ Audio file ================================
 
