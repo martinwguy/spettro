@@ -365,14 +365,17 @@ k_screendump(key_t key)
 static void
 k_print_params(key_t key)
 {
-    printf("filename=\"%s\"\n", current_audio_file()->filename);
+    audio_file_t *af = current_audio_file();
+
+    printf("filename=\"%s\" channels=%d sample_rate=%g audio_length=%.3f\n",
+    	   af->filename, af->channels, af->sample_rate, audio_file_length());
 
     printf(
 "min_freq=%g max_freq=%g dyn_range=%g logmax=%.3g fft_freq=%g window=%s\n",
  min_freq,   max_freq, (double)dyn_range, logmax, fft_freq,   window_name(window_function));
 
-    printf("disp_time=%.3f ppsec=%.3f audio_length=%.3f jobs_in_flight=%d\n",
-	disp_time, ppsec, audio_file_length(), jobs_in_flight);
+    printf("disp_time=%.3f ppsec=%.3f jobs_in_flight=%d\n",
+	disp_time, ppsec, jobs_in_flight);
 
     printf("%s %.3f Showing %.3f to %.3f\n",
 	playing == PLAYING ? "Playing" :
