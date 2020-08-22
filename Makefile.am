@@ -97,6 +97,7 @@ mrproper: clean
 	rm -rf .deps autom4te.cache
 	rm -f swoop.wav
 	dh_clean		# Debian stuff
+	rm -f "spettro "*png	# Screen dumps
 
 # A test file
 #
