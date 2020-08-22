@@ -160,9 +160,10 @@ libmpg123_seek(audio_file_t *af, int start)
  * into the buffer "write_to".
  *
  * The three pointers, if != NULL, are where to store the sample rate,
- * the number of channels and the number of frames, when these change.
+ * the number of channels and the number of frames in the audio file
+ * when these change.
  *
- * Returns the number of frames written, or 0 on errors.
+ * Returns the number of frames written, or a negative value on errors.
  */
 int
 libmpg123_read_frames(audio_file_t *af,
@@ -176,8 +177,9 @@ libmpg123_read_frames(audio_file_t *af,
     /* Where to write to next in the buffer */
     float *fp = (float *) write_to;	/* used when format == af_float */
     char  *bp = (char *)  write_to;	/* used when format == af_signed */
-    int frames_written = 0;
-    int ret = MPG123_OK;
+    int framesize;			/* Size of sample frames written */
+    int frames_written = 0;		/* Number of sample frames written */
+    int ret = MPG123_OK;		/* Return value from mpg123 functions */
 
     while (frames_written < frames_to_read) {
 	off_t num;
@@ -212,7 +214,8 @@ libmpg123_read_frames(audio_file_t *af,
 	if (ret == MPG123_NEW_FORMAT) {
 	    off_t length;	/* of the MP3 file in samples */
 
-	    mpg123_getformat(af->mh, &rate, &channels, &enc);
+	    ret = mpg123_getformat(af->mh, &rate, &channels, &enc);
+	    if (ret != MPG123_OK) break;
 
 	    if (sample_rate_p)	*sample_rate_p = rate;
 	    if (channels_p)	*channels_p = channels;
@@ -221,25 +224,27 @@ libmpg123_read_frames(audio_file_t *af,
 	    if (length < 0) {
 		fprintf(stderr, "Can't determine length of MP3 file.\n");
 		if (frames_p) *frames_p = 0;
+		ret = length;
+		goto err;
 	    } else {
 		/* The docs say mpg123_length() return the number of samples
 		 * but it appears to return the number of frames so don't
 		 * divide it by the number of channels */
 		if (frames_p) *frames_p = length;
 	    }
-
-	    switch (format) {
-	    case af_float:  af->framesize = sizeof(float);	      break;
-	    case af_signed: af->framesize = sizeof(short) * channels; break;
-	    default: abort();
-	    }
 	}
 
 	/* TODO: Cache the whole frame, even if we only return a part of it. */
 
+	switch (format) {
+	case af_float:  framesize = sizeof(float);	      break;
+	case af_signed: framesize = sizeof(short) * channels; break;
+	default: abort();
+	}
+
 	/* It returns a whole frame, which may be more than we want */
-	if (bytes > (frames_to_read - frames_written) * af->framesize) {
-	    bytes = (frames_to_read - frames_written) * af->framesize;
+	if (bytes > (frames_to_read - frames_written) * framesize) {
+	    bytes = (frames_to_read - frames_written) * framesize;
 	}
 
 	/* We make libmpg123 return samples as 16-bit mono or stereo,
@@ -266,15 +271,16 @@ libmpg123_read_frames(audio_file_t *af,
 		    }
 
 		    while (shorts > 0) {
-			/* Convert [-32767..+32767] to -1..+1 */
-			*fp++ = (float)(*isp++) / 32767.0;
+			/* Convert [-32768..+32767] to -1..+.99999 */
+if (*isp == -32768) fprintf(stderr, "-32768!\n");
+			*fp++ = (float)(*isp++) / 32768.0;
 			shorts--;
 			frames_written++;
 		    }
 		}
 		break;
 	    case 2:
-		{	/* Convert pairs of 16-bit signeds to floats */
+		{   /* Convert pairs of 16-bit signeds to floats */
 		    short *isp = (short *)audio;
 		    int shorts = bytes / 2;
 
@@ -291,7 +297,7 @@ libmpg123_read_frames(audio_file_t *af,
 
 		    while (shorts > 0) {
 			/* Convert 2 * [-32767..+32767] to -1..+1 */
-			*fp++ = ((float)isp[0] + (float)isp[1]) / 65535.0f;
+			*fp++ = ((float)isp[0] + (float)isp[1]) / 65536.0f;
 			isp += 2; shorts -= 2;
 			frames_written++;
 		    }
@@ -300,8 +306,10 @@ libmpg123_read_frames(audio_file_t *af,
 	    }
 	}
     }
+err:
     if (ret != MPG123_OK) {
-	fprintf(stderr, "Error: %s", mpg123_strerror(af->mh));
+	fprintf(stderr, "Error decoding MP3 file: %s", mpg123_strerror(af->mh));
+	return -1;
     }
 
     return frames_written;

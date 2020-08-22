@@ -264,9 +264,9 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     }
     if (frames_read < 0) {
 	/* Some error */
-	fprintf(stderr, "Error while reading audio cache for player: ");
-	fprintf(stderr, "start=%d want=%d\n", sdl_start, len);
+	fprintf(stderr, "Error reading %d cached frames at %d for the audio player.", sdl_start, len);
 	/* Carry on playing: better an audio blip than seizing up */
+	/* This never happens because read_cached_audio() always succeeds */
     }
 
     /* Apply softvol */

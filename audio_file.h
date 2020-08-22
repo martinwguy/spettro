@@ -31,7 +31,6 @@ typedef struct audio_file {
 	/* libmpg123 stuff */
 	mpg123_handle *mh;
 	FILE *in;
-	int framesize;
 
 	double sample_rate;
 	unsigned long frames;	/* The file has (frames*channels) samples */

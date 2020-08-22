@@ -220,9 +220,11 @@ read_audio_file(char *data,
 		total_frames += frames;
 		write_to += frames * framesize;
 		frames_to_read -= frames;
-	    } else {
+	    } else if (frames == 0) {
 		/* We ask it to read past EOF so failure is normal */
 		break;
+	    } else {	/* Probably can't happen */
+		return -1;
 	    }
 	}
     }
