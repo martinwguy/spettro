@@ -220,12 +220,17 @@ reposition_audio_cache()
     off_t new_cache_start = lrint(floor(
     	(disp_time - (disp_width/2 + LOOKAHEAD) * secpp - 1/fft_freq/2) * current_sample_rate()
     ));
+
     /* How big the new cache will be, in seconds */
     double new_cache_time = (disp_width + LOOKAHEAD * 2) * secpp + 1/fft_freq;
+
     /* How big the new cache will be, in sample frames */
     off_t new_cache_size = lrint(ceil(new_cache_time * current_sample_rate()));
+
     int nchannels = current_audio_file()->channels;	/* Local copy */
+
     bool refill = FALSE;			/* Read the whole buffer? */
+
     /* When new and old buffers overlap, this is the region that needs filling
      * from the audio file */
     off_t fill_start, fill_size;
