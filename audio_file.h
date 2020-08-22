@@ -21,14 +21,16 @@
 
 #ifndef AUDIO_FILE_H
 
-# include <sndfile.h>
+#include <sndfile.h>
 #include <mpg123.h>
 
 typedef struct audio_file {
 	char *filename;
+
+	/* libsndfile handle, NULL if not using libsndfile */
  	SNDFILE *sndfile;
 	
-	/* libmpg123 handle */
+	/* libmpg123 handle, NULL if not using libmpg123 */
 	mpg123_handle *mh;
 
 	double sample_rate;

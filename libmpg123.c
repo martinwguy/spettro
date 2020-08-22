@@ -32,7 +32,7 @@
  * On failure, returns FALSE.
  */
 bool
-libmpg123_open(audio_file_t *af, const char *filename)
+libmpg123_open(audio_file_t *af, char *filename)
 {
     int ret;
     static bool initialized = FALSE;
@@ -86,6 +86,8 @@ libmpg123_open(audio_file_t *af, const char *filename)
 	}
 	af->frames = length;
     }
+
+    af->filename = filename;
 
     return TRUE;
 

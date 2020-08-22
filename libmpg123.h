@@ -2,7 +2,7 @@
 
 #include "audio_file.h"		/* for af_format_t */
 
-extern bool libmpg123_open(audio_file_t *af, const char *filename);
+extern bool libmpg123_open(audio_file_t *af, char *filename);
 extern bool libmpg123_seek(audio_file_t *af, int start);
 extern int  libmpg123_read_frames(audio_file_t	*af,
 				  void		*write_to,
