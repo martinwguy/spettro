@@ -69,6 +69,10 @@ lags a little.
 Make G do bass guitar strings instead of EADGBE.
 ------------------------------------------------------------------------
 Detect MP3 format from file header, not from file name.
+Note: libmpg123 "succeeds" in opening audio2.mp4 and audio2.wav
+renamed to foo.wav but returns garbage.
+libsndfile instead successfuly fails to open mp3 and mp4 files renamed foo.wav
+but successfully detects ogg, flac and wav, successfully rejects speex too.
 ------------------------------------------------------------------------
 Add a white-backgrounded heat map for color printers.
 ------------------------------------------------------------------------
@@ -79,4 +83,6 @@ l Ctrl-Shift-RightArrow r x
 The last barline no longer coincides with the end of the piece.
 ------------------------------------------------------------------------
 Be able to mouse-drag extended bar lines, keeping the further bar line in place.
+------------------------------------------------------------------------
+check for read error when calling libmpg123_read_frames()
 ------------------------------------------------------------------------
