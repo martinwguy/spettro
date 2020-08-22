@@ -120,10 +120,17 @@ static calc_t *
 get_result(calc_t *calc, spectrum *spec, int speclen)
 {
         calc_t *result;	/* The result structure */
-	int fftsize = speclen * 2;
+	int fftsize;
+
+	/* Check that the requested sample is within the current interesting
+	 * region: either on-screen or in the lookahead/behind regions */
+	if (DELTA_LT(calc->t, disp_time - (disp_offset - min_x - LOOKAHEAD) * secpp) &&
+	    DELTA_GT(calc->t, disp_time + (max_x - disp_offset + LOOKAHEAD) * secpp)) {
+	    fprintf(stderr, "Skipping calculation of an off-screen column\n");
+	    return NULL;
+	}
 
 	result = (calc_t *) Malloc(sizeof(calc_t));
-
 	result->t = calc->t;
 	result->fft_freq = calc->fft_freq;
 	result->window = calc->window;
@@ -131,18 +138,14 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 	result->thread = calc->thread;
 #endif
 
+	fftsize = speclen * 2;
+
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
 	if (read_cached_audio((char *) spec->time_domain, af_float, 1,
 			      lrint(calc->t * current_sample_rate()) - fftsize/2,
 			      fftsize) != fftsize) {
-	    /* Only moan if the requested sample is in the current interesting
-	     * region: either on-screen or in the lookahead/behind regions */
-	    if (DELTA_GE(calc->t, disp_time - (disp_offset - min_x - LOOKAHEAD) * secpp) &&
-	        DELTA_LE(calc->t, disp_time + (max_x - disp_offset + LOOKAHEAD) * secpp))
-		fprintf(stderr, "calc thread can't read %d samples at %ld\n",
-			fftsize,
-			lrint(calc->t * current_sample_rate()) - fftsize/2);
+	    /* Actually, it can't fail any more, but... */
 	    free(result);
 	    return NULL;
 	}
