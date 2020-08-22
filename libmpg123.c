@@ -48,13 +48,12 @@ libmpg123_open(audio_file_t *af, char *filename)
 	return FALSE;
     }
 
-    if (mpg123_open(af->mh, filename) != MPG123_OK) {
+    if (mpg123_open(af->mh, filename) != MPG123_OK) goto fail2;
 
-	goto fail2;
-    }
-
+    /* Set the output format to signed short but keep the sampling rate */
     {
 	long rate; int chans; int encoding;
+	off_t length;
 
     	if (mpg123_getformat(af->mh, &rate, &chans, &encoding) != MPG123_OK) {
 	    fprintf(stderr, "Can't get MP3 file's format; using 44100Hz.\n");
@@ -65,16 +64,7 @@ libmpg123_open(audio_file_t *af, char *filename)
 	    mpg123_format(af->mh, rate,  MPG123_MONO | MPG123_STEREO,
 					  MPG123_ENC_SIGNED_16) != MPG123_OK)
 	    goto fail;
-    }
 
-    {
-	long rate; int chans; int encoding;
-	off_t length;
-
-	if (mpg123_getformat(af->mh, &rate, &chans, &encoding) != MPG123_OK) {
-	    fprintf(stderr, "Can't discover the format of the MP3 file.\n");
-	    goto fail;
-	}
 	af->channels = chans;
 	af->sample_rate = rate;
 
