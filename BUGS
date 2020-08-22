@@ -18,13 +18,6 @@ eventually it either stops responding to keystrokes entirely or
 gets very laggy but eventualy recovers.
 The scrolling and audio playing continue OK.
 
-============================ Audio file ================================
-
-libmpg123 fails to open "letter from home 64kbps.mp3"
-
-Error: Unable to set up output format! (code 1)Can't read the first frame.
-But mpg123 can play it, saying it's  MPEG 2.0 L III cbr64 22050 j-s
-
 ============================ Other ======================================
 
 It doesn't play/display anything but the first filename argument,
@@ -32,7 +25,7 @@ giving all-background on subsequent ones.
 ------------------------------------------------------------------------
 EMOTION: softvol changes but has no effect
 ------------------------------------------------------------------------
-Pressing [Space] at EOF now exits(0) instewad of replaying from the beginning.
+Pressing [Space] at EOF now exits(0) instead of replaying from the beginning.
 ------------------------------------------------------------------------
 for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a background

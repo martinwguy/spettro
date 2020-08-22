@@ -7,12 +7,6 @@ Add -m mute flag to be able to test emotion graphics when sound is broken
 or to give just the graphics if initializing the audio output fails.
 This needs the above "synch scrolling".
 ------------------------------------------------------------------------
-Try playing sound with SDL_Mixer (Ogg, MP3)
-Mix_RewindMusic(); Mix_SetMusicPosition(double position)
-(works with WAV and FLAC?)
-Mix_FadeInMusicos(Mix_Music *music, 1, fade_ms, double position)
-Mix_SetMusicCMD("mpg123")
-------------------------------------------------------------------------
 When adding score lines when there were none, just draw them on the display
 instead of redisplaying the columns' spectral data.
 When removing/changing such lines, just repaint the appropriate rows

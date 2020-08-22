@@ -7,8 +7,5 @@ extern bool libmpg123_seek(audio_file_t *af, int start);
 extern int  libmpg123_read_frames(audio_file_t	*af,
 				  void		*write_to,
 				  int		frames_to_read,
-				  af_format_t	format,
-				  double	*sample_rate_p,
-				  unsigned	*channels_p,
-				  unsigned long	*frames_p);
+				  af_format_t	format);
 extern void libmpg123_close(audio_file_t *af);

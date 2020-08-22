@@ -28,13 +28,12 @@ typedef struct audio_file {
 	char *filename;
  	SNDFILE *sndfile;
 	
-	/* libmpg123 stuff */
+	/* libmpg123 handle */
 	mpg123_handle *mh;
-	FILE *in;
 
 	double sample_rate;
-	unsigned long frames;	/* The file has (frames*channels) samples */
-	unsigned channels;
+	long frames;		/* The file has (frames*channels) samples */
+	int channels;
 	short *audio_buf;	/* The required audio data as 16-bit signed,
     				 * with same number of channels as audio file */
 	int audio_buflen;	/* Memory allocated to audio_buf[] in samples */

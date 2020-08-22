@@ -181,7 +181,7 @@ read_audio_file(char *data,
 	    return -1;
 	}
 	while (frames_to_read > 0) {
-	    int frames = libmpg123_read_frames(audio_file, write_to, frames_to_read, format, NULL, NULL, NULL);
+	    int frames = libmpg123_read_frames(audio_file, write_to, frames_to_read, format);
 	    if (frames > 0) {
 		total_frames += frames;
 		write_to += frames * framesize;
