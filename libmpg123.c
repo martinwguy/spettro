@@ -48,6 +48,9 @@ libmpg123_open(audio_file_t *af, char *filename)
 	return FALSE;
     }
 
+    /* Suppress warning messages from libmpg123 */
+    mpg123_param(af->mh, MPG123_ADD_FLAGS, MPG123_QUIET, 0.0);
+
     if (mpg123_open(af->mh, filename) != MPG123_OK) goto fail2;
 
     /* Set the output format to signed short but keep the sampling rate */
