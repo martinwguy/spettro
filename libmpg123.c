@@ -68,7 +68,44 @@ libmpg123_open(audio_file_t *af, char *filename)
 	af->channels = chans;
 	af->sample_rate = rate;
 
-	(void) mpg123_scan(af->mh);
+	/* We may need to call mpg123_scan() to determine the track length
+	 * accurately, but that takes ten seconds for an hour-long track
+	 * due to disk IO time. However,
+	 *
+	 > On 23/08/2020, Thomas Orgis <thomas-forum@orgis.org> wrote:
+	 > 1. Call mpg123_info() and check for the vbr mode.
+	 > If it's not MPG123_CBR, you had some Xing/Lame/Info frame
+	 > to tell the decoder that. Track length is a common feature
+	 > that all these frames have.
+	 >
+	 > 2. Call mpg123_getstate() for MPG123_ENC_DELAY and/or
+	 > MPG123_ENC_PADDING. If one of them is != -1, you got a
+	 > Lame info tag that contained such a value, also implying
+	 > that there is proper length info.
+	 *
+	 * So we do that.
+	 */
+
+	
+	{
+	    struct mpg123_frameinfo mi;
+#if MPG123_API_VERSION >= 45
+	    long val;
+#endif
+
+	    if (!((mpg123_info(af->mh, &mi) == MPG123_OK &&
+		   mi.vbr != MPG123_CBR)
+/* These are only present from libmpg123 1.26 */
+#if MPG123_API_VERSION >= 45
+		   ||
+		  (mpg123_getstate(af->mh, MPG123_ENC_DELAY, &val, NULL)
+		   == MPG123_OK && val != -1)
+		   ||
+		  (mpg123_getstate(af->mh, MPG123_ENC_PADDING, &val, NULL)
+		   == MPG123_OK && val != -1)
+#endif
+		   )) (void) mpg123_scan(af->mh);
+	}
 	length = mpg123_length(af->mh);
 	if (length < 0) {
 	    fprintf(stderr, "Can't discover the length of the MP3 file.\n");
