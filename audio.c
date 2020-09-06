@@ -287,7 +287,10 @@ double
 get_audio_players_time(void)
 {
 #if EMOTION_AUDIO
-    return emotion_object_position_get(em);
+    /* Empirically, if its playing, e_o_p_g() returns a value on average
+     * .0181 seconds ahead of what it's actually playing. */
+    return (playing == PLAYING) ? emotion_object_position_get(em) - 0.181
+				: emotion_object_position_get(em);
 #elif SDL_AUDIO
     /* The current playing time is in sdl_start, counted in frames
      * since the start of the piece. */
