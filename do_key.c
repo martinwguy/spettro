@@ -377,11 +377,12 @@ k_print_params(key_t key)
     printf("disp_time=%.3f ppsec=%.3f jobs_in_flight=%d\n",
 	disp_time, ppsec, jobs_in_flight);
 
-    printf("%s %.3f Showing %.3f to %.3f\n",
+    printf("%s %.3f (player: %.3f) Showing %.3f to %.3f\n",
 	playing == PLAYING ? "Playing" :
 	playing == STOPPED ? "Stopped at" :
 	playing == PAUSED  ? "Paused at" : "Doing what? at",
 	get_playing_time(),
+	get_audio_players_time(),
 	screen_column_to_start_time(min_x),
 	screen_column_to_start_time(max_x + 1));
 

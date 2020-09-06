@@ -27,6 +27,8 @@
 #include "lock.h"
 #include "ui.h"
 
+#include <sys/time.h>	/* for gettimeofsay() */
+
 
 #if EMOTION_AUDIO
 
@@ -37,11 +39,14 @@ static void playback_finished_cb(void *data, Evas_Object *obj, void *ev);
 #elif SDL_AUDIO
 
 #include <SDL.h>
-static unsigned sdl_start = 0;	/* At what offset in the audio file, in frames,
+static off_t sdl_start = 0;	/* At what offset in the audio file, in frames,
 				 * will we next read samples to play? */
 static void sdl_fill_audio(void *userdata, Uint8 *stream, int len);
+static unsigned SDL_buffer_size;	/* In sample frames */
 
 #endif
+
+static void set_real_start_time(double when);
 
 enum playing playing = PAUSED;
 
@@ -90,6 +95,7 @@ init_audio(audio_file_t *af, char *filename)
 	    }
 	    wavspec.samples = 1 << (places - 1);
 	}
+	SDL_buffer_size = wavspec.samples / af->channels;
 	wavspec.callback = sdl_fill_audio;
 	wavspec.userdata = af;
 
@@ -158,6 +164,7 @@ start_playing()
 #if SDL_AUDIO
     SDL_PauseAudio(0);
 #endif
+    set_real_start_time(disp_time);
     playing = PLAYING;
 }
 
@@ -195,8 +202,18 @@ continue_playing()
     sdl_start = lrint(disp_time * current_sample_rate());
     SDL_PauseAudio(0);
 #endif
+    set_real_start_time(disp_time);
     playing = PLAYING;
 }
+
+/*
+ * SDL and Emotion's reporting of the current playing time is grainy,
+ * making the scrolling jittery. Instead we calculate it using the
+ * real time clock, hoping that it remains in sync.
+ */
+static double real_start_time;		 /* When we started playing from 0.0,
+					  * in seconds from the epoch */
+static bool use_real_start_time = FALSE; /* Should we use real_start_time? */
 
 /*
  * Position the audio player at the specified time in seconds.
@@ -210,18 +227,79 @@ set_playing_time(double when)
 #if SDL_AUDIO
     sdl_start = lrint(when * current_sample_rate());
 #endif
+    set_real_start_time(when);
 }
 
+static void
+set_real_start_time(double when)
+{
+    struct timeval tv;
+
+    /* Debugging switch to compare real-time and player-time scrolling */
+    if (getenv("SLOPPY") != NULL) { use_real_start_time = FALSE; return; }
+
+    use_real_start_time = (gettimeofday(&tv, NULL) == 0);
+    if (!use_real_start_time) {
+	perror("Can't get time of day");
+    } else {
+    	real_start_time = tv.tv_sec + tv.tv_usec * 0.000001 - when;
+    }
+}
+
+/* Return the audio player's current offset into the audio. */
 double
 get_playing_time(void)
+{
+    if (use_real_start_time) {
+	struct timeval tv;
+
+	/* Real time keeps on incrementing even if we're not playing */
+	if (playing != PLAYING) return get_audio_players_time();
+
+	if (gettimeofday(&tv, NULL) != 0) {
+	    perror("Can't get time of day");
+	    use_real_start_time = FALSE;
+	} else {
+	    double now = tv.tv_sec + tv.tv_usec * 0.000001;
+	    double retval = now - real_start_time;
+	    double audio_players_time = get_audio_players_time();
+
+/* A 16th of a second is noticeable, so resynch if it skews more than a 20th.
+ * In practice with SDL2 this happens about once a minute. */
+#define MAX_SLOP 0.05
+
+	    /* Check whether the audio player has slipped out of sync */
+	    if (DELTA_GT(fabs(retval - audio_players_time), MAX_SLOP)) {
+		fprintf(stderr, "Resynching from %.3f to audio player's %.3f\n",
+			retval, audio_players_time);
+		real_start_time = now - audio_players_time;
+	    }
+	    return now - real_start_time;
+	}
+    }
+
+    /* Fallback: ask the audio player what time they are playing at */
+    return get_audio_players_time();
+}
+
+/* How far into the piece does the audio playing subsystem think it is? */
+double
+get_audio_players_time(void)
 {
 #if EMOTION_AUDIO
     return emotion_object_position_get(em);
 #elif SDL_AUDIO
     /* The current playing time is in sdl_start, counted in frames
-     * since the start of the piece.
-     */
-    return (double)sdl_start / current_sample_rate();
+     * since the start of the piece. */
+    if (playing == PLAYING) {
+	/* If its playing, we don't know how much of its last buffer it
+	 * has already played, but on average it will be half way through. */
+	off_t current = sdl_start - SDL_buffer_size / 2;
+	return current < 0 ? 0.0
+			   : (double)current / current_sample_rate();
+    }
+    else
+	return (double)(sdl_start) / current_sample_rate();
 #endif
 }
 
@@ -262,7 +340,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
     }
     if (frames_read < 0) {
 	/* Some error */
-	fprintf(stderr, "Error reading %d cached frames at %d for the audio player.", sdl_start, len);
+	fprintf(stderr, "Error reading %ld cached frames at %d for the audio player.", sdl_start, len);
 	/* Carry on playing: better an audio blip than seizing up */
 	/* This never happens because read_cached_audio() always succeeds */
     }

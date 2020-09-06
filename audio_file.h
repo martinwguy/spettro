@@ -53,7 +53,7 @@ extern audio_file_t *open_audio_file(char *filename);
 
 extern int read_audio_file(char *data,
 			   af_format_t format, int channels,
-			   int start,	/* In frames offset from 0.0 */
+			   off_t start,	/* In frames offset from 0.0 */
 			   int nframes);
 
 extern void close_audio_file(audio_file_t *audio_file);

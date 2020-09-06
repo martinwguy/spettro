@@ -37,6 +37,7 @@ extern void stop_playing(void);
 extern void continue_playing(void);
 extern void set_playing_time(double when);
 extern double get_playing_time(void);
+extern double get_audio_players_time(void);
 
 #define AUDIO_H
 #endif

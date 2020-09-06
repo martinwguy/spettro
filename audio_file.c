@@ -130,7 +130,7 @@ current_sample_rate()
 int
 read_audio_file(char *data,
 		af_format_t format, int channels,
-		int start, int frames_to_read)
+		off_t start, int frames_to_read)
 {
     /* size of one frame of output data in bytes */
     int framesize = (format == af_float ? sizeof(float) : sizeof(short))

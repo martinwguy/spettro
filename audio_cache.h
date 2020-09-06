@@ -24,7 +24,7 @@
 #include "audio_file.h"	/* for af_format_t */
 
 extern int read_cached_audio(char *data, af_format_t format, int channels,
-			     int start, int frames_to_read);
+			     off_t start, int frames_to_read);
 
 extern void reposition_audio_cache(void);
 

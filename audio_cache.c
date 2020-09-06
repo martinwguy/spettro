@@ -65,7 +65,7 @@ static off_t audio_cache_size = 0;	/* Size of cache in sample frames */
 int
 read_cached_audio(char *data,
 		  af_format_t format, int channels,
-		  int start, int frames_to_read)
+		  off_t start, int frames_to_read)
 {
     int frames_written = 0;
     size_t framesize;
