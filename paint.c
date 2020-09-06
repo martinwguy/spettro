@@ -50,7 +50,7 @@ do_scroll()
 				 * +ve = move forward in time, move display left
 				 * +ve = move back in time, move display right
 				 */
-    bool scroll_forward;	/* Normal forward scroll, moving the graph left? */
+    bool scroll_forward;	/* Forward scroll, moving the graph left? */
 
     scroll_event_pending = FALSE;
 
@@ -58,8 +58,8 @@ do_scroll()
 
     if (DELTA_LE(new_disp_time, 0.0))
 	new_disp_time = 0.0;
-    if (DELTA_GE(new_disp_time, audio_file_length()))
-	new_disp_time = audio_file_length();
+    if (DELTA_GE(new_disp_time, audio_file_length() - 1/current_sample_rate()))
+	new_disp_time = audio_file_length() - 1/current_sample_rate();
 
     /* Align to a multiple of 1/ppsec so that times in cached results
      * continue to match. This is usually a no-op.
