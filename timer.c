@@ -155,32 +155,14 @@ bool scroll_event_pending = FALSE;
 /* Implementation-specific code to handle the timer callback */
 
 #if ECORE_TIMER
-
-static Eina_Bool
-timer_cb(void *data)
-{
-    /* Generate a user-defined event which will be processed in the main loop */
-    if (!scroll_event_pending) {
-	ecore_event_add(scroll_event, NULL, NULL, NULL);
-	scroll_event_pending = TRUE;
-    }
-
-    return ECORE_CALLBACK_RENEW;
-}
-
-static Eina_Bool
-scroll_cb(void *data, int type, void *event)
-{
-    do_scroll();
-    return ECORE_CALLBACK_DONE;
-}
-
+    static Eina_Bool
+    timer_cb(void *data)
 #elif SDL_TIMER
-
-static Uint32
-timer_cb(Uint32 interval, void *data)
+    static Uint32
+    timer_cb(Uint32 interval, void *data)
+#endif
 {
-/* To see if the timer is running, #define DEBUG 1 */
+    /* To see if the timer is running, #define DEBUG 1 */
 #if DEBUG
     static char spinner[]="|/-\\";
     static char *spinnerp = spinner;
@@ -188,6 +170,17 @@ timer_cb(Uint32 interval, void *data)
     putc(*spinnerp, stderr); putc('\b', stderr);
     if (!*++spinnerp) spinnerp = spinner;
 #endif
+
+#if ECORE_TIMER
+    /* Generate a user-defined event which will be processed in the main loop */
+    if (!scroll_event_pending) {
+	ecore_event_add(scroll_event, NULL, NULL, NULL);
+	scroll_event_pending = TRUE;
+    }
+
+    return ECORE_CALLBACK_RENEW;
+
+#elif SDL_TIMER
 
     /* We only want one scroll event pending at a time, otherwise if there's
      * insufficient CPU, the event queue fills up with them and other events
@@ -206,6 +199,17 @@ timer_cb(Uint32 interval, void *data)
     }
 
     return(interval);
+
+#endif
+}
+
+#if ECORE_TIMER
+
+static Eina_Bool
+scroll_cb(void *data, int type, void *event)
+{
+    do_scroll();
+    return ECORE_CALLBACK_DONE;
 }
 
 #endif
