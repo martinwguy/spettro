@@ -17,6 +17,10 @@ With SDL2, if you do a lot of key repeat, say for panning in time,
 eventually it either stops responding to keystrokes entirely or
 gets very laggy but eventualy recovers.
 The scrolling and audio playing continue OK.
+------------------------------------------------------------------------
+EMOTION: When using the Emotion audio player, the graphic is a fraction
+of a second ahead of what we can hear, because if it's playing,
+emotion_object_position_get() returns a value 0.2 seconds into the future.
 
 ============================ Other ======================================
 
