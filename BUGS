@@ -17,16 +17,26 @@ With SDL2, if you do a lot of key repeat, say for panning in time,
 eventually it either stops responding to keystrokes entirely or
 gets very laggy but eventualy recovers.
 The scrolling and audio playing continue OK.
-
-============================ Other ======================================
-
-EMOTION: softvol changes but has no effect
-------------------------------------------------------------------------
-Pressing [Space] at EOF now exits(0) instead of replaying from the beginning.
 ------------------------------------------------------------------------
 for a in *.wav: do spettro -Fpe "$a"; done
 gets the graphic deinit-reinit wrong on sergio1, leaving a background
 window with a garbled version of part of the desktop
+
+============================ Audio ======================================
+
+EMOTION: softvol changes but has no effect
+------------------------------------------------------------------------
+EMOTION: When it gets to EOF it stops, but if you pan left it immediately
+plays instead of being PAUSED.
+------------------------------------------------------------------------
+SDL2: Playing sometimes stops in the middle of a piece, unpredictably and
+unrepeatably. The display stops scrolling, the audio plays to the end of
+the audio cache then goes silent. The timer interrupt is running and
+^P says that the audio player's time is advancing.
+
+============================ Other ======================================
+
+Pressing [Space] at EOF now exits(0) instead of replaying from the beginning.
 ------------------------------------------------------------------------
 Playing multiple files doesn't work. It doesn't play/display anything but
 the first filename argument, giving all-background on subsequent ones.
@@ -37,7 +47,4 @@ Should be:
   instead of replaying
 - Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
 - Also mention |<< and >>| media keys in the manual.
-------------------------------------------------------------------------
-EMOTION: When it gets to EOF it stops, but if you pan left it immeddiately
-plays instead of being PAUSED.
 ------------------------------------------------------------------------
