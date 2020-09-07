@@ -306,17 +306,19 @@ reposition_audio_cache()
     {
 	/* Where the region to fill starts, relative to the cache start */
 	off_t fill_offset = fill_start - audio_cache_start;  /* in frames */
-
-	if (read_audio_file((char *)(audio_cache_s + fill_offset * nchannels),
-			    af_signed, nchannels,
-			    fill_start, fill_size) != fill_size) {
-	    fprintf(stderr, "Failed to fill the audio cache with %ld frames.\n",
-		    fill_size);
-	    exit(1);
+	int r = read_audio_file((char *)(audio_cache_s + fill_offset * nchannels),
+				af_signed, nchannels, fill_start, fill_size);
+	if (r != fill_size) {
+	    fprintf(stderr, "Failed to fill the audio cache with %ld frames; got %d.\n",
+		    fill_size, r);
 	}
 	shorts_to_mono_floats(audio_cache_f + fill_offset,
 			      audio_cache_s + fill_offset * nchannels,
-			      fill_size, nchannels);
+			      r, nchannels);
+	/* If the read was short or erroneous, fill the unwritten space with silence */
+	if (r < 0) r = 0;
+	memset(audio_cache_f + fill_offset + r, 0, (fill_size - r) * sizeof(double));
+	memset(audio_cache_s + fill_offset + r, 0, (fill_size - r) * sizeof(short) * nchannels);
     }
 
     unlock_audio_cache();
