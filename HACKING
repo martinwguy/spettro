@@ -10,29 +10,27 @@ It has a main thread which initializes everything and then loops
 receiving notifications of key presses and mouse events and acts on them.
 All screen updating is done from the main thread.
 
-There is also a periodic timer which checks whether the display needs to
-be scrolled left, and sends a "do-a-scroll" event to the main loop, which
-acts on it.
+There is also a periodic timer which sends a "do-a-scroll" event to the
+main loop. usually 25 times a second (the frame rate).
 
-Audio playing is another automonous thread, managed by the audio-playing
-toolkit. When it needs more audio data, it calls a callback which gives it
-the data it requires, either by decoding the next fragment of sound from
-the audio file, or if that sound has already been decoded, from the audio
-cache in audio_cache.c
+Audio playing is another autonomous thread managed by the audio-playing
+toolkit. When SDL needs more audio data it calls a callback which gives it
+the data it requires. If you're using the Emotion audio player instead,
+it does this on its own from the audio file without our intervention.
 
 The heavy-work calculation of FFTs happens in several asycnhronous threads.
 and they communicate like this:
 
-When the main loop is told to scroll the screen, it schedules the
-newly-exposed columns of data to be calculated. These are remembered
-in a linked list of calc_t structures, which live in scheduler.c.
+When the main loop is told to refresh columns of the screen, it schedules
+the columns to be calculated by adding them to a linked list of calc_t
+structures. 
 
-When a calculation thread is idle, it calls get_work(), which tells it
-to calculate the spectrum of the next most interesting column from the
-list of scheduled events. The calc_t describing that column's work is moved
-from the list of columns to calculate to a list of columns that are being
-calculated. When the FFT thread has finished, it sends an event to the
-main loop, with the spectral data attached in a calc_t structure and
+When a calculation thread is idle, it calls get_work(), gives it the
+most "interesting" column's data from the list of scheduled events and
+remembers the job in progress by moving the calc_t from the list of work
+to be done to a list of calculations being performed.
+When the FFT thread has finished, it sends an event to the
+main loop with the spectral data filled into the calc_t structure and
 when the main loop processes *that* event, it redraws the appropriate
 column of the screen and removes the calc_t from the list of columns being
 calculated.
