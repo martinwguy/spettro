@@ -95,11 +95,6 @@ set_disp_time(double when)
     reposition_audio_cache();
 }
 
-double get_disp_time(void)
-{
-    return disp_time;
-}
-
 int disp_offset; 		/* Crosshair is in which display column? */
 
 /* The width in pixels of the vertical axes, when they are present. */
