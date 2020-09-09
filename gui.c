@@ -542,8 +542,11 @@ gui_quit()
     if (playing == PLAYING) {
 	stop_playing();
     }
-    stop_scheduler();
-    stop_timer();
+#if ECORE_MAIN
+    ecore_shutdown();
+#elif SDL_MAIN
+    /* SDL_Quit is called by onexit() */
+#endif
 }
 
 #if ECORE_MAIN
