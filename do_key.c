@@ -61,7 +61,6 @@ static void
 k_quit(key_t key)
 {
     gui_quit_main_loop();
-    quitting = TRUE;
 }
 
 static void
@@ -99,21 +98,6 @@ static void
 k_stop(key_t key)
 {
     if (playing == PLAYING) pause_audio();
-}
-
-/* Go to the next/previous audio file */
-static void
-k_next(key_t key)
-{
-    play_next = TRUE;
-    gui_quit_main_loop();
-}
-
-static void
-k_prev(key_t key)
-{
-    play_previous = TRUE;
-    gui_quit_main_loop();
 }
 
 /*
@@ -586,7 +570,7 @@ static key_fn key_fns[] = {
     { KEY_S,	"S",    k_overlay,	k_bad,		k_bad,		k_bad },
     { KEY_G,	"G",    k_overlay,	k_bad,		k_bad,		k_bad },
     { KEY_O,	"O",    k_screendump,	k_bad,		k_bad,		k_bad },
-    { KEY_P,	"P",    k_prev,		k_bad,		k_print_params,	k_bad },
+    { KEY_P,	"P",    k_bad,		k_bad,		k_print_params,	k_bad },
     { KEY_T,	"T",    k_print_time,	k_bad,		k_bad,		k_bad },
     { KEY_F,	"F",    k_fft_size,	k_fft_size,	k_fullscreen,	k_bad },
     { KEY_L,	"L",    k_left_barline,	k_bad,		k_refresh,	k_bad },
@@ -597,7 +581,7 @@ static key_fn key_fns[] = {
     { KEY_W,	"W",    k_cycle_window,	k_cycle_window,	k_bad,		k_bad },
     { KEY_M,	"M",    k_change_color,	k_bad,		k_bad,		k_bad },
     { KEY_H,	"H",	k_bad,		k_bad,		k_set_window,	k_bad },
-    { KEY_N,	"N",    k_next,		k_bad,		k_set_window,	k_bad },
+    { KEY_N,	"N",    k_bad,		k_bad,		k_set_window,	k_bad },
     { KEY_0,	"0",	k_no_barlines,	k_bad,		k_bad,		k_bad },
     { KEY_9,	"9",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
     { KEY_1,	"1",	k_beats_per_bar,k_bad,		k_bad,		k_bad },
@@ -623,8 +607,8 @@ static key_fn key_fns[] = {
     /* Extended keyboard's >/|| [] |<< and >>| buttons */
     { KEY_PLAY,	"Play",	k_play,		k_bad,		k_bad,		k_bad },
     { KEY_STOP,	"Stop",	k_stop,		k_bad,		k_bad,		k_bad },
-    { KEY_PREV,	"Prev",	k_prev,		k_bad,		k_bad,		k_bad },
-    { KEY_NEXT,	"Next",	k_next,		k_bad,		k_bad,		k_bad },
+    { KEY_PREV,	"Prev",	k_bad,		k_bad,		k_bad,		k_bad },
+    { KEY_NEXT,	"Next",	k_bad,		k_bad,		k_bad,		k_bad },
 };
 #define N_KEYS (sizeof(key_fns) / sizeof(key_fns[0]))
 

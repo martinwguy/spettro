@@ -118,8 +118,3 @@ unsigned note_name_axis_width = 2 + 1 + 2 * (3 + 1);	/* == 11 */
 /* Space above and below for status info at the top, time index at the bottom */
 unsigned top_margin = (1 + 5 + 1);	/* space above, text, space below */
 unsigned bottom_margin = (1 + 5 + 1);	/* space below, text, space above */
-
-/* Variables to control the main loop from the depths of do_key.c */
-bool play_previous = FALSE;	/* Have they asked to play the previous file? */
-bool play_next = FALSE;		/* Have they asked to play the next file? */
-bool quitting = FALSE;		/* Have they asked to quit the main loop? */

@@ -37,14 +37,3 @@ the audio cache then goes silent. The timer interrupt is running and
 ============================ Other ======================================
 
 Pressing [Space] at EOF now exits(0) instead of replaying from the beginning.
-------------------------------------------------------------------------
-Playing multiple files doesn't work. It doesn't play/display anything but
-the first filename argument, giving all-background on subsequent ones.
-
-Should be:
-- on 'q', quit, don't advance
-- on space at end of audio, go to next file (which may quit)
-  instead of replaying
-- Bind "Prev" and "Next" to 'p' and 'n' and make them do previous/next track.
-- Also mention |<< and >>| media keys in the manual.
-------------------------------------------------------------------------

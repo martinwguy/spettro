@@ -48,9 +48,9 @@
  *
  * If you resize the window the displayed image is zoomed.
  *
- * For command-line options and key bindings, see Usage.
+ * For command-line options and key bindings, see Usage in args.c.
  *
- * it runs in three types of thread:
+ * It runs in three types of thread:
  * - the main thread handles GUI events, starts/stops the audio player,
  *   tells the calc thread what to calculate, receives results, and
  *   displays them.
@@ -58,19 +58,6 @@
  * - the timer thread is called periodically to scroll the display in sync
  *   with the audio playback. The actual scrolling is done in the main loop
  *   in response to an event posted by the timer thread.
- *
- * == Mouse handling ==
- *
- * On Ctrl-mouse down, the left and right bar lines are set at the
- * mouse position. *DONE*
- *
- * Mouse click and drag should pan the display in real time.
- *
- * The bar line should appear when you press the button
- * and if you move it while holding the button, the bar line should move too,
- * being positioned definitively when you release the mouse button.
- * The other bar lines on each side should expand and collapse to match
- * If they release Ctrl before MouseUp, no change should be made.
  *
  *	Martin Guy <martinwguy@gmail.com>, Dec 2016 - May 2017.
  */
@@ -103,8 +90,7 @@ int
 main(int argc, char **argv)
 {
     audio_file_t *af = NULL;
-    int i;		/* filename argument index */
-    static bool is_first_file = TRUE;
+    char *filename;
 
     process_args(&argc, &argv);
 
@@ -121,100 +107,58 @@ main(int argc, char **argv)
 	max_y -= top_margin;
     }
 
-    /* Process each filename argument */
-    for (i=0 ; i<argc; i++) {
-	char *filename = argv[i];
+    /* Process the filename argument */
+    if (argc != 1) {
+	fprintf(stderr, "You must name one audio file.\n");
+	exit(1);
+    }
+    filename = argv[0];
 
-	if ((af = open_audio_file(filename)) == NULL) {
-	    fprintf(stderr, "Cannot open \"%s\"\n", filename);
-	    continue;
-	}
-
-	/* If they set disp_time with -t or --start, check that it's
-	 * within the audio and make it coincide with the start of a column.
-	 */
-	if (start_time > audio_file_length()) {
-	    fprintf(stderr,
-		    "Starting time (%g) is beyond the end of the audio (%g).\n",
-		    disp_time, audio_file_length());
-	    set_disp_time(audio_file_length());
-	} else {
-	    set_disp_time(start_time);
-	}
-
-	if (!is_first_file) {
-	    reinit_audio(af, filename);
-	    /* If we're stopped at the end and the new file is longer,
-	     * then we're paused in the middle of it
-	     */
-	    if (playing == STOPPED) playing = PAUSED;
-	} else {
-	    is_first_file = FALSE;
-	}
-
-	/* Initialize the graphics subsystem. */
-	/* SDL2 in fullscreen mode may change disp_height and disp_width */
-	{
-	    /* Only do these once */
-	    static bool initted = FALSE;
-
-	    if (!initted) {
-		gui_init(filename);
-		/* The row overlay (piano notes/staff lines) doesn't depend on
-		 * the sample rate, only on min/max_freq, so it doesn't change
-		 * from file to file */
-		make_row_overlay();	
-		init_audio(af, filename);
-		initted = TRUE;
-	    }
-	}
-
-	/* Apply the -t flag */
-	if (disp_time != 0.0) set_playing_time(disp_time);
-
-	start_scheduler(max_threads);
-
-	draw_axes();
-
-	repaint_display(FALSE); /* Schedules the initial screen refresh */
-
-	start_timer();
-	gui_main();
-
-	/* Quit the main loop if that's what they asked for */
-	if (quitting) i = argc;	 /* Should be argc-1 really */
-
-	/* Have they asked to back up to the previous file */
-	if (play_previous) {
-	    if (i <= 0) {
-		fprintf(stderr, "You're already at the first file.\n");
-	    } else {
-		i--;
-	    }
-	    /* Don't do the loop reinit */
-	    i--;
-	    play_previous = FALSE;
-	}
-	/* If they say "next" at the last file, stay on the last file */
-	if (play_next) {
-	    if (i >= argc - 1) {
-		fprintf(stderr, "You're already at the last file.\n");
-		/* To stay on the same file, don't do the loop reinit */
-		i--;
-	    }
-	    play_next = FALSE;
-	}
-
-	/* If there are more files, clear all caches */
-	if (i < argc - 1) {
-	    stop_timer();
-	    stop_scheduler();
-	    drop_all_work();
-	    drop_all_results();
-	}
+    if ((af = open_audio_file(filename)) == NULL) {
+	fprintf(stderr, "Cannot read ");
+	perror(filename);
+	exit(1);
     }
 
-    gui_quit();	/* Also stops scheduler and timer */
+    /* If they set disp_time with -t or --start, check that it's
+     * within the audio and make it coincide with the start of a column.
+     */
+    if (start_time > audio_file_length()) {
+	fprintf(stderr,
+		"Starting time (%g) is beyond the end of the audio (%g).\n",
+		disp_time, audio_file_length());
+	set_disp_time(audio_file_length());
+    } else {
+	set_disp_time(start_time);
+    }
+
+    /* Initialize the graphics subsystem. */
+    /* SDL2 in fullscreen mode may change disp_height and disp_width */
+    gui_init(filename);
+    /* The row overlay (piano notes/staff lines) doesn't depend on
+     * the sample rate, only on min/max_freq, so it doesn't change
+     * from file to file */
+    make_row_overlay();	
+
+    /* Initialize the audio subsystem. */
+    init_audio(af, filename);
+
+    /* Apply the -t flag */
+    if (disp_time != 0.0) set_playing_time(disp_time);
+
+    start_scheduler(max_threads);
+
+    draw_axes();
+
+    repaint_display(FALSE); /* Schedules the initial screen refresh */
+
+    start_timer();
+
+    gui_main();
+
+    stop_timer();
+    stop_scheduler();
+    gui_quit();
 
     /* Free memory to make valgrind happier */
     drop_all_work();
