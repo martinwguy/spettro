@@ -1,8 +1,4 @@
 ------------------------------------------------------------------------
-Reimplement timed scrolling, or add an option to synch scrolling to real time
-not playing-time (--smooth option?) by scrolling the graphics in response
-to a periodic timer instead of the sound player's current playing position.
-------------------------------------------------------------------------
 Add -m mute flag to be able to test emotion graphics when sound is broken
 or to give just the graphics if initializing the audio output fails.
 This needs the above "synch scrolling".
@@ -19,8 +15,7 @@ Check make_row_overlay()
 ------------------------------------------------------------------------
 On frequency axis, add single digit 8 or whatever at the unnumbered ticks
 and/or increse the number of numbers according to the height of the graph.
--or-
-increase the number of labels/divisions on the frequency axis
+or increase the number of labels/divisions on the frequency axis
 ------------------------------------------------------------------------
 If you zoom the frequency axis in a huge amount, you eventually get several
 frequency-axis ticks with the same label.
