@@ -43,6 +43,7 @@
 #include "lock.h"
 #include "ui.h"
 
+#ifndef NO_CACHE
 static void shorts_to_mono_floats(float *floats, short *shorts,
 				  off_t frames, int nchannels);
 
@@ -53,6 +54,7 @@ static float *audio_cache_f = NULL;	/* 32-bit mono floats for FFT threads */
 static off_t audio_cache_start = 0;	/* Where the cache starts in sample frames
 				 	 * from the start of the audio file */
 static off_t audio_cache_size = 0;	/* Size of cache in sample frames */
+#endif
 
 /*
  * read_cached_audio(): Same interface as read_audio_file().
@@ -67,6 +69,9 @@ read_cached_audio(audio_file_t *af, char *data,
 		  af_format_t format, int channels,
 		  off_t start, int frames_to_read)
 {
+#ifdef NO_CACHE
+    return read_audio_file(af, data, format, channels, start, frames_to_read);
+#else
     int frames_written = 0;
     size_t framesize;
 
@@ -204,6 +209,7 @@ read_cached_audio(audio_file_t *af, char *data,
     unlock_audio_cache();
 
     return(frames_written);
+#endif
 }
 
 /*
@@ -216,6 +222,9 @@ read_cached_audio(audio_file_t *af, char *data,
 void
 reposition_audio_cache()
 {
+#ifdef NO_CACHE
+    return;
+#else
     /* Where the audio cache will start, in frames from start of audio file */
     off_t new_cache_start = lrint(floor(
     	(disp_time - (disp_width/2 + LOOKAHEAD) * secpp - 1/fft_freq/2) * current_sample_rate()
@@ -323,8 +332,10 @@ reposition_audio_cache()
     }
 
     unlock_audio_cache();
+#endif
 }
 
+#ifndef NO_CACHE
 /* Convert 16-bit nchannel shorts to mono floats */
 static void
 shorts_to_mono_floats(float *floats, short *shorts, off_t frames, int nchannels)
@@ -357,11 +368,15 @@ shorts_to_mono_floats(float *floats, short *shorts, off_t frames, int nchannels)
 	}
     }
 }
+#endif
 
 /* Dump the audio cache as a WAV file */
 void
 dump_audio_cache()
 {
+#ifdef NO_CACHE
+    return;
+#else
     SF_INFO  sfinfo;
     SNDFILE *sf;
 
@@ -380,4 +395,5 @@ dump_audio_cache()
     }
 
     sf_close(sf);
+#endif
 }
