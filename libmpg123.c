@@ -155,15 +155,10 @@ libmpg123_read_frames(audio_file_t *af,
 		      int frames_to_read,
 		      af_format_t format)
 {
-    int framesize = 0;		/* Size of sample frames */
-    size_t bytes_written;
-
-    switch (format) {
-    case af_float:  fprintf(stderr, "Can't read float frames from MP3 file.\n");
-    		    return -1;
-    case af_signed: framesize = sizeof(short) * af->channels; break;
-    default: abort();
-    }
+    /* Size of an input sample frame in bytes */
+    int framesize = sizeof(short) * af->channels;
+    /* Number of sample frames written into write_to */
+    int frames_written = 0; /* Quieten "may be used uninitialized" warning */
 
     /* Avoid reading past end of file because that makes the whole read fail */
     {
@@ -180,12 +175,55 @@ libmpg123_read_frames(audio_file_t *af,
 	}
     }
 
-    if (mpg123_read(af->mh, write_to, frames_to_read * framesize,
-    		    &bytes_written) != MPG123_OK) {
-	return -1;
-    }
+    switch (format) {
+	size_t bytes_to_read, bytes_written;
+    case af_signed:
+	{
+	    bytes_to_read = frames_to_read * framesize;
 
-    return bytes_written / framesize;
+	    if (mpg123_read(af->mh, write_to, bytes_to_read, &bytes_written)
+	        != MPG123_OK) return -1;
+	    if (bytes_written != bytes_to_read)
+		fprintf(stderr, "mpg123_read() returned %ul of %ul bytes\n",
+			bytes_written, bytes_to_read);
+
+	    frames_written = bytes_written / framesize;
+	}
+	break;
+    case af_float:  
+	{
+	    signed short *buf = Malloc(frames_to_read * af->channels * sizeof(*buf));
+	    bytes_to_read = frames_to_read * framesize;
+
+	    if (mpg123_read(af->mh, (unsigned char *)buf,
+	    		    bytes_to_read, &bytes_written)
+	        != MPG123_OK) {
+		free(buf);
+		return -1;
+	    }
+	    frames_written = bytes_written / framesize;
+
+	    switch (af->channels) {
+	    	float *fp; signed short *sp; int i;
+	    case 1:
+		sp = buf; fp = write_to;
+		for (i=0; i<frames_written; i++) {
+		    *fp++ = *sp++ / (float)32768;
+		}
+		break;
+	    case 2:
+		sp = buf; fp = write_to;
+		for (i=0; i<frames_written; i++) {
+		    *fp++ = (sp[0] + sp[1]) / (float)65536;
+		    sp += 2;
+		}
+		break;
+	    }
+	    free(buf);
+	}
+	break;
+    }
+    return frames_written;
 }
 
 void
