@@ -128,7 +128,7 @@ current_sample_rate()
  */
 
 int
-read_audio_file(char *data,
+read_audio_file(audio_file_t *af, char *data,
 		af_format_t format, int channels,
 		off_t start, int frames_to_read)
 {
@@ -155,17 +155,17 @@ read_audio_file(char *data,
 	}
     }
 
-    if (start >= current_audio_file()->frames) goto fill_with_silence;
+    if (start >= af->frames) goto fill_with_silence;
 
     /* Decode MP3's with libmpg123 */
-    if (strcasecmp(audio_file->filename + strlen(audio_file->filename) - 4,
+    if (strcasecmp(af->filename + strlen(af->filename) - 4,
     		   ".mp3") == 0) {
-	if (libmpg123_seek(audio_file, start) == FALSE) {
+	if (libmpg123_seek(af, start) == FALSE) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
 	    return -1;
 	}
 	while (frames_to_read > 0) {
-	    int frames = libmpg123_read_frames(audio_file, write_to, frames_to_read, format);
+	    int frames = libmpg123_read_frames(af, write_to, frames_to_read, format);
 	    if (frames > 0) {
 		total_frames += frames;
 		write_to += frames * framesize;
@@ -178,13 +178,13 @@ read_audio_file(char *data,
     } else {
 	/* and anything else with libsndfile */
 
-	if (!libsndfile_seek(audio_file, start)) {
+	if (!libsndfile_seek(af, start)) {
 	    fprintf(stderr, "Failed to seek in audio file.\n");
 	    return -1;
 	}
 
 	{
-	    int frames = libsndfile_read_frames(audio_file, write_to,
+	    int frames = libsndfile_read_frames(af, write_to,
 	    					frames_to_read, format);
 	    if (frames < 0) return -1;
 

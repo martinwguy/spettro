@@ -257,6 +257,8 @@ schedule(calc_t *calc)
      * so check that first (its list is also shorter).
      */
 
+    calc->af = current_audio_file();
+
     lock_list();
     if (is_in_list(calc, jobs) || is_in_list(calc, list)) {
 	unlock_list();

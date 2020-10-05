@@ -63,7 +63,7 @@ static off_t audio_cache_size = 0;	/* Size of cache in sample frames */
  */
 
 int
-read_cached_audio(char *data,
+read_cached_audio(audio_file_t *af, char *data,
 		  af_format_t format, int channels,
 		  off_t start, int frames_to_read)
 {
@@ -306,7 +306,8 @@ reposition_audio_cache()
     {
 	/* Where the region to fill starts, relative to the cache start */
 	off_t fill_offset = fill_start - audio_cache_start;  /* in frames */
-	int r = read_audio_file((char *)(audio_cache_s + fill_offset * nchannels),
+	int r = read_audio_file(current_audio_file(),
+				(char *)(audio_cache_s + fill_offset * nchannels),
 				af_signed, nchannels, fill_start, fill_size);
 	if (r != fill_size) {
 	    fprintf(stderr, "Failed to fill the audio cache with %ld frames; got %d.\n",

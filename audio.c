@@ -333,7 +333,7 @@ sdl_fill_audio(void *userdata, Uint8 *stream, int len)
 	return;
     }
 
-    frames_read = read_cached_audio((char *)stream,
+    frames_read = read_cached_audio(current_audio_file(), (char *)stream,
 				    af_signed, channels,
 				    sdl_start, frames_to_read);
     if (frames_read == 0) {

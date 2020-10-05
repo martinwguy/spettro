@@ -51,7 +51,7 @@ extern audio_file_t *current_audio_file(void);
 /* Return a handle for the audio file, NULL on failure */
 extern audio_file_t *open_audio_file(char *filename);
 
-extern int read_audio_file(char *data,
+extern int read_audio_file(audio_file_t *af, char *data,
 			   af_format_t format, int channels,
 			   off_t start,	/* In frames offset from 0.0 */
 			   int nframes);

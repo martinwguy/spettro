@@ -43,6 +43,7 @@ typedef struct calc_t {
     double		t;	/* FFT centered on when? */
     double		fft_freq; /* FFT frequency when scheduled */
     window_function_t	window;
+    audio_file_t	*af;
 
     /* This is the result */
     float *		spec;	 /* The linear spectrum from [0..speclen]

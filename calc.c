@@ -142,7 +142,7 @@ get_result(calc_t *calc, spectrum *spec, int speclen)
 
 	/* Fetch the appropriate audio for our FFT source */
 	/* The data is centred on the requested time. */
-	if (read_cached_audio((char *) spec->time_domain, af_float, 1,
+	if (read_cached_audio(calc->af, (char *) spec->time_domain, af_float, 1,
 			      lrint(calc->t * current_sample_rate()) - fftsize/2,
 			      fftsize) != fftsize) {
 	    /* Actually, it can't fail any more, but... */
