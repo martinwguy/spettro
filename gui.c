@@ -542,8 +542,6 @@ gui_quit()
     if (playing == PLAYING) {
 	stop_playing();
     }
-    stop_scheduler();
-    stop_timer();
 }
 
 #if ECORE_MAIN
