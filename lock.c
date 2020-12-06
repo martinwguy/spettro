@@ -71,6 +71,8 @@ static lock_t list_lock;
 static bool list_lock_is_initialized = FALSE;
 static lock_t window_lock;
 static bool window_lock_is_initialized = FALSE;
+static lock_t buffer_lock;
+static bool buffer_lock_is_initialized = FALSE;
 
 void
 lock_fftw3()
@@ -138,4 +140,19 @@ bool
 unlock_window()
 {
     return do_unlock(&window_lock);
+}
+
+bool
+lock_buffer()
+{
+    if (!initialize(&buffer_lock, &buffer_lock_is_initialized))
+	return FALSE;
+    else
+	return do_lock(&buffer_lock);
+}
+
+bool
+unlock_buffer()
+{
+    return do_unlock(&buffer_lock);
 }

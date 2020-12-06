@@ -37,6 +37,7 @@
 #include "scheduler.h"
 
 #include "audio.h"
+#include "audio_file.h"
 #include "cache.h"
 #include "calc.h"
 #include "convert.h"
@@ -185,16 +186,26 @@ static int
 sdl_calc_heavy(void *data)
 {
     calc_t *work;
+    audio_file_t *af = open_audio_file(current_audio_file()->filename);
+
+    if (af == NULL) {
+	fprintf(stderr, "thread cannot open %s\n",
+			current_audio_file()->filename);
+	return -1;
+    }
 
     work = get_work();
     while (!sdl_quit_threads) {
 	if (work == NULL) {
 	    usleep((useconds_t)100000); /* No work: sleep for a tenth of a second */
 	} else {
+	    work->af = af;
 	    calc(work);
 	}
         work = get_work();
     }
+    close_audio_file(af);
+
     return 0;	/* Make GCC -Wall happy */
 }
 #endif

@@ -20,6 +20,8 @@
 #include "spettro.h"
 #include "libsndfile.h"
 
+#include "lock.h"
+
 #include <string.h>	/* for memset() */
 
 static int mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read);
@@ -149,6 +151,8 @@ mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)
 	int k, ch, frames_read;
 	int dataout = 0;		    /* No of samples written so far */
 
+	lock_buffer();
+
 	if (multi_data_samples < frames_to_read * af->channels) {
 	    multi_data = Realloc(multi_data, frames_to_read * af->channels * sizeof(*multi_data));
 	    multi_data_samples = frames_to_read * af->channels;
@@ -175,6 +179,7 @@ mix_mono_read_floats(audio_file_t *af, float *data, int frames_to_read)
 	    dataout += frames_read;
 	}
 
+	unlock_buffer();
 	return dataout;
   }
-} /* mix_mono_read_float */
+}

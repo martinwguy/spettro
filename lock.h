@@ -28,3 +28,6 @@ extern bool unlock_list(void);
 
 extern bool lock_window(void);
 extern bool unlock_window(void);
+
+extern bool lock_buffer(void);
+extern bool unlock_buffer(void);
