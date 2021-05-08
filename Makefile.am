@@ -91,7 +91,7 @@ tags:
 
 mrproper: clean
 	rm -f tags Makefile Makefile.in aclocal.m4 compile config.log \
-		config.guess sonfig.sub ltmain.sh stamp-h1 test-driver \
+		config.guess config.sub ltmain.sh stamp-h1 test-driver \
 		config.status configure depcomp install-sh missing \
 		configure.h*
 	rm -rf .deps autom4te.cache
