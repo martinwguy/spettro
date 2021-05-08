@@ -95,7 +95,7 @@ mrproper: clean
 		config.status configure depcomp install-sh missing \
 		configure.h*
 	rm -rf .deps autom4te.cache
-	rm -f swoop.wav
+	rm -f audio.wav
 	dh_clean		# Debian stuff
 	rm -f "spettro "*png	# Screen dumps
 
